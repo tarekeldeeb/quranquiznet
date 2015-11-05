@@ -1,0 +1,2 @@
+# quranquiznet
+Cross-platform project 
