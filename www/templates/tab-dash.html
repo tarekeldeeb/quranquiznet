@@ -1,0 +1,29 @@
+<ion-view view-title="Dashboard">
+  <ion-content class="padding">
+        <div class="list card">
+            <div class="item item-divider" align="right">{{question}}</div>
+            <div class="item item-body">
+				<div ng-repeat="n in [0, 1, 2, 3, 4]">
+					<button class="button button-stable button-block" ng-click="selectOption(n)">{{options[n]}}</button>
+				</div>	
+            </div>
+            <div class="item item-divider"  align="right">اجابة .. صحيحة </div>
+        </div>
+    <div class="list card">
+      <div class="item item-divider">Health</div>
+      <div class="item item-body">
+        <div>
+          You ate an apple today!
+        </div>
+      </div>
+    </div>
+    <div class="list card">
+      <div class="item item-divider">Upcoming</div>
+      <div class="item item-body">
+        <div>
+          You have <b>29</b> meetings on your calendar tomorrow.
+        </div>
+      </div>
+    </div>
+  </ion-content>
+</ion-view>
