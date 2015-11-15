@@ -3,10 +3,14 @@ angular.module('starter.controllers', [])
 .controller('DashCtrl', function($scope, Q) {
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
-	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام', 'المؤمن'];
+	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
+	console.log(JSON.stringify($scope.options));
 	$scope.selectOption = function(sel) {
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
-		$scope.options = Q.txt(ii,5);
+			Q.txt(ii,5).then(function(op){
+				$scope.options = op;
+				//console.log(JSON.stringify($scope.options));
+        });
 		ii = ii+5;
   };
   

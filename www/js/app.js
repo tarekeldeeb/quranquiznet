@@ -37,7 +37,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 		*/
 		if (window.openDatabase) { // WebSQL Supported!
 			db = window.openDatabase("myapp.db", "1.0", "My app", -1);
-			console.log('DB= '+db);
 			var query="CREATE INDEX IF NOT EXISTS Q_TXT_INDEX on q (txt ASC)";
 			$cordovaSQLite.execute(db, query, [])
 			.then(function(res) {

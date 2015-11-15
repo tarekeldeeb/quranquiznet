@@ -28,14 +28,14 @@ angular.module('starter.services', [])
     for (var i = 0; i < result.rows.length; i++) {
       output.push(result.rows.item(i).txtsym);
     }
-	console.log(output);
+	//console.log('Set='+output);
     return output;
   }
 
   // Proces a single result
   self.getSingle = function(result) {
     var output = null;
-    output = angular.copy(result.rows.item(0));
+    output = angular.copy(result.rows.item(0).txtsym);
     return output;
   }
   
@@ -73,22 +73,14 @@ angular.module('starter.services', [])
 
   //TODO: Implement all public fields from: QQDataBaseHelper.java
 
-  self.txt = function(idx, len) {
-    var parameters = [(idx-1), (idx+len)];
+  self.txt = function(idx, len, params) {
+	var llen = len || 1;
+    var parameters = [(idx-1), (idx+llen)];
 	//TODO: Missing boundary checks, not yet ported!
     return DBA.query("select txtsym from q where _id > (?) and _id < (?)",parameters).then(function(result){
         return DBA.getSet(result);
       });				
   }
-
-  self.txt = function(idx) {
-    var parameters = [idx];
-    return DBA.query("select txtsym from q where _id = (?)",parameters).then(function(result){
-        return DBA.getSingle(result);
-      });				
-  }  
-
-
   return self;
 })
 
