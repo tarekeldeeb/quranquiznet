@@ -8,7 +8,7 @@ var db = null;
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'ngCordova'])
 
-.run(function($ionicPlatform, $cordovaSQLite) {
+.run(function($ionicPlatform, $cordovaSQLite, $ionicPopup) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -30,12 +30,44 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 	  	/**
 		* FIXME: Manually Copy db:
 		* [1] Open site, a file will be created locally at:
-		* C:\Users\_username_\AppData\Local\Google\Chrome\User Data\Default\databases
+		* C:\Users\_YOUR_USER_\AppData\Local\Google\Chrome\User Data\Default\databases\_HOST_
 		* [2] Download+Unzip DB from: https://github.com/tarekeldeeb/quranquiz/raw/master/android-app/res/raw/qq_noidx_sqlite.zip
 		* [3] replace Generated file from step #1
 		>> Should programatically be: Download Zip > Unzip > Copy 
 		*/
-      db = window.openDatabase("myapp.db", "1.0", "My app", -1);
+		if (window.openDatabase) { // WebSQL Supported!
+			db = window.openDatabase("myapp.db", "1.0", "My app", -1);
+			console.log('DB= '+db);
+			var query="CREATE INDEX IF NOT EXISTS Q_TXT_INDEX on q (txt ASC)";
+			$cordovaSQLite.execute(db, query, [])
+			.then(function(res) {
+				console.log('DB OK ..');
+			}, function(e) {
+				var alertPopup = $ionicPopup.alert({
+				 title: 'Database needs a manual copy!',
+				 template: 'This product is still in pre-mature development state,'
+							+"you need to:<br/><br/>"
+							+' #1 Download+Unzip DB from: '
+							+'<a href="https://github.com/tarekeldeeb/quranquiz/raw/master/android-app/res/raw/qq_noidx_sqlite.zip">Quran Quiz Project</a> <br/><br/>'
+							+' #2 Replace Generated file at: <br/>'
+							+'C:\\Users\\_YOUR_USER_\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\databases\\_HOST_'
+				});
+				alertPopup.then(function(res) {
+				 console.log('User instructed to manually prepare the DB!');
+				});
+				console.log(e);
+			});
+		} else { // Browser  does not support WebSQL!
+			var alertPopup = $ionicPopup.alert({
+				 title: 'Unsupported Browser!',
+				 template: 'Your browser does not support WebSQL, please use: Chrome, Safari or Opera.'
+				});
+				alertPopup.then(function(res) {
+				 console.log('Unsupported browser, exiting!');
+				 window.open('http://caniuse.com/#feat=sql-storage', '_self', 'location=yes'); 
+				 return false;
+				});
+		}
     }	
   });
 })
