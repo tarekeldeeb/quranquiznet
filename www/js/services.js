@@ -1,6 +1,5 @@
 angular.module('starter.services', [])
 
-
 .factory('DBA', function($cordovaSQLite, $q, $ionicPlatform) {
   var self = this;
 
@@ -22,8 +21,8 @@ angular.module('starter.services', [])
     return q.promise;
   }
 
-	// Proces a result set
-  self.getSet = function(result) {
+  // Proces a result set
+  self.getStringSet = function(result) {
     var output = [];
     for (var i = 0; i < result.rows.length; i++) {
       output.push(result.rows.item(i).txtsym);
@@ -32,10 +31,12 @@ angular.module('starter.services', [])
     return output;
   }
 
-  // Proces a single result
-  self.getSingle = function(result) {
-    var output = null;
-    output = angular.copy(result.rows.item(0).txtsym);
+  self.getIDSet = function(result) {
+    var output = [];
+    for (var i = 0; i < result.rows.length; i++) {
+      output.push(result.rows.item(i)._id);
+    }
+	//console.log('Set='+output);
     return output;
   }
   
@@ -48,7 +49,7 @@ angular.module('starter.services', [])
 })
 
 
-.factory('Q', function($cordovaSQLite, DBA) {
+.factory('Q', function($cordovaSQLite, DBA, Utils) {
   var self = this;
 
   self.all = function() {
@@ -71,16 +72,139 @@ angular.module('starter.services', [])
     return DBA.query("UPDATE team SET id = (?), name = (?) WHERE id = (?)", parameters);
   }
 
-  //TODO: Implement all public fields from: QQDataBaseHelper.java
-
   self.txt = function(idx, len, params) {
 	var llen = len || 1;
     var parameters = [(idx-1), (idx+llen)];
 	//TODO: Missing boundary checks, not yet ported!
     return DBA.query("select txtsym from q where _id > (?) and _id < (?)",parameters).then(function(result){
-        return DBA.getSet(result);
+        return DBA.getStringSet(result);
       });				
   }
+  
+  self.sim1idx = function(idx){
+	return DBA.query("select _id from q where txt=(select txt from q where _id="+ idx + ") and _id !=" + idx,[])
+	.then(function(result){
+        return DBA.getIDSet(result);
+      });	
+  }
+
+  self.sim2idx = function(idx){
+	return DBA.query("select q1._id from q q1 join q q2 where q1._id+1=q2._id "
+									+ "and q1._id in (select _id from q where txt=(select txt from q where _id="
+									+ idx
+									+ ") and _id !="
+									+ idx
+									+ ") "
+									+ "and q2._id in (select _id from q where txt=(select txt from q where _id="
+									+ (idx + 1) + ") and _id !=" + (idx + 1)
+									+ ")",[])
+	.then(function(result){
+        return DBA.getIDSet(result);
+      });	
+  }  
+  
+  self.sim3idx = function(idx){
+	return DBA.query("select q1._id from q q1 join q q2 join q q3 where q1._id+1=q2._id and q1._id+2=q3._id "
+									+ "and q1._id in (select _id from q where txt=(select txt from q where _id="
+									+ (idx)
+									+ ") and _id !="
+									+ (idx)
+									+ ")"
+									+ "and q2._id in (select _id from q where txt=(select txt from q where _id="
+									+ (idx + 1)
+									+ ") and _id !="
+									+ (idx + 1)
+									+ ")"
+									+ "and q3._id in (select _id from q where txt=(select txt from q where _id="
+									+ (idx + 2)
+									+ ") and _id !="
+									+ (idx + 2)
+									+ ")",[])
+	.then(function(result){
+        return DBA.getIDSet(result);
+      });	
+  }  
+
+  self.sim2cnt = function(idx){
+	return DBA.query("select sim2 from q where _id="+ idx,[])
+	.then(function(result){
+        return result.rows.item(0).sim2;
+      });	
+  }
+
+  self.sim3cnt = function(idx){
+	return DBA.query("select sim3 from q where _id="+ idx,[])
+	.then(function(result){
+        return result.rows.item(0).sim3;
+      });	
+  }
+
+  self.uniqueSim1Not2Plus1 = function(idx){
+	return DBA.query("select _id from q where _id in (select _id+1 from q where "
+									+ "_id in (select _id from q where txt=(select txt from q where _id="
+									+ idx
+									+ ") and _id !="
+									+ idx
+									+ ")"
+									+ "and _id not in (select q1._id from q q1 join q q2 where q1._id+1=q2._id "
+									+ "and q1._id in (select _id from q where txt=(select txt from q where _id="
+									+ idx
+									+ ") and _id !="
+									+ idx
+									+ ") "
+									+ "and q2._id in (select _id from q where txt=(select txt from q where _id="
+									+ (idx + 1) + ") and _id !=" + (idx + 1)
+									+ ")) " + ") group by txt",[])
+	.then(function(result){
+		console.log(result);
+        return DBA.getIDSet(result);
+      });	
+  }
+  
+  self.randomUnique4NotMatching = function(idx){
+	//Fixme: random() not supported in WebSQL, make another design.
+	return DBA.query("CREATE TEMP TABLE IF NOT EXISTS xy as select _id,txt from q order by random() limit 200",[])
+	.then(function(){
+		return DBA.query("CREATE INDEX IF NOT EXISTS xy_txt_index ON xy (txt);",[])
+		.then(function(){
+			return DBA.query("select q1._id from xy q1 inner join xy q2 on q2.txt = q1.txt "+
+				"group by q1._id,q1.txt having q1._id = min(q2._id) "+
+				"and q1.txt !=(select txt from q where _id="+idx+") order by random() limit 4",[])
+			.then(function(result){
+				console.log(result);
+				return DBA.getIDSet(result);
+			  });	
+		  });	
+      });
+  }
+  
+  self.ayaNumberOf = function(idx){
+	return DBA.query("select aya from q where _id >=" + idx +" and aya IS NOT NULL LIMIT 1",[])
+	.then(function(result){
+        return result.rows.item(0).aya;
+      });
+  }
+
+  self.ayaCountOfSuraAt = function(idx){
+	//TODO: Implement/Test
+	return self.ayaNumberOf((Utils.sura_idx[Utils.getSuraIdx(idx)] -1));
+  }
+  
+  self.ayaEndsAfter = function(idx){
+	return DBA.query("select _id from q where _id >=" + idx +" and aya IS NOT NULL LIMIT 1",[])
+	.then(function(result){
+        return (result.rows.item(0)._id - idx);
+      });
+  }
+
+  self.isAyaStart = function(idx){
+  	return self.ayaEndsAfter(idx-1)
+	.then(function(result){
+        return (result===0);
+      });
+  }  
+  
+  
   return self;
 })
 

@@ -4,16 +4,17 @@ angular.module('starter.controllers', [])
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
-	console.log(JSON.stringify($scope.options));
 	$scope.selectOption = function(sel) {
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
-			Q.txt(ii,5).then(function(op){
-				$scope.options = op;
-				//console.log(JSON.stringify($scope.options));
-        });
+		Q.txt(ii,5).then(function(op){
+			$scope.options = op;
+			//console.log(JSON.stringify($scope.options));
+		});
 		ii = ii+5;
-  };
-  
+		Q.isAyaStart(12).then(function(op){
+			console.log(op);
+		});
+	};
 })
 
 /**
