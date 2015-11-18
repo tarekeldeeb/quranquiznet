@@ -1,5 +1,5 @@
-angular.module('starter.utils',[])
-.factory('Utils', function($q, $ionicPlatform) {
+angular.module('starter.utils',['angular-md5'])
+.factory('Utils', function($q, $ionicPlatform, md5) {
   var self = this;
   
   // Check Index of column: txt
@@ -73,6 +73,13 @@ angular.module('starter.utils',[])
 	 */
 	this.SurasSpecialQuestionEligibilityThreshold = 7;
 	
+	this.TextFormatEnum = { 
+		AYAMARKS_NONE:1,
+		AYAMARKS_FULL:2,
+		AYAMARKS_BRACKETS_ONLY:3,
+		AYAMARKS_BRACKETS_START:4
+	};
+	
 	this.findIdx = function(scrambled, i) {
 		for (var j = 0; j < scrambled.length; j++)
 			if (scrambled[j] == i)
@@ -86,42 +93,23 @@ angular.module('starter.utils',[])
 			plus[j] = plus[j] + i;
 		return plus;
 	}
-	/*
-	public static String md5(String s) {
-		MessageDigest digest = null;
-		try {
-			digest = MessageDigest.getInstance("MD5");
-		} catch (NoSuchAlgorithmException e) {
-			// e.printStackTrace();
-			return s; // Same string better than an empty/null one :)
-		}
-		digest.update(s.getBytes(), 0, s.length());
-		String hash = new BigInteger(1, digest.digest()).toString(16);
-		return hash;
+	
+	this.md5 = function(s){
+		return md5.createHash(s || '');
 	}
 
-	public static int[] randperm(int n) {
+	this.randperm = function(n) {
 		// return a random permutation of size n
 		// that is an array containing a random permutation of values 0, 1, ...,
 		// n-1
-		Random randg = new Random();
-		int[] perm = new int[n];
-		for (int i = 0; i < n; i++) {
-			perm[i] = i;
-		}
-		for (int i = 0; i < n - 1; i++) {
-			int j = randg.nextInt(n - i) + i;
-			// sawp perm[i] and perm[j]
-			int temp = perm[i];
-			perm[i] = perm[j];
-			perm[j] = temp;
-		}
-		return perm;
+		var o = Array.apply(0, Array(n)).map(function(_,b) { return b; });// [0,1,..,n-1]
+		for(var j, x, i = o.length; i; j = Math.floor(Math.random() * i), x = o[--i], o[i] = o[j], o[j] = x); //Shuffle
+    return o;
 	}
 	
-	public static double sCurve(double ratio, double max){
-		double y[]={0.001, 0.11, 0.87, 0.98};
-		double yp;
+	this.sCurve = function(ratio, max){
+		var y=[0.001, 0.11, 0.87, 0.98];
+		var yp;
 
 	    if (ratio<0.3*max)
 	            yp = y[0] + (y[1]-y[0])/(0.3*max-0)*(ratio-0);
@@ -135,14 +123,14 @@ angular.module('starter.utils',[])
 		return yp;
 	}
 	
-	public static int modQWords(int idx){
-		return idx%QuranWords;
+	this.modQWords = function(idx){
+		return idx%this.QuranWords;
 	}
 
-	public static void disableFixQ(){
+	this.disableFixQ = function(){
 		blFixQ = false;
 	}
-	public static void enableFixQ(){
+	this.enableFixQ = function(){
 		blFixQ = true;
 	}
 	
@@ -151,41 +139,74 @@ angular.module('starter.utils',[])
 	 // @param text: Quran text with tashkeel
 	 // @return same text with no tashkeel
 	 //
-	public static String fixQ(String text){
-		if (blFixQ)
-			return text.replaceAll("[\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652\u06E6]", "");
-		else
-			return text;
+	this.fixQ = function(text){
+		//if (blFixQ)
+		//	return text.replaceAll("[\u064B\u064C\u064D\u064E\u064F\u0650\u0651\u0652\u06E6]", "");
+		//else
+		console.log("Using deprecated function: fixQ()");
+		return text;
 	}
 
-	public static String getSuraNameFromWordIdx(int wordIdx) {
-		return sura_name[getSuraIdx(wordIdx)];
+	this.getSuraNameFromWordIdx = function(wordIdx) {
+		return this.sura_name[this.getSuraIdx(wordIdx)];
 	}
 
-	public static String getSuraNameFromIdx(int suraIdx) {
-		return sura_name[suraIdx];
+	this.getSuraNameFromIdx = function(suraIdx) {
+		return this.sura_name[suraIdx];
 	}
 	
-	public static int getPartNumberFromWordIdx(int wordIdx){
-		if(wordIdx <= last5_juz_idx[0])
-			return getSuraIdx(wordIdx);
+	this.getPartNumberFromWordIdx = function(wordIdx){
+		if(wordIdx <= this.last5_juz_idx[0])
+			return this.getSuraIdx(wordIdx);
 		else{
-			for(int i=0;i<5;i++)
-				if(wordIdx<last5_juz_idx[i+1])
+			for(var i=0;i<5;i++)
+				if(wordIdx<this.last5_juz_idx[i+1])
 					return 45+i;
 			return 49;
 		}
 	}
 	
-	public static int getSuraIdx(int wordIdx) {
+	this.getSuraIdx = function(wordIdx) {
 		// TODO: Make a binary search, faster!
-		for (int i = 0; i < 113; i++)
-			if (wordIdx < sura_idx[i]) {
+		for (var i = 0; i < 113; i++)
+			if (wordIdx < this.sura_idx[i]) {
 				return i;
 			}
 		return 113;
 	}
+
+	this.formattedAyaMark = function(ayaNum, fmt){
+		switch(fmt){
+			case this.TextFormatEnum.AYAMARKS_BRACKETS_ONLY:
+				return "\u06DD";
+			case this.TextFormatEnum.AYAMARKS_BRACKETS_START:
+				return "\u06DD";
+			case this.TextFormatEnum.AYAMARKS_FULL:
+				return "(" + ayaNum + ")";
+			default:
+				return "";
+		}
+	}
 	
+	this.getRandomLevel = function(){
+		if(Math.random()>0.5) return 2;
+		else	return 1;
+	}
+	
+	// Write the object to a Base64 string. 
+    this.toString64 = function( o ) {
+        return btoa( o );
+    }
+    
+	// Read the object from a Base64 string. 
+    this.fromString64 = function( s ) {
+		return atob( s );
+	}
+	
+  return self;
+})
+
+/** Unmapped 
 
 	public static void tvSetBackgroundFromDrawable(TextView tv, int id){
 		if(android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.JELLY_BEAN){
@@ -194,53 +215,4 @@ angular.module('starter.utils',[])
 			tv.setBackgroundDrawable(QQApp.getContext().getResources().getDrawable(id));
 		}
 	}
-	
-	public enum QQTextFormat { 
-		AYAMARKS_NONE, AYAMARKS_FULL, AYAMARKS_BRACKETS_ONLY, AYAMARKS_BRACKETS_START;
-	};
-	
-	public static String formattedAyaMark(int ayaNum, QQTextFormat fmt){
-		switch(fmt){
-			case AYAMARKS_BRACKETS_ONLY:
-				return "\u06DD";
-			case AYAMARKS_BRACKETS_START:
-				return "\u06DD";
-			case AYAMARKS_FULL:
-				return "(" + ayaNum + ")";
-			default:
-				return "";
-		}
-	}
-	
-	public static int getRandomLevel(){
-		float r = new Random().nextFloat();
-		if(r>0.5) return 2;
-		else	return 1;
-	}
-	
-	// Write the object to a Base64 string. 
-    public static String toString64( Serializable o ) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        ObjectOutputStream oos = new ObjectOutputStream(baos);
-        oos.writeObject(o);
-        oos.close();
-        return new String( Base64.encode( baos.toByteArray(), Base64.DEFAULT ) );
-    }
-    
-	// Read the object from a Base64 string. 
-    public static Object fromString64( String s ) throws IOException, ClassNotFoundException {
-		byte [] data = Base64.decode(s, Base64.DEFAULT);
-		Object o = null;
-		//try{
-			ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(data));
-			o  = ois.readObject();
-			ois.close();
-		//} catch(EOFException e){
-			//That's normal, I do not have EOF
-		//}
-		return o;
-	}
-	
- */
-  return self;
-})
+*/	

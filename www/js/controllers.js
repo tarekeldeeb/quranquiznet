@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, Q) {
+.controller('DashCtrl', function($scope, Q, Utils) {
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
@@ -11,9 +11,10 @@ angular.module('starter.controllers', [])
 			//console.log(JSON.stringify($scope.options));
 		});
 		ii = ii+5;
-		Q.isAyaStart(12).then(function(op){
-			console.log(op);
-		});
+		//console.log(Utils.modQWords(90999));
+		//Utils.findIdx([10,12,2,122,1],12).then(function(op){
+		//	console.log(op);
+		//});
 	};
 })
 
