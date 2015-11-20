@@ -6,10 +6,11 @@ var db = null;
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'ngCordova'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'ngCordova', 'ngResource'])
 
-.run(function($ionicPlatform, $cordovaSQLite, $ionicPopup) {
+.run(function($ionicPlatform, $cordovaSQLite, $ionicPopup, $resource, $ionicLoading) {
   $ionicPlatform.ready(function() {
+    $ionicLoading.show({ template: 'جاري الاعداد ..' });
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
     if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
@@ -24,37 +25,68 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 	
 	if(window.cordova) {
       // App syntax
-      db = $cordovaSQLite.openDB("myapp.db");
-    } else {
-      // Ionic serve syntax
-	  	/**
-		* FIXME: Manually Copy db:
-		* [1] Open site, a file will be created locally at:
-		* C:\Users\_YOUR_USER_\AppData\Local\Google\Chrome\User Data\Default\databases\_HOST_
-		* [2] Download+Unzip DB from: https://github.com/tarekeldeeb/quranquiz/raw/master/android-app/res/raw/qq_noidx_sqlite.zip
-		* [3] replace Generated file from step #1
-		>> Should programatically be: Download Zip > Unzip > Copy 
-		*/
-		if (window.openDatabase) { // WebSQL Supported!
-			db = window.openDatabase("myapp.db", "1.0", "My app", -1);
+      db = $cordovaSQLite.openDB("myapp.db"); // to be replaced
+	  /*
+	  //TODO: Check if DB exists
+	  window.plugins.sqlDB.copy("populated.db", function() {
+                db = $cordovaSQLite.openDB("populated.db");
+            }, function(error) {
+                console.error("There was an error copying the database: " + error);
+                db = $cordovaSQLite.openDB("populated.db");
+            });
+	  */
+	  
+    } else { // Ionic serve syntax
+
+		if (window.openDatabase) { // Browser  does support WebSQL!
+			db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
 			var query="CREATE INDEX IF NOT EXISTS Q_TXT_INDEX on q (txt ASC)";
 			$cordovaSQLite.execute(db, query, [])
 			.then(function(res) {
 				console.log('DB OK ..');
-			}, function(e) {
-				var alertPopup = $ionicPopup.alert({
-				 title: 'Database needs a manual copy!',
-				 template: 'This product is still in pre-mature development state,'
-							+"you need to:<br/><br/>"
-							+' #1 Download+Unzip DB from: '
-							+'<a href="https://github.com/tarekeldeeb/quranquiz/raw/master/android-app/res/raw/qq_noidx_sqlite.zip">Quran Quiz Project</a> <br/><br/>'
-							+' #2 Replace Generated file at: <br/>'
-							+'C:\\Users\\_YOUR_USER_\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\databases\\_HOST_'
+			}, function(e) { // First run: DB was not filled before!
+			
+				var dbDump = $resource('/q.json');
+				dbDump.get(function(data) {
+					console.log('Got: '+data.type +' with '+data.objects[0].rows.length+' rows.');
+					
+					//FIXME: Logs seems ok (too fast?) but the db file does not grow, further SQL fails.
+					//       The last commit has no effect!
+					db.transaction(function (tx) { 
+						//tx.executeSql("DROP TABLE *");
+						tx.executeSql(data.objects[0].ddl);
+						var insertStatement="INSERT INTO q VALUES(?,?,?,?,?,?,?)";
+						for(var t = 0; t < data.objects[0].rows.length; t++){
+								var item = data.objects[0].rows[t];
+								var id = item._id, txt = item.txt, txtsym = item.txtsym, sim1 = item.sim1, sim2 = item.sim2, sim3 = item.sim3, aya = item.aya;
+								tx.executeSql(insertStatement, [id,txt,txtsym,sim1,sim2,sim3,aya]);
+								if(t%500==0)console.log("values inserted "+ t);
+						}
+						tx.executeSql("COMMIT",[]);
+					});
 				});
-				alertPopup.then(function(res) {
-				 console.log('User instructed to manually prepare the DB!');
+
+				
+				// Validate Complete DB-fill
+				$cordovaSQLite.execute(db, "SELECT COUNT(txt) FROM q", [])
+				.then(function(res) {
+					console.log(res);
+				}, function(e){
+					var alertPopup = $ionicPopup.alert({
+						title: 'Database needs a manual copy!',
+						template: 'This product is still in pre-mature development state,'
+								+"you need to:<br/><br/>"
+								+' #1 Download+Unzip DB from: '
+								+'<a href="https://github.com/tarekeldeeb/quranquiz/raw/master/android-app/res/raw/qq_noidx_sqlite.zip">Quran Quiz Project</a> <br/><br/>'
+								+' #2 Replace Generated file at: <br/>'
+								+'C:\\Users\\_YOUR_USER_\\AppData\\Local\\Google\\Chrome\\User Data\\Default\\databases\\_HOST_'
+					});
+					alertPopup.then(function(res) {
+						console.log('User instructed to manually prepare the DB!');
+					});
 				});
-				console.log(e);
+
+				//console.log(e);
 			});
 		} else { // Browser  does not support WebSQL!
 			var alertPopup = $ionicPopup.alert({
@@ -68,6 +100,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 				});
 		}
     }	
+	$ionicLoading.hide();
   });
 })
 

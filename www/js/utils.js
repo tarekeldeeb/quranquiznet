@@ -134,7 +134,6 @@ angular.module('starter.utils',['angular-md5'])
 		blFixQ = true;
 	}
 	
-	
 	 // Removes tashkeel from Quran text
 	 // @param text: Quran text with tashkeel
 	 // @return same text with no tashkeel

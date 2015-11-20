@@ -12,7 +12,7 @@ angular.module('starter.controllers', [])
 		});
 		ii = ii+5;
 		//console.log(Utils.modQWords(90999));
-		//Utils.findIdx([10,12,2,122,1],12).then(function(op){
+		//Q.ayaCountOfSuraAt(90).then(function(op){
 		//	console.log(op);
 		//});
 	};

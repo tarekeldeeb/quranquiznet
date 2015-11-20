@@ -52,26 +52,6 @@ angular.module('starter.services', [])
 .factory('Q', function($cordovaSQLite, DBA, Utils) {
   var self = this;
 
-  self.all = function() {
-    return DBA.query("SELECT id, name FROM team")
-      .then(function(result){
-        return DBA.getSet(result);
-      });
-  }
-
-  self.get = function(memberId) {
-    var parameters = [memberId];
-    return DBA.query("SELECT id, name FROM team WHERE id = (?)", parameters)
-      .then(function(result) {
-        return DBA.getSingle(result);
-      });
-  }
-
-  self.update = function(origMember, editMember) {
-    var parameters = [editMember.id, editMember.name, origMember.id];
-    return DBA.query("UPDATE team SET id = (?), name = (?) WHERE id = (?)", parameters);
-  }
-
   self.txt = function(idx, len, params) {
 	var llen = len || 1;
     var parameters = [(idx-1), (idx+llen)];
@@ -186,7 +166,6 @@ angular.module('starter.services', [])
   }
 
   self.ayaCountOfSuraAt = function(idx){
-	//TODO: Implement/Test
 	return self.ayaNumberOf((Utils.sura_idx[Utils.getSuraIdx(idx)] -1));
   }
   
