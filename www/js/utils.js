@@ -2,10 +2,29 @@ angular.module('starter.utils',['angular-md5'])
 .factory('Utils', function($q, $ionicPlatform, md5) {
   var self = this;
   
-  // Check Index of column: txt
-  self.ensureIndexExists = function() {
-	//TODO: check index and create it if required!
-  }
+  /**
+ * Format string
+ * @param {string} str to format
+ * @param {array} args to replace
+ */
+  this.String = function(str, args) {
+        var regex = new RegExp("{-?[0-9]+}", "g");
+
+        return str.replace(regex, function(item) {
+            var intVal = parseInt(item.substring(1, item.length - 1));
+            var replace;
+            if (intVal >= 0) {
+                replace = args[intVal];
+            } else if (intVal === -1) {
+                replace = "{";
+            } else if (intVal === -2) {
+                replace = "}";
+            } else {
+                replace = "";
+            }
+            return replace;
+        });
+    }
   
 	this.QQDebug = 0;
 	this.QuranWords = 77878; 
