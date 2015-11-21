@@ -16,7 +16,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         _httpGetJson: function(onSuccess, onError) {
             $http({
                 method: 'GET',
-                url: '/q.json'
+                url: 'q.json'
             }).then(function(response) {
                 onSuccess(response.data.objects[0]);
             }, function(response) {
