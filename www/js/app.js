@@ -7,9 +7,9 @@ var db = null;
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'ngCordova', 'ngResource'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'starter.profile', 'ngCordova', 'ngResource'])
 
-.run(function($ionicPlatform, $cordovaSQLite, $ionicPopup, $resource, $ionicLoading, $http, Utils) {
+.run(function($ionicPlatform, $cordovaSQLite, $ionicPopup, $resource, $ionicLoading, $http, Utils, Profile) {
 
 
     var QQ = {
@@ -111,11 +111,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 
             if (window.openDatabase) { // Browser  does support WebSQL!
                 db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
-                QQ.CheckDatabase(db, function () {
-                    console.log("quran quiz database imported successfully");
-                }, function (error) {
-                    console.error("error happened while importing quran quiz database", error);
-                });
+				if(Profile.load()){
+					console.log('Loaded profile with UID: '+Profile.uid);
+				} else {
+					console.log('Created new profile with UID: '+Profile.uid);				
+				    QQ.CheckDatabase(db, function () {
+						console.log("quran quiz database imported successfully");
+					}, function (error) {
+						console.error("error happened while importing quran quiz database", error);
+					});
+				}
             } else { // Browser  does not support WebSQL!
                 var alertPopup = $ionicPopup.alert({
                     title: 'Unsupported Browser!',

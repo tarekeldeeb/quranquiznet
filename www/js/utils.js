@@ -1,5 +1,5 @@
 angular.module('starter.utils',['angular-md5'])
-.factory('Utils', function($q, $ionicPlatform, md5) {
+.factory('Utils', function($window, $q, $ionicPlatform, md5) {
   var self = this;
   
   /**
@@ -26,7 +26,7 @@ angular.module('starter.utils',['angular-md5'])
         });
     }
   
-	this.QQDebug = 0;
+	this.Debug = 1;
 	this.QuranWords = 77878; 
 	this.Juz2AvgWords = (this.QuranWords/30);
 	this.DAILYQUIZ_PARTS_COUNT = 49;
@@ -221,6 +221,27 @@ angular.module('starter.utils',['angular-md5'])
 		return atob( s );
 	}
 	
+	this.save = function(key, value) {
+      $window.localStorage[key] = value;
+    }
+	
+    this.load = function(key, defaultValue) {
+      return $window.localStorage[key] || defaultValue;
+    }
+	
+    this.saveObject = function(key, value) {
+      $window.localStorage[key] = JSON.stringify(value);
+    }
+    
+	this.loadObject = function(key) {
+      return JSON.parse($window.localStorage[key] || '{}');
+    }
+	
+	this.log = function(a){
+		if(this.Debug>0){
+			console.log(a);
+		}
+	}
   return self;
 })
 
