@@ -1,6 +1,6 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, Q, Utils) {
+.controller('DashCtrl', function($scope, Q, Utils, Profile) {
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
@@ -8,6 +8,8 @@ angular.module('starter.controllers', [])
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
 		Q.txt(ii,5).then(function(op){
 			$scope.options = op;
+			//Profile.parts[ii%50].numQuestions = Profile.parts[ii%50].numQuestions+ 1;
+			//Profile.saveAll();
 			//console.log(JSON.stringify($scope.options));
 		});
 		ii = ii+5;

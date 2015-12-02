@@ -114,7 +114,7 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 				if(Profile.load()){
 					console.log('Loaded profile with UID: '+Profile.uid);
 				} else {
-					console.log('Created new profile with UID: '+Profile.uid);				
+					console.log('Created new profile with UID: '+Profile.uid );				
 				    QQ.CheckDatabase(db, function () {
 						console.log("quran quiz database imported successfully");
 					}, function (error) {
