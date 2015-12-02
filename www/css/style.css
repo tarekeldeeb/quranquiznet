@@ -1,14 +1,14 @@
 body {
    background: #1abc9c;
    /*background-image:url("/img/bg_tile.png");
-   background-repeat:repeat;*/
-   height: 100vh;
+   background-repeat:repeat;
+   height: 100vh;*/
 }
 
 .phone-container {
-   position: relative;
+   /*position: relative;// Activated by JS on non-phones*/
    width: 370px;
-   height: 80vh;
+   height: 63vh;
    margin: 10vh auto;
    box-shadow: 0 0 4px 8px rgba(0,0,0, .15);
 }

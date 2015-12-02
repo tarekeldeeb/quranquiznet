@@ -1,6 +1,14 @@
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, Q, Utils, Profile) {
+.controller('DashCtrl', function($scope, $ionicLoading, Q, Utils, Profile) {
+	/*
+	$ionicLoading.show({
+		template: 'جاري الاعداد ..'
+	});
+	$scope.ionicLoadinghide = function(){
+		$ionicLoading.hide();
+	}
+	*/
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
