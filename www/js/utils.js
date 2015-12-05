@@ -2,30 +2,6 @@ angular.module('starter.utils',['angular-md5'])
 .factory('Utils', function($window, $q, $ionicPlatform, md5) {
   var self = this;
   
-  /**
- * Format string
- * @param {string} str to format
- * @param {array} args to replace
- */
-  this.String = function(str, args) {
-        var regex = new RegExp("{-?[0-9]+}", "g");
-
-        return str.replace(regex, function(item) {
-            var intVal = parseInt(item.substring(1, item.length - 1));
-            var replace;
-            if (intVal >= 0) {
-                replace = args[intVal];
-            } else if (intVal === -1) {
-                replace = "{";
-            } else if (intVal === -2) {
-                replace = "}";
-            } else {
-                replace = "";
-            }
-            return replace;
-        });
-    }
-  
 	this.Debug = 1;
 	this.QuranWords = 77878; 
 	this.Juz2AvgWords = (this.QuranWords/30);
@@ -242,6 +218,30 @@ angular.module('starter.utils',['angular-md5'])
 			console.log(a);
 		}
 	}
+	
+	/**
+	* Format string
+	* @param {string} str to format
+	* @param {array} args to replace
+	*/
+  this.String = function(str, args) {
+        var regex = new RegExp("{-?[0-9]+}", "g");
+
+        return str.replace(regex, function(item) {
+            var intVal = parseInt(item.substring(1, item.length - 1));
+            var replace;
+            if (intVal >= 0) {
+                replace = args[intVal];
+            } else if (intVal === -1) {
+                replace = "{";
+            } else if (intVal === -2) {
+                replace = "}";
+            } else {
+                replace = "";
+            }
+            return replace;
+        });
+    }
   return self;
 })
 

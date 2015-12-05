@@ -9,6 +9,7 @@ angular.module('starter.profile',[])
   this.specialScore = 0;
   this.scores = [{date:0,score:0}];
   this.parts = [];
+  this.version = {db:1.0, app:1.0, profile:1.0};
   
   var studyPart = function(start,length,correct,questions,avgLevel,name,checked) {
 	return {	start:start,
@@ -68,7 +69,9 @@ angular.module('starter.profile',[])
 											(Utils.last5_juz_idx[i+1] - Utils.last5_juz_idx[i]),
 											0,0,1.0,'جزء '+Utils.last5_juz_name[i],false));
 
-		this.parts[49].checked = true;		//Juz2 3amma!				
+		this.parts[49].checked = true;		//Juz2 3amma!
+		//TODO: Use https://github.com/davidbau/seedrandom
+		this.lastSeed	 		= Math.floor(Math.random()*(Utils.QuranWords-1));
 		this.saveAll();
 		return false;
 	} else {
@@ -79,6 +82,7 @@ angular.module('starter.profile',[])
 		this.specialScore 		= Utils.load('prf_specialScore',0);
 		this.scores 			= Utils.loadObject('prf_scores');
 		this.parts 				= Utils.loadObject('prf_parts');		
+		this.version 			= Utils.loadObject('prf_version');		
 		return true;
 	}
   }
@@ -91,6 +95,7 @@ angular.module('starter.profile',[])
 	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
 	Utils.saveObject('prf_parts',this.parts);	
+	Utils.saveObject('prf_version',this.version);	
   }
   
   this.saveParts = function(){

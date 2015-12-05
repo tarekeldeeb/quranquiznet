@@ -11,7 +11,6 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 
 .run(function($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, Utils, Profile) {
 
-
     var QQ = {
         _httpGetJson: function(onSuccess, onError) {
             $http({
