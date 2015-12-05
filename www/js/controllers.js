@@ -65,4 +65,17 @@ angular.module('starter.controllers', [])
 	}
 	$scope.saveSettings();
   };
+  
+  $scope.getIcon = function(part){
+	var ico = 'ion-help-circled stable';
+	if(part.numQuestions > 0){
+		if((part.numCorrect/part.numQuestions)>=0.8)
+			ico = 'ion-heart balanced';
+		else if((part.numCorrect/part.numQuestions)>=0.5)
+			ico = 'ion-heart-broken energized';
+		else 	
+			ico = 'ion-flag assertive';
+	}
+	return ('icon '+ico);
+  }
 });
