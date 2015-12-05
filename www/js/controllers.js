@@ -52,8 +52,17 @@ angular.module('starter.controllers', [])
   $scope.chat = Chats.get($stateParams.chatId);
 })
 
-.controller('AccountCtrl', function($scope) {
-  $scope.settings = {
-    enableFriends: false
+.controller('AccountCtrl', function($scope, Profile) {
+  $scope.profile = Profile;
+  $scope.saveSettings = function(){
+	//TODO: Validate selected quantity!
+	Profile.saveParts();
+}
+  $scope.toggleParts = function(){
+    var tog = ($scope.profile.parts[1].checked === false);
+	for(var i=1;i<$scope.profile.parts.length;i++){
+		$scope.profile.parts[i].checked = tog; 
+	}
+	$scope.saveSettings();
   };
 });

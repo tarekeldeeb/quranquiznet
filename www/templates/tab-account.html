@@ -1,9 +1,18 @@
 <ion-view view-title="نطاق الحفظ">
+	<div class="float-button">
+	  <span class="height-fix">
+		 <button class="button button-stable button-outline" ng-click="toggleParts()">
+			<i class="icon ion-shuffle"></i>
+		 </button>
+	  </span>
+	</div>
   <ion-content>
     <ion-list>
-    <ion-toggle  ng-model="settings.enableFriends">
-        Enable Friends
-    </ion-toggle>
+	<ion-toggle class="item-icon-left toggle-balanced" ng-repeat="part in profile.parts" ng-model="part.checked" ng-change="saveSettings()">
+            <i class="icon ion-heart-broken"></i>
+            {{part.name}}
+			<h4> اجاباتك الصحيحة {{part.numQuestions}} من {{part.numCorrect}}</h4>
+	</ion-toggle>
     </ion-list>
   </ion-content>
 </ion-view>

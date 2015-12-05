@@ -10,12 +10,13 @@ angular.module('starter.profile',[])
   this.scores = [{date:0,score:0}];
   this.parts = [];
   
-  var studyPart = function(start,length,correct,questions,avgLevel,checked) {
+  var studyPart = function(start,length,correct,questions,avgLevel,name,checked) {
 	return {	start:start,
 				length:length,
 				numCorrect:correct,
 				numQuestions:questions,
 				avgLevel:avgLevel,
+				name:name,
 				checked:checked
 			};
   }
@@ -56,16 +57,16 @@ angular.module('starter.profile',[])
   this.load = function() {
 	if (Utils.load('prf_uid',-1) == -1){
 		// Create Default Profile
-		this.parts.push( new studyPart(1,(Utils.sura_idx[0]),0,0,1.0,true));
+		this.parts.push( new studyPart(1,(Utils.sura_idx[0]),0,0,1.0,'سورة '+Utils.sura_name[0],true));
 
 		for (var i = 1; i < 45; i++) 
 			this.parts.push( new studyPart(	(Utils.sura_idx[i-1]),
 											(Utils.sura_idx[i] - Utils.sura_idx[i-1]),
-											0,0,1.0,false));
+											0,0,1.0,'سورة '+Utils.sura_name[i],false));
 		for (var i = 0; i < 5; i++) 
 			this.parts.push( new studyPart(	(Utils.last5_juz_idx[i]),
 											(Utils.last5_juz_idx[i+1] - Utils.last5_juz_idx[i]),
-											0,0,1.0,false));
+											0,0,1.0,'جزء '+Utils.last5_juz_name[i],false));
 
 		this.parts[49].checked = true;		//Juz2 3amma!				
 		this.saveAll();
@@ -89,6 +90,10 @@ angular.module('starter.profile',[])
 	Utils.save('prf_specialEnabled',this.specialEnabled);
 	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
+	Utils.saveObject('prf_parts',this.parts);	
+  }
+  
+  this.saveParts = function(){
 	Utils.saveObject('prf_parts',this.parts);	
   }
   
