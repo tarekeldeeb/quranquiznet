@@ -1,3 +1,9 @@
+/****
+* Copyright (C) 2011-2016 Quran Quiz Net 
+* Tarek Eldeeb <tarekeldeeb@gmail.com>
+* License: see LICENSE.txt
+****/
+
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $ionicLoading, Q, Utils, Profile) {
@@ -21,11 +27,16 @@ angular.module('starter.controllers', [])
 			//console.log(JSON.stringify($scope.options));
 		});
 		ii = ii+5;
+		if(ii%10 == 0) $scope.flip();
 		//console.log(Utils.modQWords(90999));
 		//Q.ayaCountOfSuraAt(90).then(function(op){
 		//	console.log(op);
 		//});
 	};
+	$scope.flip = function(){
+		angular.element(document.getElementById('flip-container')).toggle("flip") 
+		console.log('Flipped:' + JSON.stringify());
+	}
 })
 
 /**

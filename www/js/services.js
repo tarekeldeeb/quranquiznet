@@ -1,3 +1,9 @@
+/****
+* Copyright (C) 2011-2016 Quran Quiz Net 
+* Tarek Eldeeb <tarekeldeeb@gmail.com>
+* License: see LICENSE.txt
+****/
+
 angular.module('starter.services', [])
 
 .factory('DBA', function($cordovaSQLite, $q, $ionicPlatform) {
