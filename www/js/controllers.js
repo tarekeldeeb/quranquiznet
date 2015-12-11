@@ -6,7 +6,7 @@
 
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $ionicLoading, Q, Utils, Profile) {
+.controller('DashCtrl', function($scope, $ionicLoading, Q, Utils, Profile, Questionnaire) {
 	/*
 	$ionicLoading.show({
 		template: 'جاري الاعداد ..'
