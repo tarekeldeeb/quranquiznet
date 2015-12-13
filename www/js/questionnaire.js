@@ -8,7 +8,9 @@ angular.module('starter.questionnaire',[])
 	var self = this;
 	var sparsed;
 	var QLEN_EXTRA_LIMIT=2;
-	
+	var previousSeed = Profile.lastSeed;
+	var rand =  new Math.seedrandom(previousSeed);
+
   this.qTypeEnum = { 
 		NOTSPECIAL:		{id:1, score:0, txt:'اختر التكملة الصحيحة'},
 		SURANAME:		{id:2, score:2, txt:'اختر اسم السورة'},
@@ -30,9 +32,11 @@ angular.module('starter.questionnaire',[])
   };
     
   this.createNextQ = function() {
-		if(Profile.specialEnabled && selectSpecial()){
+		if(Profile.specialEnabled && selectSpecial() && false){ //TODO: remove!
+			Utils.log('Creating a special question ..');
 			this.createSpecialQ();
 		}else {
+			Utils.log('Creating a normal question ..');
 			this.createNormalQ();
 		}		
 	}
@@ -79,7 +83,7 @@ angular.module('starter.questionnaire',[])
 		}while(!1); //!session.addIfNew(qo.startIdx)); // TODO: Skip duplicates
 
 		this.qo.validCount=1; //Number of correct options at the first round
-		this.qo.qLen=(Profile.level===1)?3:2;
+		this.qo.qLen=(Profile.level==1)?3:2;
 		this.qo.oLen=1;
 		//Correct Answer:
 		this.qo.op[0][0] = Utils.getSuraIdx(this.qo.startIdx);
@@ -97,7 +101,7 @@ angular.module('starter.questionnaire',[])
 		}while(!1); //!session.addIfNew(qo.startIdx)); TODO
 
 		this.qo.validCount=1; //Number of correct options at the first round
-		this.qo.qLen=(Profile.level===1)?3:2;
+		this.qo.qLen=(Profile.level==1)?3:2;
 		this.qo.oLen=1;
 		//Correct Answer:
 		this.qo.op[0][0] = Q.ayaCountOfSuraAt(this.qo.startIdx);
@@ -115,7 +119,7 @@ angular.module('starter.questionnaire',[])
 		}while(!1);//!session.addIfNew(qo.startIdx)); TODO
 		
 		this.qo.validCount=1; //Number of correct options at the first round
-		this.qo.qLen=(Profile.level===1)?3:2;
+		this.qo.qLen=(Profile.level==1)?3:2;
 		this.qo.oLen=1;
 		//Correct Answer:
 		this.qo.op[0][0] = Q.ayaNumberOf(this.qo.startIdx);
@@ -135,7 +139,7 @@ angular.module('starter.questionnaire',[])
 			srch_cond = true;
 			while (srch_cond) {
 				start_shadow = start_shadow + dir;
-				if (start_shadow === 0 || start_shadow === (Utils.QuranWords - 1)) {
+				if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
 					limitHit = 1;
 					dir = -dir;
 					break;
@@ -156,9 +160,11 @@ angular.module('starter.questionnaire',[])
 			this.sparsed= Profile.getSparsePoint(rand.int32()%Profile.getTotalStudyLength());
 			Profile.lastSeed = this.sparsed.idx;
 			this.qo.currentPart = this.sparsed.part;
+			Utils.log('Set Profile seed = '+ Profile.lastSeed);
 	
 			// +1 to compensate the rand-gen integer [0-QuranWords-1]
 			this.qo.startIdx = this.getValidStartNear(this.sparsed.idx + 1);
+			Utils.log('Set the question start at: '+ this.qo.startIdx);
 		}while(!1); //!session.addIfNew(qo.startIdx)); TODO
 		
 		this.fillCorrectOptions();
@@ -179,7 +185,7 @@ angular.module('starter.questionnaire',[])
 				this.qo.op[k][0] = correct;
 		}
 		if (Profile.level > 1) {
-			if (this.qo.qLen === 1) { // A 2-word Question
+			if (this.qo.qLen == 1) { // A 2-word Question
 				tmp = Q.sim2idx(this.qo.startIdx);
 				for (var i = 1; i < qo.validCount; i++)
 					this.qo.op[0][i] = tmp[i];
@@ -285,25 +291,26 @@ angular.module('starter.questionnaire',[])
 			srch_cond = true;
 			while (srch_cond) {
 				start_shadow = start_shadow + dir;
-				if (start_shadow === 0 || start_shadow === Utils.QuranWords - 1) {
+				if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
 					limitHit = 1;
 					dir = -dir;
 					break;
 				}
-				if (Profile.level === 0) { // Get a non-motashabehat at aya start
+				if (Profile.level == 0) { // Get a non-motashabehat at aya start
 					srch_cond = !Q.isAyaStart(start_shadow);
 					this.qo.validCount = 1; // \
 					this.qo.qLen = 3;       // -|-> Default Constants for level-0
 					this.qo.oLen = 2;       // /
 
-				} else if (Profile.level === 1) { // Get a Motashabehat near selected index
-					srch_cond = Q.sim2cnt(start_shadow) > 1;
+				} else if (Profile.level == 1) { // Get a Motashabehat near selected index
+					srch_cond = (Q.sim2cnt(start_shadow) > 1);
+					Utils.log('Eval level 1: sim2cnt='+JSON.stringify(Q.sim2cnt(start_shadow))+' Cond='+srch_cond);
 					this.qo.validCount = 1; // \
 					this.qo.qLen = 3;       // -|-> Default Constants for level-1
 					this.qo.oLen = 2;       // /
 
 				} else if (Profile.level == 2) {
-					srch_cond = Q.sim2cnt(start_shadow) > 1;
+					srch_cond = (Q.sim2cnt(start_shadow) > 1);
 					if(!srch_cond){
 						this.qo.validCount = 1; // \
 						this.qo.qLen = 2;       // -|-> Default Constants for level-2
@@ -332,9 +339,9 @@ angular.module('starter.questionnaire',[])
 						disp2 = Q.sim2cnt(start_shadow);
 
 					// Motashabehat not found,continue!
-					srch_cond = (disp3 === 0 && disp2 === 0);
+					srch_cond = (disp3 == 0 && disp2 == 0);
 
-					if (srch_cond === false) { // Found!
+					if (srch_cond == false) { // Found!
 						this.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
 																		// Check,
 																		// +1
@@ -357,17 +364,15 @@ angular.module('starter.questionnaire',[])
 		while((extra<QLEN_EXTRA_LIMIT) && (Q.sim3cnt(--start)>0))
 			extra ++;
 		
-		if(extra===QLEN_EXTRA_LIMIT)
+		if(extra==QLEN_EXTRA_LIMIT)
 			return -1;
-		else if (extra===0)
+		else if (extra==0)
 			return 0;
 		else
 			return extra+1;
 	}
-  
+
   /**************** Constructor Code ****************/
-    var previousSeed = Profile.lastSeed;
-	var rand =  new Math.seedrandom(previousSeed);
 	var selectSpecial = function() {
 		if(Profile.level==0)
 			return false;
