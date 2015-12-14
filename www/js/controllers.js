@@ -15,6 +15,10 @@ angular.module('starter.controllers', [])
 		$ionicLoading.hide();
 	}
 	*/
+	
+	//Questionnaire.createNextQ();
+	//Utils.log(JSON.stringify(Questionnaire.qo));
+	
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
@@ -27,7 +31,8 @@ angular.module('starter.controllers', [])
 			//console.log(JSON.stringify($scope.options));
 		});
 		ii = ii+5;
-		if(ii%10 == 0) $scope.flip();
+		//if(ii%10 == 0) $scope.flip();
+		
 		//console.log(Utils.modQWords(90999));
 		//Q.ayaCountOfSuraAt(90).then(function(op){
 		//	console.log(op);

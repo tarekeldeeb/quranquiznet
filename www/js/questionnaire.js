@@ -372,7 +372,6 @@ angular.module('starter.questionnaire',[])
 			return extra+1;
 	}
 
-  /**************** Constructor Code ****************/
 	var selectSpecial = function() {
 		if(Profile.level==0)
 			return false;
@@ -381,7 +380,9 @@ angular.module('starter.questionnaire',[])
 		else
 			return (Math.random()<0.05);
 	}
-	this.createNextQ();  
+	
+  /**************** Constructor Code ****************/
+	//this.createNextQ();  
   /**************** End  Constructor ****************/
 		
   return self;
