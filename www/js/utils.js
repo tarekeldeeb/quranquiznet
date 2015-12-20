@@ -267,7 +267,7 @@ angular.module('starter.utils',['angular-md5'])
     // Start running the loop in the next tick so that this function is
     // completely async. It would be unexpected if `body` was called
     // synchronously the first time.
-    $q.nextTick(loop);
+	setTimeout(loop, 1); //$q.nextTick(loop);
     // The promise
     return done.promise;
 	
