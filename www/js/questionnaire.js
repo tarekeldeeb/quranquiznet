@@ -156,19 +156,21 @@ angular.module('starter.questionnaire',[])
 		this.qo.rounds = 10;
 		this.qo.qType = this.qTypeEnum.NOTSPECIAL.id;
 		
-		do{
-			this.sparsed= Profile.getSparsePoint(rand.int32()%Profile.getTotalStudyLength());
-			Profile.lastSeed = this.sparsed.idx;
-			this.qo.currentPart = this.sparsed.part;
-			Utils.log('Set Profile seed = '+ Profile.lastSeed);
+		this.sparsed= Profile.getSparsePoint(rand.int32()%Profile.getTotalStudyLength());
+		Profile.lastSeed = this.sparsed.idx;
+		this.qo.currentPart = this.sparsed.part;
+		Utils.log('Set Profile seed = '+ Profile.lastSeed);
 	
-			// +1 to compensate the rand-gen integer [0-QuranWords-1]
-			this.qo.startIdx = this.getValidStartNear(this.sparsed.idx + 1);
+		//!session.addIfNew(qo.startIdx)); TODO
+		// +1 to compensate the rand-gen integer [0-QuranWords-1]
+		return this.getValidStartNear(this.sparsed.idx + 1)
+		.then(function(){
 			Utils.log('Set the question start at: '+ this.qo.startIdx);
-		}while(!1); //!session.addIfNew(qo.startIdx)); TODO
-		
-		this.fillCorrectOptions();
-		this.fillIncorrectOptions();
+			this.fillCorrectOptions();
+			return this.fillIncorrectOptions();
+		}).then(function(){
+			Utils.log(this.qo);
+		});
 	}
 
 	this.fillCorrectOptions = function() {
@@ -184,7 +186,7 @@ angular.module('starter.questionnaire',[])
 			else
 				this.qo.op[k][0] = correct;
 		}
-		if (Profile.level > 1) {
+		if (Profile.level > 1) { //TODO: Port async
 			if (this.qo.qLen == 1) { // A 2-word Question
 				tmp = Q.sim2idx(this.qo.startIdx);
 				for (var i = 1; i < qo.validCount; i++)
@@ -207,40 +209,43 @@ angular.module('starter.questionnaire',[])
 		var last_correct, uniq_cnt;
 		var diffList = [];
 		var randList = [];
-
-		for (var i = 0; i < 10; i++) {
+		var i=0;
+		//for (var i = 0; i < 10; i++) {
+		return Utils.promiseWhile(function () { return (i<10);},function(){		
 			last_correct = this.qo.op[i][0] - 1;
 
 			// We want to remove redundant correct choices from the given
 			// options, this is made by removing subset sim2 from sim1
 			// then finding the next unique set of words
-			diffList = Q.uniqueSim1Not2Plus1(last_correct);
+			return Q.uniqueSim1Not2Plus1(last_correct).then(function(diffList){
+				uniq_cnt = diffList.length;
 
-			uniq_cnt = diffList.length;
+				var rnd_idx = []; //will need length = uniq_cnt
 
-			var rnd_idx = []; //will need length = uniq_cnt
-
-			if (uniq_cnt > 3) {
-				rnd_idx = Utils.randperm(uniq_cnt);
-				for (var j = 1; j < 5; j++) {
-					this.qo.op[i][j] = diffList[rnd_idx[j - 1]];
-				}
-			} else{
-				// We need Random unique and does not match correct
-				randList = Q.randomUnique4NotMatching(this.qo.op[i][0]);			
-				if (uniq_cnt > 0) {
+				if (uniq_cnt > 3) {
 					rnd_idx = Utils.randperm(uniq_cnt);
-					for (var j = 1; j < uniq_cnt + 1; j++) {
+					for (var j = 1; j < 5; j++) {
 						this.qo.op[i][j] = diffList[rnd_idx[j - 1]];
 					}
-					for (var j = uniq_cnt + 1; j < 5; j++) {
-						this.qo.op[i][j] = randList[j-uniq_cnt-1];
+				} else{
+					// We need Random unique and does not match correct
+					randList = Q.randomUnique4NotMatching(this.qo.op[i][0]);			
+					if (uniq_cnt > 0) {
+						rnd_idx = Utils.randperm(uniq_cnt);
+						for (var j = 1; j < uniq_cnt + 1; j++) {
+							this.qo.op[i][j] = diffList[rnd_idx[j - 1]];
+						}
+						for (var j = uniq_cnt + 1; j < 5; j++) {
+							this.qo.op[i][j] = randList[j-uniq_cnt-1];
+						}
+					} else { // uniq_cnt=0, all random options!
+						for (var j = 1; j < 5; j++)
+							this.qo.op[i][j] = randList[j-uniq_cnt-1];				
 					}
-				} else { // uniq_cnt=0, all random options!
-					for (var j = 1; j < 5; j++)
-						this.qo.op[i][j] = randList[j-uniq_cnt-1];				}
-			}
-		}
+				}
+				i++;
+			});
+		});
 	}
 	
 	this.fillIncorrectRandomIdx = function(correctIdx, mod){
@@ -281,85 +286,88 @@ angular.module('starter.questionnaire',[])
 	this.getValidStartNear = function(start) {
 		// Search for a correct neighbor start according to level
 		var dir = 1; // search down = +1
-		var limitHit = 1, disp2, disp3;
-		var start_shadow;
+		var disp2, disp3;
+		var start_shadow = start - dir;
 		var extraLength;
-		var srch_cond;
-		while (limitHit > 0) {
-			start_shadow = start;
-			limitHit = 0;
-			srch_cond = true;
-			while (srch_cond) {
-				start_shadow = start_shadow + dir;
-				if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
-					limitHit = 1;
-					dir = -dir;
-					break;
-				}
-				if (Profile.level == 0) { // Get a non-motashabehat at aya start
-					srch_cond = !Q.isAyaStart(start_shadow);
-					this.qo.validCount = 1; // \
-					this.qo.qLen = 3;       // -|-> Default Constants for level-0
-					this.qo.oLen = 2;       // /
-
-				} else if (Profile.level == 1) { // Get a Motashabehat near selected index
-					srch_cond = (Q.sim2cnt(start_shadow) > 1);
-					Utils.log('Eval level 1: sim2cnt='+JSON.stringify(Q.sim2cnt(start_shadow))+' Cond='+srch_cond);
-					this.qo.validCount = 1; // \
-					this.qo.qLen = 3;       // -|-> Default Constants for level-1
-					this.qo.oLen = 2;       // /
-
-				} else if (Profile.level == 2) {
-					srch_cond = (Q.sim2cnt(start_shadow) > 1);
-					if(!srch_cond){
+		var srch_cond = true;
+		
+		//while (srch_cond) {
+		return Utils.promiseWhile(function () { return (srch_cond);},function(){	
+			Utils.log(JSON.stringify(this.qo));
+			start_shadow += dir;
+			if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
+				//Need to start over searching the opposite direction
+				start_shadow = start;
+				dir = -dir;
+				return; //break;
+			}
+			if (Profile.level == 0) { // Get a non-motashabehat at aya start
+				this.qo.validCount = 1; // \
+				this.qo.qLen = 3;       // -|-> Default Constants for level-0
+				this.qo.oLen = 2;       // /
+				return Q.isAyaStart(start_shadow).then(function(t){srch_cond = !t;});
+			} else if (Profile.level == 1) { // Get a Motashabehat near selected index
+				this.qo.validCount = 1; // \
+				this.qo.qLen = 3;       // -|-> Default Constants for level-1
+				this.qo.oLen = 2;       // /
+				return Q.sim2cnt(start_shadow).then(function(t){srch_cond = (t>1);});
+			} else if (Profile.level == 2) {
+				return Q.sim2cnt(start_shadow)
+				.then(function(t){
+					//srch_cond = (t>1);
+					if(!(t>1)){
 						this.qo.validCount = 1; // \
 						this.qo.qLen = 2;       // -|-> Default Constants for level-2
 						this.qo.oLen = 1;       // /
-						extraLength = this.extraQLength(start_shadow, qo.qLen);
-						if(extraLength>-1){
-							this.qo.qLen +=extraLength;
-							this.start_shadow -=extraLength;
-						} else {
-							// Too Long Motashabehat, cannot start within, non-unique answer
-							srch_cond = true; 
-						}
+						return this.extraQLength(start_shadow, qo.qLen)
+						.then(function(extraLength){
+							if(extraLength>-1){
+								this.qo.qLen +=extraLength;
+								this.start_shadow -=extraLength;
+								srch_cond = false; 
+							} else {
+								// Too Long Motashabehat, cannot start within, non-unique answer
+								srch_cond = true; 
+							}
+						});
 					}
-				} else {
-					// Search for a motashabehat near selected index
-					// Specify # Words to display
-					disp2 = 0;
-					disp3 = 0;
+				});	
+			} else {
+				// TODO: Port!!
+				// Profile.level == 3
+				// Search for a motashabehat near selected index
+				// Specify # Words to display
+				disp2 = 0;
+				disp3 = 0;
 
-					if (Q.sim3cnt(start_shadow) < 5
-							&& Q.sim3cnt(start_shadow) > 0)
-						disp3 = Q.sim3cnt(start_shadow);
+				if (Q.sim3cnt(start_shadow) < 5
+						&& Q.sim3cnt(start_shadow) > 0)
+					disp3 = Q.sim3cnt(start_shadow);
 
-					if (Q.sim2cnt(start_shadow) < 5
-							&& Q.sim2cnt(start_shadow) > 0)
-						disp2 = Q.sim2cnt(start_shadow);
+				if (Q.sim2cnt(start_shadow) < 5
+						&& Q.sim2cnt(start_shadow) > 0)
+					disp2 = Q.sim2cnt(start_shadow);
 
-					// Motashabehat not found,continue!
-					srch_cond = (disp3 == 0 && disp2 == 0);
+				// Motashabehat not found,continue!
+				srch_cond = (disp3 == 0 && disp2 == 0);
 
-					if (srch_cond == false) { // Found!
-						this.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
-																		// Check,
-																		// +1
-																		// caused
-																		// bound
-																		// excep
-						this.qo.qLen = (disp2 > disp3) ? 1 : 2;
-					}
-					this.qo.oLen = 1;
+				if (srch_cond == false) { // Found!
+					this.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
+																	// Check,
+																	// +1
+																	// caused
+																	// bound
+																	// excep
+					this.qo.qLen = (disp2 > disp3) ? 1 : 2;
 				}
+				this.qo.oLen = 1;
 			}
-
-			start = start_shadow;
-		}
-		return start;
+		}).then(function () {	this.qo.startIdx = start_shadow; //return start;
+								console.log("While : done, shadow="+start_shadow);});
 	}
 
 	this.extraQLength = function(start, qLen) {
+		// TODO: Port!!
 		var extra=0;
 		while((extra<QLEN_EXTRA_LIMIT) && (Q.sim3cnt(--start)>0))
 			extra ++;
@@ -380,10 +388,6 @@ angular.module('starter.questionnaire',[])
 		else
 			return (Math.random()<0.05);
 	}
-	
-  /**************** Constructor Code ****************/
-	//this.createNextQ();  
-  /**************** End  Constructor ****************/
 		
   return self;
 })

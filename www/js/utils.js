@@ -279,7 +279,7 @@ angular.module('starter.utils',['angular-md5'])
 	//	return $q.delay(500); // arbitrary async
 	//}).then(function () {
 	//	console.log("done");
-	//}).done();
+	//});
 }
 
   return self;

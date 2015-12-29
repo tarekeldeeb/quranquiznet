@@ -6,9 +6,36 @@
 
 angular.module('starter.services', [])
 
-.factory('DBA', function($cordovaSQLite, $q, $ionicPlatform) {
+.factory('DBA', function($cordovaSQLite, $q, $timeout, $ionicPlatform) {
   var self = this;
 
+  // Synchronous query
+  self.squery = function (query, parameters) {
+	  
+    parameters = parameters || [];
+    var q = $q.defer();
+	var isWaiting = true;
+	var res = {};
+	
+	$timeout(function(){
+      $cordovaSQLite.execute(db, query, parameters)
+        .then(function (result) {
+		  console.log(Date.now() + ': got result!')
+          q.resolve(result);
+		  res = result;
+		  isWaiting = false;
+        }, function (error) {
+          console.warn('SQuery has an error');
+          console.warn(error);
+          q.reject(error);
+		  isWaiting = false;
+        });
+	},0);
+	console.log(Date.now()+': will wait!')
+	while(isWaiting){}
+    return res;
+  }
+  
   // Handle query's and potential errors
   self.query = function (query, parameters) {
     parameters = parameters || [];
