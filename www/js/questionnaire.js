@@ -164,8 +164,8 @@ angular.module('starter.questionnaire',[])
 		//!session.addIfNew(qo.startIdx)); TODO
 		// +1 to compensate the rand-gen integer [0-QuranWords-1]
 		return this.getValidStartNear(this.sparsed.idx + 1)
-		.then(function(){
-			Utils.log('Set the question start at: '+ this.qo.startIdx);
+		.then(function(self){
+			Utils.log('Set the question start at: '+ self.qo.startIdx);
 			this.fillCorrectOptions();
 			return this.fillIncorrectOptions();
 		}).then(function(){
@@ -292,8 +292,8 @@ angular.module('starter.questionnaire',[])
 		var srch_cond = true;
 		
 		//while (srch_cond) {
-		return Utils.promiseWhile(function () { return (srch_cond);},function(){	
-			Utils.log(JSON.stringify(this.qo));
+		return Utils.promiseWhile(self, function () { return (srch_cond);},function(ctx){	
+			
 			start_shadow += dir;
 			if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
 				//Need to start over searching the opposite direction
@@ -302,28 +302,28 @@ angular.module('starter.questionnaire',[])
 				return; //break;
 			}
 			if (Profile.level == 0) { // Get a non-motashabehat at aya start
-				this.qo.validCount = 1; // \
-				this.qo.qLen = 3;       // -|-> Default Constants for level-0
-				this.qo.oLen = 2;       // /
+				ctx.qo.validCount = 1; // \
+				ctx.qo.qLen = 3;       // -|-> Default Constants for level-0
+				ctx.qo.oLen = 2;       // /
 				return Q.isAyaStart(start_shadow).then(function(t){srch_cond = !t;});
 			} else if (Profile.level == 1) { // Get a Motashabehat near selected index
-				this.qo.validCount = 1; // \
-				this.qo.qLen = 3;       // -|-> Default Constants for level-1
-				this.qo.oLen = 2;       // /
+				ctx.qo.validCount = 1; // \
+				ctx.qo.qLen = 3;       // -|-> Default Constants for level-1
+				ctx.qo.oLen = 2;       // /
 				return Q.sim2cnt(start_shadow).then(function(t){srch_cond = (t>1);});
 			} else if (Profile.level == 2) {
 				return Q.sim2cnt(start_shadow)
 				.then(function(t){
 					//srch_cond = (t>1);
 					if(!(t>1)){
-						this.qo.validCount = 1; // \
-						this.qo.qLen = 2;       // -|-> Default Constants for level-2
-						this.qo.oLen = 1;       // /
-						return this.extraQLength(start_shadow, qo.qLen)
+						ctx.qo.validCount = 1; // \
+						ctx.qo.qLen = 2;       // -|-> Default Constants for level-2
+						ctx.qo.oLen = 1;       // /
+						return ctx.extraQLength(start_shadow, qo.qLen)
 						.then(function(extraLength){
 							if(extraLength>-1){
-								this.qo.qLen +=extraLength;
-								this.start_shadow -=extraLength;
+								ctx.qo.qLen +=extraLength;
+								ctx.start_shadow -=extraLength;
 								srch_cond = false; 
 							} else {
 								// Too Long Motashabehat, cannot start within, non-unique answer
@@ -352,18 +352,18 @@ angular.module('starter.questionnaire',[])
 				srch_cond = (disp3 == 0 && disp2 == 0);
 
 				if (srch_cond == false) { // Found!
-					this.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
+					ctx.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
 																	// Check,
 																	// +1
 																	// caused
 																	// bound
 																	// excep
-					this.qo.qLen = (disp2 > disp3) ? 1 : 2;
+					ctx.qo.qLen = (disp2 > disp3) ? 1 : 2;
 				}
-				this.qo.oLen = 1;
+				ctx.qo.oLen = 1;
 			}
-		}).then(function () {	this.qo.startIdx = start_shadow; //return start;
-								console.log("While : done, shadow="+start_shadow);});
+		}).then(function (ctx) {	ctx.qo.startIdx = start_shadow; //return start;
+									console.log("While : done, shadow="+start_shadow);});
 	}
 
 	this.extraQLength = function(start, qLen) {

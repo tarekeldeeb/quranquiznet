@@ -253,16 +253,16 @@ angular.module('starter.utils',['angular-md5'])
   // `condition` is a function that returns a boolean
   // `body` is a function that returns a promise
   // returns a promise for the completion of the loop
-  this.promiseWhile = function(condition, body) {
+  this.promiseWhile = function(context, condition, body) {
     var done = $q.defer();
     function loop() {
         // When the result of calling `condition` is no longer true, we are
         // done.
-        if (!condition()) return done.resolve();
+        if (!condition(context)) return done.resolve(context);
         // Use `when`, in case `body` does not return a promise.
         // When it completes loop again otherwise, if it fails, reject the
         // done promise
-        $q.when(body(), loop, done.reject);
+        $q.when(body(context), loop, done.reject);
     }
     // Start running the loop in the next tick so that this function is
     // completely async. It would be unexpected if `body` was called
