@@ -17,7 +17,6 @@ angular.module('starter.controllers', [])
 	*/
 	
 	Questionnaire.createNextQ();
-	//Utils.log(JSON.stringify(Questionnaire.qo));
 	
 	//Sim1cnt
 	//var idx = 3;

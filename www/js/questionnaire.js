@@ -23,7 +23,7 @@ angular.module('starter.questionnaire',[])
   	/******** Questions parameters to be set: Start **********/
 	rounds: 10, 	// How many rounds a question has: 10 for normal, 1 for special
 	validCount: 1, 	// Number of correct options at the first round
-	op:[[]] , 		// Holds all 5 options x 10 rounds
+	op:[] , 		// Holds all 5 options x 10 rounds
 	startIdx: 1, 	// Precise Position near seed, valid options
 	qLen: 3, 		// Number of words to display to start the Question
 	oLen: 2, 		// Number of words of each option
@@ -164,12 +164,12 @@ angular.module('starter.questionnaire',[])
 		//!session.addIfNew(qo.startIdx)); TODO
 		// +1 to compensate the rand-gen integer [0-QuranWords-1]
 		return this.getValidStartNear(this.sparsed.idx + 1)
-		.then(function(self){
+		.then(function(){
 			Utils.log('Set the question start at: '+ self.qo.startIdx);
-			this.fillCorrectOptions();
-			return this.fillIncorrectOptions();
+			self.fillCorrectOptions();
+			return self.fillIncorrectOptions();
 		}).then(function(){
-			Utils.log(this.qo);
+			Utils.log(JSON.stringify(self.qo));
 		});
 	}
 
@@ -212,7 +212,7 @@ angular.module('starter.questionnaire',[])
 		var i=0;
 		//for (var i = 0; i < 10; i++) {
 		return Utils.promiseWhile(function () { return (i<10);},function(){		
-			last_correct = this.qo.op[i][0] - 1;
+			last_correct = self.qo.op[i][0] - 1;
 
 			// We want to remove redundant correct choices from the given
 			// options, this is made by removing subset sim2 from sim1
@@ -225,22 +225,22 @@ angular.module('starter.questionnaire',[])
 				if (uniq_cnt > 3) {
 					rnd_idx = Utils.randperm(uniq_cnt);
 					for (var j = 1; j < 5; j++) {
-						this.qo.op[i][j] = diffList[rnd_idx[j - 1]];
+						self.qo.op[i][j] = diffList[rnd_idx[j - 1]];
 					}
 				} else{
 					// We need Random unique and does not match correct
-					randList = Q.randomUnique4NotMatching(this.qo.op[i][0]);			
+					randList = Q.randomUnique4NotMatching(self.qo.op[i][0]);			
 					if (uniq_cnt > 0) {
 						rnd_idx = Utils.randperm(uniq_cnt);
 						for (var j = 1; j < uniq_cnt + 1; j++) {
-							this.qo.op[i][j] = diffList[rnd_idx[j - 1]];
+							self.qo.op[i][j] = diffList[rnd_idx[j - 1]];
 						}
 						for (var j = uniq_cnt + 1; j < 5; j++) {
-							this.qo.op[i][j] = randList[j-uniq_cnt-1];
+							self.qo.op[i][j] = randList[j-uniq_cnt-1];
 						}
 					} else { // uniq_cnt=0, all random options!
 						for (var j = 1; j < 5; j++)
-							this.qo.op[i][j] = randList[j-uniq_cnt-1];				
+							self.qo.op[i][j] = randList[j-uniq_cnt-1];				
 					}
 				}
 				i++;
@@ -292,7 +292,7 @@ angular.module('starter.questionnaire',[])
 		var srch_cond = true;
 		
 		//while (srch_cond) {
-		return Utils.promiseWhile(self, function () { return (srch_cond);},function(ctx){	
+		return Utils.promiseWhile( function () { return (srch_cond);},function(){	
 			
 			start_shadow += dir;
 			if (start_shadow == 0 || start_shadow == (Utils.QuranWords - 1)) {
@@ -302,28 +302,28 @@ angular.module('starter.questionnaire',[])
 				return; //break;
 			}
 			if (Profile.level == 0) { // Get a non-motashabehat at aya start
-				ctx.qo.validCount = 1; // \
-				ctx.qo.qLen = 3;       // -|-> Default Constants for level-0
-				ctx.qo.oLen = 2;       // /
+				self.qo.validCount = 1; // \
+				self.qo.qLen = 3;       // -|-> Default Constants for level-0
+				self.qo.oLen = 2;       // /
 				return Q.isAyaStart(start_shadow).then(function(t){srch_cond = !t;});
 			} else if (Profile.level == 1) { // Get a Motashabehat near selected index
-				ctx.qo.validCount = 1; // \
-				ctx.qo.qLen = 3;       // -|-> Default Constants for level-1
-				ctx.qo.oLen = 2;       // /
+				self.qo.validCount = 1; // \
+				self.qo.qLen = 3;       // -|-> Default Constants for level-1
+				self.qo.oLen = 2;       // /
 				return Q.sim2cnt(start_shadow).then(function(t){srch_cond = (t>1);});
 			} else if (Profile.level == 2) {
 				return Q.sim2cnt(start_shadow)
 				.then(function(t){
 					//srch_cond = (t>1);
 					if(!(t>1)){
-						ctx.qo.validCount = 1; // \
-						ctx.qo.qLen = 2;       // -|-> Default Constants for level-2
-						ctx.qo.oLen = 1;       // /
-						return ctx.extraQLength(start_shadow, qo.qLen)
+						self.qo.validCount = 1; // \
+						self.qo.qLen = 2;       // -|-> Default Constants for level-2
+						self.qo.oLen = 1;       // /
+						return self.extraQLength(start_shadow, qo.qLen)
 						.then(function(extraLength){
 							if(extraLength>-1){
-								ctx.qo.qLen +=extraLength;
-								ctx.start_shadow -=extraLength;
+								self.qo.qLen +=extraLength;
+								self.start_shadow -=extraLength;
 								srch_cond = false; 
 							} else {
 								// Too Long Motashabehat, cannot start within, non-unique answer
@@ -352,17 +352,17 @@ angular.module('starter.questionnaire',[])
 				srch_cond = (disp3 == 0 && disp2 == 0);
 
 				if (srch_cond == false) { // Found!
-					ctx.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
+					self.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
 																	// Check,
 																	// +1
 																	// caused
 																	// bound
 																	// excep
-					ctx.qo.qLen = (disp2 > disp3) ? 1 : 2;
+					self.qo.qLen = (disp2 > disp3) ? 1 : 2;
 				}
-				ctx.qo.oLen = 1;
+				self.qo.oLen = 1;
 			}
-		}).then(function (ctx) {	ctx.qo.startIdx = start_shadow; //return start;
+		}).then(function (ctx) {	self.qo.startIdx = start_shadow; //return start;
 									console.log("While : done, shadow="+start_shadow);});
 	}
 
@@ -388,6 +388,10 @@ angular.module('starter.questionnaire',[])
 		else
 			return (Math.random()<0.05);
 	}
+	
+	/* Constructor*/
+	for (var k=0;k<10;k++) this.qo.op[k]=[]; //Init 2D array
+
 		
   return self;
 })

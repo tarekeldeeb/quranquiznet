@@ -46,14 +46,14 @@ angular.module('starter.services', [])
         .then(function (result) {
           q.resolve(result);
         }, function (error) {
-          console.warn('Query has an error');
-          console.warn(error);
+          console.warn('Bad query: '+query);
+          console.error(error);
           q.reject(error);
         });
     });
     return q.promise;
   }
-
+  
   // Proces a result set
   self.getStringSet = function(result) {
     var output = [];
@@ -169,7 +169,6 @@ angular.module('starter.services', [])
 									+ (idx + 1) + ") and _id !=" + (idx + 1)
 									+ ")) " + ") group by txt",[])
 	.then(function(result){
-		console.log(result);
         return DBA.getIDSet(result);
       });	
   }
