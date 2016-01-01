@@ -17,58 +17,7 @@ angular.module('starter.controllers', [])
 	*/
 	
 	Questionnaire.createNextQ();
-	
-	//Sim1cnt
-	//var idx = 3;
-	//Utils.log(JSON.stringify(DBA.squery("select _id from q where txt=(select txt from q where _id="+ idx + ") and _id !=" + idx,[])));
-	
-	/*
-	var idx1 = 0;
-	var idx2 = 0;
-	var idx3 = 0;
-	var txt ='';
-	Utils.promiseWhile(
-		function () { 
-			console.log("L1: "+idx1);
-			return idx1 <= 11;
-		},
-		function () {
-		idx1++;
-		return Q.txt(idx1,1)
-				.then(function(t){txt += (' '+t);});
-	})
-	.then(function () {
-		console.log("done1");
-		txt ='';
-		return Utils.promiseWhile(
-			function () { 
-				console.log("L2: "+idx2);
-				return idx2 <= 11;
-			},
-			function () {
-			idx2++;
-			return Q.txt(idx2,1)
-					.then(function(t){txt += (' '+t);});
-		})
-	})	
-	.then(function () {
-		console.log("done2");
-		txt ='';
-		return Utils.promiseWhile(
-			function () { 
-				console.log("L3: "+idx3);
-				return idx3 <= 11;
-			},
-			function () {
-			idx3++;
-			return Q.txt(idx3,1)
-					.then(function(t){txt += (' '+t);});
-		})
-	})
-	.then(function(){
-		console.log("done3");
-	});
-	*/
+
 	var ii = 100;
 	$scope.question = ' بسم الله الرحمن';
 	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
@@ -84,9 +33,9 @@ angular.module('starter.controllers', [])
 		//if(ii%10 == 0) $scope.flip();
 		
 		//console.log(Utils.modQWords(90999));
-		//Q.ayaCountOfSuraAt(90).then(function(op){
-		//	console.log(op);
-		//});
+		Q.randomUnique4NotMatching(90).then(function(op){
+			console.log(op.set);
+		});
 	};
 	$scope.flip = function(){
 		angular.element(document.getElementById('flip-container')).toggle("flip") 

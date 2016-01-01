@@ -34,10 +34,10 @@ angular.module('starter.questionnaire',[])
   this.createNextQ = function() {
 		if(Profile.specialEnabled && selectSpecial() && false){ //TODO: remove!
 			Utils.log('Creating a special question ..');
-			this.createSpecialQ();
+			return this.createSpecialQ();
 		}else {
 			Utils.log('Creating a normal question ..');
-			this.createNormalQ();
+			return this.createNormalQ();
 		}		
 	}
 
@@ -208,18 +208,18 @@ angular.module('starter.questionnaire',[])
 		// Get unique options
 		var last_correct, uniq_cnt;
 		var diffList = [];
-		var randList = [];
-		var i=0;
+		var i=-1;
 		//for (var i = 0; i < 10; i++) {
-		return Utils.promiseWhile(function () { return (i<10);},function(){		
+		return Utils.promiseWhile(function () { return (i<9);},function(){	
+			i++;		
 			last_correct = self.qo.op[i][0] - 1;
 
 			// We want to remove redundant correct choices from the given
 			// options, this is made by removing subset sim2 from sim1
 			// then finding the next unique set of words
-			return Q.uniqueSim1Not2Plus1(last_correct).then(function(diffList){
+			return Q.uniqueSim1Not2Plus1(last_correct).then(function(d){
+				diffList = d;
 				uniq_cnt = diffList.length;
-
 				var rnd_idx = []; //will need length = uniq_cnt
 
 				if (uniq_cnt > 3) {
@@ -229,23 +229,27 @@ angular.module('starter.questionnaire',[])
 					}
 				} else{
 					// We need Random unique and does not match correct
-					randList = Q.randomUnique4NotMatching(self.qo.op[i][0]);			
+					return Q.randomUnique4NotMatching(self.qo.op[i][0]);
+				}
+				return this;
+			}).then(function(randList){
+				for(var i=0;i<10;i++){if(self.qo.op[i][0] ==  randList.i) break;}
+				if(i<10){
 					if (uniq_cnt > 0) {
 						rnd_idx = Utils.randperm(uniq_cnt);
 						for (var j = 1; j < uniq_cnt + 1; j++) {
 							self.qo.op[i][j] = diffList[rnd_idx[j - 1]];
 						}
 						for (var j = uniq_cnt + 1; j < 5; j++) {
-							self.qo.op[i][j] = randList[j-uniq_cnt-1];
+							self.qo.op[i][j] = randList.set[j-uniq_cnt-1];
 						}
 					} else { // uniq_cnt=0, all random options!
 						for (var j = 1; j < 5; j++)
-							self.qo.op[i][j] = randList[j-uniq_cnt-1];				
+							self.qo.op[i][j] = randList.set[j-uniq_cnt-1];				
 					}
 				}
-				i++;
-			});
-		});
+			});	
+		});//.then(function(){Utils.log('Done with incorrect options');});
 	}
 	
 	this.fillIncorrectRandomIdx = function(correctIdx, mod){
@@ -362,8 +366,9 @@ angular.module('starter.questionnaire',[])
 				}
 				self.qo.oLen = 1;
 			}
-		}).then(function (ctx) {	self.qo.startIdx = start_shadow; //return start;
-									console.log("While : done, shadow="+start_shadow);});
+		}).then(function (ctx) {	
+			self.qo.startIdx = start_shadow; //return start;
+		});
 	}
 
 	this.extraQLength = function(start, qLen) {

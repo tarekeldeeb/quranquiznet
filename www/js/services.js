@@ -174,20 +174,21 @@ angular.module('starter.services', [])
   }
   
   self.randomUnique4NotMatching = function(idx){
-	//Fixme: random() not supported in WebSQL, make another design.
-	return DBA.query("CREATE TEMP TABLE IF NOT EXISTS xy as select _id,txt from q order by random() limit 200",[])
+	//TODO: random() not supported in WebSQL, returned not really random!
+	var randomStart = Math.ceil((Math.random()*(Utils.QuranWords-201))+1);
+	return DBA.query("CREATE TEMP TABLE IF NOT EXISTS xy as select _id,txt from q where _id>? limit 200",[randomStart])
 	.then(function(){
 		return DBA.query("CREATE INDEX IF NOT EXISTS xy_txt_index ON xy (txt);",[])
-		.then(function(){
-			return DBA.query("select q1._id from xy q1 inner join xy q2 on q2.txt = q1.txt "+
-				"group by q1._id,q1.txt having q1._id = min(q2._id) "+
-				"and q1.txt !=(select txt from q where _id="+idx+") order by random() limit 4",[])
-			.then(function(result){
-				console.log(result);
-				return DBA.getIDSet(result);
-			  });	
-		  });	
-      });
+			
+    })
+	.then(function(){
+		return DBA.query("select q1._id from xy q1 inner join xy q2 on q2.txt = q1.txt "+
+			"group by q1._id,q1.txt having q1._id = min(q2._id) "+
+			"and q1.txt !=(select txt from q where _id="+idx+") limit 4",[])	
+	})
+	.then(function(result){
+		return {i:idx, set:DBA.getIDSet(result)};
+	});
   }
   
   self.ayaNumberOf = function(idx){
