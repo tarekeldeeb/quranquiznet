@@ -93,6 +93,12 @@ angular.module('starter.services', [])
         return DBA.getStringSet(result);
       });				
   }
+
+  self.txts = function(ids) {
+    return DBA.query("select txtsym from q where _id in( "+ids+" )",[]).then(function(result){
+        return DBA.getStringSet(result);
+      });				
+  }
   
   self.sim1idx = function(idx){
 	return DBA.query("select _id from q where txt=(select txt from q where _id="+ idx + ") and _id !=" + idx,[])

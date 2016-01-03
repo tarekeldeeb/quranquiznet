@@ -28,7 +28,11 @@ angular.module('starter.questionnaire',[])
 	qLen: 3, 		// Number of words to display to start the Question
 	oLen: 2, 		// Number of words of each option
 	qType: 0, 		// Question Type: NOTSPECIAL or <Special Type>
-	currentPart: {} // Current Study Part
+	currentPart: {},// Current Study Part
+	txt: {
+		question: "",
+		op:[]
+	}
   };
     
   this.createNextQ = function() {
@@ -168,6 +172,8 @@ angular.module('starter.questionnaire',[])
 			Utils.log('Set the question start at: '+ self.qo.startIdx);
 			self.fillCorrectOptions();
 			return self.fillIncorrectOptions();
+		}).then(function(){
+			return self.fillText();
 		}).then(function(){
 			Utils.log(JSON.stringify(self.qo));
 		});
@@ -385,6 +391,39 @@ angular.module('starter.questionnaire',[])
 			return extra+1;
 	}
 
+	this.fillText = function(){
+		return Q.txt(this.qo.startIdx, this.qo.qLen + (this.qo.oLen*this.qo.rounds))
+		.then(function(txt){
+			Utils.log(txt.join(' '));
+			self.qo.txt.question = txt.slice(0,self.qo.qLen).join(' ');
+			for(var k=0;k<self.qo.rounds;k++){
+				self.qo.txt.op[k][0] = txt.slice(self.qo.qLen+k*self.qo.oLen,self.qo.qLen+(k+1)*self.qo.oLen).join(' ');
+			}
+			
+			var inc_op=[],tmp;
+			for(var k=0;k<self.qo.rounds;k++){
+				for(var l=1;l<5;l++){
+					for(var m=0;m<self.qo.oLen;m++){
+						tmp = self.qo.op[k][l]+m;
+						if(!isFinite(tmp)){ tmp=0; console.warn('Bad inc_op['+k+']['+l+']');}
+						inc_op.push(tmp);
+					}
+				}
+			}
+			//Utils.log(inc_op);
+			return Q.txts(inc_op);
+		})
+		.then(function(txt){
+			//Utils.log(txt.join(' '));
+			for(var k=0;k<self.qo.rounds;k++){
+				for(var l=1;l<5;l++){
+					self.qo.txt.op[k][l] = txt.slice((4*k+(l-1))*self.qo.oLen,(4*k+l)*self.qo.oLen).join(' ');
+				}
+			}
+			
+		});
+			
+	}
 	var selectSpecial = function() {
 		if(Profile.level==0)
 			return false;
@@ -396,6 +435,7 @@ angular.module('starter.questionnaire',[])
 	
 	/* Constructor*/
 	for (var k=0;k<10;k++) this.qo.op[k]=[]; //Init 2D array
+	for (var k=0;k<10;k++) this.qo.txt.op[k]=[]; //Init 2D array
 
 		
   return self;
