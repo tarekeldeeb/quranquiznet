@@ -160,7 +160,7 @@ angular.module('starter.questionnaire',[])
 		this.qo.rounds = 10;
 		this.qo.qType = this.qTypeEnum.NOTSPECIAL.id;
 		
-		this.sparsed= Profile.getSparsePoint(rand.int32()%Profile.getTotalStudyLength());
+		this.sparsed= Profile.getSparsePoint(Math.abs(rand.int32())%Profile.getTotalStudyLength());
 		Profile.lastSeed = this.sparsed.idx;
 		this.qo.currentPart = this.sparsed.part;
 		Utils.log('Set Profile seed = '+ Profile.lastSeed);
@@ -223,7 +223,8 @@ angular.module('starter.questionnaire',[])
 			// We want to remove redundant correct choices from the given
 			// options, this is made by removing subset sim2 from sim1
 			// then finding the next unique set of words
-			return Q.uniqueSim1Not2Plus1(last_correct).then(function(d){
+			return Q.uniqueSim1Not2Plus1(last_correct)
+			.then(function(d){
 				diffList = d;
 				uniq_cnt = diffList.length;
 				var rnd_idx = []; //will need length = uniq_cnt
@@ -241,6 +242,7 @@ angular.module('starter.questionnaire',[])
 			}).then(function(randList){
 				for(var i=0;i<10;i++){if(self.qo.op[i][0] ==  randList.i) break;}
 				if(i<10){
+					Utils.log('Adding '+(4-uniq_cnt)+' random inc_op at round '+i);
 					if (uniq_cnt > 0) {
 						rnd_idx = Utils.randperm(uniq_cnt);
 						for (var j = 1; j < uniq_cnt + 1; j++) {

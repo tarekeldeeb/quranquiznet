@@ -7,40 +7,45 @@
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
-	/*
-	$ionicLoading.show({
-		template: 'جاري الاعداد ..'
-	});
-	$scope.ionicLoadinghide = function(){
-		$ionicLoading.hide();
-	}
-	*/
+	var round;
 	
-	Questionnaire.createNextQ();
+	$scope.busyShow = function(){ $ionicLoading.show({template: 'جاري الاعداد ..'}); }
+	$scope.busyHide = function(){ $ionicLoading.hide(); }
+	$scope.nextQ = function(){
+		$scope.busyShow();
+		Questionnaire.createNextQ()
+		.then(function(){
+			round = 0;
+			$scope.question = Questionnaire.qo.txt.question;
+			$scope.options = Questionnaire.qo.txt.op[0];
 
-	var ii = 100;
-	$scope.question = ' بسم الله الرحمن';
-	$scope.options = ['الرحمن', 'الرحيم', 'الملك', 'القدوس', 'السلام'];
+			$scope.busyHide();			
+		});
+	}
 	$scope.selectOption = function(sel) {
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
-		Q.txt(ii,5).then(function(op){
-			$scope.options = op;
+		round++;
+		if( round == Questionnaire.qo.rounds){
+			//TODO: Handle Score
+			
+			//TODO: Handle profile
 			//Profile.parts[ii%50].numQuestions = Profile.parts[ii%50].numQuestions+ 1;
 			//Profile.saveAll();
-			//console.log(JSON.stringify($scope.options));
-		});
-		ii = ii+5;
-		//if(ii%10 == 0) $scope.flip();
+			$scope.nextQ();
+			return;
+		}	
 		
-		//console.log(Utils.modQWords(90999));
-		Q.randomUnique4NotMatching(90).then(function(op){
-			console.log(op.set);
-		});
-	};
+		$scope.options = Questionnaire.qo.txt.op[round];
+
+	}
 	$scope.flip = function(){
 		angular.element(document.getElementById('flip-container')).toggle("flip") 
 		console.log('Flipped:' + JSON.stringify());
 	}
+
+	$scope.nextQ();
+
+
 })
 
 /**
