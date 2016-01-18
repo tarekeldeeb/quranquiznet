@@ -7,9 +7,31 @@
 				<div class="list card">
 					<div class="item item-divider item-text-wrap quran" align="right">{{question}}</div>
 					<div class="item item-body">
-						<div ng-repeat="n in [0, 1, 2, 3, 4]">
-							<button class="button button-stable button-block quran" ng-click="selectOption(n)">{{options[n]}}</button>
-						</div>	
+						<div class="row">
+						  <div class="col-67">
+							<div ng-repeat="n in [0, 1, 2, 3, 4]">
+								<button class="button button-stable button-block quran" ng-click="selectOption(n)">{{options[n]}}</button>
+							</div>	
+						  </div>					
+						  <div class="col-33 col-center" style="padding-right:10px;">
+							<button class="button button-small button-clear button-full button-positive">اختر التكملة الصحيحة</button>
+							<button class="button button-large button-clear button-full button-balanced">123</button>
+							<div class="row">
+								<div class="col">
+									<button class="button button-small button-clear button-block button-balanced">
+										188<br /><i class="icon ion-arrow-up-b"></i>
+									</button>
+								</div>
+								<div class="col">
+									<button class="button button-small button-clear button-block button-assertive">
+										-22<br /><i class="icon ion-arrow-down-b"></i>
+									</button>
+								</div>
+							</div>
+							<button class="button button-clear button-outline button-block button-assertive">لا أعلم <i class="icon ion-sad-outline"></i>
+</button>
+						  </div>
+						</div>
 					</div>
 					<div class="item item-divider"  align="right">اجابة .. صحيحة </div>
 				</div>

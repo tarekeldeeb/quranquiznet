@@ -9,7 +9,7 @@ angular.module('starter.controllers', [])
 .controller('DashCtrl', function($scope, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
 	var round;
 	
-	$scope.busyShow = function(){ $ionicLoading.show({template: 'جاري الاعداد ..'}); }
+	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
 	$scope.nextQ = function(){
 		$scope.busyShow();

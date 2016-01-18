@@ -17,6 +17,9 @@ body {
    height: 100vh;*/
 }
 
+.item-body{
+	padding:4px;
+}
 .quran{
 	font-family: "Amiri Quran ColoredWeb";
 	line-height: 180%;
