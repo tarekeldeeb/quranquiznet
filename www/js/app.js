@@ -12,7 +12,7 @@ var db = null;
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova', 'ngResource'])
+angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova', 'ngResource', 'GoogleLoginService'])
 
 .run(function($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, Utils, Profile) {
 
@@ -176,19 +176,10 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         views: {
             'tab-chats': {
                 templateUrl: 'templates/tab-chats.html',
-                controller: 'ChatsCtrl'
+                controller: 'google'
             }
         }
     })
-        .state('tab.chat-detail', {
-            url: '/chats/:chatId',
-            views: {
-                'tab-chats': {
-                    templateUrl: 'templates/chat-detail.html',
-                    controller: 'ChatDetailCtrl'
-                }
-            }
-        })
 
     .state('tab.account', {
         url: '/account',

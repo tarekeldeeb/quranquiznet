@@ -52,24 +52,18 @@ angular.module('starter.controllers', [])
 * All below services are for demo purposes!
 * You may ignore for now.
 */
-
-.controller('ChatsCtrl', function($scope, Chats) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  };
-})
-
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
+.controller('google', function ($scope, googleLogin, Utils) {
+	$scope.google_data = {};
+	$scope.login = function () {
+		var promise = googleLogin.startLogin();
+		promise.then(function (data) {
+			Utils.save('google_data', JSON.stringify(data));
+			$scope.google_data = data;
+			Utils.log(JSON.stringify(data));
+		}, function (data) {
+			$scope.google_data = data;
+		});
+	}
 })
 
 .controller('AccountCtrl', function($scope, Profile) {
