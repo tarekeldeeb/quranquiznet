@@ -3,10 +3,10 @@
     font-family: Amiri Quran ColoredWeb;
     font-style: normal;
     font-weight: 400;
-    src: url('/font/amiri-quran-colored.eot?') format('eot'),
-         url('/font/amiri-quran-colored.woff2') format('woff2'),
-         url('/font/amiri-quran-colored.woff') format('woff'),
-         url('/font/amiri-quran-colored.ttf')  format('truetype');
+    src: url('../font/amiri-quran-colored.eot?') format('eot'),
+         url('../font/amiri-quran-colored.woff2') format('woff2'),
+         url('../font/amiri-quran-colored.woff') format('woff'),
+         url('../font/amiri-quran-colored.ttf')  format('truetype');
 }
 
 body {
