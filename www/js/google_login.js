@@ -52,7 +52,8 @@ googleLoginService.factory('googleLogin', [
     function ($http, $q, $interval, $log, timeStorage) {
         var service = {};
         service.access_token = false;
-        service.redirect_url = 'http://localhost:8100/index.html';
+		baseURL = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : ''),
+        service.redirect_url = baseURL+'/index.html';
         service.client_id = '281800651437-eqkc21gn6nnm71nhihgs9hpefqmln8fv.apps.googleusercontent.com';
         service.secret = 'm7zWaEQcBmCEOKGFAylz4Q0f';
         service.scope = 'https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/plus.me';
