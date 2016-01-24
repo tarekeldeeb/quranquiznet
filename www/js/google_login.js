@@ -52,7 +52,7 @@ googleLoginService.factory('googleLogin', [
     function ($http, $q, $interval, $log, timeStorage) {
         var service = {};
         service.access_token = false;
-		context = window.location.pathname.substring(0, window.location.pathname.indexOf("/",2)),
+		context = window.location.pathname.substring(0, window.location.pathname.lastIndexOf("/"));
 		baseURL = location.protocol + '//' + location.hostname + (location.port ? ':' + location.port : '')+context;
         service.redirect_url = baseURL+'/index.html';
 		//console.log(service.redirect_url);
