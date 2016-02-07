@@ -108,6 +108,15 @@ angular.module('starter.utils',['angular-md5'])
     return o;
 	}
 	
+	this.shuffle = function(arr,randperm) {
+		(arr.length == randperm.length) || Console.error("Bad Shuufle")
+		var o = new Array(arr.length);
+		for(var i=0;i<arr.length;i++){
+			o[i] = arr[randperm[i]];
+		}
+		return o;
+	}
+	
 	this.sCurve = function(ratio, max){
 		var y=[0.001, 0.11, 0.87, 0.98];
 		var yp;

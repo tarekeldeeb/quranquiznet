@@ -7,7 +7,7 @@
 angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
-	var round;
+	var round,shuffle;
 	
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
@@ -16,16 +16,20 @@ angular.module('starter.controllers', [])
 		Questionnaire.createNextQ()
 		.then(function(){
 			round = 0;
+			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
-			$scope.options = Questionnaire.qo.txt.op[0];
+			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
 
 			$scope.busyHide();			
 		});
 	}
-	$scope.selectOption = function(sel) {
-		$scope.question = $scope.question + ' ' + $scope.options[sel];
-		round++;
-		if( round == Questionnaire.qo.rounds){
+	$scope.skipQ = function(){
+		$scope.nextQ();
+		//TODO: Handle Score
+		//TODO: Handle profile
+	}
+	$scope.selectOption = function(sel) {	
+		if(( round == Questionnaire.qo.rounds) || (shuffle[sel] != 0)){
 			//TODO: Handle Score
 			
 			//TODO: Handle profile
@@ -34,9 +38,10 @@ angular.module('starter.controllers', [])
 			$scope.nextQ();
 			return;
 		}	
-		
-		$scope.options = Questionnaire.qo.txt.op[round];
-
+		$scope.question = $scope.question + ' ' + $scope.options[sel];
+		round++;
+		shuffle = Utils.randperm(5);
+		$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
 	}
 	$scope.flip = function(){
 		angular.element(document.getElementById('flip-container')).toggle("flip") 
