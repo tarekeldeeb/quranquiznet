@@ -95,7 +95,11 @@ angular.module('starter.services', [])
   }
 
   self.txts = function(ids) {
-    return DBA.query("select txtsym from q where _id in( "+ids+" )",[]).then(function(result){
+	/* Returned text must be ordered */
+	var ordClause='ORDER BY CASE _id';
+	for(var i=1;i<=ids.length;i++){	ordClause += ' WHEN '+ids[i-1]+' THEN '+i; }
+	ordClause += ' END';
+    return DBA.query("select txtsym from q where _id in( "+ids+" ) "+ordClause,[]).then(function(result){
         return DBA.getStringSet(result);
       });				
   }

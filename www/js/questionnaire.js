@@ -160,14 +160,14 @@ angular.module('starter.questionnaire',[])
 		this.qo.rounds = 10;
 		this.qo.qType = this.qTypeEnum.NOTSPECIAL.id;
 		
-		this.sparsed= Profile.getSparsePoint(Math.abs(rand.int32())%Profile.getTotalStudyLength());
+		// +1 to compensate the rand-gen integer [0-QuranWords-1]
+		this.sparsed= Profile.getSparsePoint(Math.abs(rand.int32())%Profile.getTotalStudyLength()+1);
 		Profile.lastSeed = this.sparsed.idx;
 		this.qo.currentPart = this.sparsed.part;
 		Utils.log('Set Profile seed = '+ Profile.lastSeed);
 	
 		//!session.addIfNew(qo.startIdx)); TODO
-		// +1 to compensate the rand-gen integer [0-QuranWords-1]
-		return this.getValidStartNear(this.sparsed.idx + 1)
+		return this.getValidStartNear(this.sparsed.idx)
 		.then(function(){
 			Utils.log('Set the question start at: '+ self.qo.startIdx);
 			self.fillCorrectOptions();
