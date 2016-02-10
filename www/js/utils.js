@@ -109,7 +109,7 @@ angular.module('starter.utils',['angular-md5'])
 	}
 	
 	this.shuffle = function(arr,randperm) {
-		(arr.length == randperm.length) || Console.error("Bad Shuufle")
+		(arr.length == randperm.length) || console.error("Bad Shuufle")
 		var o = new Array(arr.length);
 		for(var i=0;i<arr.length;i++){
 			o[i] = arr[randperm[i]];

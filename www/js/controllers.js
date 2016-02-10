@@ -29,7 +29,7 @@ angular.module('starter.controllers', [])
 		//TODO: Handle profile
 	}
 	$scope.selectOption = function(sel) {	
-		if(( round == Questionnaire.qo.rounds) || (shuffle[sel] != 0)){
+		if(( ++round == Questionnaire.qo.rounds) || (shuffle[sel] != 0)){
 			//TODO: Handle Score
 			
 			//TODO: Handle profile
@@ -39,7 +39,6 @@ angular.module('starter.controllers', [])
 			return;
 		}	
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
-		round++;
 		shuffle = Utils.randperm(5);
 		$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
 	}

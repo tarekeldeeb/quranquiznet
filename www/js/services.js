@@ -100,6 +100,9 @@ angular.module('starter.services', [])
 	for(var i=1;i<=ids.length;i++){	ordClause += ' WHEN '+ids[i-1]+' THEN '+i; }
 	ordClause += ' END';
     return DBA.query("select txtsym from q where _id in( "+ids+" ) "+ordClause,[]).then(function(result){
+		if(result.rows.length != ids.length){
+			console.warn('Not all text returned! Requested IDs: '+ids+' Returned Text: '+JSON.stringify(result.rows));
+		}
         return DBA.getStringSet(result);
       });				
   }
