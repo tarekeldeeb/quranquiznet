@@ -148,7 +148,7 @@ angular.module('starter.profile',[])
 	this.getSparsePoint = function(CntTot) {
 		var Length = 0, i, pLength;
 		for (i = 0; i < this.parts.length; i++) {
-			pLength = this.parts[i].length;
+			pLength = (this.parts[i].checked === true)?this.parts[i].length:0;
 			if (CntTot < Length + pLength) {
 				return new QQSparseResult(this.parts[i].start + CntTot
 						- Length, i);

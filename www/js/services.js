@@ -188,17 +188,17 @@ angular.module('starter.services', [])
   }
   
   self.randomUnique4NotMatching = function(idx){
-	//TODO: random() not supported in WebSQL, returned not really random!
-	var randomStart = Math.ceil((Math.random()*(Utils.QuranWords-201))+1);
-	return DBA.query("CREATE TEMP TABLE IF NOT EXISTS xy as select _id,txt from q where _id>? limit 200",[randomStart])
+	var randomStart;
+	return DBA.query("DROP TABLE IF EXISTS xy",[])
 	.then(function(){
-		return DBA.query("CREATE INDEX IF NOT EXISTS xy_txt_index ON xy (txt);",[])
-			
-    })
+		randomStart = Math.ceil((Math.random()*(Utils.QuranWords-201))+1);
+		return DBA.query("CREATE TEMP TABLE IF NOT EXISTS xy as select DISTINCT txt,_id from q where _id>? "+
+						"and txt !=(select txt from q where _id="+idx+") limit 20",[randomStart])	
+	})
 	.then(function(){
-		return DBA.query("select q1._id from xy q1 inner join xy q2 on q2.txt = q1.txt "+
-			"group by q1._id,q1.txt having q1._id = min(q2._id) "+
-			"and q1.txt !=(select txt from q where _id="+idx+") limit 4",[])	
+		//random() not supported in WebSQL!
+		var randomStartIdx = [1,8,13,19].map(function(x) { return x + randomStart; });
+		return DBA.query("SELECT _id FROM xy WHERE _id IN ("+randomStartIdx.toString()+")",[])	
 	})
 	.then(function(result){
 		return {i:idx, set:DBA.getIDSet(result)};
