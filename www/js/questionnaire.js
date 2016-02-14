@@ -35,17 +35,21 @@ angular.module('starter.questionnaire',[])
 	}
   };
     
-  this.createNextQ = function() {
+  this.createNextQ = function(s) {
+		var start=-1;
+		if (isFinite(s) && s>0 && s<= Utils.QuranWords){
+			start = s;
+		}
 		if(Profile.specialEnabled && selectSpecial() && false){ //TODO: remove!
 			Utils.log('Creating a special question ..');
-			return this.createSpecialQ();
+			return this.createSpecialQ(start);
 		}else {
 			Utils.log('Creating a normal question ..');
-			return this.createNormalQ();
+			return this.createNormalQ(start);
 		}		
 	}
 
-  this.createSpecialQ = function() {
+  this.createSpecialQ = function(start) {
 		this.qo.rounds = 1;
 
 		if(Profile.isSurasSpecialQuestionEligible()){
@@ -156,15 +160,19 @@ angular.module('starter.questionnaire',[])
 		return start;
 	}
 
-	this.createNormalQ = function() {
+	this.createNormalQ = function(start) {
 		this.qo.rounds = 10;
 		this.qo.qType = this.qTypeEnum.NOTSPECIAL.id;
 		
-		// +1 to compensate the rand-gen integer [0-QuranWords-1]
-		this.sparsed= Profile.getSparsePoint(Math.abs(rand.int32())%Profile.getTotalStudyLength()+1);
-		Profile.lastSeed = this.sparsed.idx;
+		if( start < 0 ){
+			// +1 to compensate the rand-gen integer [0-QuranWords-1]
+			this.sparsed= Profile.getSparsePoint(Math.abs(rand.int32())%Profile.getTotalStudyLength()+1);
+			Profile.lastSeed = this.sparsed.idx;
+			Utils.log('Set Profile seed = '+ Profile.lastSeed);
+		}else{
+			this.sparsed= {	idx: start,	part:0};
+		}
 		this.qo.currentPart = this.sparsed.part;
-		Utils.log('Set Profile seed = '+ Profile.lastSeed);
 	
 		//!session.addIfNew(qo.startIdx)); TODO
 		return this.getValidStartNear(this.sparsed.idx)

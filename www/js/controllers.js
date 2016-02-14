@@ -6,14 +6,14 @@
 
 angular.module('starter.controllers', [])
 
-.controller('DashCtrl', function($scope, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
+.controller('DashCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
 	var round,shuffle;
 	
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
-	$scope.nextQ = function(){
+	$scope.nextQ = function(start){
 		$scope.busyShow();
-		Questionnaire.createNextQ()
+		Questionnaire.createNextQ(parseInt(start))
 		.then(function(){
 			round = 0;
 			shuffle = Utils.randperm(5);
@@ -47,9 +47,7 @@ angular.module('starter.controllers', [])
 		console.log('Flipped:' + JSON.stringify());
 	}
 
-	$scope.nextQ();
-
-
+	$scope.nextQ($stateParams.customStart);
 })
 
 /**
