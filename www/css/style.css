@@ -1,3 +1,8 @@
+/****
+* Copyright (C) 2011-2016 Quran Quiz Net 
+* Tarek Eldeeb <tarekeldeeb@gmail.com>
+* License: see LICENSE.txt
+****/
 
 @font-face {
     font-family: Amiri Quran ColoredWeb;
@@ -25,42 +30,42 @@ body {
         background:#001a4d;/* url('../img/quran-bg.jpg') no-repeat; */
       }
 
-      #content {
-        position: relative;
-        margin-top: 150px;
-        box-shadow: 0px -1px 10px rgba(0,0,0,0.4);
-        padding-top: 200px;
-      }
+#content {
+position: relative;
+margin-top: 150px;
+box-shadow: 0px -1px 10px rgba(0,0,0,0.4);
+padding-top: 200px;
+}
 
-      #profile-info {
-        position: absolute;
-        top: -95px;
-        width: 100%;
-        z-index: 2;
-        text-align: center;
-      }
-      #profile-name {
-        color: #444;
-        font-size: 26px;
-      }
-      #profile-description {
-        font-size: 15px;
-        color: #888;
-      }
-      #profile-description a {
-        color: #888;
-      }
+#profile-info {
+position: absolute;
+top: -95px;
+width: 100%;
+z-index: 2;
+text-align: center;
+}
+#profile-name {
+color: #444;
+font-size: 26px;
+}
+#profile-description {
+font-size: 15px;
+color: #888;
+}
+#profile-description a {
+color: #888;
+}
 
-      #profile-image {
-        display: block;
-        border-radius: 100px;
-        border: 1px solid #fff;
-        width: 128px;
-        height: 128px;
-        margin: 30px auto 0;
-        box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
-      }
-	  
+#profile-image {
+display: block;
+border-radius: 100px;
+border: 1px solid #fff;
+width: 128px;
+height: 128px;
+margin: 30px auto 0;
+box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
+}
+
 	  
 .item-body{
 	padding:4px;
@@ -68,6 +73,12 @@ body {
 .quran{
 	font-family: "Amiri Quran ColoredWeb";
 	line-height: 180%;
+}
+
+#qquestion{
+    overflow-x: scroll !important;
+	white-space: nowrap;
+	text-overflow:initial;
 }
 .phone-container {
    /*position: relative;// Activated by JS on non-phones*/
@@ -180,3 +191,8 @@ body {
 .back {
 	transform: rotateY(180deg);
 }
+
+.row{
+	padding: 0 5px 0 5px;
+}
+#instruction{max-height:70px;}

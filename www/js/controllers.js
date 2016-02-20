@@ -8,7 +8,7 @@ angular.module('starter.controllers', [])
 
 .controller('DashCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
 	var round,shuffle;
-	
+	var qquestion = document.getElementById('qquestion');
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
 	$scope.nextQ = function(start){
@@ -41,6 +41,8 @@ angular.module('starter.controllers', [])
 		$scope.question = $scope.question + ' ' + $scope.options[sel];
 		shuffle = Utils.randperm(5);
 		$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
+		setTimeout(function() {qquestion.scrollLeft = 0},10);
+		//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);
 	}
 	$scope.flip = function(){
 		angular.element(document.getElementById('flip-container')).toggle("flip") 
