@@ -234,6 +234,9 @@ angular.module('starter.utils',['angular-md5'])
 		}
 	}
 	
+	this.modQWords = function(n){
+		return (n>this.QuranWords)?( n- this.QuranWords):n;
+	}
 	/**
 	* Format string
 	* @param {string} str to format

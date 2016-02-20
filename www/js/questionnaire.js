@@ -191,14 +191,9 @@ angular.module('starter.questionnaire',[])
 		// fill Correct Option Words @indx=1 (2,3,..validCount for higher
 		// levels)
 		var tmp = [];
-		var correct;
-		this.qo.op[0][0] = this.qo.startIdx + this.qo.qLen;
-		for (var k = 1; k < 10; k++) {
-			correct = this.qo.op[k - 1][0] + this.qo.oLen;
-			if (correct>Utils.QuranWords)
-				this.qo.op[k][0] = correct - Utils.QuranWords;
-			else
-				this.qo.op[k][0] = correct;
+		this.qo.op[0][0] = Utils.modQWords(this.qo.startIdx + this.qo.qLen);
+		for (var k = 1; k < this.qo.rounds; k++) {
+			this.qo.op[k][0] = Utils.modQWords(this.qo.op[k - 1][0] + this.qo.oLen);
 		}
 		if (Profile.level > 1) { //TODO: Port async
 			if (this.qo.qLen == 1) { // A 2-word Question
@@ -402,35 +397,33 @@ angular.module('starter.questionnaire',[])
 	}
 
 	this.fillText = function(){
-		return Q.txt(this.qo.startIdx, this.qo.qLen + (this.qo.oLen*this.qo.rounds))
+		var qop=[],qtmp;
+		for(var i=0;i<self.qo.qLen;i++){
+			qtmp = Utils.modQWords(this.qo.startIdx+i);
+			qop.push(qtmp);
+		}
+		return Q.txts(qop)
 		.then(function(txt){
-			Utils.log(txt.join(' '));
 			self.qo.txt.question = txt.slice(0,self.qo.qLen).join(' ');
-			for(var k=0;k<self.qo.rounds;k++){
-				self.qo.txt.op[k][0] = txt.slice(self.qo.qLen+k*self.qo.oLen,self.qo.qLen+(k+1)*self.qo.oLen).join(' ');
-			}
 			
-			var inc_op=[],tmp;
+			var op=[],tmp;
 			for(var k=0;k<self.qo.rounds;k++){
-				for(var l=1;l<5;l++){
+				for(var l=0;l<5;l++){
 					for(var m=0;m<self.qo.oLen;m++){
-						tmp = self.qo.op[k][l]+m;
-						if(!isFinite(tmp)){ tmp=0; console.warn('Bad inc_op['+k+']['+l+']');}
-						inc_op.push(tmp);
+						tmp = Utils.modQWords(self.qo.op[k][l]+m);
+						if(!isFinite(tmp)){ tmp=0; console.warn('Bad op['+k+']['+l+']');}
+						op.push(tmp);
 					}
 				}
 			}
-			//Utils.log(inc_op);
-			return Q.txts(inc_op);
+			return Q.txts(op);
 		})
 		.then(function(txt){
-			//Utils.log(txt.join(' '));
 			for(var k=0;k<self.qo.rounds;k++){
-				for(var l=1;l<5;l++){
-					self.qo.txt.op[k][l] = txt.slice((4*k+(l-1))*self.qo.oLen,(4*k+l)*self.qo.oLen).join(' ');
+				for(var l=0;l<5;l++){
+					self.qo.txt.op[k][l] = txt.slice((5*k+l)*self.qo.oLen,(5*k+(l+1))*self.qo.oLen).join(' ');
 				}
 			}
-			
 		});
 			
 	}
