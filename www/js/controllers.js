@@ -5,7 +5,9 @@
 ****/
 
 angular.module('starter.controllers', [])
-
+.controller('ahlanCtrl', function($scope, Utils) {
+	Utils.log('Ahlan to Quran Quiz Net!');
+})
 .controller('DashCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
 	var round,shuffle;
 	var qquestion = document.getElementById('qquestion');

@@ -1,0 +1,19 @@
+<ion-view hide-nav-bar="true">
+    <ion-nav-buttons>
+        <button class="button button-icon button-clear ion-navicon" ng-click="openMenu()"></button>
+    </ion-nav-buttons>
+    <ion-content padding="true">
+	  <div class="center">
+		<img src="https://cdn.rawgit.com/tarekeldeeb/quranquiz/master/android-app/res/drawable-xhdpi/ic_launcher.png" 
+			style="margin-top: 40%">
+		<h2>شبكة اختبار القران</h2>
+		<br><br>
+		<div ng-if="loadingDone!=true" ng-init="loadingDone = false">
+		  <ion-spinner></ion-spinner>
+		</div>
+		<div ng-if="loadingDone==true">
+			<a href="#/tab/account" class="button icon-right ion-chevron-right button-calm">دخول</a>
+		</div>
+	  </div>
+    </ion-content>
+</ion-view>

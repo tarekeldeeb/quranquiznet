@@ -121,10 +121,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
                 db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
 				if(Profile.load()){
 					console.log('Loaded profile with UID: '+Profile.uid);
+					$rootScope.loadingDone = true;
 				} else {
 					console.log('Created new profile with UID: '+Profile.uid );				
 				    QQ.CheckDatabase(db, function () {
 						console.log("quran quiz database imported successfully");
+						$rootScope.loadingDone = true;
 					}, function (error) {
 						console.error("error happened while importing quran quiz database", error);
 					});
@@ -191,7 +193,13 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         }
     });
 
+	$stateProvider
+        .state('ahlan', {
+            url: '/ahlan',
+            controller: 'ahlanCtrl',
+            templateUrl: 'templates/ahlan.html'
+    });
     // if none of the above states are matched, use this as the fallback
-    $urlRouterProvider.otherwise('/tab/dash/');
+    $urlRouterProvider.otherwise('/ahlan');
 
 });
