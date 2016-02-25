@@ -15,7 +15,7 @@
 }
 
 body {
-   background: #004260;
+   background: ##001A2B;
    direction: rtl;
    background-image:url('../img/bg_tile.png');
    background-repeat:repeat;
@@ -142,7 +142,8 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
    width: 370px;
    height: 85vh;
    margin: 10vh auto;
-   box-shadow: 0 0 16px 32px rgba(0,0,0, .35);
+   box-shadow: 0 0 0 16px rgba(0,0,0, .35);
+   border-radius:5px;
 }
 
 .float-button {
