@@ -163,12 +163,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 
     // Each tab has its own nav history stack:
 
-    .state('tab.dash', {
-        url: '/dash/:customStart',
+    .state('tab.quiz', {
+        url: '/quiz/:customStart',
         views: {
-            'tab-dash': {
-                templateUrl: 'templates/tab-dash.html',
-                controller: 'DashCtrl'
+            'tab-quiz': {
+                templateUrl: 'templates/tab-quiz.html',
+                controller: 'quizCtrl'
             }
         }
     })
@@ -178,6 +178,16 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         views: {
             'tab-chats': {
                 templateUrl: 'templates/tab-chats.html',
+                controller: 'google'
+            }
+        }
+    })
+	
+	.state('tab.profile', {
+        url: '/profile',
+        views: {
+            'tab-profile': {
+                templateUrl: 'templates/tab-profile.html',
                 controller: 'google'
             }
         }
