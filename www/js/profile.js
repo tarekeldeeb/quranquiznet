@@ -16,7 +16,12 @@ angular.module('starter.profile',[])
   this.scores = [{date:0,score:0}];
   this.parts = [];
   this.version = {db:1.0, app:1.0, profile:1.0};
-  
+
+  var scoreRecord = function() {
+	return {	date:Utils.getTime(),
+				score:this.getScore()
+			};
+  }  
   var studyPart = function(start,length,correct,questions,avgLevel,name,checked) {
 	return {	start:start,
 				length:length,
@@ -36,14 +41,20 @@ angular.module('starter.profile',[])
   var getCorrectRatio = function(i){
   		var numCorrect = this.parts[i].numCorrect;
   		var numQuestions = this.parts[i].numQuestions;
-		return (numCorrect==0)? 0: (numCorrect / numQuestions);
+		return (numQuestions==0)? 0: (numCorrect / numQuestions);
   }
   var calculateScorePart = function(i){
+		return (correctRatio==0)? 0: 
+					Math.round(
+						this.parts[i].avgLevel
+						*(2*this.parts[i].numCorrect - (this.parts[i].numQuestions))
+					)*10;
+		/*
 		var score=0.0;
 		var partWeight,scaledQCount,avgLevel,scaledCorrectRatio;
-		/**
-		 * Calculate the normalized Number of words in current part
-		 */
+		 //
+		 // Calculate the normalized Number of words in current part
+		 //
 		partWeight   = Utils.PartWeight100[i]/100;
 		avgLevel     = this.parts[i].avgLevel;
 		scaledQCount = Utils.sCurve(this.parts[i].numCorrect,
@@ -59,6 +70,7 @@ angular.module('starter.profile',[])
 					" sC="+(scaledQCount)+
 					" sR="+(scaledCorrectRatio));
 		return score;
+		*/
   }
   
   this.load = function() {
@@ -105,6 +117,12 @@ angular.module('starter.profile',[])
   }
   
   this.saveParts = function(){
+	Utils.saveObject('prf_parts',this.parts);	
+  }
+
+  this.saveScores = function(){
+	Utils.save('prf_specialScore',this.specialScore);
+	Utils.saveObject('prf_scores',this.scores);
 	Utils.saveObject('prf_parts',this.parts);	
   }
   
@@ -227,18 +245,23 @@ angular.module('starter.profile',[])
 		return false; 
 	}
 
-	/* 	// TODO: continue Port!
-
-	public boolean updateScoreRecord() {
-		if (QScores.size() < 5) {
-			QScores.add(new QQScoreRecord(this.getScore()));
+	this.updateScoreRecord = function() {
+		var scoreLength = this.scores.length;
+		if (scoreLength < 5) {
+			if (scoreLength == 0 && this.scores[0].date == 0){
+				this.scores[0] = new scoreRecord();
+			}else{
+				this.scores.push(new scoreRecord());
+			}
 			return true;
-		} else if (QScores.get(QScores.size() - 1).isOlderThan1Day()) {
-			QScores.add(new QQScoreRecord(this.getScore()));
+		} else if (Utils.isOlderThan1day(this.scores[scoreLength-1].date)) {
+			this.scores.push(new scoreRecord());
 			return true;
 		}
 		return false;
 	}
+	
+	/* 	// TODO: continue Port!
 	
 	//@return An array of weights for studied parts to sum up 
 	//to QQUtils.DAILYQUIZ_QPERPART_COUNT

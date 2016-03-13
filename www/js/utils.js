@@ -98,6 +98,13 @@ angular.module('starter.utils', ['angular-md5'])
         this.md5 = function (s) {
             return md5.createHash(s || '');
         }
+		
+		this.getTime = function(){
+			return (new Date()).getTime();
+		}
+		this.isOlderThan1day = function(time) {
+			return (this.getTime()-time > 86400000 ); // 24*60*60*1000
+		}
 
         this.randperm = function (n) {
             // return a random permutation of size n

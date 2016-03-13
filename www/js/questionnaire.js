@@ -13,10 +13,10 @@ angular.module('starter.questionnaire', [])
 
         this.qTypeEnum = {
             NOTSPECIAL: { id: 1, score: 0, txt: 'اختر التكملة الصحيحة' },
-            SURANAME: { id: 2, score: 2, txt: 'اختر اسم السورة' },
-            SURAAYACOUNT: { id: 3, score: 4, txt: 'اختر عدد ايات السورة' },
-            MAKKI: { id: 4, score: 2, txt: 'اختر بيان السورة' },
-            AYANUMBER: { id: 5, score: 7, txt: 'اختر رقم الاية' }
+            SURANAME: { id: 2, score: 5, txt: 'اختر اسم السورة' },
+            SURAAYACOUNT: { id: 3, score: 25, txt: 'اختر عدد ايات السورة' },
+            MAKKI: { id: 4, score: 15, txt: 'اختر بيان السورة' },
+            AYANUMBER: { id: 5, score: 35, txt: 'اختر رقم الاية' }
         };
 
         this.qo = {
