@@ -14,7 +14,11 @@ angular.module('starter.controllers', [])
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
 	$scope.updateScore = function(){
-		$scope.score 		= Profile.getScore();
+		if ($scope.score == null){
+			$scope.score = Profile.getScore();
+		} else {
+			animateScore(Profile.getScore());
+		}
 		$scope.score_up 	= Questionnaire.getUpScore();
 		$scope.score_down 	= Questionnaire.getDownScore();
 	}
@@ -26,8 +30,8 @@ angular.module('starter.controllers', [])
 			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
-
 			$scope.busyHide();			
+			setTimeout(function() {Profile.saveAll();},100); //NB: Remove to debug the lastly saved question
 		});
 	}
 	$scope.skipQ = function(){
@@ -59,6 +63,20 @@ angular.module('starter.controllers', [])
 		console.log('Flipped:' + JSON.stringify());
 	}
 
+	function animateScore(count)
+	{
+	  var stepsCount = Math.abs(count - parseInt($scope.score)) ,
+		  step = (count > parseInt($scope.score))?1:-1,
+		  run_count = 0;
+	  
+	  var int = setInterval(function() {
+		if(run_count++ < stepsCount){
+		  $scope.score += step;
+		} else {
+		  clearInterval(int);
+		}
+	  }, 50);
+	}
 	$scope.nextQ($stateParams.customStart);
 	$scope.updateScore();
 })

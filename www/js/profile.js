@@ -126,14 +126,18 @@ angular.module('starter.profile',[])
   }
   
   this.addCorrect = function(currentPart) {
-		if (currentPart < this.parts.length) {
-			var numCorrect = this.parts[currentPart].numCorrect;
-			var avgLevel = this.parts[currentPart].avgLevel;
-			this.parts[currentPart].avgLevel = (numCorrect*avgLevel + this.level)/(numCorrect+1);
-			this.parts[currentPart].numCorrect += 1;
-			this.parts[currentPart].numQuestions += 1;			
+		if (currentPart < self.parts.length) {
+			if(self.parts[currentPart].avgLevel != self.level){
+				var avgLevel = parseInt(self.parts[currentPart].avgLevel);
+				var numCorrect = parseInt(self.parts[currentPart].numCorrect);	
+				self.parts[currentPart].avgLevel = (numCorrect*avgLevel + parseInt(self.level))/(numCorrect + 1);
+				Utils.log('New avgLevel for part-'+currentPart+' is '+self.parts[currentPart].avgLevel);
+			}
+
+			self.parts[currentPart].numCorrect += 1;
+			self.parts[currentPart].numQuestions += 1;			
 			
-			Utils.saveObject('prf_parts',this.parts);	
+			Utils.saveObject('prf_parts',self.parts);	
 		}
 	}
 
@@ -149,10 +153,8 @@ angular.module('starter.profile',[])
 		var score=0;
 		for(var i=0;i<self.parts.length;i++){
 			score += calculateScorePart(i);
-			//Utils.log(score);
 		}
-		Utils.log('Score = '+ score+'+'+self.specialScore+' = '+Math.round(score +self.specialScore));
-		return (score);
+		return (parseInt(score) + parseInt(self.specialScore));
 	}
 
 	//
