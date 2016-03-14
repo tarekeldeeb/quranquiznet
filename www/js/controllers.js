@@ -13,6 +13,11 @@ angular.module('starter.controllers', [])
 	var qquestion = document.getElementById('qquestion');
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
+	$scope.updateScore = function(){
+		$scope.score 		= Profile.getScore();
+		$scope.score_up 	= Questionnaire.getUpScore();
+		$scope.score_down 	= Questionnaire.getDownScore();
+	}
 	$scope.nextQ = function(start){
 		$scope.busyShow();
 		Questionnaire.createNextQ(parseInt(start))
@@ -26,25 +31,28 @@ angular.module('starter.controllers', [])
 		});
 	}
 	$scope.skipQ = function(){
+		Profile.addIncorrect(Questionnaire.qo.currentPart);
 		$scope.nextQ();
-		//TODO: Handle Score
-		//TODO: Handle profile
+		$scope.updateScore();
 	}
 	$scope.selectOption = function(sel) {	
-		if(( ++round == Questionnaire.qo.rounds) || (shuffle[sel] != 0)){
-			//TODO: Handle Score
-			
-			//TODO: Handle profile
-			//Profile.parts[ii%50].numQuestions = Profile.parts[ii%50].numQuestions+ 1;
-			//Profile.saveAll();
+		if (shuffle[sel] != 0){ 						// Bad Choice
+			Profile.addIncorrect(Questionnaire.qo.currentPart);
 			$scope.nextQ();
+			$scope.updateScore();
 			return;
-		}	
-		$scope.question = $scope.question + ' ' + $scope.options[sel];
-		shuffle = Utils.randperm(5);
-		$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
-		setTimeout(function() {qquestion.scrollLeft = 0},10);
-		//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);
+		}else if( ++round == Questionnaire.qo.rounds){ 	// Correct Finish
+			Profile.addCorrect(Questionnaire.qo.currentPart);
+			$scope.nextQ();
+			$scope.updateScore();
+			return;			
+		} else {										// Proceed with rounds
+			$scope.question = $scope.question + ' ' + $scope.options[sel];
+			shuffle = Utils.randperm(5);
+			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
+			setTimeout(function() {qquestion.scrollLeft = 0},10);
+			//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
+		}
 	}
 	$scope.flip = function(){
 		angular.element(document.getElementById('flip-container')).toggle("flip") 
@@ -52,6 +60,7 @@ angular.module('starter.controllers', [])
 	}
 
 	$scope.nextQ($stateParams.customStart);
+	$scope.updateScore();
 })
 
 /**

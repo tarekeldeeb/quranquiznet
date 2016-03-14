@@ -131,7 +131,9 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 	font-family: "Amiri Quran ColoredWeb";
 	line-height: 180%;
 }
-
+.score{
+	direction:ltr
+}
 #qquestion{
     overflow-x: scroll !important;
 	white-space: nowrap;

@@ -12,7 +12,7 @@ angular.module('starter.questionnaire', [])
         var rand = new Math.seedrandom(previousSeed);
 
         this.qTypeEnum = {
-            NOTSPECIAL: { id: 1, score: 0, txt: 'اختر التكملة الصحيحة' },
+            NOTSPECIAL: { id: 1, score: 10, txt: 'اختر التكملة الصحيحة' },
             SURANAME: { id: 2, score: 5, txt: 'اختر اسم السورة' },
             SURAAYACOUNT: { id: 3, score: 25, txt: 'اختر عدد ايات السورة' },
             MAKKI: { id: 4, score: 15, txt: 'اختر بيان السورة' },
@@ -426,7 +426,107 @@ angular.module('starter.questionnaire', [])
                     }
                 });
 
-        }
+		}
+			
+		this.getUpScore = function() {
+			
+			switch (this.qo.qType) {
+			case this.qTypeEnum.NOTSPECIAL.id: return this.qTypeEnum.NOTSPECIAL.score;
+				break;
+			case this.qTypeEnum.SURANAME.id: return this.qTypeEnum.SURANAME.score;
+				break;
+			case this.qTypeEnum.SURAAYACOUNT.id: return this.qTypeEnum.SURAAYACOUNT.score;
+				break;
+			case this.qTypeEnum.MAKKI.id: return this.qTypeEnum.MAKKI.score;
+				break;
+			case this.qTypeEnum.AYANUMBER.id: return this.qTypeEnum.AYANUMBER.score;
+				break;	
+			default:
+				// Do nothing! 
+				break;
+			}
+
+			/*	
+			double currentPartScore, currentPartScoreUp;
+			double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
+			int numCorrect, numQuestions, currLevel;
+			
+			//
+			//Find the difference between the current and the to-be-incremented score
+			//The difference comes from the current part only. The current is calculated
+			//normally, while the UP is calculated manually as below
+			//
+			currentPartScore = calculateScorePart(CurrentPart, true);
+			
+			//
+			//Calculate the normalized Number of words in current part + UP
+			//
+			numCorrect   = QParts.get(CurrentPart).getNumCorrect();
+			numQuestions = QParts.get(CurrentPart).getNumQuestions();
+			currLevel  	 = getLevel();
+			
+			partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
+			
+			avgLevel     = numCorrect*(QParts.get(CurrentPart).getAvgLevel())+currLevel;
+			avgLevel	/= (numCorrect+1);		
+			
+			scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect() + 1,
+										  QQUtils.Juz2SaturationQCount*partWeight);
+			scaledQCount+=1;
+			scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect+1)/((float)numQuestions+1),1);
+			
+			currentPartScoreUp = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
+
+			return String.valueOf((int)Math.round(currentPartScoreUp-currentPartScore));
+			*/
+		}
+
+		this.getDownScore = function() {
+			if (this.qo.qType == this.qTypeEnum.NOTSPECIAL.id){
+				return this.qTypeEnum.NOTSPECIAL.score;				
+			} else {
+				return 0;
+			}
+		
+			/*
+			double currentPartScore, currentPartScoreDown;
+			double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
+			int numCorrect, numQuestions, downScore;
+			
+			//
+			//Find the difference between the current and the to-be-decremented score
+			//The difference comes from the current part only. The current is calculated
+			//normally, while the DOWN is calculated manually as below
+			//
+			currentPartScore = calculateScorePart(CurrentPart, false);
+			
+			//
+			//Calculate the normalized Number of words in current part + UP
+			//
+			numCorrect   = QParts.get(CurrentPart).getNumCorrect();
+			numQuestions = QParts.get(CurrentPart).getNumQuestions();
+			partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
+			
+			avgLevel     = QParts.get(CurrentPart).getAvgLevel();		
+			scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect(),
+										  QQUtils.Juz2SaturationQCount*partWeight);
+			scaledQCount+=1;
+			scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect)/((float)numQuestions+1),1);
+			
+			currentPartScoreDown = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
+			downScore 			 = (int)Math.round(currentPartScore-currentPartScoreDown);
+			if(QQUtils.QQDebug==1 && downScore ==0 ){
+				Log.d("[0Down] Sd= "+new DecimalFormat("##.##").format(100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio)+
+						"::pW="+new DecimalFormat("##.##").format(partWeight)+
+						" av="+new DecimalFormat("##.##").format(avgLevel)+
+						" sC="+new DecimalFormat("##.##").format(scaledQCount)+
+						" sR="+new DecimalFormat("##.##").format(scaledCorrectRatio));			
+			}
+			return String.valueOf(downScore);
+			*/
+		}
+
+		
         var selectSpecial = function () {
             if (Profile.level == 0)
                 return false;

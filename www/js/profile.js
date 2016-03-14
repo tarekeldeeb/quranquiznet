@@ -44,11 +44,10 @@ angular.module('starter.profile',[])
 		return (numQuestions==0)? 0: (numCorrect / numQuestions);
   }
   var calculateScorePart = function(i){
-		return (correctRatio==0)? 0: 
-					Math.round(
-						this.parts[i].avgLevel
-						*(2*this.parts[i].numCorrect - (this.parts[i].numQuestions))
-					)*10;
+		return 	Math.round(
+					self.parts[i].avgLevel
+					*(2*self.parts[i].numCorrect - (self.parts[i].numQuestions))
+				)*10;
 		/*
 		var score=0.0;
 		var partWeight,scaledQCount,avgLevel,scaledCorrectRatio;
@@ -140,22 +139,21 @@ angular.module('starter.profile',[])
 
   this.addIncorrect = function(currentPart) {
 		if (currentPart < this.parts.length) {
-			this.parts[currentPart].numQuestions += 1;	
+			self.parts[currentPart].numQuestions += 1;	
 
-			Utils.saveObject('prf_parts',this.parts);				
+			Utils.saveObject('prf_parts',self.parts);				
 		}
 	}
 
   this.getScore = function(){
-		var score=0.0;
-		for(var i=0;i<this.parts.length;i++){
+		var score=0;
+		for(var i=0;i<self.parts.length;i++){
 			score += calculateScorePart(i);
+			//Utils.log(score);
 		}
-		return Math.round(score+specialScore);
+		Utils.log('Score = '+ score+'+'+self.specialScore+' = '+Math.round(score +self.specialScore));
+		return (score);
 	}
-
-	
-	
 
 	//
 	//After getting a random number between 1:TotalStudy,
@@ -260,6 +258,7 @@ angular.module('starter.profile',[])
 		}
 		return false;
 	}
+
 	
 	/* 	// TODO: continue Port!
 	
@@ -328,76 +327,6 @@ angular.module('starter.profile',[])
 		return sparse;
 	}
 	
-		public CharSequence getUpScore(int CurrentPart) {
-		double currentPartScore, currentPartScoreUp;
-		double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
-		int numCorrect, numQuestions, currLevel;
-		
-		//
-		//Find the difference between the current and the to-be-incremented score
-		//The difference comes from the current part only. The current is calculated
-		//normally, while the UP is calculated manually as below
-		//
-		currentPartScore = calculateScorePart(CurrentPart, true);
-		
-		//
-		//Calculate the normalized Number of words in current part + UP
-		//
-		numCorrect   = QParts.get(CurrentPart).getNumCorrect();
-		numQuestions = QParts.get(CurrentPart).getNumQuestions();
-		currLevel  	 = getLevel();
-		
-		partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
-		
-		avgLevel     = numCorrect*(QParts.get(CurrentPart).getAvgLevel())+currLevel;
-		avgLevel	/= (numCorrect+1);		
-		
-		scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect() + 1,
-									  QQUtils.Juz2SaturationQCount*partWeight);
-		scaledQCount+=1;
-		scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect+1)/((float)numQuestions+1),1);
-		
-		currentPartScoreUp = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
-
-		return String.valueOf((int)Math.round(currentPartScoreUp-currentPartScore));
-	}
-
-	public CharSequence getDownScore(int CurrentPart) {
-		double currentPartScore, currentPartScoreDown;
-		double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
-		int numCorrect, numQuestions, downScore;
-		
-		//
-		//Find the difference between the current and the to-be-decremented score
-		//The difference comes from the current part only. The current is calculated
-		//normally, while the DOWN is calculated manually as below
-		//
-		currentPartScore = calculateScorePart(CurrentPart, false);
-		
-		//
-		//Calculate the normalized Number of words in current part + UP
-		//
-		numCorrect   = QParts.get(CurrentPart).getNumCorrect();
-		numQuestions = QParts.get(CurrentPart).getNumQuestions();
-		partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
-		
-		avgLevel     = QParts.get(CurrentPart).getAvgLevel();		
-		scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect(),
-									  QQUtils.Juz2SaturationQCount*partWeight);
-		scaledQCount+=1;
-		scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect)/((float)numQuestions+1),1);
-		
-		currentPartScoreDown = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
-		downScore 			 = (int)Math.round(currentPartScore-currentPartScoreDown);
-		if(QQUtils.QQDebug==1 && downScore ==0 ){
-			Log.d("[0Down] Sd= "+new DecimalFormat("##.##").format(100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio)+
-					"::pW="+new DecimalFormat("##.##").format(partWeight)+
-					" av="+new DecimalFormat("##.##").format(avgLevel)+
-					" sC="+new DecimalFormat("##.##").format(scaledQCount)+
-					" sR="+new DecimalFormat("##.##").format(scaledCorrectRatio));			
-		}
-		return String.valueOf(downScore);
-	}
 	
   */
   return self;
