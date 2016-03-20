@@ -303,6 +303,12 @@ angular.module('starter.utils', ['angular-md5'])
 
         return self;
     })
+	
+	.filter('checkmark', function() {
+		return function(input) {
+			return input ? '\u2713' : '\u2718';
+		};
+	});
 
 /** Unmapped 
 

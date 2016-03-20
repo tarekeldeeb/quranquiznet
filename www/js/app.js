@@ -173,12 +173,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         }
     })
 
-    .state('tab.chats', {
-        url: '/chats',
+    .state('tab.settings', {
+        url: '/settings',
         views: {
-            'tab-chats': {
-                templateUrl: 'templates/tab-chats.html',
-                controller: 'google'
+            'tab-settings': {
+                templateUrl: 'templates/tab-settings.html',
+                controller: 'settingsCtrl'
             }
         }
     })

@@ -99,9 +99,16 @@ angular.module('starter.controllers', [])
 	}
 })
 
-.controller('AccountCtrl', function($scope, Profile) {
+.controller('settingsCtrl', function($scope, Profile) {
   $scope.profile = Profile;
   $scope.saveSettings = function(){
+	Profile.saveSettings();
+  }
+})
+
+.controller('AccountCtrl', function($scope, Profile) {
+  $scope.profile = Profile;
+  $scope.saveParts = function(){
 	//TODO: Validate selected quantity!
 	Profile.saveParts();
 }
@@ -110,7 +117,7 @@ angular.module('starter.controllers', [])
 	for(var i=1;i<$scope.profile.parts.length;i++){
 		$scope.profile.parts[i].checked = tog; 
 	}
-	$scope.saveSettings();
+	$scope.saveParts();
   };
   
   $scope.getIcon = function(part){

@@ -119,6 +119,12 @@ angular.module('starter.profile',[])
 	Utils.saveObject('prf_parts',this.parts);	
   }
 
+  this.saveSettings = function(){
+	Utils.log('Saving: Level='+this.level+' Special:'+this.specialEnabled);
+	Utils.save('prf_level',this.level);
+	Utils.save('prf_specialEnabled',this.specialEnabled);
+  }
+ 
   this.saveScores = function(){
 	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
@@ -260,6 +266,11 @@ angular.module('starter.profile',[])
 		}
 		return false;
 	}
+
+	this.levels = [	{value:0, text:"مستوى ابتدائي", comment:"يبدأ السؤال من رأس الاية، ولا يزيد النقاط", disabled:false},
+					{value:1, text:"مستوى أولي", comment:"السؤال من ثلاث كلمات، يزيد النقاط بعشرة", disabled:false},
+					{value:2, text:"مستوى ثانوي", comment:"السؤال من كلمتين، يزيد النقاط بعشرين", disabled:false},
+					{value:3, text:"مستوى متقدم", comment:"أكثر من اجابة صحيحة، يزيد النقاط بثلاثين", disabled:true}];
 
 	
 	/* 	// TODO: continue Port!

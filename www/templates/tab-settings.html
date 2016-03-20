@@ -1,0 +1,33 @@
+<ion-view view-title="الاعدادات">
+ <ion-content dir="rtl">
+      
+      <div class="list">
+        
+        <div class="item item-divider"> 
+          مستوى الاختبار: {{ profile.level }}
+        </div>
+        
+        <ion-radio ng-repeat="item in profile.levels"
+                   ng-value="item.value"
+                   ng-model="profile.level"
+				   ng-disabled="item.disabled"
+				   icon="ion-checkmark-circled"
+				   ng-change="saveSettings()">
+          {{ item.text }} 
+		  <h5><span class="item-note"> {{item.comment}}</span></h5>
+        </ion-radio>
+        
+		<div class="item item-divider"> 
+          الاسئلة الخاصة: {{ profile.specialEnabled | checkmark}}
+        </div>
+		
+		<ion-checkbox 	ng-model="profile.specialEnabled"
+						icon="ion-checkmark-circled"
+						ng-change="saveSettings()">
+			تفعيل الاسئلة عن اسم السورة ورقم الاية ..</ion-checkbox>
+
+		
+      </div>
+      
+    </ion-content>
+</ion-view>
