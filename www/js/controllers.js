@@ -9,7 +9,8 @@ angular.module('starter.controllers', [])
 	Utils.log('Ahlan to Quran Quiz Net!');
 })
 .controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
-	var round,shuffle;
+	var shuffle;
+	$scope.round = 0;
 	var qquestion = document.getElementById('qquestion');
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
@@ -26,10 +27,10 @@ angular.module('starter.controllers', [])
 		$scope.busyShow();
 		Questionnaire.createNextQ(parseInt(start))
 		.then(function(){
-			round = 0;
+			$scope.round = 0;
 			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
-			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
+			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
 			$scope.busyHide();			
 			setTimeout(function() {Profile.saveAll();},100); //NB: Remove to debug the lastly saved question
 		});
@@ -39,13 +40,14 @@ angular.module('starter.controllers', [])
 		$scope.nextQ();
 		$scope.updateScore();
 	}
+	$scope.makeSequence = function(n){return Utils.makeSequence(n);}
 	$scope.selectOption = function(sel) {	
 		if (shuffle[sel] != 0){ 						// Bad Choice
 			Profile.addIncorrect(Questionnaire.qo.currentPart);
 			$scope.nextQ();
 			$scope.updateScore();
 			return;
-		}else if( ++round == Questionnaire.qo.rounds){ 	// Correct Finish
+		}else if( ++$scope.round == Questionnaire.qo.rounds){ 	// Correct Finish
 			Profile.addCorrect(Questionnaire.qo.currentPart);
 			$scope.nextQ();
 			$scope.updateScore();
@@ -53,7 +55,7 @@ angular.module('starter.controllers', [])
 		} else {										// Proceed with rounds
 			$scope.question = $scope.question + ' ' + $scope.options[sel];
 			shuffle = Utils.randperm(5);
-			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[round], shuffle);
+			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
 			setTimeout(function() {qquestion.scrollLeft = 0},10);
 			//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
 		}
@@ -106,7 +108,7 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('AccountCtrl', function($scope, Profile) {
+.controller('StudyCtrl', function($scope, Profile) {
   $scope.profile = Profile;
   $scope.saveParts = function(){
 	//TODO: Validate selected quantity!

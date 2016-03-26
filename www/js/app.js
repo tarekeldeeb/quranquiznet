@@ -193,12 +193,12 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
         }
     })
 
-    .state('tab.account', {
-        url: '/account',
+    .state('tab.study', {
+        url: '/study',
         views: {
-            'tab-account': {
-                templateUrl: 'templates/tab-account.html',
-                controller: 'AccountCtrl'
+            'tab-study': {
+                templateUrl: 'templates/tab-study.html',
+                controller: 'StudyCtrl'
             }
         }
     });

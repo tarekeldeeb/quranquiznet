@@ -263,3 +263,11 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 .item-radio input[type="radio"] {
   display: none;
 }
+
+.button-icon .icon:before, .button-icon.icon:before {
+    font-size: 16px;
+}
+.item-checkbox{
+	padding-right: 60px;
+	padding-left: 0px;
+}

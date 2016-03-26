@@ -92,11 +92,11 @@ angular.module('starter.profile',[])
 		this.saveAll();
 		return false;
 	} else {
-		this.uid 				= Utils.load('prf_uid',0);
-		this.lastSeed 			= Utils.load('prf_lastSeed',0);
-		this.level 				= Utils.load('prf_level',-1);
-		this.specialEnabled 	= Utils.load('prf_specialEnabled',false);
-		this.specialScore 		= Utils.load('prf_specialScore',0);
+		this.uid 				= parseInt(Utils.load('prf_uid',0));
+		this.lastSeed 			= parseInt(Utils.load('prf_lastSeed',0));
+		this.level 				= parseInt(Utils.load('prf_level',-1));
+		this.specialEnabled 	= JSON.parse(Utils.load('prf_specialEnabled',false));
+		this.specialScore 		= parseInt(Utils.load('prf_specialScore',0));
 		this.scores 			= Utils.loadObject('prf_scores');
 		this.parts 				= Utils.loadObject('prf_parts');		
 		this.version 			= Utils.loadObject('prf_version');		
@@ -120,7 +120,6 @@ angular.module('starter.profile',[])
   }
 
   this.saveSettings = function(){
-	Utils.log('Saving: Level='+this.level+' Special:'+this.specialEnabled);
 	Utils.save('prf_level',this.level);
 	Utils.save('prf_specialEnabled',this.specialEnabled);
   }
@@ -136,7 +135,7 @@ angular.module('starter.profile',[])
 			if(self.parts[currentPart].avgLevel != self.level){
 				var avgLevel = parseInt(self.parts[currentPart].avgLevel);
 				var numCorrect = parseInt(self.parts[currentPart].numCorrect);	
-				self.parts[currentPart].avgLevel = (numCorrect*avgLevel + parseInt(self.level))/(numCorrect + 1);
+				self.parts[currentPart].avgLevel = (numCorrect*avgLevel + self.level)/(numCorrect + 1);
 				Utils.log('New avgLevel for part-'+currentPart+' is '+self.parts[currentPart].avgLevel);
 			}
 

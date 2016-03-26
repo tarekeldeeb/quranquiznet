@@ -33,7 +33,12 @@
 						  </div>
 						</div>
 					</div>
-					<div class="item item-divider"  align="right">اجابة .. صحيحة </div>
+					<div class="item item-divider"  style="text-align:right; padding:4px;">
+						<div class="button-bar" style="margin: -6px">
+							<button ng-repeat="n in makeSequence(round) track by $index" class="button button-small button-icon icon ion-ios-checkmark-outline balanced"></button>
+							<button ng-repeat="n in makeSequence(10-round) track by $index" class="button button-small button-icon icon ion-ios-circle-outline light"></button>
+						</div>	
+					</div>
 				</div>
 			</div>
 			<div class="back">
