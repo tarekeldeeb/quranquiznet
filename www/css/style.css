@@ -213,10 +213,6 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 		transform: rotateY(180deg);
 	}
 
-/*	.flip-container:hover .flipper, .flip-container.hover .flipper, .flip-container.flip .flipper {
-	transform: rotateY(180deg);
-}*/
-
 .flip-container, .front, .back {
 	width: 100%;
 	height: 420px;

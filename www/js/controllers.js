@@ -42,7 +42,8 @@ angular.module('starter.controllers', [])
 	}
 	$scope.makeSequence = function(n){return Utils.makeSequence(n);}
 	$scope.selectOption = function(sel) {	
-		if (shuffle[sel] != 0){ 						// Bad Choice
+		if (shuffle[sel] != 0){ 								// Bad Choice
+			$scope.flip();
 			Profile.addIncorrect(Questionnaire.qo.currentPart);
 			$scope.nextQ();
 			$scope.updateScore();
@@ -52,7 +53,7 @@ angular.module('starter.controllers', [])
 			$scope.nextQ();
 			$scope.updateScore();
 			return;			
-		} else {										// Proceed with rounds
+		} else {												// Proceed with rounds
 			$scope.question = $scope.question + ' ' + $scope.options[sel];
 			shuffle = Utils.randperm(5);
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
@@ -61,8 +62,7 @@ angular.module('starter.controllers', [])
 		}
 	}
 	$scope.flip = function(){
-		angular.element(document.getElementById('flip-container')).toggle("flip") 
-		console.log('Flipped:' + JSON.stringify());
+		angular.element(document.getElementById('flip-container')).toggleClass('flip')
 	}
 
 	function animateScore(count)
