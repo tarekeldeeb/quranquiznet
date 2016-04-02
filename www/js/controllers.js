@@ -8,7 +8,7 @@ angular.module('starter.controllers', [])
 .controller('ahlanCtrl', function($scope, Utils) {
 	Utils.log('Ahlan to Quran Quiz Net!');
 })
-.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, DBA, Utils, Profile, Questionnaire) {
+.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, $ionicPopup, DBA, Utils, Profile, Questionnaire) {
 	var shuffle;
 	$scope.round = 0;
 	var qquestion = document.getElementById('qquestion');
@@ -23,6 +23,7 @@ angular.module('starter.controllers', [])
 		$scope.score_up 	= Questionnaire.getUpScore();
 		$scope.score_down 	= Questionnaire.getDownScore();
 	}
+		
 	$scope.nextQ = function(start){
 		$scope.busyShow();
 		Questionnaire.createNextQ(parseInt(start))
@@ -31,9 +32,19 @@ angular.module('starter.controllers', [])
 			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
-			$scope.busyHide();			
-			setTimeout(function() {Profile.saveAll();},100); //NB: Remove to debug the lastly saved question
+			$scope.busyHide();
+			setTimeout(function() {Profile.saveAll();},100); //Note: Remove to debug the lastly saved question
 		});
+	}
+	$scope.getAnswer = function(){
+		$scope.answer = 	Questionnaire.qo.txt.question + ' ' +
+							Questionnaire.qo.txt.op[0][0] + ' ' +
+							Questionnaire.qo.txt.op[1][0] + ' ' +
+							Questionnaire.qo.txt.op[2][0] + ' ' +
+							Questionnaire.qo.txt.op[3][0] + ' ' +
+							Questionnaire.qo.txt.op[4][0] + ' ...';
+		$scope.answer_sura = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
+		Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
 	}
 	$scope.skipQ = function(){
 		Profile.addIncorrect(Questionnaire.qo.currentPart);
@@ -43,6 +54,7 @@ angular.module('starter.controllers', [])
 	$scope.makeSequence = function(n){return Utils.makeSequence(n);}
 	$scope.selectOption = function(sel) {	
 		if (shuffle[sel] != 0){ 								// Bad Choice
+			$scope.getAnswer();
 			$scope.flip();
 			Profile.addIncorrect(Questionnaire.qo.currentPart);
 			$scope.nextQ();
@@ -79,6 +91,19 @@ angular.module('starter.controllers', [])
 		}
 	  }, 50);
 	}
+	$scope.reportQuestion = function() {
+     var confirmPopup = $ionicPopup.confirm({
+       title: 'الابلاغ عن خطأ',
+       template: 'هل تريد الابلاغ عن خطأ في السؤال؟'
+     });
+     confirmPopup.then(function(res) {
+       if(res) {
+         console.log('Reporting question:');
+       } else {
+         console.log('You are not sure');
+       }
+     });
+   };
 	$scope.nextQ($stateParams.customStart);
 	$scope.updateScore();
 })

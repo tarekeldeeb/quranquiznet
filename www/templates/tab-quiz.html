@@ -45,17 +45,15 @@
 				<!-- back content -->
 				<div class="list card">
 					<div class="item item-divider quran" align="right">
-						<span style="float:right;">سورة الفاتحة</span>
-						<span style="float:left;">الاية 2</span>
+						<span style="float:right;">{{answer_sura}}</span>
+						<span style="float:left;">الاية {{answer_aya}}</span>
 					</div>
 					<div class="item item-body quran" style="height:310px;display: flex;padding:25px">
-						<p style="font-size:100%;line-height:250%">
-							بسم الله الرحمٰن الرحيم الْحَمْدُ للّهِ رَبِّ الْعَالَمِينَ الرَّحْمـنِ الرَّحِيمِ مَٰـلِكِ يَوْمِ الدِّينِ إِيَّاكَ نَعْبُدُ وإِيَّاكَ نَسْتَعِينُ اهدِنَا الصِّرَاطَ المُستَقِيمَ صِرَاطَ الَّذِينَ أَنعَمتَ عَلَيهِمْ غَيرِ المَغضُوبِ عَلَيهِمْ وَلاَ الضَّالِّينَ 
-						</p>
-						<button class="button button-small button-icon icon ion-flag assertive" style="margin-top: auto;"></button>
+						<p style="font-size:100%;line-height:250%">{{answer}}</p>
+						<button class="button button-small button-icon icon ion-flag assertive" style="margin-top: auto;" ng-click="reportQuestion()"></button>
 					</div>
 					<div class="button-bar">
-						<button class="button button-balanced" ng-click="flip()">حسنا</button>
+						<button class="button button-calm" ng-click="flip()">حسنا</button>
 						<button class="button button-clear button-dark icon ion-ios-book-outline"> شاهد </button>
 						<button class="button button-clear button-dark icon ion-ios-people-outline"> نافس </button>
 					</div>
