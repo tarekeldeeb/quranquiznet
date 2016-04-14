@@ -130,8 +130,12 @@ angular.module('starter.profile',[])
 	Utils.saveObject('prf_parts',this.parts);	
   }
   
-  this.addCorrect = function(currentPart) {
-		if (currentPart < self.parts.length) {
+  this.addCorrect = function(qo) {
+       var currentPart = qo.currentPart;
+       if(qo.qType.id>1){ /** Special Question */
+           this.addSpecial(qo.qType.score);
+       }else if (currentPart < self.parts.length) {
+           /** Normal Question */
 			if(self.parts[currentPart].avgLevel != self.level){
 				var avgLevel = parseInt(self.parts[currentPart].avgLevel);
 				var numCorrect = parseInt(self.parts[currentPart].numCorrect);	
@@ -146,7 +150,9 @@ angular.module('starter.profile',[])
 		}
 	}
 
-  this.addIncorrect = function(currentPart) {
+  this.addIncorrect = function(qo) {
+        if(qo.qType.id>1) return; /** Special Question */
+        var currentPart = qo.currentPart;
 		if (currentPart < this.parts.length) {
 			self.parts[currentPart].numQuestions += 1;	
 
@@ -182,9 +188,6 @@ angular.module('starter.profile',[])
 		return new QQSparseResult(this.parts[i].start, i);
 	}
 
-
-
-	
 	//
 	//@return The total word count of studied parts
 	//

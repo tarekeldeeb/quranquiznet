@@ -32,22 +32,18 @@ angular.module('starter.controllers', [])
 			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
+            $scope.instructions = Questionnaire.qo.qType.txt;
 			$scope.busyHide();
 			setTimeout(function() {Profile.saveAll();},100); //Note: Remove to debug the lastly saved question
 		});
 	}
 	$scope.getAnswer = function(){
-		$scope.answer = 	Questionnaire.qo.txt.question + ' ' +
-							Questionnaire.qo.txt.op[0][0] + ' ' +
-							Questionnaire.qo.txt.op[1][0] + ' ' +
-							Questionnaire.qo.txt.op[2][0] + ' ' +
-							Questionnaire.qo.txt.op[3][0] + ' ' +
-							Questionnaire.qo.txt.op[4][0] + ' ...';
-		$scope.answer_sura = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
+		$scope.answer       = Questionnaire.qo.txt.answer + ' ...';
+		$scope.answer_sura  = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
 		Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
 	}
 	$scope.skipQ = function(){
-		Profile.addIncorrect(Questionnaire.qo.currentPart);
+		Profile.addIncorrect(Questionnaire.qo);
 		$scope.nextQ();
 		$scope.updateScore();
 	}
@@ -56,12 +52,12 @@ angular.module('starter.controllers', [])
 		if (shuffle[sel] != 0){ 								// Bad Choice
 			$scope.getAnswer();
 			$scope.flip();
-			Profile.addIncorrect(Questionnaire.qo.currentPart);
+			Profile.addIncorrect(Questionnaire.qo);
 			$scope.nextQ();
 			$scope.updateScore();
 			return;
 		}else if( ++$scope.round == Questionnaire.qo.rounds){ 	// Correct Finish
-			Profile.addCorrect(Questionnaire.qo.currentPart);
+			Profile.addCorrect(Questionnaire.qo);
 			$scope.nextQ();
 			$scope.updateScore();
 			return;			
