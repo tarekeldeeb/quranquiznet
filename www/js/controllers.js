@@ -40,6 +40,8 @@ angular.module('starter.controllers', [])
 	$scope.getAnswer = function(){
 		$scope.answer       = Questionnaire.qo.txt.answer + ' ...';
 		$scope.answer_sura  = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
+        $scope.answer_sura_info = Utils.getSuraTanzilFromWordIdx(Questionnaire.qo.startIdx)+
+                                    ' اياتها ' + Utils.sura_ayas[Utils.getSuraIdx(Questionnaire.qo.startIdx)];
 		Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
 	}
 	$scope.skipQ = function(){

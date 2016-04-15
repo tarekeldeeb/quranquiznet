@@ -211,9 +211,10 @@ angular.module('starter.services', [])
       });
   }
 
+  /*Deprecated
   self.ayaCountOfSuraAt = function(idx){
 	return self.ayaNumberOf((Utils.sura_idx[Utils.getSuraIdx(idx)] -1));
-  }
+  }*/
   
   self.ayaEndsAfter = function(idx){
 	return DBA.query("select _id from q where _id >=" + idx +" and aya IS NOT NULL LIMIT 1",[])

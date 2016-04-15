@@ -41,7 +41,7 @@ angular.module('starter.questionnaire', [])
             if (isFinite(s) && s > 0 && s <= Utils.QuranWords) {
                 start = s;
             }
-            if (Profile.specialEnabled && selectSpecial() || true) { //TODO: remove! || true  - && false
+            if (Profile.specialEnabled && selectSpecial()) { //TODO: remove! || true  - && false
                 Utils.log('Creating a special question ..');
                 return this.createSpecialQ(start);
             } else {
@@ -54,23 +54,19 @@ angular.module('starter.questionnaire', [])
             this.qo.rounds = 1;
 
             if (Profile.isSurasSpecialQuestionEligible()) {
-                if (Math.random() > 0.5 || true){
+                if (Math.random() > 0.5 ){
                     this.qo.qType = this.qTypeEnum.SURANAME;                  
                 }
-                else if (Math.random() > 0.3 || true){
-                    this.qo.qType = this.qTypeEnum.SURAAYACOUNT; 
-                    //Utils.log('Type id: '+this.qo.qType.id);
-                    //return this.createQSuraAyaCount();                   
+                else if (Math.random() > 0.3 ){
+                    this.qo.qType = this.qTypeEnum.SURAAYACOUNT;             
                 }
-                else{
-                    this.qo.qType = this.qTypeEnum.AYANUMBER; 
-                    //Utils.log('Type id: '+this.qo.qType.id);
-                    //return this.createQAyaNumber();                   
+                else if (Math.random() > 0.3 ||true){
+                    this.qo.qType = this.qTypeEnum.AYANUMBER;                    
+                } else{
+                    this.qo.qType = this.qTypeEnum.MAKKI;
                 }
             } else {
                 this.qo.qType = this.qTypeEnum.AYANUMBER;
-                //Utils.log('Type id for non-eligible: '+this.qo.qType.id);
-                //return this.createQAyaNumber();
             }
             Utils.log('Type id: '+this.qo.qType.id);
                         // +1 to compensate the rand-gen integer [0-QuranWords-1]
@@ -89,24 +85,28 @@ angular.module('starter.questionnaire', [])
                     self.qo.oLen = 1;
                     
                     switch (self.qo.qType.id) {
-                        case self.qTypeEnum.SURAAYACOUNT.id:
+                      case self.qTypeEnum.SURANAME.id:
                             //Correct Answer:
-                            self.qo.op[0][0] = Q.ayaCountOfSuraAt(self.qo.startIdx);
+                            self.qo.op[0][0] = Utils.getSuraIdx(self.qo.startIdx);
+                            //Incorrect Answers		
+                            self.fillIncorrectRandomIdx(self.qo.op[0][0], 114);
+                            break;  
+                      case self.qTypeEnum.SURAAYACOUNT.id:
+                            //Correct Answer:
+                            self.qo.op[0][0] = Utils.sura_ayas[Utils.getSuraIdx(self.qo.startIdx)]
                             //Incorrect Answers		
                             self.fillIncorrectRandomNonZeroIdx(self.qo.op[0][0], 50);
                             break;
                         case self.qTypeEnum.AYANUMBER.id:
                             //Correct Answer:
-                            self.qo.op[0][0] = Q.ayaCountOfSuraAt(self.qo.startIdx);
-                            //Incorrect Answers		
-                            self.fillIncorrectRandomNonZeroIdx(self.qo.op[0][0], 50);
-                            break;
-                        case self.qTypeEnum.SURANAME.id:
-                            //Correct Answer:
-                            self.qo.op[0][0] = Utils.getSuraIdx(self.qo.startIdx);
-                            //Incorrect Answers		
-                            self.fillIncorrectRandomIdx(self.qo.op[0][0], 114);
-                            break;                                                
+                            Q.ayaNumberOf(self.qo.startIdx)
+                            .then(function(aya){
+                                self.qo.op[0][0] = aya;
+                                //Incorrect Answers		
+                                self.fillIncorrectRandomNonZeroIdx(self.qo.op[0][0], 50);
+                                return this;
+                            });
+                            break;                                              
                         default:
                         Utils.log('Unsupported question type!');
                             break;
@@ -115,24 +115,6 @@ angular.module('starter.questionnaire', [])
                 }).then(function () {
                     Utils.log(JSON.stringify(self.qo));
                 });
-        }
-
-        this.createQSuraAyaCount = function () {
-            do {
-                this.sparsed = Profile.getSparsePoint(rand.int32() % Profile.getTotalStudyLength());
-                Profile.lastSeed = this.sparsed.idx;
-                this.qo.currentPart = this.sparsed.part;
-                // +1 to compensate the rand-gen integer [0-QuranWords-1]
-                this.qo.startIdx = this.getValidUniqueStartNear(this.sparsed.idx + 1);
-            } while (!1); //!session.addIfNew(qo.startIdx)); TODO
-
-            this.qo.validCount = 1; //Number of correct options at the first round
-            this.qo.qLen = (Profile.level == 1) ? 3 : 2;
-            this.qo.oLen = 1;
-            //Correct Answer:
-            this.qo.op[0][0] = Q.ayaCountOfSuraAt(this.qo.startIdx);
-            //Incorrect Answers		
-            this.fillIncorrectRandomNonZeroIdx(this.qo.op[0][0], 50);
         }
 
         this.createQAyaNumber = function () {
@@ -307,7 +289,7 @@ angular.module('starter.questionnaire', [])
                 if ((correctIdx + rndIdx[perm[i]]) === rndIdx[perm[0]]) {
                     //only one may give a zero, fix and break
                     rndIdx[i] = 2;
-                    break;
+                    //break;
                 }
 
             this.qo.op[0][1] = (correctIdxPerm + rndIdx[perm[1]]) % mod;
@@ -453,12 +435,20 @@ angular.module('starter.questionnaire', [])
                                 self.qo.txt.op[0][l] = 'سورة '+Utils.getSuraNameFromIdx(self.qo.op[0][l]);
                             }
                             return;
-                        case self.qTypeEnum.SURAAYACOUNT.id:                    // Do nothing! 
+                        case self.qTypeEnum.SURAAYACOUNT.id:
+                            for (var l = 0; l < 5; l++) {
+                                self.qo.txt.op[0][l] = 'ايات السورة '+self.qo.op[0][l];
+                            }
+                            return;
+                        case self.qTypeEnum.AYANUMBER.id:
+                            for (var l = 0; l < 5; l++) {
+                                self.qo.txt.op[0][l] = 'رقم الاية '+self.qo.op[0][l];
+                            }
                             break;
-                        case self.qTypeEnum.MAKKI.id:                     // Do nothing! 
+                        case self.qTypeEnum.MAKKI.id: 
+                            // Do nothing! 
                             break;
-                        case self.qTypeEnum.AYANUMBER.id:                    // Do nothing! 
-                            break;
+
                         default:
                             // Do nothing! 
                             break;
