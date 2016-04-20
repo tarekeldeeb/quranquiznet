@@ -60,11 +60,11 @@ angular.module('starter.questionnaire', [])
                 else if (Math.random() > 0.3 ){
                     this.qo.qType = this.qTypeEnum.SURAAYACOUNT;             
                 }
-                else if (Math.random() > 0.3 ||true){
+                else /*if (Math.random() > 0.3 ||true)*/{
                     this.qo.qType = this.qTypeEnum.AYANUMBER;                    
-                } else{
+                } /*else{
                     this.qo.qType = this.qTypeEnum.MAKKI;
-                }
+                }*/
             } else {
                 this.qo.qType = this.qTypeEnum.AYANUMBER;
             }

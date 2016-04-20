@@ -17,19 +17,19 @@
 							<button class="button button-small button-clear button-full button-positive" id="instruction">{{instructions}}</button>
 							<button class="button button-large button-clear button-full button-balanced score">{{score}}</button>
 							<div class="row">
-								<div class="col">
+								<div class="col" style="padding:0px">
 									<button class="button button-small button-clear button-block button-balanced score">
 										{{score_up}}<br /><i class="icon ion-arrow-up-b"></i>
 									</button>
 								</div>
-								<div class="col">
+								<div class="col" style="padding:0px">
 									<button class="button button-small button-clear button-block button-assertive score">
 										-{{score_down}}<br /><i class="icon ion-arrow-down-b"></i>
 									</button>
 								</div>
 							</div>
-							<button class="button button-clear button-outline button-block button-assertive" ng-click="skipQ()">لا أعلم <i class="icon ion-sad-outline"></i>
-</button>
+							<button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden" ng-click="skipQ()"><i class="icon ion-sad-outline"></i>
+							لا&nbsp;أعلم</button>
 						  </div>
 						</div>
 					</div>
@@ -45,20 +45,22 @@
 				<!-- back content -->
 				<div class="list card">
 					<div class="item item-divider quran" align="right">
-						<span style="float:right;">
+						<span style="float:right;overflow:hidden;width:60%">
                                 &#xFD3F;سورة {{answer_sura}}&#xFD3E;
                             <small style="margin-right:10px;">{{answer_sura_info}}</small>
                         </span>
 						<span style="float:left;">الاية {{answer_aya}}</span>
 					</div>
-					<div class="item item-body quran" style="height:310px;display: flex;padding:25px">
+					<div class="item item-body quran center" style="height:290px;padding:25px">
 						<p style="font-size:100%;line-height:250%">{{answer}}</p>
-						<button class="button button-small button-icon icon ion-flag assertive" style="margin-top: auto;" ng-click="reportQuestion()"></button>
+						<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;" ng-click="reportQuestion()"></button>
 					</div>
 					<div class="button-bar">
 						<button class="button button-calm" ng-click="flip()">حسنا</button>
-						<button class="button button-clear button-dark icon ion-ios-book-outline"> شاهد </button>
-						<button class="button button-clear button-dark icon ion-ios-people-outline"> نافس </button>
+						<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
+							شاهد</button>
+						<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
+							نافس</button>
 					</div>
 				</div>
 			</div>
