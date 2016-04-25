@@ -1,25 +1,27 @@
-<ion-view view-title="Profile">
- <ion-content ng-controller="google">
- 
-	<div id="profile-bg"></div>
-	<div id="content">
-		<div id="profile-info">
-		  <img id="profile-image" src="https://s3-us-west-2.amazonaws.com/s.cdpn.io/94311/me.png">
-		  <h3 id="profile-name">Max</h3>
-		  <span id="profile-description">Co-creator of <a href="http://twitter.com/ionicframework">@ionicframework</a>, founder of
-			<a href="http://twitter.com/driftyco">@driftyco</a></span>
+<ion-view view-title="ملفي">
+	<ion-content ng-controller="google">
+		<!-- Display login form in case if no social login-->
+		<div ng-if="social.type != 'google'" ng-init="social={}">
+			<br />
+			<div class="login" style="width: 100%;text-align: center">
+				<h3>برجاء تسجيل الدخول .. </h3><br /><br />
+				<button ng-click="login();" class="button button-assertive ion-social-googleplus" style="margin-bottom:10px">&nbsp;&nbsp;حساب جوجل</button>
+				<button ng-click="" class="button button-positive ion-social-facebook">&nbsp;&nbsp;حساب فيسبوك</button>
+			</div>
 		</div>
-	</div>	
-		
-	<br/>
-	<div class="login" style="width: 100%;text-align: center">
-		<button ng-click="login();" class="button">
-			Login Via Google
-		</button>                        
-		<br/>
-		<pre>
-		{{google_data|json}}
-		</pre>
-	</div>
-  </ion-content>
+		<!-- Display Profile when user has logged in -->
+		<div ng-if="social.type == 'google'">
+			<div id="profile-bg"></div>
+			<div id="content">
+				<div id="profile-info">
+					<a ng-href={{social.data.profile}}>
+					<img id="profile-image" ng-src={{social.data.picture}}>
+					</a>
+					<h3 id="profile-name">{{social.data.name}}</h3>
+					<div id="profile-description">{{social.data.email}}</div>
+					<button ng-click="logout();" class="button button-small button-light">&nbsp;&nbsp;خروج&nbsp;&nbsp;</button>
+				</div>
+			</div>
+		</div>
+	</ion-content>
 </ion-view>

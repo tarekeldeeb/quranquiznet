@@ -110,18 +110,26 @@ angular.module('starter.controllers', [])
 * All below services are for demo purposes!
 * You may ignore for now.
 */
-.controller('google', function ($scope, googleLogin, Utils) {
-	$scope.google_data = {};
+.controller('google', function ($rootScope, $scope, googleLogin, Utils, Profile) {
+	$rootScope.social = Profile.social;
+	Utils.log(JSON.stringify($rootScope.social));	
 	$scope.login = function () {
 		var promise = googleLogin.startLogin();
 		promise.then(function (data) {
-			Utils.save('google_data', JSON.stringify(data));
-			$scope.google_data = data;
+			$rootScope.social.type = 'google';
+			$rootScope.social.data = data;
+			Profile.saveSocial($rootScope.social);
 			Utils.log(JSON.stringify(data));
 		}, function (data) {
-			$scope.google_data = data;
+			Utils.log(JSON.stringify(data));
 		});
 	}
+	$scope.logout = function () {
+			/** Just delete the token and data locally */
+			$rootScope.social.type = {};
+			$rootScope.social.data = {};
+			Profile.saveSocial($rootScope.social);
+	}	
 })
 
 .controller('settingsCtrl', function($scope, Profile) {

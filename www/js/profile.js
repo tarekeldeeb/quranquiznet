@@ -9,6 +9,7 @@ angular.module('starter.profile',[])
   var self = this;
   
   this.uid = 0;
+  this.social = {type:{}, data:{}};
   this.lastSeed = 0;
   this.level = 1;
   this.specialEnabled = false;
@@ -100,6 +101,7 @@ angular.module('starter.profile',[])
 		this.scores 			= Utils.loadObject('prf_scores');
 		this.parts 				= Utils.loadObject('prf_parts');		
 		this.version 			= Utils.loadObject('prf_version');		
+		this.social 			= Utils.loadObject('prf_social');		
 		return true;
 	}
   }
@@ -112,7 +114,8 @@ angular.module('starter.profile',[])
 	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
 	Utils.saveObject('prf_parts',this.parts);	
-	Utils.saveObject('prf_version',this.version);	
+	Utils.saveObject('prf_parts',this.parts);	
+	Utils.saveObject('prf_social',this.social);	
   }
   
   this.saveParts = function(){
@@ -130,6 +133,11 @@ angular.module('starter.profile',[])
 	Utils.saveObject('prf_parts',this.parts);	
   }
   
+  this.saveSocial = function(social){
+	  this.social = social
+	  //TODO: Add checks from social  provider: basic fields? error codes?	
+	  Utils.saveObject('prf_social',this.social);	
+  }
   this.addCorrect = function(qo) {
        var currentPart = qo.currentPart;
        if(qo.qType.id>1){ /** Special Question */
