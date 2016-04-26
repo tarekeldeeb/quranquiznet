@@ -8,12 +8,26 @@ angular.module('starter.controllers', [])
 .controller('ahlanCtrl', function($scope, Utils) {
 	Utils.log('Ahlan to Quran Quiz Net!');
 })
-.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, $ionicPopup, DBA, Utils, Profile, Questionnaire) {
+.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire) {
 	var shuffle;
 	$scope.round = 0;
+	$scope.showingBackCard = false;
+	$scope.busy = true;
+	$scope.imageSrc = 'http://images.qurancomplex.gov.sa/publications/04_standard1/750/jpg_90/0011.jpg';
 	var qquestion = document.getElementById('qquestion');
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
+	$ionicModal.fromTemplateUrl('image-modal.html', {
+						scope: $scope,      animation: 'slide-in-up'
+					}).then(function(modal) {
+						$scope.modal = modal;
+					});
+	$scope.openModal = function() {	$scope.modal.show();};
+	$scope.closeModal = function() {$scope.modal.hide();};
+	$scope.$on('$destroy', function() {	$scope.modal.remove();});
+			
+		
+		
 	$scope.updateScore = function(){
 		if ($scope.score == null){
 			$scope.score = Profile.getScore();
@@ -25,14 +39,16 @@ angular.module('starter.controllers', [])
 	}
 		
 	$scope.nextQ = function(start){
-		$scope.busyShow();
+		$scope.busy = true;
+	 	if(!$scope.showingBackCard) $scope.busyShow();
 		Questionnaire.createNextQ(parseInt(start))
 		.then(function(){
 			$scope.round = 0;
 			shuffle = Utils.randperm(5);
 			$scope.question = Questionnaire.qo.txt.question;
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
-            $scope.instructions = Questionnaire.qo.qType.txt;
+      $scope.instructions = Questionnaire.qo.qType.txt;
+			$scope.busy = false;
 			$scope.busyHide();
 			setTimeout(function() {Profile.saveAll();},100); //Note: Remove to debug the lastly saved question
 		});
@@ -60,6 +76,7 @@ angular.module('starter.controllers', [])
 			return;
 		}else if( ++$scope.round == Questionnaire.qo.rounds){ 	// Correct Finish
 			Profile.addCorrect(Questionnaire.qo);
+			$scope.busyShow();
 			$scope.nextQ();
 			$scope.updateScore();
 			return;			
@@ -71,10 +88,16 @@ angular.module('starter.controllers', [])
 			//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
 		}
 	}
+	
 	$scope.flip = function(){
+		$scope.showingBackCard = true;
 		angular.element(document.getElementById('flip-container')).toggleClass('flip')
 	}
-
+	$scope.flipBack = function(){
+		$scope.flip();
+		$scope.showingBackCard = false;
+		if($scope.busy)  $scope.busyShow();
+	}
 	function animateScore(count)
 	{
 	  var stepsCount = Math.abs(count - parseInt($scope.score)) ,
@@ -97,8 +120,9 @@ angular.module('starter.controllers', [])
      confirmPopup.then(function(res) {
        if(res) {
          console.log('Reporting question:');
+				 //TODO: Implement
        } else {
-         console.log('You are not sure');
+         console.log('Report cancelled');
        }
      });
    };

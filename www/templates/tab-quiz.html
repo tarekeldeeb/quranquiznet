@@ -56,8 +56,8 @@
 						<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;" ng-click="reportQuestion()"></button>
 					</div>
 					<div class="button-bar">
-						<button class="button button-calm" ng-click="flip()">حسنا</button>
-						<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
+						<button class="button button-calm" ng-click="flipBack()">حسنا</button>
+						<button class="button button-clear button-dark" ng-click="openModal()" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
 							شاهد</button>
 						<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
 							نافس</button>
@@ -66,6 +66,7 @@
 			</div>
 		</div>
 	  </div>
+
     <div class="list card">
       <div class="item item-divider">Health</div>
       <div class="item item-body">
@@ -82,5 +83,12 @@
         </div>
       </div>
     </div>
+		<script id="image-modal.html" type="text/ng-template">
+			<div class="modal image-modal transparent" ng-click="closeModal()">
+				<ion-pane class="transparent">
+					<img ng-src="{{imageSrc}}" class="fullscreen-image" />
+				</ion-pane>
+			</div>
+		</script>
   </ion-content>
 </ion-view>

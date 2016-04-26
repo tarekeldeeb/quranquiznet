@@ -11,7 +11,10 @@
 	<ion-toggle class="item-icon-left toggle-balanced" ng-repeat="part in profile.parts" ng-model="part.checked" ng-change="saveParts()">
             <i ng-class="getIcon(part)"></i>
             <h3>{{part.name}}</h3>
-			<h5><span class="item-note"> اجاباتك الصحيحة {{part.numCorrect}} من {{part.numQuestions}}</span></h5>
+			<h5>
+				<!-- TODO: Reverse Ellipses for narrow screens -->
+				<span class="item-note"> اجاباتك الصحيحة {{part.numCorrect}} من {{part.numQuestions}}</span>
+			</h5>
 	</ion-toggle>
     </ion-list>
   </ion-content>

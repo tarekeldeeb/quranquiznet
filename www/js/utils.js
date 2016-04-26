@@ -14,7 +14,7 @@ angular.module('starter.utils', ['angular-md5'])
         this.DAILYQUIZ_PARTS_COUNT = 49;
         this.DAILYQUIZ_QPERPART_COUNT = 10;
         this.blFixQ = true;
-	    this.answerLength = 12;
+	    this.answerLength = 24;
         
         // Question Count after which the score starts to saturate per Juz2
         this.Juz2SaturationQCount = 10;
