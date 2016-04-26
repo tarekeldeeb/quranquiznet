@@ -163,7 +163,7 @@ angular.module('starter.controllers', [])
   }
 })
 
-.controller('StudyCtrl', function($scope, Profile) {
+.controller('StudyCtrl', function($scope, Profile, Utils) {
   $scope.profile = Profile;
   $scope.saveParts = function(){
 	//TODO: Validate selected quantity!
@@ -179,10 +179,11 @@ angular.module('starter.controllers', [])
   
   $scope.getIcon = function(part){
 	var ico = 'ion-help-circled stable';
-	if(part.numQuestions > 0){
-		if((part.numCorrect/part.numQuestions)>=0.8)
+	if(Utils.countedScore(part.numQuestions) > 0){
+		var ratio = Utils.countedScore(part.numCorrect)/Utils.countedScore(part.numQuestions);
+		if(ratio>=0.8)
 			ico = 'ion-heart balanced';
-		else if((part.numCorrect/part.numQuestions)>=0.5)
+		else if(ratio>=0.5)
 			ico = 'ion-heart-broken energized';
 		else 	
 			ico = 'ion-flag assertive';

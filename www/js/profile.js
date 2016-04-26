@@ -13,7 +13,6 @@ angular.module('starter.profile',[])
   this.lastSeed = 0;
   this.level = 1;
   this.specialEnabled = false;
-  this.specialScore = 0;
   this.scores = [{date:0,score:0}];
   this.parts = [];
   this.version = {db:1.0, app:1.0, profile:1.0};
@@ -23,12 +22,11 @@ angular.module('starter.profile',[])
 				score:this.getScore()
 			};
   }  
-  var studyPart = function(start,length,correct,questions,avgLevel,name,checked) {
+  var studyPart = function(start,length,correct,questions,name,checked) {
 	return {	start:start,
 				length:length,
 				numCorrect:correct,
 				numQuestions:questions,
-				avgLevel:avgLevel,
 				name:name,
 				checked:checked
 			};
@@ -39,53 +37,48 @@ angular.module('starter.profile',[])
 				part:part
 			};
   }
+  var getCorrectRatios = function(i){
+	  	var r = [0,0,0,0];
+		  var numCorrect, numQuestions;
+		for(varj=0;j<4;j++){
+			numCorrect = this.parts[i].numCorrect[j];
+			numQuestions = this.parts[i].numQuestions[j];
+			r[j] = (numQuestions==0)? 0: (numCorrect / numQuestions);			
+		}
+		return r;
+  }
   var getCorrectRatio = function(i){
-  		var numCorrect = this.parts[i].numCorrect;
-  		var numQuestions = this.parts[i].numQuestions;
-		return (numQuestions==0)? 0: (numCorrect / numQuestions);
+	var numCorrect, numQuestions;
+	numCorrect = 	this.parts[i].numCorrect[0]+
+					this.parts[i].numCorrect[1]+
+					this.parts[i].numCorrect[2]+
+					this.parts[i].numCorrect[3];
+	numQuestions =  this.parts[i].numQuestions[0]+
+					this.parts[i].numQuestions[1]+
+					this.parts[i].numQuestions[2]+
+					this.parts[i].numQuestions[3];
+	return (numQuestions==0)? 0: (numCorrect / numQuestions);			
   }
   var calculateScorePart = function(i){
-		return 	Math.round(
-					self.parts[i].avgLevel
-					*(2*self.parts[i].numCorrect - (self.parts[i].numQuestions))
-				)*10;
-		/*
-		var score=0.0;
-		var partWeight,scaledQCount,avgLevel,scaledCorrectRatio;
-		 //
-		 // Calculate the normalized Number of words in current part
-		 //
-		partWeight   = Utils.PartWeight100[i]/100;
-		avgLevel     = this.parts[i].avgLevel;
-		scaledQCount = Utils.sCurve(this.parts[i].numCorrect,
-									  Utils.Juz2SaturationQCount*partWeight);
-		scaledQCount+=1;
-		scaledCorrectRatio = Utils.sCurve(getCorrectRatio(i),1);
-		
-		score = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
-
-		Utils.log("["+i+"] S= "+(100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio)+
-					"::pW="(partWeight)+
-					" av="+(avgLevel)+
-					" sC="+(scaledQCount)+
-					" sR="+(scaledCorrectRatio));
-		return score;
-		*/
+		return 	self.parts[i].numCorrect[0] +
+				(2*self.parts[i].numCorrect[1]-self.parts[i].numQuestions[1])*10 +
+				(2*self.parts[i].numCorrect[2]-self.parts[i].numQuestions[2])*20 +
+				(2*self.parts[i].numCorrect[3]-self.parts[i].numQuestions[3])*30;
   }
   
   this.load = function() {
 	if (Utils.load('prf_uid',-1) == -1){
 		// Create Default Profile
-		this.parts.push( new studyPart(1,(Utils.sura_idx[0]),0,0,1.0,'سورة '+Utils.sura_name[0],true));
+		this.parts.push( new studyPart(1,(Utils.sura_idx[0]),[0,0,0,0],[0,0,0,0],'سورة '+Utils.sura_name[0],true));
 
 		for (var i = 1; i < 45; i++) 
 			this.parts.push( new studyPart(	(Utils.sura_idx[i-1]),
 											(Utils.sura_idx[i] - Utils.sura_idx[i-1]),
-											0,0,1.0,'سورة '+Utils.sura_name[i],false));
+											[0,0,0,0],[0,0,0,0],'سورة '+Utils.sura_name[i],false));
 		for (var i = 0; i < 5; i++) 
 			this.parts.push( new studyPart(	(Utils.last5_juz_idx[i]),
 											(Utils.last5_juz_idx[i+1] - Utils.last5_juz_idx[i]),
-											0,0,1.0,'جزء '+Utils.last5_juz_name[i],false));
+											[0,0,0,0],[0,0,0,0],'جزء '+Utils.last5_juz_name[i],false));
 
 		this.parts[49].checked = true;		//Juz2 3amma!
 		//TODO: Use https://github.com/davidbau/seedrandom
@@ -97,7 +90,6 @@ angular.module('starter.profile',[])
 		this.lastSeed 			= parseInt(Utils.load('prf_lastSeed',0));
 		this.level 				= parseInt(Utils.load('prf_level',-1));
 		this.specialEnabled 	= JSON.parse(Utils.load('prf_specialEnabled',false));
-		this.specialScore 		= parseInt(Utils.load('prf_specialScore',0));
 		this.scores 			= Utils.loadObject('prf_scores');
 		this.parts 				= Utils.loadObject('prf_parts');		
 		this.version 			= Utils.loadObject('prf_version');		
@@ -111,9 +103,7 @@ angular.module('starter.profile',[])
 	Utils.save('prf_lastSeed',this.lastSeed);
 	Utils.save('prf_level',this.level);
 	Utils.save('prf_specialEnabled',this.specialEnabled);
-	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
-	Utils.saveObject('prf_parts',this.parts);	
 	Utils.saveObject('prf_parts',this.parts);	
 	Utils.saveObject('prf_social',this.social);	
   }
@@ -128,7 +118,6 @@ angular.module('starter.profile',[])
   }
  
   this.saveScores = function(){
-	Utils.save('prf_specialScore',this.specialScore);
 	Utils.saveObject('prf_scores',this.scores);
 	Utils.saveObject('prf_parts',this.parts);	
   }
@@ -138,34 +127,34 @@ angular.module('starter.profile',[])
 	  //TODO: Add checks from social  provider: basic fields? error codes?	
 	  Utils.saveObject('prf_social',this.social);	
   }
-  this.addCorrect = function(qo) {
-       var currentPart = qo.currentPart;
-       if(qo.qType.id>1){ /** Special Question */
-           this.addSpecial(qo.qType.score);
-       }else if (currentPart < self.parts.length) {
-           /** Normal Question */
-			if(self.parts[currentPart].avgLevel != self.level){
-				var avgLevel = parseInt(self.parts[currentPart].avgLevel);
-				var numCorrect = parseInt(self.parts[currentPart].numCorrect);	
-				self.parts[currentPart].avgLevel = (numCorrect*avgLevel + self.level)/(numCorrect + 1);
-				Utils.log('New avgLevel for part-'+currentPart+' is '+self.parts[currentPart].avgLevel);
-			}
-
-			self.parts[currentPart].numCorrect += 1;
-			self.parts[currentPart].numQuestions += 1;			
-			
-			Utils.saveObject('prf_parts',self.parts);	
-		}
-	}
+  this.addCorrect = function (qo) {
+	  var currentPart = qo.currentPart;
+	  if ((currentPart < self.parts.length) && self.level > 0) {
+		  if (qo.qType.id > 1) { 
+			  /** Special Question */
+			  self.parts[currentPart].numCorrect[0] += qo.qType.score;
+			  self.parts[currentPart].numQuestions[0] += 1;
+		  } else {
+			  /** Normal Question */
+			  self.parts[currentPart].numCorrect[self.level] += 1;
+			  self.parts[currentPart].numQuestions[self.level] += 1;
+		  }
+		  Utils.saveObject('prf_parts', self.parts);
+	  }
+  }
 
   this.addIncorrect = function(qo) {
-        if(qo.qType.id>1) return; /** Special Question */
-        var currentPart = qo.currentPart;
-		if (currentPart < this.parts.length) {
-			self.parts[currentPart].numQuestions += 1;	
-
-			Utils.saveObject('prf_parts',self.parts);				
-		}
+	  var currentPart = qo.currentPart;
+	  if ((currentPart < self.parts.length) && self.level > 0) {
+		  if (qo.qType.id > 1) { 
+			  /** Special Question */
+			  self.parts[currentPart].numQuestions[0] += 1;
+		  } else {
+			  /** Normal Question */
+			  self.parts[currentPart].numQuestions[self.level] += 1;
+		  }
+		  Utils.saveObject('prf_parts', self.parts);
+	  }
 	}
 
   this.getScore = function(){
@@ -173,7 +162,7 @@ angular.module('starter.profile',[])
 		for(var i=0;i<self.parts.length;i++){
 			score += calculateScorePart(i);
 		}
-		return (parseInt(score) + parseInt(self.specialScore));
+		return parseInt(score);
 	}
 
 	//
@@ -193,7 +182,7 @@ angular.module('starter.profile',[])
 				Length += pLength;
 			}
 		}
-		return new QQSparseResult(this.parts[i].start, i);
+		return new QQSparseResult(self.parts[i].start, i);
 	}
 
 	//
@@ -212,7 +201,7 @@ angular.module('starter.profile',[])
 		var Tot = 0;
 		for (var i = 0; i < this.parts.length; i++) {
 			if (this.parts[i].checked === true)
-				Tot += this.parts[i].numCorrect;
+				Tot += this.parts[i].numCorrect.reduce(Utils.add, 0);
 		}
 		return Tot;
 	}
@@ -221,14 +210,9 @@ angular.module('starter.profile',[])
 		var Tot = 0;
 		for (var i = 0; i < this.parts.length; i++) {
 			if (this.parts[i].checked === true)
-				Tot += this.parts[i].getNumQuestions;
+				Tot += this.parts[i].getNumQuestions.reduce(Utils.add, 0);
 		}
 		return Tot;
-	}
-	
-	this.addSpecial = function(score) {
-		this.specialScore+= score;		
-		Utils.save('prf_specialScore',this.specialScore);
 	}
 
 	this.getTotAvgLevel = function() {

@@ -41,7 +41,7 @@ angular.module('starter.questionnaire', [])
             if (isFinite(s) && s > 0 && s <= Utils.QuranWords) {
                 start = s;
             }
-            if (Profile.specialEnabled && selectSpecial()  && false) { //TODO: remove! || true  - && false
+            if (Profile.specialEnabled && selectSpecial()) { //TODO: remove! || true  - && false
                 Utils.log('Creating a special question ..');
                 return this.createSpecialQ(start);
             } else {

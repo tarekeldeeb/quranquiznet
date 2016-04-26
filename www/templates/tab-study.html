@@ -13,7 +13,7 @@
             <h3>{{part.name}}</h3>
 			<h5>
 				<!-- TODO: Reverse Ellipses for narrow screens -->
-				<span class="item-note"> اجاباتك الصحيحة {{part.numCorrect}} من {{part.numQuestions}}</span>
+				<span class="item-note"> اجاباتك الصحيحة {{part.numCorrect|countedScore}} من {{part.numQuestions|countedScore}}</span>
 			</h5>
 	</ion-toggle>
     </ion-list>

@@ -271,6 +271,12 @@ angular.module('starter.utils', ['angular-md5'])
 			return new Array(n);
 		}
         /**
+         * Use it to reduce an array,
+         * like [1,2,5].reduce(Utils.add,0) >> Gives 8
+         */
+        this.add = function(a, b) {return a + b;}
+        this.countedScore = function(input) {return  (input.length>3)?input[1]+input[2]+input[3]:0;}
+        /**
         * Format string
         * @param {string} str to format
         * @param {array} args to replace
@@ -333,5 +339,10 @@ angular.module('starter.utils', ['angular-md5'])
 	.filter('checkmark', function() {
 		return function(input) {
 			return input ? '\u2713' : '\u2718';
+		};
+	})
+    .filter('countedScore', function() {
+		return function(input) {
+			return  (input.length>3)?input[1]+input[2]+input[3]:0;
 		};
 	});
