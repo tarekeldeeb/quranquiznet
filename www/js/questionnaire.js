@@ -41,7 +41,7 @@ angular.module('starter.questionnaire', [])
             if (isFinite(s) && s > 0 && s <= Utils.QuranWords) {
                 start = s;
             }
-            if (Profile.specialEnabled && selectSpecial()) { //TODO: remove! || true  - && false
+            if (Profile.specialEnabled && selectSpecial()  && false) { //TODO: remove! || true  - && false
                 Utils.log('Creating a special question ..');
                 return this.createSpecialQ(start);
             } else {
@@ -334,7 +334,7 @@ angular.module('starter.questionnaire', [])
                                 self.qo.validCount = 1; // \
                                 self.qo.qLen = 2;       // -|-> Default Constants for level-2
                                 self.qo.oLen = 1;       // /
-                                return self.extraQLength(start_shadow, qo.qLen)
+                                return self.extraQLength(start_shadow, self.qo.qLen)
                                     .then(function (extraLength) {
                                         if (extraLength > -1) {
                                             self.qo.qLen += extraLength;
@@ -383,21 +383,23 @@ angular.module('starter.questionnaire', [])
         }
 
         this.extraQLength = function (start, qLen) {
-            // TODO: Port!!
             var extra = 0;
-            while ((extra < QLEN_EXTRA_LIMIT) && (Q.sim3cnt(--start) > 0))
+            var q_sim3cnt = 0;
+            // while ((extra < QLEN_EXTRA_LIMIT) && (Q.sim3cnt(--start) > 0))
+            return Utils.promiseWhile(function () { return ((extra < QLEN_EXTRA_LIMIT) && (q_sim3cnt > 0)); }, function () {
+                q_sim3cnt = Q.sim3cnt(--start);
                 extra++;
-
-            if (extra == QLEN_EXTRA_LIMIT)
-                return -1;
-            else if (extra == 0)
-                return 0;
-            else
-                return extra + 1;
+            }).then(function(ctx){
+                if (extra == QLEN_EXTRA_LIMIT)
+                    return -1;
+                else if (extra == 0)
+                    return 0;
+                else
+                    return extra + 1;
+            });
         }
 
         this.fillText = function () {
-
             var qop = [], qtmp;
             for (var i = 0; i < Utils.answerLength; i++) {
                 qtmp = Utils.modQWords(this.qo.startIdx + i);
@@ -464,7 +466,7 @@ angular.module('starter.questionnaire', [])
 		this.getUpScore = function() {
 			
 			switch (this.qo.qType.id) {
-			case this.qTypeEnum.NOTSPECIAL.id: return this.qTypeEnum.NOTSPECIAL.score;
+			case this.qTypeEnum.NOTSPECIAL.id: return this.qTypeEnum.NOTSPECIAL.score*Profile.level;
 			case this.qTypeEnum.SURANAME.id: return this.qTypeEnum.SURANAME.score;
 			case this.qTypeEnum.SURAAYACOUNT.id: return this.qTypeEnum.SURAAYACOUNT.score;
 			case this.qTypeEnum.MAKKI.id: return this.qTypeEnum.MAKKI.score;
@@ -511,7 +513,7 @@ angular.module('starter.questionnaire', [])
 
 		this.getDownScore = function() {
 			if (this.qo.qType.id == this.qTypeEnum.NOTSPECIAL.id){
-				return this.qTypeEnum.NOTSPECIAL.score;				
+				return this.qTypeEnum.NOTSPECIAL.score*Profile.level;				
 			} else {
 				return 0;
 			}
