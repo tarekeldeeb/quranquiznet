@@ -130,20 +130,15 @@ angular.module('starter.controllers', [])
 	$scope.updateScore();
 })
 
-/**
-* All below services are for demo purposes!
-* You may ignore for now.
-*/
 .controller('google', function ($rootScope, $scope, googleLogin, Utils, Profile) {
 	$rootScope.social = Profile.social;
-	Utils.log(JSON.stringify($rootScope.social));	
 	$scope.login = function () {
 		var promise = googleLogin.startLogin();
 		promise.then(function (data) {
 			$rootScope.social.type = 'google';
 			$rootScope.social.data = data;
 			Profile.saveSocial($rootScope.social);
-			Utils.log(JSON.stringify(data));
+			//Utils.log(JSON.stringify(data));
 		}, function (data) {
 			Utils.log(JSON.stringify(data));
 		});
@@ -153,7 +148,21 @@ angular.module('starter.controllers', [])
 			$rootScope.social.type = {};
 			$rootScope.social.data = {};
 			Profile.saveSocial($rootScope.social);
-	}	
+	}
+	//TODO: Get real numbers
+	$scope.pcnt_total_study = '90%';
+	$scope.pcnt_total_ratio = '33%';
+	$scope.pcnt_total_special = '20%';
+	$scope.pcnt_total_rank = '50%';
+	setTimeout(function() {
+		var bars = document.querySelectorAll('.horizontal .progress_fill span');
+		for(var i=0;i<bars.length;i++){
+			var perc = bars[i].innerHTML;
+			bars[i].parentNode.style.width = perc;
+		}		
+	},100);
+
+	
 })
 
 .controller('settingsCtrl', function($scope, Profile) {

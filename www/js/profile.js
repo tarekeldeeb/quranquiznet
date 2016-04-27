@@ -129,15 +129,15 @@ angular.module('starter.profile',[])
   }
   this.addCorrect = function (qo) {
 	  var currentPart = qo.currentPart;
-	  if ((currentPart < self.parts.length) && self.level > 0) {
+	  if ((currentPart < self.parts.length) && qo.level > 0) {
 		  if (qo.qType.id > 1) { 
 			  /** Special Question */
 			  self.parts[currentPart].numCorrect[0] += qo.qType.score;
 			  self.parts[currentPart].numQuestions[0] += 1;
 		  } else {
 			  /** Normal Question */
-			  self.parts[currentPart].numCorrect[self.level] += 1;
-			  self.parts[currentPart].numQuestions[self.level] += 1;
+			  self.parts[currentPart].numCorrect[qo.level] += 1;
+			  self.parts[currentPart].numQuestions[qo.level] += 1;
 		  }
 		  Utils.saveObject('prf_parts', self.parts);
 	  }
@@ -145,13 +145,13 @@ angular.module('starter.profile',[])
 
   this.addIncorrect = function(qo) {
 	  var currentPart = qo.currentPart;
-	  if ((currentPart < self.parts.length) && self.level > 0) {
+	  if ((currentPart < self.parts.length) && qo.level > 0) {
 		  if (qo.qType.id > 1) { 
 			  /** Special Question */
 			  self.parts[currentPart].numQuestions[0] += 1;
 		  } else {
 			  /** Normal Question */
-			  self.parts[currentPart].numQuestions[self.level] += 1;
+			  self.parts[currentPart].numQuestions[qo.level] += 1;
 		  }
 		  Utils.saveObject('prf_parts', self.parts);
 	  }

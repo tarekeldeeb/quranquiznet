@@ -133,7 +133,7 @@ googleLoginService.factory('googleLogin', [
                     console.log('InAppBrowser not found11');
                     var pollTimer = $interval(function () {
                         try {
-                            console.log("google window url " + win.document.URL);
+                            //console.log("google window url " + win.document.URL);
                             if (win.document.URL.indexOf(context.redirect_url) === 0) {
                                 console.log('redirect url found');
                                 win.close();

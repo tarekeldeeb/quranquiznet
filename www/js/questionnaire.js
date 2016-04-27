@@ -21,6 +21,7 @@ angular.module('starter.questionnaire', [])
 
         this.qo = {
             /******** Questions parameters to be set: Start **********/
+            level:1,        // Selected questionaire level
             rounds: 10, 	// How many rounds a question has: 10 for normal, 1 for special
             validCount: 1, 	// Number of correct options at the first round
             op: [], 		// Holds all 5 options x 10 rounds
@@ -41,6 +42,7 @@ angular.module('starter.questionnaire', [])
             if (isFinite(s) && s > 0 && s <= Utils.QuranWords) {
                 start = s;
             }
+            this.qo.level = Profile.level;
             if (Profile.specialEnabled && selectSpecial()) { //TODO: remove! || true  - && false
                 Utils.log('Creating a special question ..');
                 return this.createSpecialQ(start);
@@ -81,7 +83,7 @@ angular.module('starter.questionnaire', [])
                 .then(function () {
                     Utils.log('Set the question start at: ' + self.qo.startIdx);
                     self.qo.validCount = 1; //Number of correct options at the first round
-                    self.qo.qLen = (Profile.level == 1) ? 3 : 2;
+                    self.qo.qLen = (self.qo.level == 1) ? 3 : 2;
                     self.qo.oLen = 1;
                     
                     switch (self.qo.qType.id) {
@@ -127,7 +129,7 @@ angular.module('starter.questionnaire', [])
             } while (!1);//!session.addIfNew(qo.startIdx)); TODO
 		
             this.qo.validCount = 1; //Number of correct options at the first round
-            this.qo.qLen = (Profile.level == 1) ? 3 : 2;
+            this.qo.qLen = (self.qo.level == 1) ? 3 : 2;
             this.qo.oLen = 1;
             //Correct Answer:
             this.qo.op[0][0] = Q.ayaNumberOf(this.qo.startIdx);
@@ -195,7 +197,7 @@ angular.module('starter.questionnaire', [])
             for (var k = 1; k < this.qo.rounds; k++) {
                 this.qo.op[k][0] = Utils.modQWords(this.qo.op[k - 1][0] + this.qo.oLen);
             }
-            if (Profile.level > 1) { //TODO: Port async
+            if (self.qo.level > 1) { //TODO: Port async
                 if (this.qo.qLen == 1) { // A 2-word Question
                     tmp = Q.sim2idx(this.qo.startIdx);
                     for (var i = 1; i < qo.validCount; i++)
@@ -316,17 +318,17 @@ angular.module('starter.questionnaire', [])
                     dir = -dir;
                     return; //break;
                 }
-                if (Profile.level == 0) { // Get a non-motashabehat at aya start
+                if (self.qo.level == 0) { // Get a non-motashabehat at aya start
                     self.qo.validCount = 1; // \
                     self.qo.qLen = 3;       // -|-> Default Constants for level-0
                     self.qo.oLen = 2;       // /
                     return Q.isAyaStart(start_shadow).then(function (t) { srch_cond = !t; });
-                } else if (Profile.level == 1) { // Get a Motashabehat near selected index
+                } else if (self.qo.level == 1) { // Get a Motashabehat near selected index
                     self.qo.validCount = 1; // \
                     self.qo.qLen = 3;       // -|-> Default Constants for level-1
                     self.qo.oLen = 2;       // /
                     return Q.sim2cnt(start_shadow).then(function (t) { srch_cond = (t > 1); });
-                } else if (Profile.level == 2) {
+                } else if (self.qo.level == 2) {
                     return Q.sim2cnt(start_shadow)
                         .then(function (t) {
                             //srch_cond = (t>1);
@@ -349,7 +351,7 @@ angular.module('starter.questionnaire', [])
                         });
                 } else {
                     // TODO: Port!!
-                    // Profile.level == 3
+                    // self.qo.level == 3
                     // Search for a motashabehat near selected index
                     // Specify # Words to display
                     disp2 = 0;
@@ -466,7 +468,7 @@ angular.module('starter.questionnaire', [])
 		this.getUpScore = function() {
 			
 			switch (this.qo.qType.id) {
-			case this.qTypeEnum.NOTSPECIAL.id: return this.qTypeEnum.NOTSPECIAL.score*Profile.level;
+			case this.qTypeEnum.NOTSPECIAL.id: return this.qTypeEnum.NOTSPECIAL.score*self.qo.level;
 			case this.qTypeEnum.SURANAME.id: return this.qTypeEnum.SURANAME.score;
 			case this.qTypeEnum.SURAAYACOUNT.id: return this.qTypeEnum.SURAAYACOUNT.score;
 			case this.qTypeEnum.MAKKI.id: return this.qTypeEnum.MAKKI.score;
@@ -513,7 +515,7 @@ angular.module('starter.questionnaire', [])
 
 		this.getDownScore = function() {
 			if (this.qo.qType.id == this.qTypeEnum.NOTSPECIAL.id){
-				return this.qTypeEnum.NOTSPECIAL.score*Profile.level;				
+				return this.qTypeEnum.NOTSPECIAL.score*self.qo.level;				
 			} else {
 				return 0;
 			}
@@ -558,7 +560,7 @@ angular.module('starter.questionnaire', [])
 
 		
         var selectSpecial = function () {
-            if (Profile.level == 0)
+            if (self.qo.level == 0)
                 return false;
             else if (Profile.isSurasSpecialQuestionEligible())
                 return (Math.random() < 0.20);
