@@ -217,12 +217,10 @@ angular.module('starter.utils', ['angular-md5'])
             switch (fmt) {
                 case this.TextFormatEnum.AYAMARKS_BRACKETS_ONLY:
                     return "\u06DD";
-                case this.TextFormatEnum.AYAMARKS_BRACKETS_START:
-                    return "\u06DD";
                 case this.TextFormatEnum.AYAMARKS_FULL:
-                    return "(" + ayaNum + ")";
+                    return "\u00A0\uFD3F" + ayaNum + "\uFD3E";
                 default:
-                    return "";
+                    return "\u00A0"+ayaNum;
             }
         }
 

@@ -402,25 +402,23 @@ angular.module('starter.questionnaire', [])
         }
 
         this.fillText = function () {
-            var qop = [], qtmp;
-            for (var i = 0; i < Utils.answerLength; i++) {
-                qtmp = Utils.modQWords(this.qo.startIdx + i);
-                qop.push(qtmp);
-            }
-            return Q.txts(qop)
+            return Q.txt(this.qo.startIdx, Utils.answerLength, 'ayaMark')
                 .then(function (txt) {
                     self.qo.txt.question = txt.slice(0, self.qo.qLen).join(' ');
-                    self.qo.txt.answer   = txt.slice(0, Utils.answerLength).join(' ');
+                    self.qo.txt.answer = txt.slice(0, Utils.answerLength).join(' ');
                     /*  Setting the question text is common, the answer depends on the
                         question type as follows */
-                    switch (self.qo.qType.id) { 
+                    switch (self.qo.qType.id) {
                         case self.qTypeEnum.NOTSPECIAL.id:
                             var op = [], tmp;
                             for (var k = 0; k < self.qo.rounds; k++) {
                                 for (var l = 0; l < 5; l++) {
                                     for (var m = 0; m < self.qo.oLen; m++) {
                                         tmp = Utils.modQWords(self.qo.op[k][l] + m);
-                                        if (!isFinite(tmp)) { tmp = 0; console.warn('Bad op[' + k + '][' + l + ']'); }
+                                        if (!isFinite(tmp)) {
+                                            tmp = 0; console.warn('Bad op[' + k + '][' + l + ']');
+                                            //TODO: Handle the exception! 
+                                        }
                                         op.push(tmp);
                                     }
                                 }
@@ -433,38 +431,38 @@ angular.module('starter.questionnaire', [])
                                         }
                                     }
                                 });
-                    
+
                         case self.qTypeEnum.SURANAME.id:
                             for (var l = 0; l < 5; l++) {
-                                self.qo.txt.op[0][l] = 'سورة '+Utils.getSuraNameFromIdx(self.qo.op[0][l]);
+                                self.qo.txt.op[0][l] = 'سورة ' + Utils.getSuraNameFromIdx(self.qo.op[0][l]);
                             }
                             return;
                         case self.qTypeEnum.SURAAYACOUNT.id:
                             for (var l = 0; l < 5; l++) {
-                                self.qo.txt.op[0][l] = 'ايات السورة '+self.qo.op[0][l];
+                                self.qo.txt.op[0][l] = 'ايات السورة ' + self.qo.op[0][l];
                             }
                             return;
                         case self.qTypeEnum.AYANUMBER.id:
                             for (var l = 0; l < 5; l++) {
-                                self.qo.txt.op[0][l] = 'رقم الاية '+self.qo.op[0][l];
+                                self.qo.txt.op[0][l] = 'رقم الاية ' + self.qo.op[0][l];
                             }
                             break;
-                        case self.qTypeEnum.MAKKI.id: 
+                        case self.qTypeEnum.MAKKI.id:
                             // Do nothing! 
                             break;
 
                         default:
                             // Do nothing! 
                             break;
-                        }
- 
-                });
-                /*
+                    }
 
-            
-            */
-		}
-			
+                });
+            /*
+
+        
+        */
+        }
+
 		this.getUpScore = function() {
 			
 			switch (this.qo.qType.id) {

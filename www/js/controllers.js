@@ -150,7 +150,7 @@ angular.module('starter.controllers', [])
 			Profile.saveSocial($rootScope.social);
 	}
 	//TODO: Get real numbers
-	$scope.pcnt_total_study = '90%';
+	$scope.pcnt_total_study = Profile.getPercentTotalStudy();
 	$scope.pcnt_total_ratio = '33%';
 	$scope.pcnt_total_special = '20%';
 	$scope.pcnt_total_rank = '50%';

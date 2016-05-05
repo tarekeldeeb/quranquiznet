@@ -210,21 +210,18 @@ angular.module('starter.profile',[])
 		var Tot = 0;
 		for (var i = 0; i < this.parts.length; i++) {
 			if (this.parts[i].checked === true)
-				Tot += this.parts[i].getNumQuestions.reduce(Utils.add, 0);
+				Tot += this.parts[i].numQuestions.reduce(Utils.add, 0);
 		}
 		return Tot;
 	}
-
-	this.getTotAvgLevel = function() {
-		var avg=0.0,studyWeight=0.0;
-		var avgLevel,partWeight;
-		for(var i=0;i<this.parts.length;i++){
-			avgLevel    = this.parts[i].avgLevel;
-			partWeight	= Utils.PartWeight100[i]/100; 
-			studyWeight += partWeight;
-			avg 		+= avgLevel*partWeight;
+	
+	this.getPercentTotalStudy = function(){
+		var Tot = 0;
+		for (var i = 0; i < this.parts.length; i++) {
+			if (this.parts[i].numCorrect.reduce(Utils.add, 0) > 1)
+				Tot += this.parts[i].length;
 		}
-		return (avg/studyWeight);
+		return ((Tot*100)/Utils.QuranWords)+'%';
 	}
 
 	//
