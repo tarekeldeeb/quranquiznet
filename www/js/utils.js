@@ -338,6 +338,11 @@ angular.module('starter.utils', ['angular-md5'])
 		return function(input) {
 			return input ? '\u2713' : '\u2718';
 		};
+	})              
+    .filter('removeAyaNum', function() {
+		return function(input) {
+            return input.replace(/\uFD3F[0-9]+\uFD3E/g, '\u06DD');
+		};
 	})
     .filter('countedScore', function() {
 		return function(input) {

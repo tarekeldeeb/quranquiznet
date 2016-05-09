@@ -343,7 +343,8 @@ angular.module('starter.questionnaire', [])
                                             self.start_shadow -= extraLength;
                                             srch_cond = false;
                                         } else {
-                                            // Too Long Motashabehat, cannot start within, non-unique answer
+                                            // Too Long Motashabehat, cannot start within, 
+                                            // non-unique answer
                                             srch_cond = true;
                                         }
                                     });
