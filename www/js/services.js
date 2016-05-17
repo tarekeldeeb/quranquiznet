@@ -194,7 +194,7 @@ angular.module('starter.services', [])
     self.sim2cnt = function (idx) {
       return DBA.query("select sim2 from q where _id=" + idx, [])
         .then(function (result) {
-          if (result.rows.length < 1) console.error('Could not get sim2 for _id:' + idx);
+          if (result.rows.length < 1) console.error('Could not get sim2 for _id:' + idx); //TODO: Remove line
           return result.rows.item(0).sim2;
         });
     }
@@ -202,6 +202,7 @@ angular.module('starter.services', [])
     self.sim3cnt = function (idx) {
       return DBA.query("select sim3 from q where _id=" + idx, [])
         .then(function (result) {
+          if (result.rows.length < 1) console.error('Could not get sim3 for _id:' + idx); //TODO: Remove line
           return result.rows.item(0).sim3;
         });
     }

@@ -81,7 +81,9 @@ angular.module('starter.controllers', [])
 			$scope.updateScore();
 			return;			
 		} else {												// Proceed with rounds
-			$scope.question = $scope.question + ' ' + $scope.options[sel];
+			$scope.question = Questionnaire.qo.txt.answer.split(" ")
+										.splice(0,	Questionnaire.qo.qLen+
+												Questionnaire.qo.oLen*$scope.round).join(" ");
 			shuffle = Utils.randperm(5);
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
 			setTimeout(function() {qquestion.scrollLeft = 0},10);

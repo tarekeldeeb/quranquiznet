@@ -341,6 +341,7 @@ angular.module('starter.utils', ['angular-md5'])
 	})              
     .filter('removeAyaNum', function() {
 		return function(input) {
+			if(!input) return input; //return null if passed!
             return input.replace(/\uFD3F[0-9]+\uFD3E/g, '\u06DD');
 		};
 	})
