@@ -260,7 +260,18 @@ angular.module('starter.utils', ['angular-md5'])
                 console.log(a);
             }
         }
-
+		
+        this.assert = function (cnd,msg) {
+            if (this.Debug > 0) {
+                if(!cnd){
+					msg = msg || "Assertion failed!";
+					if(typeof Error !== "undefined"){
+						throw new Error(msg);
+					}
+					throw msg;// fall back
+				}
+            }
+        }
         this.modQWords = function (n) {
             return (n > this.QuranWords) ? (n - this.QuranWords) : n;
         }

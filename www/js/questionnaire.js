@@ -7,7 +7,8 @@ angular.module('starter.questionnaire', [])
     .factory('Questionnaire', function (Profile, Q, Utils) {
         var self = this;
         var sparsed;
-        var QLEN_EXTRA_LIMIT = 2;
+		var QLEN_EXTRA_LIMIT = 2;
+		var QUESTIONNAIRE_ENABLE_LONG_QUESTIONS = true;
         var previousSeed = Profile.lastSeed;
         var rand = new Math.seedrandom(previousSeed);
 
@@ -138,7 +139,7 @@ angular.module('starter.questionnaire', [])
         }
 
         this.getValidUniqueStartNear = function (start) {
-            // Search for a correct neighbor unique start
+            // Search for a correct neighbour unique start
             var dir = 1; // search down = +1
             var limitHit = 1;
             var start_shadow;
@@ -258,7 +259,7 @@ angular.module('starter.questionnaire', [])
                                 }
                             } else { // uniq_cnt=0, all random options!
                                 for (var j = 1; j < 5; j++)
-                                    self.qo.op[i][j] = randList.set[j - uniq_cnt - 1];
+                                    self.qo.op[i][j] = randList.set[j - uniq_cnt - 1] || j; // Fall-back if randList has nulls!
                             }
                         }
                     });
@@ -301,7 +302,7 @@ angular.module('starter.questionnaire', [])
         }
 
         this.getValidStartNear = function (start) {
-            // Search for a correct neighbor start according to level
+            // Search for a correct neighbour start according to level
             var dir = 1; // search down = +1
             var disp2, disp3;
             var start_shadow = start - dir;
@@ -318,87 +319,112 @@ angular.module('starter.questionnaire', [])
                     dir = -dir;
                     return; //break;
                 }
-                if (self.qo.level == 0) { // Get a non-motashabehat at aya start
-                    self.qo.validCount = 1; // \
-                    self.qo.qLen = 3;       // -|-> Default Constants for level-0
-                    self.qo.oLen = 2;       // /
-                    return Q.isAyaStart(start_shadow).then(function (t) { srch_cond = !t; });
-                } else if (self.qo.level == 1) { // Get a Motashabehat near selected index
-                    self.qo.validCount = 1; // \
-                    self.qo.qLen = 3;       // -|-> Default Constants for level-1
-                    self.qo.oLen = 2;       // /
-                    return Q.sim2cnt(start_shadow).then(function (t) { srch_cond = (t > 1); });
-                } else if (self.qo.level == 2) {
+                if (self.qo.level == 0) { 
+					// [Level-0] Get a non-motashabehat at aya start
+                    self.qo.validCount = 1; //TODO: Check it's unique!
+                    self.qo.qLen = 3;
+                    self.qo.oLen = 2;	
+                    return Q.isAyaStart(start_shadow).then(function (isAyaStart) { srch_cond = !isAyaStart; });
+                } else { 	
+					// [Level 1-3] Get a Motashabehat
                     return Q.sim2cnt(start_shadow)
-                        .then(function (t) {
-                            //srch_cond = (t>1);
-                            if (!(t > 1)) {
-                                self.qo.validCount = 1; // \
-                                self.qo.qLen = 2;       // -|-> Default Constants for level-2
-                                self.qo.oLen = 1;       // /
-                                return self.extraQLength(start_shadow, self.qo.qLen)
-                                    .then(function (extraLength) {
-                                        if (extraLength > -1) {
-                                            self.qo.qLen += extraLength;
-                                            self.start_shadow -= extraLength;
-                                            srch_cond = false;
-                                        } else {
-                                            // Too Long Motashabehat, cannot start within, 
-                                            // non-unique answer
-                                            srch_cond = true;
-                                        }
-                                    });
+                        .then(function (sim2cnt) {
+                            srch_cond = (sim2cnt==0); //Continue searching if not motashabeha
+							Utils.log('Start_shadow= '+start_shadow+' sim2snt= '+sim2cnt+' cnd='+srch_cond);
+                            if (!srch_cond) {
+								if(self.qo.level == 1 || self.qo.level == 2){
+									self.qo.validCount = 1;
+									if(self.qo.level == 1){
+										self.qo.qLen = 3;
+										self.qo.oLen = 2;
+									} else { // Level 2
+										self.qo.qLen = 2;
+										self.qo.oLen = 1;
+									}
+									// [Level 1-2] Add extra Length for unique answer!
+									
+									var extraQDirection = 1; //TODO: Randomize +/- 1							
+									return self.extraQLength(start_shadow, self.qo.qLen,false,extraQDirection)
+										.then(function (extraLength) {
+											self.qo.qLen 	= extraLength.qLen;
+											start_shadow 	= extraLength.start;
+											srch_cond = false;
+											Utils.log('              Extra='+JSON.stringify(extraLength));
+										});
+								} else {
+									// [Level 3] Non unique answers
+									// TODO: Port!!
+									// self.qo.level == 3
+									// Search for a motashabehat near selected index
+									// Specify # Words to display
+									disp2 = 0;
+									disp3 = 0;
+
+									if (Q.sim3cnt(start_shadow) < 5
+										&& Q.sim3cnt(start_shadow) > 0)
+										disp3 = Q.sim3cnt(start_shadow);
+
+									if (Q.sim2cnt(start_shadow) < 5
+										&& Q.sim2cnt(start_shadow) > 0)
+										disp2 = Q.sim2cnt(start_shadow);
+
+									// Motashabehat not found,continue!
+									srch_cond = (disp3 == 0 && disp2 == 0);
+
+									if (srch_cond == false) { // Found!
+										self.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
+										// Check,
+										// +1
+										// caused
+										// bound
+										// excep
+										self.qo.qLen = (disp2 > disp3) ? 1 : 2;
+									}
+									self.qo.oLen = 1;
+								}
                             }
                         });
-                } else {
-                    // TODO: Port!!
-                    // self.qo.level == 3
-                    // Search for a motashabehat near selected index
-                    // Specify # Words to display
-                    disp2 = 0;
-                    disp3 = 0;
-
-                    if (Q.sim3cnt(start_shadow) < 5
-                        && Q.sim3cnt(start_shadow) > 0)
-                        disp3 = Q.sim3cnt(start_shadow);
-
-                    if (Q.sim2cnt(start_shadow) < 5
-                        && Q.sim2cnt(start_shadow) > 0)
-                        disp2 = Q.sim2cnt(start_shadow);
-
-                    // Motashabehat not found,continue!
-                    srch_cond = (disp3 == 0 && disp2 == 0);
-
-                    if (srch_cond == false) { // Found!
-                        self.qo.validCount = (disp2 > disp3) ? disp2 : disp3;// TODO:
-                        // Check,
-                        // +1
-                        // caused
-                        // bound
-                        // excep
-                        self.qo.qLen = (disp2 > disp3) ? 1 : 2;
-                    }
-                    self.qo.oLen = 1;
                 }
             }).then(function (ctx) {
-                self.qo.startIdx = start_shadow; //return start;
+                self.qo.startIdx = start_shadow;
             });
         }
 
-        this.extraQLength = function (start, qLen) {
+        this.extraQLength = function (start, qLen, long_q, direction) {
+			/**                  <qLen>,--{start} 
+			*  <----------{M M M M M M M M}------->
+			*            U M M M M M M M       < Long_question:   forward only >
+			*            U M M M               < Forward Search:  direction=1  >
+			*                        M M M U   < Backward Search: direction=-1 
+			*
+			* Assumptions:
+			* 	- direction is only +1 or -1
+			*   - sim2cnt(start)>0
+			* 	- returns new values {start,qLen}
+			*/
             var extra = 0;
-            var q_sim3cnt = 0;
-            // while ((extra < QLEN_EXTRA_LIMIT) && (Q.sim3cnt(--start) > 0))
-            return Utils.promiseWhile(function () { return ((extra < QLEN_EXTRA_LIMIT) && (q_sim3cnt > 0)); }, function () {
-                q_sim3cnt = Q.sim3cnt(--start);
-                extra++;
+            var q_sim3cnt = 1;
+			var dir = (long_q)?1:direction;
+			var idx = start; //Search back/forth till the start of this motashabeha!
+			
+            return Utils.promiseWhile(function () { return (q_sim3cnt > 0); }, function () {
+                return Q.sim3cnt(idx).then(function(sim3cnt){
+					q_sim3cnt = sim3cnt;
+					if(sim3cnt>0)extra++;
+					Utils.log('sim3cnt@'+idx+' = '+sim3cnt);
+					idx += dir;
+				});
             }).then(function(ctx){
-                if (extra == QLEN_EXTRA_LIMIT)
-                    return -1;
-                else if (extra == 0)
-                    return 0;
-                else
-                    return extra + 1;
+					var new_start,new_qLen;
+					extra += 3-qLen;
+					if(long_q){
+						new_start = start;
+						new_qLen  = qLen + extra++;
+					}else{
+						new_start = start +dir*(extra++);
+						new_qLen  = qLen;
+					}
+                    return {"start":new_start,"qLen":new_qLen};
             });
         }
 
