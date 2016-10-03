@@ -30,8 +30,21 @@ angular.module('starter.controllers', [])
 	$scope.closeModal = function() {$scope.modal.hide();};
 	$scope.$on('$destroy', function() {	$scope.modal.remove();});
 			
-		
-		
+ 	function IncorrectQuestionHandler(){
+		setBackCardStyle(false);
+		$scope.flip(); scrollLock = true;
+		Profile.addIncorrect(Questionnaire.qo);
+		$scope.nextQ();
+		$scope.updateScore();
+	}		
+ 	function CorrectQuestionHandler(){
+		setBackCardStyle(true);
+		$scope.flip();
+		Profile.addCorrect(Questionnaire.qo);
+		$scope.busyShow();
+		$scope.nextQ();
+		$scope.updateScore();
+	}		
 	$scope.updateScore = function(){
 		if ($scope.score == null){
 			$scope.score = Profile.getScore();
@@ -59,7 +72,8 @@ angular.module('starter.controllers', [])
 			return $scope.getAnswer();
 		})
 		.then(function(){
-			var card = {answer:$scope.answer, 
+			var card = {qo: Questionnaire.qo,
+									answer:$scope.answer, 
 									answer_sura:$scope.answer_sura, 
 									answer_sura_info:$scope.answer_sura_info, 
 									answer_aya:$scope.answer_aya };
@@ -78,6 +92,8 @@ angular.module('starter.controllers', [])
 		return Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
 	}
 	$scope.skipQ = function(){
+		setBackCardStyle(false);
+		$scope.flip(); scrollLock = true;
 		Profile.addIncorrect(Questionnaire.qo);
 		$scope.nextQ();
 		$scope.updateScore();
@@ -85,21 +101,10 @@ angular.module('starter.controllers', [])
 	$scope.makeSequence = function(n){return Utils.makeSequence(n);}
 	$scope.selectOption = function(sel) {	
 		if (shuffle[sel] != 0){ 								// Bad Choice
-			$scope.getAnswer();
-			setBackCardStyle(false);
-			$scope.flip(); scrollLock = true;
-			Profile.addIncorrect(Questionnaire.qo);
-			$scope.nextQ();
-			$scope.updateScore();
+			IncorrectQuestionHandler();
 			return;
 		}else if( ++$scope.round == Questionnaire.qo.rounds){ 	// Correct Finish
-			$scope.getAnswer();
-			setBackCardStyle(true);
-			$scope.flip();
-			Profile.addCorrect(Questionnaire.qo);
-			$scope.busyShow();
-			$scope.nextQ();
-			$scope.updateScore();
+			CorrectQuestionHandler();
 			return;			
 		} else {												// Proceed with rounds
 			$scope.question = Questionnaire.qo.txt.answer.split(" ")
@@ -147,14 +152,14 @@ angular.module('starter.controllers', [])
 			card.style.boxShadow = "0px 0px 15px #F00";
 		}
 	}
-	$scope.reportQuestion = function() {
+	$scope.reportQuestion = function(card) {
      var confirmPopup = $ionicPopup.confirm({
        title: 'الابلاغ عن خطأ',
        template: 'هل تريد الابلاغ عن خطأ في السؤال؟'
      });
      confirmPopup.then(function(res) {
        if(res) {
-         console.log('Reporting question:');
+         console.log('Reporting question:'+JSON.stringify(card));
 				 //TODO: Implement
        } else {
          console.log('Report cancelled');
