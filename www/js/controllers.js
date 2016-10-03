@@ -8,13 +8,17 @@ angular.module('starter.controllers', [])
 .controller('ahlanCtrl', function($scope, Utils) {
 	Utils.log('Ahlan to Quran Quiz Net!');
 })
-.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire) {
-	var shuffle;
+.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire, PersonService) {
+	var shuffle, qquestion;
+	var scrollLock = false;
 	$scope.round = 0;
 	$scope.showingBackCard = false;
 	$scope.busy = true;
 	$scope.imageSrc = 'http://images.qurancomplex.gov.sa/publications/04_standard1/750/jpg_90/0011.jpg';
-	var qquestion = document.getElementById('qquestion');
+	$scope.questionCards = [];
+	$scope.loadMore = function(start){
+			$scope.$broadcast('scroll.infiniteScrollComplete');
+	}
 	$scope.busyShow = function(){ $ionicLoading.show({template: '<ion-spinner></ion-spinner>'}); }
 	$scope.busyHide = function(){ $ionicLoading.hide(); }
 	$ionicModal.fromTemplateUrl('image-modal.html', {
@@ -38,6 +42,7 @@ angular.module('starter.controllers', [])
 		$scope.score_down 	= Questionnaire.getDownScore();
 	}
 		
+
 	$scope.nextQ = function(start){
 		$scope.busy = true;
 	 	if(!$scope.showingBackCard) $scope.busyShow();
@@ -51,14 +56,26 @@ angular.module('starter.controllers', [])
 			$scope.busy = false;
 			$scope.busyHide();
 			setTimeout(function() {Profile.saveAll();},100); //Note: Remove to debug the lastly saved question
+			return $scope.getAnswer();
+		})
+		.then(function(){
+			var card = {answer:$scope.answer, 
+									answer_sura:$scope.answer_sura, 
+									answer_sura_info:$scope.answer_sura_info, 
+									answer_aya:$scope.answer_aya };
+			$scope.questionCards.push(card);
+			$scope.$broadcast('scroll.infiniteScrollComplete');
+			if(!scrollLock) $ionicScrollDelegate.scrollBottom(true);
 		});
 	}
+
+
 	$scope.getAnswer = function(){
 		$scope.answer       = Questionnaire.qo.txt.answer + ' ...';
 		$scope.answer_sura  = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
-        $scope.answer_sura_info = Utils.getSuraTanzilFromWordIdx(Questionnaire.qo.startIdx)+
+    $scope.answer_sura_info = Utils.getSuraTanzilFromWordIdx(Questionnaire.qo.startIdx)+
                                     ' اياتها ' + Utils.sura_ayas[Utils.getSuraIdx(Questionnaire.qo.startIdx)];
-		Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
+		return Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
 	}
 	$scope.skipQ = function(){
 		Profile.addIncorrect(Questionnaire.qo);
@@ -69,12 +86,16 @@ angular.module('starter.controllers', [])
 	$scope.selectOption = function(sel) {	
 		if (shuffle[sel] != 0){ 								// Bad Choice
 			$scope.getAnswer();
-			$scope.flip();
+			setBackCardStyle(false);
+			$scope.flip(); scrollLock = true;
 			Profile.addIncorrect(Questionnaire.qo);
 			$scope.nextQ();
 			$scope.updateScore();
 			return;
 		}else if( ++$scope.round == Questionnaire.qo.rounds){ 	// Correct Finish
+			$scope.getAnswer();
+			setBackCardStyle(true);
+			$scope.flip();
 			Profile.addCorrect(Questionnaire.qo);
 			$scope.busyShow();
 			$scope.nextQ();
@@ -86,6 +107,7 @@ angular.module('starter.controllers', [])
 												Questionnaire.qo.oLen*$scope.round).join(" ");
 			shuffle = Utils.randperm(5);
 			$scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
+			qquestion = document.getElementById('qquestion-'+($scope.questionCards.length-1));
 			setTimeout(function() {qquestion.scrollLeft = 0},10);
 			//setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
 		}
@@ -93,15 +115,18 @@ angular.module('starter.controllers', [])
 	
 	$scope.flip = function(){
 		$scope.showingBackCard = true;
-		angular.element(document.getElementById('flip-container')).toggleClass('flip')
+		angular.element(document.getElementById('flip-container-'+($scope.questionCards.length-1))).toggleClass('flip')
 	}
-	$scope.flipBack = function(){
+	$scope.answerOK = function(){
+				scrollLock = false;
+		    $ionicScrollDelegate.scrollBottom(true);
+/*
 		$scope.flip();
 		$scope.showingBackCard = false;
 		if($scope.busy)  $scope.busyShow();
+*/		
 	}
-	function animateScore(count)
-	{
+	function animateScore(count){
 	  var stepsCount = Math.abs(count - parseInt($scope.score)) ,
 		  step = (count > parseInt($scope.score))?1:-1,
 		  run_count = 0;
@@ -113,6 +138,14 @@ angular.module('starter.controllers', [])
 		  clearInterval(int);
 		}
 	  }, 50);
+	}
+	function setBackCardStyle(state){
+		var card = document.getElementById('backcard-'+($scope.questionCards.length-1));
+		if(state){
+			card.style.boxShadow = "0px 0px 15px #090";
+		}	else {
+			card.style.boxShadow = "0px 0px 15px #F00";
+		}
 	}
 	$scope.reportQuestion = function() {
      var confirmPopup = $ionicPopup.confirm({

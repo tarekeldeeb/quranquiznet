@@ -1,88 +1,77 @@
 <ion-view view-title="اختبار القران">
-  <ion-content class="padding">
-	  <div class="flip-container" id="flip-container">
-		<div class="flipper">
-			<div class="front">
-				<!-- front content -->
-				<div class="list card">
-					<div class="item item-divider item-text-wrap quran" id="qquestion" align="right">{{question|removeAyaNum}}</div>
-					<div class="item item-body">
-						<div class="row">
-						  <div class="col-67">
-							<div ng-repeat="n in [0, 1, 2, 3, 4]">
-								<button class="button button-stable button-block quran" ng-click="selectOption(n)">{{options[n]}}</button>
-							</div>	
-						  </div>					
-						  <div class="col-33 col-center" style="padding-right:10px;">
-							<button class="button button-small button-clear button-full button-positive" id="instruction">{{instructions}}</button>
-							<button class="button button-large button-clear button-full button-balanced score">{{score}}</button>
-							<div class="row">
-								<div class="col" style="padding:0px">
-									<button class="button button-small button-clear button-block button-balanced score">
-										{{score_up}}<br /><i class="icon ion-arrow-up-b"></i>
-									</button>
-								</div>
-								<div class="col" style="padding:0px">
-									<button class="button button-small button-clear button-block button-assertive score">
-										-{{score_down}}<br /><i class="icon ion-arrow-down-b"></i>
-									</button>
+  <ion-content class="padding" style="padding:0px;">
+		<ion-list>
+			<ion-item class="flip-container" ng-repeat="card in questionCards track by $index" id="flip-container-{{ $index }}"> <!-- id="flip-container" -->
+				<div class="flipper">
+					<div class="front">
+						<!-- front content -->
+						<div class="list card">
+							<div class="item item-divider item-text-wrap quran quranquestion" id="qquestion-{{ $index }}" align="right">{{question|removeAyaNum}}</div>
+							<div class="item item-body">
+								<div class="row">
+									<div class="col-67">
+									<div ng-repeat="n in [0, 1, 2, 3, 4]">
+										<button class="button button-stable button-block quran" ng-click="selectOption(n)">{{options[n]}}</button>
+									</div>	
+									</div>					
+									<div class="col-33 col-center" style="padding-right:10px;">
+									<button class="button button-small button-clear button-full button-positive" id="instruction-{{ $index }}">{{instructions}}</button>
+									<button class="button button-large button-clear button-full button-balanced score">{{score}}</button>
+									<div class="row">
+										<div class="col" style="padding:0px">
+											<button class="button button-small button-clear button-block button-balanced score">
+												{{score_up}}<br /><i class="icon ion-arrow-up-b"></i>
+											</button>
+										</div>
+										<div class="col" style="padding:0px">
+											<button class="button button-small button-clear button-block button-assertive score">
+												-{{score_down}}<br /><i class="icon ion-arrow-down-b"></i>
+											</button>
+										</div>
+									</div>
+									<button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden" ng-click="skipQ()"><i class="icon ion-sad-outline"></i>
+									لا&nbsp;أعلم</button>
+									</div>
 								</div>
 							</div>
-							<button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden" ng-click="skipQ()"><i class="icon ion-sad-outline"></i>
-							لا&nbsp;أعلم</button>
-						  </div>
+							<div class="item item-divider"  style="text-align:right; padding:4px;">
+								<div class="button-bar" style="margin: -6px">
+									<button ng-repeat="n in makeSequence(round) track by $index" class="button button-small button-icon icon ion-ios-checkmark-outline balanced"></button>
+									<button ng-repeat="n in makeSequence(10-round) track by $index" class="button button-small button-icon icon ion-ios-circle-outline light"></button>
+								</div>	
+							</div>
 						</div>
 					</div>
-					<div class="item item-divider"  style="text-align:right; padding:4px;">
-						<div class="button-bar" style="margin: -6px">
-							<button ng-repeat="n in makeSequence(round) track by $index" class="button button-small button-icon icon ion-ios-checkmark-outline balanced"></button>
-							<button ng-repeat="n in makeSequence(10-round) track by $index" class="button button-small button-icon icon ion-ios-circle-outline light"></button>
-						</div>	
+					<div class="back">
+						<!-- back content -->
+						<div class="list card" id="backcard-{{ $index }}">
+							<div class="item item-divider quran" align="right">
+								<span style="float:right;overflow:hidden;width:60%">
+																		&#xFD3F;سورة {{card.answer_sura}}&#xFD3E;
+																<small style="margin-right:10px;">{{card.answer_sura_info}}</small>
+														</span>
+								<span style="float:left;">الاية {{card.answer_aya}}</span>
+							</div>
+							<div class="item item-body quran center" style="height:290px;padding:25px">
+								<p style="font-size:100%;line-height:250%">{{card.answer}}</p>
+								<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;" ng-click="reportQuestion(card)"></button>
+							</div>
+							<div class="button-bar">
+								<button class="button button-calm" ng-click="answerOK()">حسنا</button>
+								<button class="button button-clear button-dark" ng-click="openModal()" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
+									شاهد</button>
+								<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
+									نافس</button>
+							</div>
+						</div>
+						<!-- End back -->
 					</div>
 				</div>
-			</div>
-			<div class="back">
-				<!-- back content -->
-				<div class="list card">
-					<div class="item item-divider quran" align="right">
-						<span style="float:right;overflow:hidden;width:60%">
-                                &#xFD3F;سورة {{answer_sura}}&#xFD3E;
-                            <small style="margin-right:10px;">{{answer_sura_info}}</small>
-                        </span>
-						<span style="float:left;">الاية {{answer_aya}}</span>
-					</div>
-					<div class="item item-body quran center" style="height:290px;padding:25px">
-						<p style="font-size:100%;line-height:250%">{{answer}}</p>
-						<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;" ng-click="reportQuestion()"></button>
-					</div>
-					<div class="button-bar">
-						<button class="button button-calm" ng-click="flipBack()">حسنا</button>
-						<button class="button button-clear button-dark" ng-click="openModal()" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
-							شاهد</button>
-						<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
-							نافس</button>
-					</div>
-				</div>
-			</div>
-		</div>
-	  </div>
+			</ion-item>
+    </ion-list>
+      
+    <ion-infinite-scroll on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
 
-    <div class="list card">
-      <div class="item item-divider">Health</div>
-      <div class="item item-body">
-        <div>
-          You ate an apple today!
-        </div>
-      </div>
-    </div>
-    <div class="list card">
-      <div class="item item-divider">Upcoming</div>
-      <div class="item item-body">
-        <div>
-          You have <b>29</b> meetings on your calendar tomorrow.
-        </div>
-      </div>
-    </div>
 		<script id="image-modal.html" type="text/ng-template">
 			<div class="modal image-modal transparent" ng-click="closeModal()">
 				<ion-pane class="transparent">
