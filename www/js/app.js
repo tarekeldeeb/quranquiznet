@@ -12,10 +12,10 @@ var db = null;
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', 'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova', 'ngResource', 'GoogleLoginService'])
+angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter.services', 'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova', 'ngResource', 'GoogleLoginService'])
 
-.run(function($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, Utils, Profile) {
-
+.run(function($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
+    var allRowPromises = [];
     var QQ = {
         _httpGetJson: function(onSuccess, onError) {
             $http({
@@ -67,13 +67,15 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 					.then(function(r) {
 						var insertQueries = this._formatInsertQueries(sqlJson);
 						for (var i = 0; i < insertQueries.length; i++) {
-							$cordovaSQLite.execute(db, insertQueries[i], []).then(function(response) {
+							allRowPromises.push($cordovaSQLite.execute(db, insertQueries[i], []).then(function(response) {
 								console.log(response);
 							}, function(error) {
 								if (onError) onError(error);
-							});
+							}));
 						}
-						if (onSuccess) onSuccess();
+                        Promise.all(allRowPromises).then(function(r){
+    					    if (onSuccess) onSuccess();
+                        });
 					}.bind(this), function(error) {
 						if (onError) onError(error);
 					});
@@ -126,7 +128,9 @@ angular.module('starter', ['ionic', 'starter.controllers', 'starter.services', '
 					console.log('Created new profile with UID: '+Profile.uid );				
 				    QQ.CheckDatabase(db, function () {
 						console.log("quran quiz database imported successfully");
+                        allRowPromises = [];
 						$rootScope.loadingDone = true;
+                        $state.go('tab.profile');
 					}, function (error) {
 						console.error("error happened while importing quran quiz database", error);
 					});
