@@ -216,4 +216,8 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     // if none of the above states are matched, use this as the fallback
     $urlRouterProvider.otherwise('/ahlan');
 
+})
+
+.config(function($ionicConfigProvider) {
+  $ionicConfigProvider.tabs.position('bottom')
 });
