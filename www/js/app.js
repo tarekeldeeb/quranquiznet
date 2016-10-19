@@ -130,7 +130,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
 						console.log("quran quiz database imported successfully");
                         allRowPromises = [];
 						$rootScope.loadingDone = true;
-                        $state.go('tab.profile');
+                        $state.go('q.profile');
 					}, function (error) {
 						console.error("error happened while importing quran quiz database", error);
 					});
@@ -159,15 +159,15 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     $stateProvider
 
     // setup an abstract state for the tabs directive
-    .state('tab', {
-        url: '/tab',
+    .state('q', {
+        url: '/q',
         abstract: true,
         templateUrl: 'templates/tabs.html'
     })
 
     // Each tab has its own nav history stack:
 
-    .state('tab.quiz', {
+    .state('q.quiz', {
         url: '/quiz/:customStart',
         views: {
             'tab-quiz': {
@@ -177,7 +177,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         }
     })
 
-    .state('tab.settings', {
+    .state('q.settings', {
         url: '/settings',
         views: {
             'tab-settings': {
@@ -187,7 +187,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         }
     })
 	
-	.state('tab.profile', {
+	.state('q.profile', {
         url: '/profile',
         views: {
             'tab-profile': {
@@ -197,7 +197,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         }
     })
 
-    .state('tab.study', {
+    .state('q.study', {
         url: '/study',
         views: {
             'tab-study': {
