@@ -162,7 +162,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     .state('q', {
         url: '/q',
         abstract: true,
-        templateUrl: 'templates/tabs.html'
+        templateUrl: 'templates/menu.html'
     })
 
     // Each tab has its own nav history stack:
@@ -170,7 +170,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     .state('q.quiz', {
         url: '/quiz/:customStart',
         views: {
-            'tab-quiz': {
+            'menuContent': {
                 templateUrl: 'templates/tab-quiz.html',
                 controller: 'quizCtrl'
             }
@@ -180,7 +180,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     .state('q.settings', {
         url: '/settings',
         views: {
-            'tab-settings': {
+            'menuContent': {
                 templateUrl: 'templates/tab-settings.html',
                 controller: 'settingsCtrl'
             }
@@ -190,7 +190,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
 	.state('q.profile', {
         url: '/profile',
         views: {
-            'tab-profile': {
+            'menuContent': {
                 templateUrl: 'templates/tab-profile.html',
                 controller: 'google'
             }
@@ -200,7 +200,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     .state('q.study', {
         url: '/study',
         views: {
-            'tab-study': {
+            'menuContent': {
                 templateUrl: 'templates/tab-study.html',
                 controller: 'StudyCtrl'
             }
@@ -218,6 +218,6 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
 
 })
 
-.config(function($ionicConfigProvider) {
-  $ionicConfigProvider.tabs.position('bottom')
-});
+//.config(function($ionicConfigProvider) {
+//  $ionicConfigProvider.tabs.position('bottom')
+//});

@@ -126,7 +126,9 @@ margin: 30px auto 0;
 box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 }
 
-	  
+.list:last-child {
+    margin-bottom: -60px;
+}	  
 .item-body{
 	padding:4px;
 }
