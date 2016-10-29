@@ -91,7 +91,7 @@ angular.module('starter.profile',[])
 		this.saveAll();
 		return false;
 	} else {
-		this.uid 				= parseInt(Utils.load('prf_uid',0));
+		this.uid 				= JSON.parse(Utils.load('prf_uid',0));
 		this.lastSeed 			= parseInt(Utils.load('prf_lastSeed',0));
 		this.level 				= parseInt(Utils.load('prf_level',-1));
 		this.specialEnabled 	= JSON.parse(Utils.load('prf_specialEnabled',false));
@@ -130,7 +130,8 @@ angular.module('starter.profile',[])
   this.saveSocial = function(social){
 	  this.social = social
 	  //TODO: Add checks from social  provider: basic fields? error codes?	
-	  Utils.saveObject('prf_social',this.social);	
+	  Utils.saveObject('prf_social',this.social);
+	  Utils.saveObject('prf_uid',Utils.md5(this.social.data.email));
   }
   this.addCorrect = function (qo) {
 	  var currentPart = qo.currentPart;

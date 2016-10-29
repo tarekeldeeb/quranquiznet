@@ -159,10 +159,10 @@ angular.module('starter.controllers', [])
      });
      confirmPopup.then(function(res) {
        if(res) {
-         console.log('Reporting question:'+JSON.stringify(card));
+         Utils.log('Reporting question:'+JSON.stringify(card));
 				 //TODO: Implement
        } else {
-         console.log('Report cancelled');
+         Utils.log('Report cancelled');
        }
      });
    };

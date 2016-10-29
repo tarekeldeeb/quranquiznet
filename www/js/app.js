@@ -122,17 +122,17 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
             if (window.openDatabase) { // Browser  does support WebSQL!
                 db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
 				if(Profile.load()){
-					console.log('Loaded profile with UID: '+Profile.uid);
+					console.log('Loaded profile with UID: '+JSON.stringify(Profile.uid));
 					$rootScope.loadingDone = true;
 				} else {
 					console.log('Created new profile with UID: '+Profile.uid );				
 				    QQ.CheckDatabase(db, function () {
-						console.log("quran quiz database imported successfully");
+						console.log("Quran quiz database imported successfully");
                         allRowPromises = [];
 						$rootScope.loadingDone = true;
                         $state.go('q.profile');
 					}, function (error) {
-						console.error("error happened while importing quran quiz database", error);
+						console.error("Error happened while importing quran quiz database", error);
 					});
 				}
             } else { // Browser  does not support WebSQL!
