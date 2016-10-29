@@ -1,15 +1,13 @@
 <ion-view view-title="نطاق الحفظ">
-	<div class="float-button">
-	  <span class="height-fix">
-		 <button class="button button-stable button-outline" ng-click="toggleParts()">
-			<i class="icon ion-shuffle"></i>
-		 </button>
-	  </span>
-	</div>
+	<ion-nav-buttons side="left">        
+		<button class="button button-icon icon icon-small ion-shuffle" ng-click="toggleParts()"></button>
+		<button class="button button-icon icon icon-small ion-heart" ng-click="heartParts()"></button>
+		<button class="button button-icon icon icon-small ion-flag" ng-click="flagParts()"></button>		
+    </ion-nav-buttons>
   <ion-content>
     <ion-list>
-	<ion-toggle class="item-icon-left toggle-balanced" ng-repeat="part in profile.parts" ng-model="part.checked" ng-change="saveParts()">
-            <i ng-class="getIcon(part)"></i>
+	<ion-toggle class="item-icon-left toggle-balanced" ng-repeat="part in profile.parts track by $index" ng-model="part.checked" ng-change="saveParts()">
+            <i ng-class="getIcon($index)"></i>
             <h3>{{part.name}}</h3>
 			<h5>
 				<!-- TODO: Reverse Ellipses for narrow screens -->

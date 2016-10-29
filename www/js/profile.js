@@ -16,7 +16,12 @@ angular.module('starter.profile',[])
   this.scores = [{date:0,score:0}];
   this.parts = [];
   this.version = {db:1.0, app:1.0, profile:1.0};
-
+  this.correctRatioRange = {
+    EMPTY:0,
+	HIGH:1,
+	MID:2,
+	LOW:3
+  };
   var scoreRecord = function() {
 	return {	date:Utils.getTime(),
 				score:this.getScore()
@@ -40,23 +45,23 @@ angular.module('starter.profile',[])
   var getCorrectRatios = function(i){
 	  	var r = [0,0,0,0];
 		  var numCorrect, numQuestions;
-		for(varj=0;j<4;j++){
-			numCorrect = this.parts[i].numCorrect[j];
-			numQuestions = this.parts[i].numQuestions[j];
+		for(var j=0;j<4;j++){
+			numCorrect = self.parts[i].numCorrect[j];
+			numQuestions = self.parts[i].numQuestions[j];
 			r[j] = (numQuestions==0)? 0: (numCorrect / numQuestions);			
 		}
 		return r;
   }
   var getCorrectRatio = function(i){
 	var numCorrect, numQuestions;
-	numCorrect = 	this.parts[i].numCorrect[0]+
-					this.parts[i].numCorrect[1]+
-					this.parts[i].numCorrect[2]+
-					this.parts[i].numCorrect[3];
-	numQuestions =  this.parts[i].numQuestions[0]+
-					this.parts[i].numQuestions[1]+
-					this.parts[i].numQuestions[2]+
-					this.parts[i].numQuestions[3];
+	numCorrect = 	self.parts[i].numCorrect[0]+
+					self.parts[i].numCorrect[1]+
+					self.parts[i].numCorrect[2]+
+					self.parts[i].numCorrect[3];
+	numQuestions =  self.parts[i].numQuestions[0]+
+					self.parts[i].numQuestions[1]+
+					self.parts[i].numQuestions[2]+
+					self.parts[i].numQuestions[3];
 	return (numQuestions==0)? 0: (numCorrect / numQuestions);			
   }
   var calculateScorePart = function(i){
@@ -257,7 +262,19 @@ angular.module('starter.profile',[])
 		}
 		return false;
 	}
-
+	
+	this.getCorrectRatioRange = function(i) {
+		var rg,ratio = getCorrectRatio(i);
+		if(Utils.countedScore(self.parts[i].numQuestions) == 0)
+			rg = this.correctRatioRange.EMPTY;
+		else if(ratio>=0.8)
+			rg = this.correctRatioRange.HIGH;
+		else if(ratio>=0.5)
+			rg = this.correctRatioRange.MID;
+		else 	
+			rg = this.correctRatioRange.LOW;
+		return rg;	
+	}
 	this.levels = [	{value:0, text:"مستوى ابتدائي", comment:"يبدأ السؤال من رأس الاية، ولا يزيد النقاط", disabled:false},
 					{value:1, text:"مستوى أولي", comment:"السؤال من ثلاث كلمات، يزيد النقاط بعشرة", disabled:false},
 					{value:2, text:"مستوى ثانوي", comment:"السؤال من كلمتين، يزيد النقاط بعشرين", disabled:false},

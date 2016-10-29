@@ -225,18 +225,31 @@ angular.module('starter.controllers', [])
 	}
 	$scope.saveParts();
   };
-  
-  $scope.getIcon = function(part){
-	var ico = 'ion-help-circled stable';
-	if(Utils.countedScore(part.numQuestions) > 0){
-		var ratio = Utils.countedScore(part.numCorrect)/Utils.countedScore(part.numQuestions);
-		if(ratio>=0.8)
-			ico = 'ion-heart balanced';
-		else if(ratio>=0.5)
-			ico = 'ion-heart-broken energized';
-		else 	
-			ico = 'ion-flag assertive';
+  $scope.heartParts = function(){
+    for(var i=1;i<$scope.profile.parts.length;i++){
+		$scope.profile.parts[i].checked = 
+			($scope.profile.getCorrectRatioRange(i) ==  $scope.profile.correctRatioRange.HIGH) ||
+			($scope.profile.getCorrectRatioRange(i) ==  $scope.profile.correctRatioRange.MID);
 	}
+	$scope.saveParts();
+  };
+  $scope.flagParts = function(){
+    for(var i=1;i<$scope.profile.parts.length;i++){
+		$scope.profile.parts[i].checked = 
+			($scope.profile.getCorrectRatioRange(i) ==  $scope.profile.correctRatioRange.LOW);
+	}
+	$scope.saveParts();
+  };
+  $scope.getIcon = function(i){
+	var ico = 'ion-help-circled stable';
+	var ratio = $scope.profile.getCorrectRatioRange(i);
+	if(ratio == $scope.profile.correctRatioRange.HIGH)
+		ico = 'ion-heart balanced';
+	else if(ratio == $scope.profile.correctRatioRange.MID)
+		ico = 'ion-heart-broken energized';
+	else if(ratio == $scope.profile.correctRatioRange.LOW)
+		ico = 'ion-flag assertive';
+	
 	return ('icon '+ico);
   }
 });

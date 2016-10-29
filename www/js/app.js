@@ -218,6 +218,6 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
 
 })
 
-//.config(function($ionicConfigProvider) {
-//  $ionicConfigProvider.tabs.position('bottom')
-//});
+.config(function($ionicConfigProvider) {
+  $ionicConfigProvider.navBar.alignTitle('right')
+});
