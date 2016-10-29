@@ -223,12 +223,30 @@ angular.module('starter.profile',[])
 	this.getPercentTotalStudy = function(){
 		var Tot = 0;
 		for (var i = 0; i < this.parts.length; i++) {
-			if (this.parts[i].numCorrect.reduce(Utils.add, 0) > 1)
+			if (this.parts[i].numCorrect.reduce(Utils.add, 0) > 0)
 				Tot += this.parts[i].length;
 		}
-		return ((Tot*100)/Utils.QuranWords)+'%';
+		return Math.round((Tot*100)/Utils.QuranWords)+'%';
 	}
-
+	this.getPercentTotalRatio = function(){
+		/* Exclude index-0, special questions
+		   and add all levels: 1,2,3
+		*/
+		var totCorrect = 0, totQuestions = 0;	
+		for (var i = 0; i < self.parts.length; i++) {
+			totCorrect  +=  self.parts[i].numCorrect.reduce(Utils.add, -self.parts[i].numCorrect[0]);
+			totQuestions += self.parts[i].numQuestions.reduce(Utils.add, -self.parts[i].numQuestions[0]);
+		}
+		return Math.round((totQuestions==0)?0:(100*totCorrect)/totQuestions)+'%';
+	}
+	this.getPercentTotalSpecialRatio = function(){
+		var totCorrect = 0, totQuestions = 0;	
+		for (var i = 0; i < self.parts.length; i++) {
+			totCorrect  +=  self.parts[i].numCorrect[0];
+			totQuestions += self.parts[i].numQuestions[0];
+		}
+		return Math.round((totQuestions==0)?0:(100*totCorrect)/totQuestions)+'%';
+	}
 	//
 	//If current profile selections has too few suras, then the user 
 	//is not eligible to some special questions; example: State Sura Name.

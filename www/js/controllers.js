@@ -191,8 +191,8 @@ angular.module('starter.controllers', [])
 	}
 	//TODO: Get real numbers
 	$scope.pcnt_total_study = Profile.getPercentTotalStudy();
-	$scope.pcnt_total_ratio = '33%';
-	$scope.pcnt_total_special = '20%';
+	$scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
+	$scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
 	$scope.pcnt_total_rank = '50%';
 	setTimeout(function() {
 		var bars = document.querySelectorAll('.horizontal .progress_fill span');
