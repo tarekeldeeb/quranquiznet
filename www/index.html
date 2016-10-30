@@ -1,55 +1,35 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
-    <title></title>
-
-    <link href="lib/ionic/css/ionic.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-	<link rel="shortcut icon" href="img/favicon.ico"/> 
-    <!-- IF using Sass (run gulp sass first), then uncomment below and remove the CSS includes above
-    <link href="css/ionic.app.css" rel="stylesheet">
-    -->
-
-    <!-- ionic/angularjs js -->
-    <script src="lib/ionic/js/ionic.bundle.min.js" async></script>
-
-    <!-- cordova script (this will be a 404 during development) -->
-	<script src="js/ng-cordova.min.js" async></script>
-    <script src="cordova.js" async></script>
-
-    <!-- your app's js -->
-	<script src="js/google_login.js" async></script>
-    <script src="js/app.js" async></script>
-    <script src="js/controllers.js" async></script>
-    <script src="js/services.js" async></script>
-    <script src="js/utils.js" async></script>
-    <script src="js/profile.js" async></script>
-    <script src="js/questionnaire.js" async></script>
-	<script src="js/angular-md5.min.js" async></script>
-	<script src="js/angular-resource.min.js" async></script>
-	<!-- <script src="js/js-unzip.min.js" async></script> -->
-	<script src="js/seedrandom.min.js" async></script>
-	
-  </head>
-  <body ng-app="starter">
-    <div class="phone-container" ng-style="phoneStyle">
-      <ion-pane>
-		<!--
-		  The nav bar that will be updated as we navigate between views.
-		-->
-		<ion-nav-bar class="bar-stable">
-		  <ion-nav-back-button>
-		  </ion-nav-back-button>
-		</ion-nav-bar>
-		<!--
-		  The views will be rendered in the <ion-nav-view> directive below
-		  Templates are in the /templates folder (but you could also
-		  have templates inline in this html file if you'd like).
-		-->
-		<ion-nav-view></ion-nav-view>
-      </ion-pane>	
-	</div>
-  </body>
+<head>
+<meta charset=utf-8>
+<meta name=viewport content="initial-scale=1, maximum-scale=1, user-scalable=no, width=device-width">
+<title></title>
+<link href="lib/ionic/css/ionic.css" rel=stylesheet>
+<link href="css/style.css" rel=stylesheet>
+<link rel="shortcut icon" href="img/favicon.ico"/>
+<script src="lib/ionic/js/ionic.bundle.min.js" async></script>
+<script src="js/ng-cordova.min.js"></script>
+<script src=cordova.js></script>
+<script src="js/google_login.js" async></script>
+<script src="js/app.js" async></script>
+<script src="js/controllers.js" async></script>
+<script src="js/services.js" async></script>
+<script src="js/utils.js" async></script>
+<script src="js/profile.js" async></script>
+<script src="js/questionnaire.js" async></script>
+<script src="js/angular-md5.min.js" async></script>
+<script src="js/angular-resource.min.js" async></script>
+<script src="js/seedrandom.min.js" async></script>
+</head>
+<body ng-app=starter>
+<div class=phone-container ng-style=phoneStyle>
+<ion-pane>
+<ion-nav-bar class=bar-stable>
+<ion-nav-back-button>
+</ion-nav-back-button>
+</ion-nav-bar>
+<ion-nav-view></ion-nav-view>
+</ion-pane>
+</div>
+</body>
 </html>
