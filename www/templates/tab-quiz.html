@@ -75,11 +75,13 @@
 		<ion-infinite-scroll on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
 
 		<script id="image-modal.html" type="text/ng-template">
-			<div class="modal image-modal transparent" ng-click="closeModal()">
-				<ion-pane class="transparent">
-					<img ng-src="{{imageSrc}}" class="fullscreen-image" />
-				</ion-pane>
-			</div>
+			<ion-modal-view class="transparent">
+				<div class="modal image-modal transparent">
+					<ion-pane class="transparent">
+						<img ng-src="{{imageSrc}}" class="fullscreen-image" ng-click="closeModal()"/>
+					</ion-pane>
+				</div>
+			</ion-modal-view>
 		</script>
 	</ion-content>
 </ion-view>
