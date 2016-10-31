@@ -60,7 +60,7 @@
 							</div>
 							<div class="button-bar">
 								<button class="button button-calm" ng-click="answerOK()">حسنا</button>
-								<button class="button button-clear button-dark" ng-click="openModal()" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
+								<button class="button button-clear button-dark" ng-click="openModal(card.answer_pageURL)" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
 									شاهد</button>
 								<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
 									نافس</button>
@@ -75,9 +75,9 @@
 		<ion-infinite-scroll on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
 
 		<script id="image-modal.html" type="text/ng-template">
-			<ion-modal-view class="transparent">
+			<ion-modal-view class="transparent fullscreen-image">
 				<div class="modal image-modal transparent">
-					<ion-pane class="transparent">
+					<ion-pane>
 						<img ng-src="{{imageSrc}}" class="fullscreen-image" ng-click="closeModal()"/>
 					</ion-pane>
 				</div>

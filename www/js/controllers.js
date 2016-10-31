@@ -26,7 +26,7 @@ angular.module('starter.controllers', [])
 					}).then(function(modal) {
 						$scope.modal = modal;
 					});
-	$scope.openModal = function() {	$scope.modal.show();};
+	$scope.openModal = function(url) {	$scope.imageSrc=url; $scope.modal.show();};
 	$scope.closeModal = function() {$scope.modal.hide();};
 	$scope.$on('$destroy', function() {	$scope.modal.remove();});
 			
@@ -76,7 +76,8 @@ angular.module('starter.controllers', [])
 									answer:$scope.answer, 
 									answer_sura:$scope.answer_sura, 
 									answer_sura_info:$scope.answer_sura_info, 
-									answer_aya:$scope.answer_aya };
+									answer_aya:$scope.answer_aya,
+									answer_pageURL:$scope.answer_pageURL};
 			$scope.questionCards.push(card);
 			$scope.$broadcast('scroll.infiniteScrollComplete');
 			if(!scrollLock) $ionicScrollDelegate.scrollBottom(true);
@@ -86,10 +87,15 @@ angular.module('starter.controllers', [])
 
 	$scope.getAnswer = function(){
 		$scope.answer       = Questionnaire.qo.txt.answer + ' ...';
-		$scope.answer_sura  = Utils.getSuraNameFromWordIdx(Questionnaire.qo.startIdx);
+		var sura 			= Utils.getSuraIdx(Questionnaire.qo.startIdx);
+		$scope.answer_sura  = Utils.sura_name[sura];
     $scope.answer_sura_info = Utils.getSuraTanzilFromWordIdx(Questionnaire.qo.startIdx)+
                                     ' اياتها ' + Utils.sura_ayas[Utils.getSuraIdx(Questionnaire.qo.startIdx)];
-		return Q.ayaNumberOf(Questionnaire.qo.startIdx).then(function(res){$scope.answer_aya  = res;});
+		return Q.ayaNumberOf(Questionnaire.qo.startIdx)
+				.then(function(res){
+					$scope.answer_aya  	  = res;
+					$scope.answer_pageURL = Utils.getPageFromSuraAyah(sura,res);
+				});
 	}
 	$scope.skipQ = function(){
 		setBackCardStyle(false);

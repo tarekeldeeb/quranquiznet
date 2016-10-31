@@ -355,10 +355,10 @@ angular.module('starter.utils', ['angular-md5'])
 			6, 12, 6, 1, 9, 5, 1, 10, 1, 6, 1, 8, 1, 13, 27, 16, 43, 9, 35, 11, 40,
 			11, 1, 14, 1, 20, 18, 48, 20, 6, 26, 20, 1, 31, 16, 1, 1, 1, 7, 35, 1,
 			1, 16, 1, 24, 1, 15, 1, 1, 8, 10, 1, 1, 1, 1];
-		this.getPageFromIdx = function(i) {
+		this.getPageFromSuraAyah = function(s,a) {
 			// TODO .. https://github.com/quran/quran_android/blob/master/app/src/main/java/com/quran/labs/androidquran/data/BaseQuranInfo.java
 			//getPageFromSuraAyah
-			return 10;
+			return "https://cdn.rawgit.com/tarekeldeeb/madina_images/w1024/w1024_page003.png";
 		}
 	
         // `condition` is a function that returns a boolean

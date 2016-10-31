@@ -91,7 +91,7 @@ angular.module('starter.profile',[])
 		this.saveAll();
 		return false;
 	} else {
-		this.uid 				= JSON.parse(Utils.load('prf_uid',0));
+		this.uid 				= Utils.load('prf_uid',0);
 		this.lastSeed 			= parseInt(Utils.load('prf_lastSeed',0));
 		this.level 				= parseInt(Utils.load('prf_level',-1));
 		this.specialEnabled 	= JSON.parse(Utils.load('prf_specialEnabled',false));
