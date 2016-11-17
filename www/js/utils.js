@@ -309,7 +309,7 @@ angular.module('starter.utils', ['angular-md5'])
             });
         }
 	
-		var SURA_PAGE_START = [
+		var pageSuraStart = [
 			1, 2, 50, 77, 106, 128, 151, 177, 187, 208, 221, 235, 249, 255, 262,
 			267, 282, 293, 305, 312, 322, 332, 342, 350, 359, 367, 377, 385, 396,
 			404, 411, 415, 418, 428, 434, 440, 446, 453, 458, 467, 477, 483, 489,
@@ -319,7 +319,7 @@ angular.module('starter.utils', ['angular-md5'])
 			591, 591, 592, 593, 594, 595, 595, 596, 596, 597, 597, 598, 598, 599,
 			599, 600, 600, 601, 601, 601, 602, 602, 602, 603, 603, 603, 604, 604,
 			604	];
-		var PAGE_AYAH_START = [
+		var pageAyaStart = [
 			1, 1, 6, 17, 25, 30, 38, 49, 58, 62, 70, 77, 84, 89, 94, 102, 106, 113,
 			120, 127, 135, 142, 146, 154, 164, 170, 177, 182, 187, 191, 197, 203,
 			211, 216, 220, 225, 231, 234, 238, 246, 249, 253, 257, 260, 265, 270,
@@ -358,6 +358,16 @@ angular.module('starter.utils', ['angular-md5'])
 		this.getPageFromSuraAyah = function(s,a) {
 			// TODO .. https://github.com/quran/quran_android/blob/master/app/src/main/java/com/quran/labs/androidquran/data/BaseQuranInfo.java
 			//getPageFromSuraAyah
+            var start = pageSuraStart[s-1]-1;
+            if (start<604)
+                //this.log('start='+start);
+                //this.log('start,A[s],A[s+1] = '+start+','+pageAyaStart[start]+','+pageAyaStart[start+1]);
+                while( (pageAyaStart[start] < pageAyaStart[start+1]) 
+                    && (a >= pageAyaStart[start+1]) ){
+                    start = start + 1;
+                    //this.log('start,A[s],A[s+1] = '+start+','+pageAyaStart[start]+','+pageAyaStart[start+1]);
+                }
+            this.log('Aya/Sura= '+a+'/'+s+' found at page: '+(start+1) );        
 			return "https://cdn.rawgit.com/tarekeldeeb/madina_images/w1024/w1024_page003.png";
 		}
 	
