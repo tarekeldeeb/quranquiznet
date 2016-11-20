@@ -116,7 +116,7 @@ angular.module('starter.questionnaire', [])
                     }
                     return self.fillText();
                 }).then(function () {
-                    Utils.log(JSON.stringify(self.qo));
+                    //Utils.log(JSON.stringify(self.qo));
                 });
         }
 
@@ -186,7 +186,7 @@ angular.module('starter.questionnaire', [])
                 }).then(function () {
                     return self.fillText();
                 }).then(function () {
-                    Utils.log(JSON.stringify(self.qo));
+                    //Utils.log(JSON.stringify(self.qo));
                 });
         }
 
@@ -248,7 +248,7 @@ angular.module('starter.questionnaire', [])
                     }).then(function (randList) {
                         for (var i = 0; i < 10; i++) { if (self.qo.op[i][0] == randList.i) break; }
                         if (i < 10) {
-                            Utils.log('Adding ' + (4 - uniq_cnt) + ' random inc_op at round ' + i);
+                            //Utils.log('Adding ' + (4 - uniq_cnt) + ' random inc_op at round ' + i);
                             if (uniq_cnt > 0) {
                                 rnd_idx = Utils.randperm(uniq_cnt);
                                 for (var j = 1; j < uniq_cnt + 1; j++) {

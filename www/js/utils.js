@@ -308,7 +308,12 @@ angular.module('starter.utils', ['angular-md5'])
                 return replace;
             });
         }
-	
+		this.numberPad = function (n, p, c) {
+			var pad_char = typeof c !== 'undefined' ? c : '0';
+			var pad = new Array(1 + p).join(pad_char);
+			return (pad + n).slice(-pad.length);
+		}
+
 		var pageSuraStart = [
 			1, 2, 50, 77, 106, 128, 151, 177, 187, 208, 221, 235, 249, 255, 262,
 			267, 282, 293, 305, 312, 322, 332, 342, 350, 359, 367, 377, 385, 396,
@@ -356,8 +361,6 @@ angular.module('starter.utils', ['angular-md5'])
 			11, 1, 14, 1, 20, 18, 48, 20, 6, 26, 20, 1, 31, 16, 1, 1, 1, 7, 35, 1,
 			1, 16, 1, 24, 1, 15, 1, 1, 8, 10, 1, 1, 1, 1];
 		this.getPageFromSuraAyah = function(s,a) {
-			// TODO .. https://github.com/quran/quran_android/blob/master/app/src/main/java/com/quran/labs/androidquran/data/BaseQuranInfo.java
-			//getPageFromSuraAyah
             var start = pageSuraStart[s-1]-1;
             if (start<604)
                 //this.log('start='+start);
@@ -368,9 +371,14 @@ angular.module('starter.utils', ['angular-md5'])
                     //this.log('start,A[s],A[s+1] = '+start+','+pageAyaStart[start]+','+pageAyaStart[start+1]);
                 }
             this.log('Aya/Sura= '+a+'/'+s+' found at page: '+(start+1) );        
-			return "https://cdn.rawgit.com/tarekeldeeb/madina_images/w1024/w1024_page003.png";
+			return (start+1);
 		}
-	
+		this.getPageURLFromSuraAyah = function(s,a) {
+			var page = this.getPageFromSuraAyah(s,a);
+			var pagepad = this.numberPad(page,3); //Three digit number; zero padding.
+			return "https://cdn.rawgit.com/tarekeldeeb/madina_images/w1024/w1024_page"+pagepad+".png";
+		}
+		
         // `condition` is a function that returns a boolean
         // `body` is a function that returns a promise
         // returns a promise for the completion of the loop

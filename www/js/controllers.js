@@ -94,7 +94,7 @@ angular.module('starter.controllers', [])
 		return Q.ayaNumberOf(Questionnaire.qo.startIdx)
 				.then(function(res){
 					$scope.answer_aya  	  = res;
-					$scope.answer_pageURL = Utils.getPageFromSuraAyah(sura,res);
+					$scope.answer_pageURL = Utils.getPageURLFromSuraAyah(sura,res);
 				});
 	}
 	$scope.skipQ = function(){
