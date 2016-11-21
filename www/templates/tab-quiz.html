@@ -76,9 +76,11 @@
 
 		<script id="image-modal.html" type="text/ng-template">
 			<ion-modal-view class="transparent fullscreen-image">
-				<div class="modal image-modal transparent">
+				<button class="button icon ion-chevron-left qq-page-nav" style="left:0"></button>
+				<div class="modal image-modal transparent">				
 					<img ng-src="{{imageSrc}}" class="fullscreen-image" style="background-color:white;" ng-click="closeModal()"/>
 				</div>
+				<button class="button icon ion-chevron-right qq-page-nav" style="right:0"></button>	
 			</ion-modal-view>
 		</script>
 	</ion-content>
