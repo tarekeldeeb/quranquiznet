@@ -150,6 +150,29 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     });
 })
 
+.directive("qqSrc", function() {
+    return {
+      link: function(scope, element, attrs) {
+        var loadImage,img=null;
+        loadImage = function() {
+          element[0].src = "http://sensennetworks.com/images/loading-book.gif";
+          img = new Image();
+          img.src = attrs.qqSrc;
+          img.onload = function() {
+            element[0].src = attrs.qqSrc;
+          };
+        };
+        scope.$watch((function() {
+          return attrs.qqSrc;
+        }), function(newVal, oldVal) {
+          if (oldVal !== newVal) {
+            loadImage();
+          }
+        });
+      }
+    };
+  })
+ 
 .config(function($stateProvider, $urlRouterProvider) {
 
     // Ionic uses AngularUI Router which uses the concept of states
