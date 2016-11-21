@@ -28,6 +28,12 @@ angular.module('starter.controllers', [])
 					});
 	$scope.openModal = function(url) {	$scope.imageSrc=url; $scope.modal.show();};
 	$scope.closeModal = function() {$scope.modal.hide();};
+	$scope.qPagePrevious = function(){	var p = Utils.getPageNumberFromPageURL($scope.imageSrc);
+										p--;
+										$scope.imageSrc=Utils.getPageURLFromPageNumber(p);};
+	$scope.qPageNext = function(){	var p = Utils.getPageNumberFromPageURL($scope.imageSrc);
+										p++;
+										$scope.imageSrc=Utils.getPageURLFromPageNumber(p);};
 	$scope.$on('$destroy', function() {	$scope.modal.remove();});
 			
  	function IncorrectQuestionHandler(){

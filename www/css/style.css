@@ -359,4 +359,5 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
   position:absolute;
   top:50%;
   z-index:11;
+  background:rgba(150,255,150,.60);
 }

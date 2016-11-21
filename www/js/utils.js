@@ -375,10 +375,15 @@ angular.module('starter.utils', ['angular-md5'])
 		}
 		this.getPageURLFromSuraAyah = function(s,a) {
 			var page = this.getPageFromSuraAyah(s,a);
-			var pagepad = this.numberPad(page,3); //Three digit number; zero padding.
+			return this.getPageURLFromPageNumber(page);
+		}
+		this.getPageURLFromPageNumber = function(p){
+			var pagepad = this.numberPad(p,3); //Three digit number; zero padding.
 			return "https://cdn.rawgit.com/tarekeldeeb/madina_images/w1024/w1024_page"+pagepad+".png";
 		}
-		
+		this.getPageNumberFromPageURL = function(u){
+			return  parseInt(/page([0-9]*)\.png/.exec(u)[1]);
+		}
         // `condition` is a function that returns a boolean
         // `body` is a function that returns a promise
         // returns a promise for the completion of the loop
