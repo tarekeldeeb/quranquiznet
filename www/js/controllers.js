@@ -212,9 +212,7 @@ angular.module('starter.controllers', [])
 			var perc = bars[i].innerHTML;
 			bars[i].parentNode.style.width = perc;
 		}		
-	},100);
-
-	
+	},100);	
 })
 
 .controller('settingsCtrl', function($scope, Profile) {

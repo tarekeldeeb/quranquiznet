@@ -361,7 +361,7 @@ angular.module('starter.utils', ['angular-md5'])
 			11, 1, 14, 1, 20, 18, 48, 20, 6, 26, 20, 1, 31, 16, 1, 1, 1, 7, 35, 1,
 			1, 16, 1, 24, 1, 15, 1, 1, 8, 10, 1, 1, 1, 1];
 		this.getPageFromSuraAyah = function(s,a) {
-            var start = pageSuraStart[s]-1;
+            var start = pageSuraStart[s];
             if (start<604)
                 //this.log('start='+start);
                 //this.log('start,A[s],A[s+1] = '+start+','+pageAyaStart[start]+','+pageAyaStart[start+1]);
