@@ -391,6 +391,7 @@ angular.module('starter.questionnaire', [])
         }
 
         this.extraQLength = function (start, qLen, long_q, direction) {
+            //TODO: Review and apply!
 			/**                  <qLen>,--{start} 
 			*  <----------{M M M M M M M M}------->
 			*            U M M M M M M M       < Long_question:   forward only >

@@ -1,5 +1,5 @@
 /****
-* Copyright (C) 2011-2016 Quran Quiz Net 
+* Copyright (C) 2011-2016 Quran Quiz Net
 * Tarek Eldeeb <tarekeldeeb@gmail.com>
 * License: see LICENSE.txt
 ****/
@@ -7,7 +7,7 @@
 angular.module('starter.profile',[])
 .factory('Profile', function(Utils) {
   var self = this;
-  
+
   this.uid = 0;
   this.social = {type:{}, data:{}};
   this.lastSeed = 0;
@@ -26,7 +26,7 @@ angular.module('starter.profile',[])
 	return {	date:Utils.getTime(),
 				score:this.getScore()
 			};
-  }  
+  }
   var studyPart = function(start,length,correct,questions,name,checked) {
 	return {	start:start,
 				length:length,
@@ -36,7 +36,7 @@ angular.module('starter.profile',[])
 				checked:checked
 			};
   }
-  
+
   var QQSparseResult = function(idx, part){
 	return {	idx: idx,
 				part:part
@@ -48,7 +48,7 @@ angular.module('starter.profile',[])
 		for(var j=0;j<4;j++){
 			numCorrect = self.parts[i].numCorrect[j];
 			numQuestions = self.parts[i].numQuestions[j];
-			r[j] = (numQuestions==0)? 0: (numCorrect / numQuestions);			
+			r[j] = (numQuestions==0)? 0: (numCorrect / numQuestions);
 		}
 		return r;
   }
@@ -62,7 +62,7 @@ angular.module('starter.profile',[])
 					self.parts[i].numQuestions[1]+
 					self.parts[i].numQuestions[2]+
 					self.parts[i].numQuestions[3];
-	return (numQuestions==0)? 0: (numCorrect / numQuestions);			
+	return (numQuestions==0)? 0: (numCorrect / numQuestions);
   }
   var calculateScorePart = function(i){
 		return 	self.parts[i].numCorrect[0] +
@@ -70,17 +70,17 @@ angular.module('starter.profile',[])
 				(2*self.parts[i].numCorrect[2]-self.parts[i].numQuestions[2])*20 +
 				(2*self.parts[i].numCorrect[3]-self.parts[i].numQuestions[3])*30;
   }
-  
+
   this.load = function() {
 	if (Utils.load('prf_uid',-1) == -1){
 		// Create Default Profile
 		this.parts.push( new studyPart(1,(Utils.sura_idx[0]),[0,0,0,0],[0,0,0,0],'سورة '+Utils.sura_name[0],true));
 
-		for (var i = 1; i < 45; i++) 
+		for (var i = 1; i < 45; i++)
 			this.parts.push( new studyPart(	(Utils.sura_idx[i-1]),
 											(Utils.sura_idx[i] - Utils.sura_idx[i-1]),
 											[0,0,0,0],[0,0,0,0],'سورة '+Utils.sura_name[i],false));
-		for (var i = 0; i < 5; i++) 
+		for (var i = 0; i < 5; i++)
 			this.parts.push( new studyPart(	(Utils.last5_juz_idx[i]),
 											(Utils.last5_juz_idx[i+1] - Utils.last5_juz_idx[i]),
 											[0,0,0,0],[0,0,0,0],'جزء '+Utils.last5_juz_name[i],false));
@@ -96,47 +96,47 @@ angular.module('starter.profile',[])
 		this.level 				= parseInt(Utils.load('prf_level',-1));
 		this.specialEnabled 	= JSON.parse(Utils.load('prf_specialEnabled',false));
 		this.scores 			= Utils.loadObject('prf_scores');
-		this.parts 				= Utils.loadObject('prf_parts');		
-		this.version 			= Utils.loadObject('prf_version');		
-		this.social 			= Utils.loadObject('prf_social');		
+		this.parts 				= Utils.loadObject('prf_parts');
+		this.version 			= Utils.loadObject('prf_version');
+		this.social 			= Utils.loadObject('prf_social');
 		return true;
 	}
   }
-  
+
   this.saveAll = function(){
 	Utils.save('prf_uid',this.uid);
 	Utils.save('prf_lastSeed',this.lastSeed);
 	Utils.save('prf_level',this.level);
 	Utils.save('prf_specialEnabled',this.specialEnabled);
 	Utils.saveObject('prf_scores',this.scores);
-	Utils.saveObject('prf_parts',this.parts);	
-	Utils.saveObject('prf_social',this.social);	
+	Utils.saveObject('prf_parts',this.parts);
+	Utils.saveObject('prf_social',this.social);
   }
-  
+
   this.saveParts = function(){
-	Utils.saveObject('prf_parts',this.parts);	
+	Utils.saveObject('prf_parts',this.parts);
   }
 
   this.saveSettings = function(){
 	Utils.save('prf_level',this.level);
 	Utils.save('prf_specialEnabled',this.specialEnabled);
   }
- 
+
   this.saveScores = function(){
 	Utils.saveObject('prf_scores',this.scores);
-	Utils.saveObject('prf_parts',this.parts);	
+	Utils.saveObject('prf_parts',this.parts);
   }
-  
+
   this.saveSocial = function(social){
 	  this.social = social
-	  //TODO: Add checks from social  provider: basic fields? error codes?	
+	  //TODO: Add checks from social  provider: basic fields? error codes?
 	  Utils.saveObject('prf_social',this.social);
 	  Utils.saveObject('prf_uid',Utils.md5(this.social.data.email));
   }
   this.addCorrect = function (qo) {
 	  var currentPart = qo.currentPart;
 	  if ((currentPart < self.parts.length) && qo.level > 0) {
-		  if (qo.qType.id > 1) { 
+		  if (qo.qType.id > 1) {
 			  /** Special Question */
 			  self.parts[currentPart].numCorrect[0] += qo.qType.score;
 			  self.parts[currentPart].numQuestions[0] += 1;
@@ -152,7 +152,7 @@ angular.module('starter.profile',[])
   this.addIncorrect = function(qo) {
 	  var currentPart = qo.currentPart;
 	  if ((currentPart < self.parts.length) && qo.level > 0) {
-		  if (qo.qType.id > 1) { 
+		  if (qo.qType.id > 1) {
 			  /** Special Question */
 			  self.parts[currentPart].numQuestions[0] += 1;
 		  } else {
@@ -174,7 +174,7 @@ angular.module('starter.profile',[])
 	//
 	//After getting a random number between 1:TotalStudy,
 	//it's needed to map that number to un-contiguous study part.
-	//@param CntTot: 
+	//@param CntTot:
 	//@return
 	//
 	this.getSparsePoint = function(CntTot) {
@@ -220,7 +220,7 @@ angular.module('starter.profile',[])
 		}
 		return Tot;
 	}
-	
+
 	this.getPercentTotalStudy = function(){
 		var Tot = 0;
 		for (var i = 0; i < this.parts.length; i++) {
@@ -233,7 +233,7 @@ angular.module('starter.profile',[])
 		/* Exclude index-0, special questions
 		   and add all levels: 1,2,3
 		*/
-		var totCorrect = 0, totQuestions = 0;	
+		var totCorrect = 0, totQuestions = 0;
 		for (var i = 0; i < self.parts.length; i++) {
 			totCorrect  +=  self.parts[i].numCorrect.reduce(Utils.add, -self.parts[i].numCorrect[0]);
 			totQuestions += self.parts[i].numQuestions.reduce(Utils.add, -self.parts[i].numQuestions[0]);
@@ -241,7 +241,7 @@ angular.module('starter.profile',[])
 		return Math.round((totQuestions==0)?0:(100*totCorrect)/totQuestions)+'%';
 	}
 	this.getPercentTotalSpecialRatio = function(){
-		var totCorrect = 0, totQuestions = 0;	
+		var totCorrect = 0, totQuestions = 0;
 		for (var i = 0; i < self.parts.length; i++) {
 			totCorrect  +=  self.parts[i].numCorrect[0];
 			totQuestions += self.parts[i].numQuestions[0];
@@ -249,21 +249,21 @@ angular.module('starter.profile',[])
 		return Math.round((totQuestions==0)?0:(100*totCorrect)/totQuestions)+'%';
 	}
 	//
-	//If current profile selections has too few suras, then the user 
+	//If current profile selections has too few suras, then the user
 	//is not eligible to some special questions; example: State Sura Name.
 	//@return
 	//
 	this.isSurasSpecialQuestionEligible = function(){
 		for(var i=this.parts.length-1;i>=this.parts.length-5;i--)
 			if(this.parts[i].checked === true) return true;
-		
+
 		var s=0;
 		for(var j=this.parts.length-6;j>0;j--){
 			if(this.parts[i].checked === true) s++;
 			if(s>=Utils.SurasSpecialQuestionEligibilityThreshold)
 				return true;
 		}
-		return false; 
+		return false;
 	}
 
 	this.updateScoreRecord = function() {
@@ -281,7 +281,7 @@ angular.module('starter.profile',[])
 		}
 		return false;
 	}
-	
+
 	this.getCorrectRatioRange = function(i) {
 		var rg,ratio = getCorrectRatio(i);
 		if(Utils.countedScore(self.parts[i].numQuestions) == 0)
@@ -290,84 +290,70 @@ angular.module('starter.profile',[])
 			rg = this.correctRatioRange.HIGH;
 		else if(ratio>=0.5)
 			rg = this.correctRatioRange.MID;
-		else 	
+		else
 			rg = this.correctRatioRange.LOW;
-		return rg;	
+		return rg;
 	}
 	this.levels = [	{value:0, text:"مستوى ابتدائي", comment:"يبدأ السؤال من رأس الاية، ولا يزيد النقاط", disabled:false},
 					{value:1, text:"مستوى أولي", comment:"السؤال من ثلاث كلمات، يزيد النقاط بعشرة", disabled:false},
 					{value:2, text:"مستوى ثانوي", comment:"السؤال من كلمتين، يزيد النقاط بعشرين", disabled:false},
 					{value:3, text:"مستوى متقدم", comment:"أكثر من اجابة صحيحة، يزيد النقاط بثلاثين", disabled:true}];
 
-	
-	/* 	// TODO: continue Port!
-	
-	//@return An array of weights for studied parts to sum up 
-	//to QQUtils.DAILYQUIZ_QPERPART_COUNT
+	//@return An array of weights for studied parts to sum up
+	//to Utils.DAILYQUIZ_QPERPART_COUNT
 	//
 	this.getDailyQuizStudyPartsWeights = function(dailyRandom){
 		var sparse = [Utils.DAILYQUIZ_PARTS_COUNT];
 		var totalStudyWeight = Math.ceil(this.getTotalStudyLength()/Utils.Juz2AvgWords);
-		var Wn, WnX100_remainder=0, WnX100;
-		
+		var Wn, WnX100;
+
 		//Fill array as: [0, 0, W1, 0, W2, ..]
-		for(int i=0;i<QQUtils.DAILYQUIZ_PARTS_COUNT;i++){
+		for(var i=0; i<Utils.DAILYQUIZ_PARTS_COUNT; i++){
 			//Skip Al-Fatiha
-			if(QParts.get(i+1).getLength()==0)
+			if(i==0 || Utils.countedScore(self.parts[i].numQuestions) == 0)
 				sparse[i] = 0;
 			else{
-				WnX100 = QQUtils.DAILYQUIZ_QPERPART_COUNT*QQUtils.PartWeight100[i+1]
+				WnX100 = Utils.DAILYQUIZ_QPERPART_COUNT*Utils.PartWeight100[i]
 									/totalStudyWeight; //Weight with scaling of 100
-				if( Integer.valueOf(dailyRandom.charAt(i))>4 ){
-					Wn = (int) Math.ceil((WnX100+WnX100_remainder)/(float)100);
-					if(Wn>0){
-						sparse[i] = Wn;
-						WnX100_remainder += WnX100-100;
-					} else {
-						sparse[i] = 0;
-						WnX100_remainder += WnX100;
-					}
+				Wn = Math.ceil( WnX100 / 100.0);
+				if(Wn>0){
+					sparse[i] = Wn;
 				} else {
-					Wn = (int) Math.round((WnX100+WnX100_remainder)/(float)100);
-					if(Wn>0){
-						sparse[i] = Wn;
-						WnX100_remainder += WnX100-100;
-					} else {
-						sparse[i] = 0;
-						WnX100_remainder += WnX100;
-					}
+					sparse[i] = 0;
 				}
 			}
 		}
 
 		//Check if W1:Wn sum to DAILYQUIZ_QPERPART_COUNT
-		int sum=0;
-		for(int i=0;i<QQUtils.DAILYQUIZ_PARTS_COUNT;i++)
-			sum += sparse[i];
-		int sumCorrection = QQUtils.DAILYQUIZ_QPERPART_COUNT - sum;
-		
-		//Apply correction (due to approx) to last selection
-		for(int i=QQUtils.DAILYQUIZ_PARTS_COUNT-1;i>=0;i--){
-			if(sparse[i]!=0){
-				sparse[i] += sumCorrection;
-				break;
+		var sum=0;
+		for(i=0;i<Utils.DAILYQUIZ_PARTS_COUNT;i++) sum += sparse[i];
+		var sumCorrection = Utils.DAILYQUIZ_QPERPART_COUNT - sum;
+
+		//Handle newly created profile: Question = 0
+		if(sum == 0){
+			sparse[ Utils.DAILYQUIZ_PARTS_COUNT - 1 ] = Utils.DAILYQUIZ_QPERPART_COUNT;
+			sumCorrection = 0;
+		} 
+		if(sumCorrection != 0){
+			//Apply correction (due to approx) to last selection
+			for(i=Utils.DAILYQUIZ_PARTS_COUNT-1;i>=0;i--){
+				if(sparse[i]!=0){
+					sparse[i] += sumCorrection;
+					break;
+				}
 			}
 		}
+		Utils.log("DailyQuizStudyPartsWeights:: "+ sparse[0] + sparse[1] + sparse[2] + sparse[3] + sparse[4] + sparse[5]
+											 + sparse[6] + sparse[7] + sparse[8] + sparse[9] + sparse[10] + sparse[11]
+											 + sparse[12] + sparse[13] + sparse[14] + sparse[15] + sparse[16] + sparse[17]
+											 + sparse[18] + sparse[19] + sparse[20] + sparse[21] + sparse[22] + sparse[23]
+											 + sparse[24] + sparse[25] + sparse[26] + sparse[27] + sparse[28] + sparse[29]
+											 + sparse[30] + sparse[31] + sparse[32] + sparse[33] + sparse[34] + sparse[35]
+											 + sparse[36] + sparse[37] + sparse[38] + sparse[39] + sparse[40] + sparse[41]
+											 + sparse[42] + sparse[43] + sparse[44] + sparse[45] + sparse[46] + sparse[47]
+										     + sparse[48]);
 
-		Log.i("DailyQuizStudyPartsWeights:: "+ sparse[0] + sparse[1] + sparse[2] + sparse[3] + sparse[4] + sparse[5] 
-											 + sparse[6] + sparse[7] + sparse[8] + sparse[9] + sparse[10] + sparse[11] 
-											 + sparse[12] + sparse[13] + sparse[14] + sparse[15] + sparse[16] + sparse[17] 
-											 + sparse[18] + sparse[19] + sparse[20] + sparse[21] + sparse[22] + sparse[23] 
-											 + sparse[24] + sparse[25] + sparse[26] + sparse[27] + sparse[28] + sparse[29] 
-											 + sparse[30] + sparse[31] + sparse[32] + sparse[33] + sparse[34] + sparse[35] 
-											 + sparse[36] + sparse[37] + sparse[38] + sparse[39] + sparse[40] + sparse[41] 
-											 + sparse[42] + sparse[43] + sparse[44] + sparse[45] + sparse[46] + sparse[47] 
-										     + " " + sparse[48]);
-		
 		return sparse;
 	}
-	
-	
-  */
   return self;
 })

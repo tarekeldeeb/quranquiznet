@@ -201,6 +201,9 @@ angular.module('starter.controllers', [])
 			$rootScope.social.data = {};
 			Profile.saveSocial($rootScope.social);
 	}
+	$scope.debug = function () {
+		Profile.getDailyQuizStudyPartsWeights(1);
+	}
 	//TODO: Get real numbers
 	$scope.pcnt_total_study = Profile.getPercentTotalStudy();
 	$scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
