@@ -220,6 +220,16 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         }
     })
 
+	.state('q.daily', {
+        url: '/daily/:dailyRandom',
+        views: {
+            'menuContent': {
+                templateUrl: 'templates/tab-daily.html',
+                controller: 'daily'
+            }
+        }
+    })
+
     .state('q.study', {
         url: '/study',
         views: {

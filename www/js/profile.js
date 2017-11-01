@@ -16,12 +16,10 @@ angular.module('starter.profile',[])
   this.scores = [{date:0,score:0}];
   this.parts = [];
   this.version = {db:1.0, app:1.0, profile:1.0};
-  this.correctRatioRange = {
-    EMPTY:0,
-	HIGH:1,
-	MID:2,
-	LOW:3
-  };
+  this.correctRatioRange = {EMPTY:0,
+														HIGH:1,
+														MID:2,
+														LOW:3		};
   var scoreRecord = function() {
 	return {	date:Utils.getTime(),
 				score:this.getScore()
@@ -302,7 +300,7 @@ angular.module('starter.profile',[])
 	//@return An array of weights for studied parts to sum up
 	//to Utils.DAILYQUIZ_QPERPART_COUNT
 	//
-	this.getDailyQuizStudyPartsWeights = function(dailyRandom){
+	this.getDailyQuizStudyPartsWeights = function(){
 		var sparse = [Utils.DAILYQUIZ_PARTS_COUNT];
 		var totalStudyWeight = Math.ceil(this.getTotalStudyLength()/Utils.Juz2AvgWords);
 		var Wn, WnX100;
@@ -351,7 +349,7 @@ angular.module('starter.profile',[])
 											 + sparse[30] + sparse[31] + sparse[32] + sparse[33] + sparse[34] + sparse[35]
 											 + sparse[36] + sparse[37] + sparse[38] + sparse[39] + sparse[40] + sparse[41]
 											 + sparse[42] + sparse[43] + sparse[44] + sparse[45] + sparse[46] + sparse[47]
-										     + sparse[48]);
+										   + sparse[48] + + sparse[49]);
 
 		return sparse;
 	}

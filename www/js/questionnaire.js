@@ -583,7 +583,23 @@ angular.module('starter.questionnaire', [])
 			return String.valueOf(downScore);
 			*/
 		}
-
+        this.getDailyQuiz = function(dailyRandom){
+            if (isNaN(dailyRandom)) dailyRandom = 100;
+            var k=0;
+            var partLength, partStart, offset;
+            var DQ = [];
+            Utils.log("Creating a new daily questionnaire .. rand: "+dailyRandom);
+            var sparseQ = Profile.getDailyQuizStudyPartsWeights();
+            for (var i=1; i< sparseQ.length; i++){
+                partLength = Profile.parts[i].length;
+                partStart  = Profile.parts[i].start;
+                for(var j=0; j<sparseQ[i]; j++){
+                    offset = (Utils.DAILYQUIZ_QPERPART_DIST[j]*partLength+dailyRandom)%partLength;
+                    this.createNormalQ(partStart + offset);
+                    DQ[k++] = qo;
+                }
+            }
+        }
 		
         var selectSpecial = function () {
             if (self.qo.level == 0)
@@ -593,7 +609,7 @@ angular.module('starter.questionnaire', [])
             else
                 return (Math.random() < 0.05);
         }
-	
+        
         /* Constructor*/
         for (var k = 0; k < 10; k++) this.qo.op[k] = []; //Init 2D array
         for (var k = 0; k < 10; k++) this.qo.txt.op[k] = []; //Init 2D array

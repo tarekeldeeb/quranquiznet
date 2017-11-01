@@ -8,7 +8,7 @@ angular.module('starter.controllers', [])
 .controller('ahlanCtrl', function($scope, Utils) {
 	Utils.log('Ahlan to Quran Quiz Net!');
 })
-.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire, PersonService) {
+.controller('quizCtrl', function($scope, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire) {
 	var shuffle, qquestion;
 	var scrollLock = false;
 	$scope.round = 0;
@@ -222,6 +222,12 @@ angular.module('starter.controllers', [])
   $scope.profile = Profile;
   $scope.saveSettings = function(){
 	Profile.saveSettings();
+  }
+})
+
+.controller('daily', function($scope, $stateParams, Questionnaire, Utils) {
+  $scope.dailyStart = function(){
+		Questionnaire.getDailyQuiz(parseInt($stateParams.dailyRandom));
   }
 })
 
