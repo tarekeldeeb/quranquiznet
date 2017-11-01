@@ -308,7 +308,7 @@ angular.module('starter.profile',[])
 		//Fill array as: [0, 0, W1, 0, W2, ..]
 		for(var i=0; i<Utils.DAILYQUIZ_PARTS_COUNT; i++){
 			//Skip Al-Fatiha
-			if(i==0 || Utils.countedScore(self.parts[i].numQuestions) == 0)
+			if(i==0 || Utils.countedScore(self.parts[i].numQuestions) == 0 || self.parts[i].checked == false)
 				sparse[i] = 0;
 			else{
 				WnX100 = Utils.DAILYQUIZ_QPERPART_COUNT*Utils.PartWeight100[i]
@@ -341,16 +341,9 @@ angular.module('starter.profile',[])
 				}
 			}
 		}
-		Utils.log("DailyQuizStudyPartsWeights:: "+ sparse[0] + sparse[1] + sparse[2] + sparse[3] + sparse[4] + sparse[5]
-											 + sparse[6] + sparse[7] + sparse[8] + sparse[9] + sparse[10] + sparse[11]
-											 + sparse[12] + sparse[13] + sparse[14] + sparse[15] + sparse[16] + sparse[17]
-											 + sparse[18] + sparse[19] + sparse[20] + sparse[21] + sparse[22] + sparse[23]
-											 + sparse[24] + sparse[25] + sparse[26] + sparse[27] + sparse[28] + sparse[29]
-											 + sparse[30] + sparse[31] + sparse[32] + sparse[33] + sparse[34] + sparse[35]
-											 + sparse[36] + sparse[37] + sparse[38] + sparse[39] + sparse[40] + sparse[41]
-											 + sparse[42] + sparse[43] + sparse[44] + sparse[45] + sparse[46] + sparse[47]
-										   + sparse[48] + + sparse[49]);
 
+		for(i=0;i<sparse.length;i++)
+			if(sparse[i]!=0)	Utils.log("DailyQuizStudyPartsWeights@"+i+" = "+sparse[i]);
 		return sparse;
 	}
   return self;

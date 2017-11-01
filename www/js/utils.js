@@ -416,7 +416,34 @@ angular.module('starter.utils', ['angular-md5'])
             //	console.log("done");
             //});
         }
-
+        // `init` is a function with no return
+        // `condition` is a function that returns a boolean
+        // `end` is a function with no return
+        // `body` is a function that returns a promise
+        // returns a promise for the completion of the loop
+        this.promiseFor = function (init, condition, end, body) {
+            var done = $q.defer();
+            function bodyend() {body(); end();}
+            function loop() {
+                if (!condition()) return done.resolve();
+                $q.when(bodyend(), loop, done.reject);
+            }
+            init();
+            setTimeout(loop, 1); 
+            return done.promise;
+	
+            /***** Usage *****/
+            //var index;
+            //promiseFor(function () { index = 0; },
+            //           function () { return index <= 11; }, 
+            //           function () { index++; }, 
+            //           function () {
+            //	            console.log(index);
+            //	            return $q.defer(); // arbitrary async
+            //          }).then(function () {
+            //	            console.log("done");
+            //          });
+        }
         return self;
     })
 	

@@ -4,7 +4,7 @@
 * License: see LICENSE.txt
 ****/
 angular.module('starter.questionnaire', [])
-    .factory('Questionnaire', function (Profile, Q, Utils) {
+    .factory('Questionnaire', function (Profile, Q, Utils, $q) {
         var self = this;
         var sparsed;
 		var QLEN_EXTRA_LIMIT = 2;
@@ -483,12 +483,7 @@ angular.module('starter.questionnaire', [])
                             // Do nothing! 
                             break;
                     }
-
                 });
-            /*
-
-        
-        */
         }
 
 		this.getUpScore = function() {
@@ -503,40 +498,6 @@ angular.module('starter.questionnaire', [])
 				// Do nothing! 
 				break;
 			}
-
-			/*	
-			double currentPartScore, currentPartScoreUp;
-			double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
-			int numCorrect, numQuestions, currLevel;
-			
-			//
-			//Find the difference between the current and the to-be-incremented score
-			//The difference comes from the current part only. The current is calculated
-			//normally, while the UP is calculated manually as below
-			//
-			currentPartScore = calculateScorePart(CurrentPart, true);
-			
-			//
-			//Calculate the normalized Number of words in current part + UP
-			//
-			numCorrect   = QParts.get(CurrentPart).getNumCorrect();
-			numQuestions = QParts.get(CurrentPart).getNumQuestions();
-			currLevel  	 = getLevel();
-			
-			partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
-			
-			avgLevel     = numCorrect*(QParts.get(CurrentPart).getAvgLevel())+currLevel;
-			avgLevel	/= (numCorrect+1);		
-			
-			scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect() + 1,
-										  QQUtils.Juz2SaturationQCount*partWeight);
-			scaledQCount+=1;
-			scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect+1)/((float)numQuestions+1),1);
-			
-			currentPartScoreUp = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
-
-			return String.valueOf((int)Math.round(currentPartScoreUp-currentPartScore));
-			*/
 		}
 
 		this.getDownScore = function() {
@@ -545,61 +506,50 @@ angular.module('starter.questionnaire', [])
 			} else {
 				return 0;
 			}
-		
-			/*
-			double currentPartScore, currentPartScoreDown;
-			double partWeight, avgLevel, scaledQCount, scaledCorrectRatio;
-			int numCorrect, numQuestions, downScore;
-			
-			//
-			//Find the difference between the current and the to-be-decremented score
-			//The difference comes from the current part only. The current is calculated
-			//normally, while the DOWN is calculated manually as below
-			//
-			currentPartScore = calculateScorePart(CurrentPart, false);
-			
-			//
-			//Calculate the normalized Number of words in current part + UP
-			//
-			numCorrect   = QParts.get(CurrentPart).getNumCorrect();
-			numQuestions = QParts.get(CurrentPart).getNumQuestions();
-			partWeight   = QQUtils.PartWeight100[CurrentPart]/100;
-			
-			avgLevel     = QParts.get(CurrentPart).getAvgLevel();		
-			scaledQCount = QQUtils.sCurve(QParts.get(CurrentPart).getNumCorrect(),
-										  QQUtils.Juz2SaturationQCount*partWeight);
-			scaledQCount+=1;
-			scaledCorrectRatio = QQUtils.sCurve(((float)numCorrect)/((float)numQuestions+1),1);
-			
-			currentPartScoreDown = 100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio;
-			downScore 			 = (int)Math.round(currentPartScore-currentPartScoreDown);
-			if(QQUtils.QQDebug==1 && downScore ==0 ){
-				Log.d("[0Down] Sd= "+new DecimalFormat("##.##").format(100*partWeight*avgLevel*scaledQCount*scaledCorrectRatio)+
-						"::pW="+new DecimalFormat("##.##").format(partWeight)+
-						" av="+new DecimalFormat("##.##").format(avgLevel)+
-						" sC="+new DecimalFormat("##.##").format(scaledQCount)+
-						" sR="+new DecimalFormat("##.##").format(scaledCorrectRatio));			
-			}
-			return String.valueOf(downScore);
-			*/
 		}
         this.getDailyQuiz = function(dailyRandom){
+            var index,x;
+            Utils.promiseFor(function () { index = 0; },
+                       function () { return index <3; }, 
+                       function () { index++; }, 
+                       function () {
+            	            console.log(index);
+                            var innerPromises=[];
+            	            Utils.promiseFor(function () { x = 0; },
+                                    function () { return x <5; }, 
+                                    function () { x++; }, 
+                                    function () {
+                                            console.log(x);
+                                            innerPromises.push($q.defer() ); // arbitrary async
+                                    })
+                                    Promise.all(innerPromises);
+                      }).then(function () {
+            	            console.log("done");
+                      });
+
+/*
             if (isNaN(dailyRandom)) dailyRandom = 100;
-            var k=0;
+            var i,j,k=0;
             var partLength, partStart, offset;
             var DQ = [];
             Utils.log("Creating a new daily questionnaire .. rand: "+dailyRandom);
             var sparseQ = Profile.getDailyQuizStudyPartsWeights();
-            for (var i=1; i< sparseQ.length; i++){
-                partLength = Profile.parts[i].length;
-                partStart  = Profile.parts[i].start;
-                for(var j=0; j<sparseQ[i]; j++){
-                    offset = (Utils.DAILYQUIZ_QPERPART_DIST[j]*partLength+dailyRandom)%partLength;
-                    this.createNormalQ(partStart + offset);
-                    DQ[k++] = qo;
-                }
-            }
-        }
+
+            Utils.promiseFor(
+                function () { i = 1; }, function () {return i < sparseQ.length; }, function () {i++;}, function () {
+                    partLength = Profile.parts[i].length;
+                    partStart  = Profile.parts[i].start;
+                    return Utils.promiseFor(
+                        function () { j = 0; }, function () { return j<sparseQ[i]; }, function () {j++;}, function () {
+                            offset = Math.round(Utils.DAILYQUIZ_QPERPART_DIST[j]*partLength+dailyRandom)%partLength;
+                            return self.createNormalQ(partStart + offset).then(function(){
+                                DQ[k++] = self.qo;
+                            });
+                        })
+                }).then(function () {
+                    Utils.log("::Daily Quiz:: "+JSON.stringify(DQ));
+                });         
+       */ }
 		
         var selectSpecial = function () {
             if (self.qo.level == 0)
