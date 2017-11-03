@@ -155,7 +155,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
       link: function(scope, element, attrs) {
         var loadImage,img=null;
         loadImage = function() {
-          element[0].src = "http://sensennetworks.com/images/loading-book.gif";
+          element[0].src = "img/book-loading.gif";
           img = new Image();
           img.src = attrs.qqSrc;
           img.onload = function() {
