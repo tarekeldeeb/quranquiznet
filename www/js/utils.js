@@ -411,7 +411,7 @@ angular.module('starter.utils', ['angular-md5'])
             //promiseWhile(function () { return index <= 11; }, function () {
             //	console.log(index);
             //	index++;
-            //	return $q.delay(500); // arbitrary async
+            //	return $q.defer(); // arbitrary async
             //}).then(function () {
             //	console.log("done");
             //});
@@ -444,6 +444,7 @@ angular.module('starter.utils', ['angular-md5'])
             //	            console.log("done");
             //          });
         }
+
         return self;
     })
 	

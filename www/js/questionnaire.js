@@ -506,50 +506,44 @@ angular.module('starter.questionnaire', [])
 			} else {
 				return 0;
 			}
-		}
-        this.getDailyQuiz = function(dailyRandom){
-            var index,x;
-            Utils.promiseFor(function () { index = 0; },
-                       function () { return index <3; }, 
-                       function () { index++; }, 
-                       function () {
-            	            console.log(index);
-                            var innerPromises=[];
-            	            Utils.promiseFor(function () { x = 0; },
-                                    function () { return x <5; }, 
-                                    function () { x++; }, 
-                                    function () {
-                                            console.log(x);
-                                            innerPromises.push($q.defer() ); // arbitrary async
-                                    })
-                                    Promise.all(innerPromises);
-                      }).then(function () {
-            	            console.log("done");
-                      });
-
-/*
+        }
+        this.DQ = [];
+        this.getDailyQuiz = async function(dailyRandom){
             if (isNaN(dailyRandom)) dailyRandom = 100;
-            var i,j,k=0;
+            var i,j;
             var partLength, partStart, offset;
-            var DQ = [];
             Utils.log("Creating a new daily questionnaire .. rand: "+dailyRandom);
             var sparseQ = Profile.getDailyQuizStudyPartsWeights();
 
-            Utils.promiseFor(
-                function () { i = 1; }, function () {return i < sparseQ.length; }, function () {i++;}, function () {
-                    partLength = Profile.parts[i].length;
-                    partStart  = Profile.parts[i].start;
-                    return Utils.promiseFor(
-                        function () { j = 0; }, function () { return j<sparseQ[i]; }, function () {j++;}, function () {
-                            offset = Math.round(Utils.DAILYQUIZ_QPERPART_DIST[j]*partLength+dailyRandom)%partLength;
-                            return self.createNormalQ(partStart + offset).then(function(){
-                                DQ[k++] = self.qo;
-                            });
-                        })
-                }).then(function () {
-                    Utils.log("::Daily Quiz:: "+JSON.stringify(DQ));
-                });         
-       */ }
+            var dailyStart = [];
+            for(i=1; i<sparseQ.length; i++){
+                partLength = Profile.parts[i].length;
+                partStart  = Profile.parts[i].start;
+                for(j=0; j<sparseQ[i];j++){
+                    offset = Math.round(Utils.DAILYQUIZ_QPERPART_DIST[j]*partLength+dailyRandom)%partLength;
+                    dailyStart.push(partStart+offset);
+                }
+            }
+            Utils.log("::Daily Starts:: "+JSON.stringify(dailyStart));
+
+            for(i=0;i<Utils.DAILYQUIZ_QPERPART_COUNT;i++){
+                var p = self.createNormalQ(dailyStart[i]);
+                await p;
+                self.DQ[i] = self.qo;
+                Utils.log(":::::::::::::::Daily Quiz::::::::::::::: "+i+">> "+JSON.stringify(self.DQ));                
+            }
+            
+            /*
+            i=-1;
+            return Utils.promiseWhile(function () { return (i<Utils.DAILYQUIZ_QPERPART_COUNT); }, function () {
+                i++;
+                return self.createNormalQ(dailyStart[i]).then(function(){
+                    DQ.push(self.qo);
+            }).then(function(){
+                Utils.log("::Daily Quiz:: "+JSON.stringify(DQ));                
+            })
+            });*/
+        }
 		
         var selectSpecial = function () {
             if (self.qo.level == 0)
