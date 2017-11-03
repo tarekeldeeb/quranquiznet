@@ -507,7 +507,7 @@ angular.module('starter.questionnaire', [])
 				return 0;
 			}
         }
-        this.DQ = [];
+        this.DQ = [];        
         this.getDailyQuiz = async function(dailyRandom){
             if (isNaN(dailyRandom)) dailyRandom = 100;
             var i,j;
@@ -527,22 +527,11 @@ angular.module('starter.questionnaire', [])
             Utils.log("::Daily Starts:: "+JSON.stringify(dailyStart));
 
             for(i=0;i<Utils.DAILYQUIZ_QPERPART_COUNT;i++){
-                var p = self.createNormalQ(dailyStart[i]);
-                await p;
-                self.DQ[i] = self.qo;
-                Utils.log(":::::::::::::::Daily Quiz::::::::::::::: "+i+">> "+JSON.stringify(self.DQ));                
+                await self.createNormalQ(dailyStart[i]);
+                self.DQ[i] = Utils.deepCopy(self.qo);
             }
+            //Utils.log(":::::::::::::::Daily Object::::::::::::::: "+i+">> "+JSON.stringify(self.DQ));                
             
-            /*
-            i=-1;
-            return Utils.promiseWhile(function () { return (i<Utils.DAILYQUIZ_QPERPART_COUNT); }, function () {
-                i++;
-                return self.createNormalQ(dailyStart[i]).then(function(){
-                    DQ.push(self.qo);
-            }).then(function(){
-                Utils.log("::Daily Quiz:: "+JSON.stringify(DQ));                
-            })
-            });*/
         }
 		
         var selectSpecial = function () {
@@ -557,8 +546,8 @@ angular.module('starter.questionnaire', [])
         /* Constructor*/
         for (var k = 0; k < 10; k++) this.qo.op[k] = []; //Init 2D array
         for (var k = 0; k < 10; k++) this.qo.txt.op[k] = []; //Init 2D array
-
-		
+        for (var k = 0; k < 10; k++) this.DQ.push("");
+        
         return self;
     })
 

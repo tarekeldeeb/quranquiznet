@@ -279,7 +279,10 @@ angular.module('starter.utils', ['angular-md5'])
 		
 		this.makeSequence = function(n){
 			return new Array(n);
-		}
+        }
+        this.deepCopy = function(o){
+            return JSON.parse(JSON.stringify(o));
+        }
         /**
          * Use it to reduce an array,
          * like [1,2,5].reduce(Utils.add,0) >> Gives 8
