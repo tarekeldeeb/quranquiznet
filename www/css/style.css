@@ -369,3 +369,17 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
   z-index:11;
   background:rgba(150,255,150,.60);
 }
+
+.item-note,
+h3{
+	line-height: 20px;
+}
+
+.item{
+	padding-top: 0px;
+	padding-bottom: 10px;
+}
+.item.item-body{
+	padding-top: 0 px;
+    padding-bottom: 0px;
+}
