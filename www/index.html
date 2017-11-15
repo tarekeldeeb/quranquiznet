@@ -11,6 +11,20 @@
 <script src="js/ng-cordova.min.js"></script>
 <!--<script src=cordova.js></script> Only in production-->
 <script src="js/google_login.js"></script>
+<script src="https://www.gstatic.com/firebasejs/4.2.0/firebase.js"></script>
+<script src="https://cdn.firebase.com/libs/angularfire/2.3.0/angularfire.min.js"></script>
+<script>
+  // Initialize Firebase
+  var config = {
+    apiKey: "AIzaSyCGxNSZizDrqsm58SIi1mmBAe4tWfvCmJk",
+    authDomain: "quranquiznet-3a54c.firebaseapp.com",
+    databaseURL: "https://quranquiznet-3a54c.firebaseio.com",
+    projectId: "quranquiznet-3a54c",
+    storageBucket: "quranquiznet-3a54c.appspot.com",
+    messagingSenderId: "635224907527"
+  };
+  firebase.initializeApp(config);
+</script>
 <script src="js/app.js"></script>
 <script src="js/controllers.js"></script>
 <script src="js/services.js"></script>
