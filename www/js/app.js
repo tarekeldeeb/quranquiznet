@@ -14,7 +14,7 @@ var db = null;
 // 'starter.controllers' is found in controllers.js
 angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter.services',
     'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova',
-    'ngResource', 'GoogleLoginService', 'firebase'
+    'ngResource', 'firebase'
   ])
   .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
     var allRowPromises = [];
@@ -131,6 +131,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
           if (Profile.load()) {
             console.log('Loaded profile with UID: ' + JSON.stringify(Profile.uid));
             $rootScope.loadingDone = true;
+            $state.go('q.profile');
           } else {
             console.log('Created new profile with UID: ' + Profile.uid);
             QQ.CheckDatabase(db, function () {
@@ -138,6 +139,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
               allRowPromises = [];
               $rootScope.loadingDone = true;
               $state.go('q.profile');
+              $rootScope.$apply();
             }, function (error) {
               console.error("Error happened while importing quran quiz database", error);
             });
@@ -222,7 +224,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         views: {
           'menuContent': {
             templateUrl: 'templates/tab-profile.html',
-            controller: 'google'
+            controller: 'firebasecontrol'
           }
         }
       })

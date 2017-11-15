@@ -216,42 +216,6 @@ angular.module('starter.controllers', ['firebase'])
     $scope.updateScore();
   })
 
-  .controller('google', function ($rootScope, $scope, googleLogin, Utils, Profile) {
-    $rootScope.social = Profile.social;
-    $scope.login = function () {
-      var promise = googleLogin.startLogin();
-      promise.then(function (data) {
-        $rootScope.social.type = 'google';
-        $rootScope.social.data = data;
-        Profile.saveSocial($rootScope.social);
-        //Utils.log(JSON.stringify(data));
-      }, function (data) {
-        Utils.log(JSON.stringify(data));
-      });
-    }
-    $scope.logout = function () {
-      /** Just delete the token and data locally */
-      $rootScope.social.type = {};
-      $rootScope.social.data = {};
-      Profile.saveSocial($rootScope.social);
-    }
-    $scope.debug = function () {
-      Profile.getDailyQuizStudyPartsWeights(1);
-    }
-    //TODO: Get real numbers
-    $scope.pcnt_total_study = Profile.getPercentTotalStudy();
-    $scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
-    $scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
-    $scope.pcnt_total_rank = '50%';
-    setTimeout(function () {
-      var bars = document.querySelectorAll('.horizontal .progress_fill span');
-      for (var i = 0; i < bars.length; i++) {
-        var perc = bars[i].innerHTML;
-        bars[i].parentNode.style.width = perc;
-      }
-    }, 100);
-  })
-
   .controller('settingsCtrl', function ($scope, Profile) {
     $scope.profile = Profile;
     $scope.saveSettings = function () {
@@ -307,14 +271,24 @@ angular.module('starter.controllers', ['firebase'])
     this.onAuthStateChanged = function (user) {
       $scope.user = user;
       if (user) { // User is signed in!
-        $rootScope.social.type = user.providerData.providerID;
-        $rootScope.social.data = user;
+        $rootScope.social = user;
+        Profile.uid=user.uid;
         Profile.saveSocial($rootScope.social);
-        //TODO: We load/merge currently existing profile
+
+        var messagesRef = $rootScope.database.ref('/users/' + Profile.uid);
+        messagesRef.on('value', function(snapshot) {
+          var remoteProfile = snapshot.val();
+          if(remoteProfile != null) Profile.syncTo(remoteProfile); 
+          messagesRef.set(Utils.deepCopy(Profile)).then(function() { //DeepCopy to remove $$hashkey attributes
+            Utils.log("Pushed synced profile")
+          }.bind(this)).catch(function(error) {
+            console.error('Error profile syncing back to Firebase Database', error);
+          });
+
+        });
 
       } else { // User is signed out!
-        $rootScope.social.type = {};
-        $rootScope.social.data = {};
+        $rootScope.social = {};
         Profile.saveSocial($rootScope.social);
       }
       $rootScope.$apply(); //Force UI update here ..
