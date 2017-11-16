@@ -240,11 +240,14 @@ angular.module('starter.controllers', ['firebase'])
       var provider = new firebase.auth.FacebookAuthProvider();
       $rootScope.auth.signInWithPopup(provider)
       .then(function(user){
-        Utils.log(JSON.stringify(user));
+        //Utils.log(JSON.stringify(user));
       })
       .catch(function(e) {
         if (e.code == 'auth/popup-blocked') {
           $rootScope.auth.signInWithRedirect(provider);
+          Utils.log("Redirecting for facebook Oauth ...");
+        } else {
+          Utils.log("Unknown Facebook OAuth error? "+e);
         }
       })
       .catch(function(error) {
