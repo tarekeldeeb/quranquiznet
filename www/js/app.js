@@ -89,7 +89,8 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     $rootScope.auth = firebase.auth();
     $rootScope.database = firebase.database();
     $rootScope.storage = firebase.storage();
-    $rootScope.source_version = "$Revision$";
+    $rootScope.source_version = "119";
+    $rootScope.appName = "اختبار القرآن";
 
     $ionicPlatform.ready(function () {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard

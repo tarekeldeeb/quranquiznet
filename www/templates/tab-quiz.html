@@ -1,4 +1,4 @@
-<ion-view view-title="اختبار القران">
+<ion-view view-title="{{appName}} - الاختبار">
 	<ion-content class="padding" style="padding:0px;">
 		<ion-list>
 			<ion-item class="flip-container" ng-repeat="card in questionCards track by $index" id="flip-container-{{ $index }}">
@@ -53,13 +53,13 @@
 														</span>
 								<span style="float:left;">الاية {{card.answer_aya}}</span>
 							</div>
-							<div class="item item-body quran center" style="height:290px;padding:25px">
+							<div class="item item-body quran center" style="height:290px;padding:15px;overflow:hidden;">
 								<p style="font-size:100%;line-height:250%">{{card.answer}}</p>
 								<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;"
 									ng-click="reportQuestion(card)"></button>
 							</div>
 							<div class="button-bar">
-								<button class="button button-calm" ng-click="answerOK()">حسنا</button>
+								<button class="button button-stable" ng-click="answerOK()">حسنا</button>
 								<button class="button button-clear button-dark" ng-click="openModal(card.answer_pageURL)" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
 									شاهد</button>
 								<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
