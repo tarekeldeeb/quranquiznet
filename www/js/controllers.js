@@ -341,7 +341,7 @@ angular.module('starter.controllers', ['firebase'])
     $scope.pcnt_total_study = Profile.getPercentTotalStudy();
     $scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
     $scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
-    $scope.pcnt_total_rank = '50%';
+    $scope.pcnt_total_rank = '0%';
     RLocation.getCity();
   })
 
