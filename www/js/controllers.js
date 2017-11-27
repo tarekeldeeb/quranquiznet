@@ -229,7 +229,7 @@ angular.module('starter.controllers', ['firebase'])
     }
   })
 
-  .controller('firebasecontrol', function ($rootScope, $scope, $firebase, Utils, Profile) {
+  .controller('firebasecontrol', function ($rootScope, $scope, $firebase, Utils, Profile, RLocation) {
     $rootScope.social = Profile.social;
 
     $scope.signInGoogle = function() {
@@ -321,7 +321,7 @@ angular.module('starter.controllers', ['firebase'])
     $scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
     $scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
     $scope.pcnt_total_rank = '50%';
-
+    RLocation.getCity();
   })
 
   .controller('StudyCtrl', function ($scope, Profile, Utils) {

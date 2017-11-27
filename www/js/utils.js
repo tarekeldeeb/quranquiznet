@@ -5,7 +5,7 @@
  ****/
 
 angular.module('starter.utils', ['angular-md5'])
-  .factory('Utils', function ($window, $q, $ionicPlatform, md5) {
+  .factory('Utils', function ($window, $q, $ionicPlatform, $http, md5) {
     var self = this;
 
     this.Debug = 1;
@@ -192,7 +192,7 @@ angular.module('starter.utils', ['angular-md5'])
     }
 
     this.shuffle = function (arr, randperm) {
-      (arr.length == randperm.length) || console.error("Bad Shuufle")
+      (arr.length == randperm.length) || console.error("Bad Shuffle")
       var o = new Array(arr.length);
       for (var i = 0; i < arr.length; i++) {
         o[i] = arr[randperm[i]];
@@ -465,6 +465,19 @@ angular.module('starter.utils', ['angular-md5'])
       //          }).then(function () {
       //	            console.log("done");
       //          });
+    }
+
+    this.getURLContent =  function(url) {
+      var deferred = $q.defer();
+      $http.get(url)
+        .success(function(data) { 
+          deferred.resolve({data: data});
+        })
+        .error(function(msg, code) {
+          deferred.reject(msg);
+          console.error(msg, code);
+        });
+      return deferred.promise;
     }
 
     return self;

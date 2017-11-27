@@ -275,4 +275,16 @@ angular.module('starter.services', [])
     return self;
   })
 
+  .factory('RLocation', function($rootScope, Utils){
+    self.getCity = function (){
+      /* Could Try: https://geoip-db.com/json as well*/
+      Utils.getURLContent('http://ipinfo.io')
+      .then(function(data){
+        $rootScope.Loc.country = data.country;
+        $rootScope.Loc.city = data.region;
+      });
+    }
+    return self;
+  })
+
 
