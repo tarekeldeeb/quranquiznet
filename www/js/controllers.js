@@ -9,7 +9,7 @@ angular.module('starter.controllers', ['firebase'])
     Utils.log('Ahlan to Quran Quiz Net!');
   })
 
-  .controller('quizCtrl', function ($scope, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire) {
+  .controller('quizCtrl', function ($scope, $rootScope, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, DBA, Utils, Profile, Questionnaire, $firebase) {
     var shuffle, qquestion;
     var scrollLock = false;
     $scope.round = 0;
@@ -199,18 +199,39 @@ angular.module('starter.controllers', ['firebase'])
       }
     }
     $scope.reportQuestion = function (card) {
-      var confirmPopup = $ionicPopup.confirm({
+      $scope.report = {}
+      $ionicPopup.show({
+        templateUrl: 'popup-template.html',
         title: 'الابلاغ عن خطأ',
-        template: 'هل تريد الابلاغ عن خطأ في السؤال؟'
-      });
-      confirmPopup.then(function (res) {
+        subTitle: 'هل تريد الابلاغ عن خطأ في السؤال؟',
+        scope: $scope,
+        buttons: [{
+            text: 'لا',
+            onTap: function (e) {
+              return false;
+            }
+          },
+          {
+            text: '<b>نعم</b>',
+            type: 'button-positive',
+            onTap: function (e) {
+              return $scope.report.msg || true;
+            }
+          },
+        ]
+      }).then(function (res) {
         if (res) {
           Utils.log('Reporting question:' + JSON.stringify(card));
-          //TODO: Implement
+          var messagesRef = $rootScope.database.ref('/reports/');
+            messagesRef.push({q:Utils.deepCopy(card),msg:res}).then(function () { //DeepCopy to remove $$hashkey attributes
+            }.bind(this)).catch(function (error) {
+              console.error('Error reporting error to Firebase Database', error);
+            });
         } else {
-          Utils.log('Report cancelled');
+          Utils.log('Reporting cancelled!');
         }
       });
+
     };
     $scope.nextQ($stateParams.customStart);
     $scope.updateScore();
@@ -232,42 +253,42 @@ angular.module('starter.controllers', ['firebase'])
   .controller('firebasecontrol', function ($rootScope, $scope, $firebase, Utils, Profile, RLocation) {
     $rootScope.social = Profile.social;
 
-    $scope.signInGoogle = function() {
+    $scope.signInGoogle = function () {
       var provider = new firebase.auth.GoogleAuthProvider();
       $rootScope.auth.signInWithPopup(provider);
     };
-    $scope.signInFacebook = function() {
+    $scope.signInFacebook = function () {
       var provider = new firebase.auth.FacebookAuthProvider();
       $rootScope.auth.signInWithPopup(provider)
-      .then(function(user){
-        //Utils.log(JSON.stringify(user));
-      })
-      .catch(function(e) {
-        if (e.code == 'auth/popup-blocked') {
-          $rootScope.auth.signInWithRedirect(provider);
-          Utils.log("Redirecting for facebook Oauth ...");
-        } else {
-          Utils.log("Unknown Facebook OAuth error? "+e);
-        }
-      })
-      .catch(function(error) {
-        if (error.code === 'auth/account-exists-with-different-credential') {
-          // User's Gmail already exists.
-          // The pending Facebook credential.
-          var pendingCred = error.credential;
-          var provider = new firebase.auth.GoogleAuthProvider();
-          $rootScope.auth.signInWithPopup(provider).then(function(result) {
+        .then(function (user) {
+          //Utils.log(JSON.stringify(user));
+        })
+        .catch(function (e) {
+          if (e.code == 'auth/popup-blocked') {
+            $rootScope.auth.signInWithRedirect(provider);
+            Utils.log("Redirecting for facebook Oauth ...");
+          } else {
+            Utils.log("Unknown Facebook OAuth error? " + e);
+          }
+        })
+        .catch(function (error) {
+          if (error.code === 'auth/account-exists-with-different-credential') {
+            // User's Gmail already exists.
+            // The pending Facebook credential.
+            var pendingCred = error.credential;
+            var provider = new firebase.auth.GoogleAuthProvider();
+            $rootScope.auth.signInWithPopup(provider).then(function (result) {
               // Link to Facebook credential.
-              result.user.link(pendingCred).then(function() {
+              result.user.link(pendingCred).then(function () {
                 // Facebook account successfully linked to the existing Firebase Gmail user.
                 Utils.log("Linked Facebook account to existing Google account.")
                 //goToApp();
               });
             });
-        }
-      });
+          }
+        });
     };
-    $scope.signOut = function() {
+    $scope.signOut = function () {
       $rootScope.auth.signOut();
     };
 
@@ -275,16 +296,16 @@ angular.module('starter.controllers', ['firebase'])
       $scope.user = user;
       if (user) { // User is signed in!
         $rootScope.social = user;
-        Profile.uid=user.uid;
+        Profile.uid = user.uid;
         Profile.saveSocial($rootScope.social);
 
         var messagesRef = $rootScope.database.ref('/users/' + Profile.uid);
-        messagesRef.on('value', function(snapshot) {
+        messagesRef.on('value', function (snapshot) {
           var remoteProfile = snapshot.val();
-          if(remoteProfile != null) Profile.syncTo(remoteProfile); 
-          messagesRef.set(Utils.deepCopy(Profile)).then(function() { //DeepCopy to remove $$hashkey attributes
+          if (remoteProfile != null) Profile.syncTo(remoteProfile);
+          messagesRef.set(Utils.deepCopy(Profile)).then(function () { //DeepCopy to remove $$hashkey attributes
             Utils.log("Pushed synced profile")
-          }.bind(this)).catch(function(error) {
+          }.bind(this)).catch(function (error) {
             console.error('Error profile syncing back to Firebase Database', error);
           });
 
@@ -298,14 +319,14 @@ angular.module('starter.controllers', ['firebase'])
       $scope.$apply();
       this.redrawBars();
     };
-    this.checkSetup = function() {
+    this.checkSetup = function () {
       if (!window.firebase || !(firebase.app instanceof Function) || !firebase.app().options) {
         window.alert('You have not configured and imported the Firebase SDK. ' +
-            'Make sure you go through the codelab setup instructions and make ' +
-            'sure you are running the codelab using `firebase serve`');
+          'Make sure you go through the codelab setup instructions and make ' +
+          'sure you are running the codelab using `firebase serve`');
       }
     };
-    this.redrawBars = function() {
+    this.redrawBars = function () {
       setTimeout(function () {
         var bars = document.querySelectorAll('.horizontal .progress_fill span');
         for (var i = 0; i < bars.length; i++) {
@@ -314,7 +335,7 @@ angular.module('starter.controllers', ['firebase'])
         }
       }, 100);
     }
-		// Initiates Firebase auth and listen to auth state changes.
+    // Initiates Firebase auth and listen to auth state changes.
     $rootScope.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
     //TODO: Get real numbers
     $scope.pcnt_total_study = Profile.getPercentTotalStudy();
