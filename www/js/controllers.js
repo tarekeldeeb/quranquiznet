@@ -113,7 +113,7 @@ angular.module('starter.controllers', ['firebase'])
           };
           $scope.questionCards.push(card);
           $scope.$broadcast('scroll.infiniteScrollComplete');
-          if (!scrollLock) $ionicScrollDelegate.scrollBottom(true);
+          if (!scrollLock) setTimeout(function () {$ionicScrollDelegate.scrollBottom(true);}, 200);
         });
     }
 
