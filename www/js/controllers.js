@@ -252,7 +252,14 @@ angular.module('starter.controllers', ['firebase'])
 
   .controller('firebasecontrol', function ($rootScope, $scope, $firebase, Utils, Profile, RLocation) {
     $rootScope.social = Profile.social;
-
+    $scope.signInAnonymous = function (){
+      firebase.auth().signInAnonymously().catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        Utils.log(errorCode+": "+errorMessage);
+      });
+    };    
     $scope.signInGoogle = function () {
       var provider = new firebase.auth.GoogleAuthProvider();
       $rootScope.auth.signInWithPopup(provider);
@@ -293,8 +300,14 @@ angular.module('starter.controllers', ['firebase'])
     };
 
     this.onAuthStateChanged = function (user) {
-      $scope.user = user;
+      $scope.user = Utils.deepCopy(user);
       if (user) { // User is signed in!
+        if(user.isAnonymous){
+          $scope.user.photoURL="img/anon.png";
+          $scope.user.displayName="مجهول(ة)";
+          $scope.user.email="ننصحك بالدخول، لن تفقد درجاتك الحالية.";
+          Utils.log(JSON.stringify(user));
+        }
         $rootScope.social = user;
         Profile.uid = user.uid;
         Profile.saveSocial($rootScope.social);

@@ -239,7 +239,7 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 }
 
 .card{
-	margin: 0px 10px /*Ionic has: 20px 10px*/
+	margin: 0px 10px; /*Ionic has: 20px 10px*/
 	border-radius: 10px;
 }
 
@@ -247,14 +247,13 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 .flipper {
 	transition: 0.6s;
 	transform-style: preserve-3d;
-
 	position: relative;
 }
 
 /* hide back of pane during swap */
 .front, .back {
-	backface-visibility: hidden;
-
+	-webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
 	position: absolute;
 	top: 0;
 	left: 0;
