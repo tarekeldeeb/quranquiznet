@@ -308,7 +308,7 @@ angular.module('starter.controllers', ['firebase'])
           $scope.user.email="شارك أهل القران، لن تفقد درجاتك الحالية.";
         }
 
-        ///*
+        /*
         if(Profile.uid != user.uid){ // Check if another profile is found  
           Utils.log("Old UID: "+JSON.stringify(Profile.uid)+", new UID: "+JSON.stringify(user.uid));
           if(Profile.social.isAnonymous){
@@ -320,7 +320,7 @@ angular.module('starter.controllers', ['firebase'])
           else { //Someone else's profile .. reset it.
             Profile.reset();
           }
-        }//*/
+        }*/
 
         $rootScope.social = user;
         Profile.uid = user.uid;
