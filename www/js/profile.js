@@ -83,18 +83,18 @@ angular.module('starter.profile', [])
         (2 * self.parts[i].numCorrect[3] - self.parts[i].numQuestions[3]) * 30;
     }
     var makeDefaultProfile = function() {
-        this.parts.push(new studyPart(1, (Utils.sura_idx[0]), [0, 0, 0, 0], [0, 0, 0, 0], 'سورة ' + Utils.sura_name[0], true));
+        self.parts.push(new studyPart(1, (Utils.sura_idx[0]), [0, 0, 0, 0], [0, 0, 0, 0], 'سورة ' + Utils.sura_name[0], true));
         for (var i = 1; i < 45; i++)
-          this.parts.push(new studyPart((Utils.sura_idx[i - 1]),
+          self.parts.push(new studyPart((Utils.sura_idx[i - 1]),
             (Utils.sura_idx[i] - Utils.sura_idx[i - 1]), [0, 0, 0, 0], [0, 0, 0, 0], 'سورة ' + Utils.sura_name[i], false));
         for (var i = 0; i < 5; i++)
-          this.parts.push(new studyPart((Utils.last5_juz_idx[i]),
+          self.parts.push(new studyPart((Utils.last5_juz_idx[i]),
             (Utils.last5_juz_idx[i + 1] - Utils.last5_juz_idx[i]), [0, 0, 0, 0], [0, 0, 0, 0], 'جزء ' + Utils.last5_juz_name[i], false));
 
-        this.parts[49].checked = true; //Juz2 3amma!
+        self.parts[49].checked = true; //Juz2 3amma!
         //TODO: Use https://github.com/davidbau/seedrandom
-        this.lastSeed = Math.floor(Math.random() * (Utils.QuranWords - 1));
-        this.saveAll();
+        self.lastSeed = Math.floor(Math.random() * (Utils.QuranWords - 1));
+        self.saveAll();
     }
 
     this.load = function () {
