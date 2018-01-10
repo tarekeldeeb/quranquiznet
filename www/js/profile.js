@@ -82,12 +82,8 @@ angular.module('starter.profile', [])
         (2 * self.parts[i].numCorrect[2] - self.parts[i].numQuestions[2]) * 20 +
         (2 * self.parts[i].numCorrect[3] - self.parts[i].numQuestions[3]) * 30;
     }
-
-    this.load = function () {
-      if (Utils.load('prf_uid', -1) == -1) {
-        // Create Default Profile
+    var makeDefaultProfile = function() {
         this.parts.push(new studyPart(1, (Utils.sura_idx[0]), [0, 0, 0, 0], [0, 0, 0, 0], 'سورة ' + Utils.sura_name[0], true));
-
         for (var i = 1; i < 45; i++)
           this.parts.push(new studyPart((Utils.sura_idx[i - 1]),
             (Utils.sura_idx[i] - Utils.sura_idx[i - 1]), [0, 0, 0, 0], [0, 0, 0, 0], 'سورة ' + Utils.sura_name[i], false));
@@ -99,6 +95,11 @@ angular.module('starter.profile', [])
         //TODO: Use https://github.com/davidbau/seedrandom
         this.lastSeed = Math.floor(Math.random() * (Utils.QuranWords - 1));
         this.saveAll();
+    }
+
+    this.load = function () {
+      if (Utils.load('prf_uid', -1) == -1) {
+        makeDefaultProfile();
         return false;
       } else {
         this.uid = Utils.load('prf_uid', 0);
@@ -113,6 +114,9 @@ angular.module('starter.profile', [])
         this.social = Utils.loadObject('prf_social');
         return true;
       }
+    }
+    this.reset = function () {
+      makeDefaultProfile();
     }
 		this.setLastUpdate = function () {
 			this.lastUpdate = Utils.getTime();

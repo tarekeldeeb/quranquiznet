@@ -31,7 +31,15 @@
 					</a>
 					<h3 id="profile_name">{{user.displayName}}</h3>
 					<div id="profile_description">{{user.email}}</div>
-					<button ng-click="signOut();" hidden id="sign-out" class="button button-small button-stable">&nbsp;&nbsp;خروج&nbsp;&nbsp;</button>
+					<div ng-if="!user.isAnonymous">
+					  <button ng-click="signOut();" hidden id="sign-out" class="button button-small button-stable">&nbsp;&nbsp;خروج&nbsp;&nbsp;</button>
+				  </div>
+				  <div ng-if="user.isAnonymous">
+						<div class="button-bar">
+							<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
+							<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+						</div>
+					</div>
 				</div>
 			</div>
 			<!-- Horizontal, rounded -->

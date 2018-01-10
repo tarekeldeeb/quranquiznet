@@ -89,7 +89,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
     $rootScope.auth = firebase.auth();
     $rootScope.database = firebase.database();
     $rootScope.storage = firebase.storage();
-    $rootScope.source_version = "120";
+    $rootScope.source_version = "129";
     $rootScope.appName = "اختبار القرآن";
     $rootScope.Loc = {};
     

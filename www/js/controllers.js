@@ -305,24 +305,40 @@ angular.module('starter.controllers', ['firebase'])
         if(user.isAnonymous){
           $scope.user.photoURL="img/anon.png";
           $scope.user.displayName="مجهول(ة)";
-          $scope.user.email="ننصحك بالدخول، لن تفقد درجاتك الحالية.";
-          Utils.log(JSON.stringify(user));
+          $scope.user.email="شارك أهل القران، لن تفقد درجاتك الحالية.";
         }
+
+        ///*
+        if(Profile.uid != user.uid){ // Check if another profile is found  
+          Utils.log("Old UID: "+JSON.stringify(Profile.uid)+", new UID: "+JSON.stringify(user.uid));
+          if(Profile.social.isAnonymous){
+            //Found an anonymous old profile:
+            //  Case#1 Both are anonymous .. keep the old one
+            //  Case#2 The new is Auth, should also use his/her anon 
+            //Do nothing ..
+          } 
+          else { //Someone else's profile .. reset it.
+            Profile.reset();
+          }
+        }//*/
+
         $rootScope.social = user;
         Profile.uid = user.uid;
         Profile.saveSocial($rootScope.social);
 
-        var messagesRef = $rootScope.database.ref('/users/' + Profile.uid);
-        messagesRef.on('value', function (snapshot) {
-          var remoteProfile = snapshot.val();
-          if (remoteProfile != null) Profile.syncTo(remoteProfile);
-          messagesRef.set(Utils.deepCopy(Profile)).then(function () { //DeepCopy to remove $$hashkey attributes
-            Utils.log("Pushed synced profile")
-          }.bind(this)).catch(function (error) {
-            console.error('Error profile syncing back to Firebase Database', error);
-          });
+        if(!user.isAnonymous){ //Sync Profile
+          var messagesRef = $rootScope.database.ref('/users/' + Profile.uid);
+          messagesRef.on('value', function (snapshot) {
+            var remoteProfile = snapshot.val();
+            if (remoteProfile != null) Profile.syncTo(remoteProfile);
+            messagesRef.set(Utils.deepCopy(Profile)).then(function () { //DeepCopy to remove $$hashkey attributes
+              Utils.log("Pushed synced profile")
+            }.bind(this)).catch(function (error) {
+              console.error('Error profile syncing back to Firebase Database', error);
+            });
 
-        });
+          });
+        }
 
       } else { // User is signed out!
         $rootScope.social = {};
