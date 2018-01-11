@@ -5,6 +5,19 @@ const functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
+exports.hourly_job =
+  functions.pubsub.topic('hourly-tick').onPublish((event) => {
+    console.log("This job is ran every hour!")
+  });
+exports.daily_job =
+  functions.pubsub.topic('daily-tick').onPublish((event) => {
+    console.log("This job is ran every hour!")
+  });
+exports.weekly_job =
+  functions.pubsub.topic('weekly-tick').onPublish((event) => {
+    console.log("This job is ran every hour!")
+  });
+
 // // Create and Deploy Your First Cloud Functions
 // // https://firebase.google.com/docs/functions/write-firebase-functions
 //
