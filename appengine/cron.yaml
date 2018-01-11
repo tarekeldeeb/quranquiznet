@@ -9,4 +9,4 @@ cron:
 
 - description: Push a "tick" onto pubsub every week
   url: /publish/weekly-tick
-  schedule: every saturday 00:00
+  schedule: every thursday 16:00

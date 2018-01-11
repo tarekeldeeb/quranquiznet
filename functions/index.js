@@ -7,15 +7,18 @@ admin.initializeApp(functions.config().firebase);
 
 exports.hourly_job =
   functions.pubsub.topic('hourly-tick').onPublish((event) => {
-    console.log("This job is ran every hour!")
+    console.log("This job is ran every hour!");
+	return 0;
   });
 exports.daily_job =
   functions.pubsub.topic('daily-tick').onPublish((event) => {
-    console.log("This job is ran every day!")
+    console.log("This job is ran every day!");
+	return 0;
   });
 exports.weekly_job =
   functions.pubsub.topic('weekly-tick').onPublish((event) => {
-    console.log("This job is ran every week!")
+    console.log("This job is ran every week!");
+	return 0;
   });
 
 // // Create and Deploy Your First Cloud Functions
