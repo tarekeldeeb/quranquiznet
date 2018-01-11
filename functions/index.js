@@ -11,11 +11,11 @@ exports.hourly_job =
   });
 exports.daily_job =
   functions.pubsub.topic('daily-tick').onPublish((event) => {
-    console.log("This job is ran every hour!")
+    console.log("This job is ran every day!")
   });
 exports.weekly_job =
   functions.pubsub.topic('weekly-tick').onPublish((event) => {
-    console.log("This job is ran every hour!")
+    console.log("This job is ran every week!")
   });
 
 // // Create and Deploy Your First Cloud Functions
