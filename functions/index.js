@@ -1,9 +1,15 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-const functions = require('firebase-functions');
+var functions = require('firebase-functions');
 
 // The Firebase Admin SDK to access the Firebase Realtime Database. 
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
+
+/*Just for local debugging ..*/
+//exports.helloWorld = functions.https.onRequest((request, response) => {
+  //removeAnonymous();	
+//  response.send("Hello from Firebase debugging!");  	
+// });
 
 const rp = require('request-promise');
 const promisePool = require('es6-promise-pool');
@@ -24,9 +30,30 @@ exports.daily_job =
 exports.weekly_job =
   functions.pubsub.topic('weekly-tick').onPublish((event) => {
     console.log(":::: WeeklyJobs ::::");
-	removeUsersWithLocalID(["0ODDevVQWBYhkF8o9H7LoUmXB5e2","1C6iUCDNP3O8IUCJQjFEekjGC8s2"]);
+	removeAnonymous();
 	return 0;
   });
+
+function removeAnonymous(){
+  admin.database().ref("users").orderByChild("isAnonymous")
+  .equalTo(true).once("value").then(function(snapshot) {
+	if(!snapshot.hasChildren()){
+	  console.log("No Anonymous users to clean ..");
+	  return;
+	}
+    snapshot.forEach(function(u) {
+	  u.ref.remove()
+	    .then(function() {
+			removeUsersWithLocalID(u.val().uid);
+			//console.log("Removed Anonymous: "+u.val().uid)
+			})
+		.catch(function(error) {console.log("Remove failed: " + error.message)});
+        // Returning true means that we will only loop through the forEach() one time
+        //return true;
+    });
+  });
+}
+  
 
 function removeUsersWithLocalID(anonymousUsers){
 	// Use a pool so that we delete maximum `MAX_CONCURRENT` users in parallel.
@@ -36,9 +63,9 @@ function removeUsersWithLocalID(anonymousUsers){
 
 		// Delete the inactive user.
 		return admin.auth().deleteUser(userToDelete).then(() => {
-		  console.log('Deleted anonymous user account', userToDelete);
+		  console.log('Deleted anonymous user account: ', userToDelete);
 		}).catch(error => {
-		  console.error('Deletion of anonymous user account', userToDelete, 'failed:', error);
+		  console.error('Deletion of anonymous user account: ', userToDelete, ' failed: ', error);
 		});
 	  }
 	}, MAX_CONCURRENT);

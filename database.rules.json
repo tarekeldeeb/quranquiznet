@@ -4,7 +4,8 @@
       "$user_id": {
         ".read":  "$user_id === auth.uid",
         ".write": "$user_id === auth.uid"
-      }
+      },
+	  ".indexOn": ["uid", "isAnonymous"]
     },
     "reports": {
       ".read":  "auth != null",

@@ -336,7 +336,6 @@ angular.module('starter.controllers', ['firebase'])
             }.bind(this)).catch(function (error) {
               console.error('Error profile syncing back to Firebase Database', error);
             });
-
           });
         }
 
