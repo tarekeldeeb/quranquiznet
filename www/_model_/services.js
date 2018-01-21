@@ -4,7 +4,7 @@
 * License: see LICENSE.txt
 ****/
 
-angular.module('starter.services', [])
+angular.module('quranquiznet.services', [])
 
   .factory('DBA', function ($cordovaSQLite, $q, $timeout, $ionicPlatform) {
     var self = this;

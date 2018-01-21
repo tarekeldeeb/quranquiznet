@@ -22,7 +22,11 @@
 }
 
 body {
-   background: #f7f7f7;
+   /*background: #f7f7f7;*/
+    background-image: url("../img/qqnet_bg.jpg");
+    background-position: center;
+    background-repeat: no-repeat;
+    background-size: cover;
    direction: rtl;
    height: 100vh;
 }

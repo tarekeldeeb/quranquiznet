@@ -4,7 +4,7 @@
  * License: see LICENSE.txt
  ****/
 
-angular.module('starter.profile', [])
+angular.module('quranquiznet.profile', [])
   .factory('Profile', function (Utils) {
     var self = this;
 

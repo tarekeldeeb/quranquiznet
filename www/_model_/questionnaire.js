@@ -3,7 +3,7 @@
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
-angular.module('starter.questionnaire', [])
+angular.module('quranquiznet.questionnaire', [])
   .factory('Questionnaire', function (Profile, Q, Utils, $q) {
     var self = this;
     var sparsed;

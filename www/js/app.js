@@ -4,16 +4,13 @@
  * License: see LICENSE.txt
  ****/
 
-// Ionic Starter App
 var db = null;
 
 // angular.module is a global place for creating, registering and retrieving Angular modules
-// 'starter' is the name of this angular module example (also set in a <body> attribute in index.html)
+// 'quranquiznet' is the name of this angular module (also set in a <body> attribute in index.html)
 // the 2nd parameter is an array of 'requires'
-// 'starter.services' is found in services.js
-// 'starter.controllers' is found in controllers.js
-angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter.services',
-    'starter.utils', 'starter.profile', 'starter.questionnaire', 'ngCordova',
+angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers', 'quranquiznet.services',
+    'quranquiznet.utils', 'quranquiznet.profile', 'quranquiznet.questionnaire', 'ngCordova',
     'ngResource', 'firebase'
   ])
   .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
@@ -206,7 +203,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         url: '/quiz/:customStart',
         views: {
           'menuContent': {
-            templateUrl: 'templates/tab-quiz.html',
+            templateUrl: 'quiz/tab-quiz.html',
             controller: 'quizCtrl'
           }
         }
@@ -216,7 +213,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         url: '/settings',
         views: {
           'menuContent': {
-            templateUrl: 'templates/tab-settings.html',
+            templateUrl: 'settings/tab-settings.html',
             controller: 'settingsCtrl'
           }
         }
@@ -226,7 +223,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         url: '/profile',
         views: {
           'menuContent': {
-            templateUrl: 'templates/tab-profile.html',
+            templateUrl: 'profile/tab-profile.html',
             controller: 'firebasecontrol'
           }
         }
@@ -236,7 +233,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         url: '/daily/:dailyRandom',
         views: {
           'menuContent': {
-            templateUrl: 'templates/tab-daily.html',
+            templateUrl: 'daily/tab-daily.html',
             controller: 'daily'
           }
         }
@@ -246,7 +243,7 @@ angular.module('starter', ['ionic', 'ui.router', 'starter.controllers', 'starter
         url: '/study',
         views: {
           'menuContent': {
-            templateUrl: 'templates/tab-study.html',
+            templateUrl: 'study/tab-study.html',
             controller: 'StudyCtrl'
           }
         }

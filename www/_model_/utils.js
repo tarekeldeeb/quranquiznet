@@ -4,7 +4,7 @@
  * License: see LICENSE.txt
  ****/
 
-angular.module('starter.utils', ['angular-md5'])
+angular.module('quranquiznet.utils', ['angular-md5'])
   .factory('Utils', function ($window, $q, $ionicPlatform, $http, md5) {
     var self = this;
 
