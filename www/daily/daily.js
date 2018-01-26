@@ -3,8 +3,9 @@
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
-controllers.controller('daily', function ($scope, $stateParams, Questionnaire, Utils) {
+controllers.controller('daily', function ($scope, $stateParams, Questionnaire, FB, Utils) {
     $scope.dailyStart = function () {
-      Questionnaire.getDailyQuiz(parseInt($stateParams.dailyRandom));
+      FB.getDailyQuiz();
+      //Questionnaire.getDailyQuiz(parseInt($stateParams.dailyRandom));
     }
   })

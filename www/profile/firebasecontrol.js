@@ -81,7 +81,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $firebas
 
         if(!user.isAnonymous){ //Sync Profile
           var messagesRef = $rootScope.database.ref('/users/' + Profile.uid);
-          messagesRef.on('value', function (snapshot) {
+          messagesRef.once('value', function (snapshot) {
             var remoteProfile = snapshot.val();
             if (remoteProfile != null) Profile.syncTo(remoteProfile);
             messagesRef.set(Utils.deepCopy(Profile)).then(function () { //DeepCopy to remove $$hashkey attributes

@@ -10,6 +10,19 @@
     "reports": {
       ".read":  "auth != null",
       ".write": "auth != null"
+    },
+	"daily": {
+	  "head": {
+        ".read":  "auth != null",
+	  },
+	  "head_submit": {
+	    "$user_id": {
+		  ".write": "$user_id === auth.uid"
+	    }
+	  },
+	  "reports": {
+	    ".read":  "auth != null"
+	  }
     }
   }
 }
