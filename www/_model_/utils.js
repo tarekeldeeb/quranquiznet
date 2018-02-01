@@ -498,4 +498,10 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     return function (input) {
       return (input.length > 3) ? input[1] + input[2] + input[3] : 0;
     };
+  })
+  .filter('arabicTime', function () {
+    return function (input) {
+      if (!input) return input; //return null if passed!
+      return input.replace('s', 'ث').replace('m','د');
+    };
   });

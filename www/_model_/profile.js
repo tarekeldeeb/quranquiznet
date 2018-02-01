@@ -399,7 +399,7 @@ angular.module('quranquiznet.profile', [])
 		 */
 		this.syncTo = function(remoteProfile){
 			Utils.assert(remoteProfile.uid == this.uid,"Got a bad remote profile");
-			Utils.assert(remoteProfile.version.profile <= this.version.profile,"Using an old client with a newer profile!");
+			//Utils.assert(remoteProfile.version.profile <= this.version.profile,"Using an old client with a newer profile!");
 			var copyNeeded = false;
 			if(this.lastSync ==0){
 				Utils.log("Found an existing profile ..")

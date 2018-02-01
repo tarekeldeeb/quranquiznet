@@ -170,12 +170,9 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
    margin: 10vh auto;
 	display: block;
     padding: 16px;
-    -webkit-box-shadow: 0 1px 3px 0 rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04);
-    box-shadow: 0 1px 3px 0 rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04);
-    -webkit-transition: box-shadow .3s ease-in-out;
+    box-shadow: 0 0 16px 16px rgba(0,0,0,0.16), 0 0 0 1px rgba(0,0,0,0.04);
     transition: box-shadow .3s ease-in-out;
     background-color: #fff;
-    -webkit-border-radius: 2px;
     border-radius: 2px;
     outline: none;
 }
@@ -401,4 +398,19 @@ h3{
 .item.item-body{
 	padding-top: 0 px;
   padding-bottom: 0px;
+}
+
+/*progress time text on middle of circle*/
+.timer-progress-wrapper{
+    position: relative;
+    padding-top: 10px;
+}
+.timer-progress{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    line-height: 4em;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 100;
 }

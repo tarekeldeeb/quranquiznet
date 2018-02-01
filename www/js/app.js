@@ -11,7 +11,7 @@ var db = null;
 // the 2nd parameter is an array of 'requires'
 angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers', 'quranquiznet.services',
     'quranquiznet.utils', 'quranquiznet.profile', 'quranquiznet.questionnaire', 'ngCordova',
-    'ngResource', 'firebase'
+    'ngResource', 'firebase', 'angular-svg-round-progress'
   ])
   .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
     var allRowPromises = [];

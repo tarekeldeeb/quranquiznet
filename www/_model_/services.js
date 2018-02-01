@@ -292,7 +292,7 @@ angular.module('quranquiznet.services', [])
       var dailyRef = $rootScope.database.ref('/daily/head');
       return dailyRef.once('value').then(function (snapshot) {
         var head = snapshot.val();
-        Utils.log('FB> DQ got head: '+JSON.stringify(head));
+        return head;
       });
     }
     return self;

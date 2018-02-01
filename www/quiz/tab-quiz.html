@@ -17,19 +17,32 @@
 									</div>
 									<div class="col-33 col-center" style="padding-right:10px;">
 										<button class="button button-small button-clear button-full button-positive" id="instruction-{{ $index }}">{{instructions}}</button>
-										<button class="button button-large button-clear button-full button-balanced score">{{score}}</button>
-										<div class="row">
-											<div class="col" style="padding:0px">
-												<button class="button button-small button-clear button-block button-balanced score">
-												{{score_up}}<br /><i class="icon ion-arrow-up-b"></i>
-											</button>
+										<div style="outline-style: dashed; outline-color: lightgrey; outline-width: thin;">
+											<div ng-if="!dailyQuizRunning"> <!-- Normally: Display the score -->
+												<button class="button button-large button-clear button-full button-balanced score">{{score}}</button>
+												<div class="row">
+													<div class="col" style="padding:0px">
+														<button class="button button-small button-clear button-block button-balanced score">
+														{{score_up}}<br /><i class="icon ion-arrow-up-b"></i>
+													</button>
+													</div>
+													<div class="col" style="padding:0px">
+														<button class="button button-small button-clear button-block button-assertive score">
+														-{{score_down}}<br /><i class="icon ion-arrow-down-b"></i>
+													</button>
+													</div>
+												</div>
 											</div>
-											<div class="col" style="padding:0px">
-												<button class="button button-small button-clear button-block button-assertive score">
-												-{{score_down}}<br /><i class="icon ion-arrow-down-b"></i>
-											</button>
+											<div ng-if="dailyQuizRunning"> <!-- Daily Quiz Displays a timer-->
+												<div class="timer-progress-wrapper">
+													<div class="timer-progress">
+														{{humanizeDurationTimer(timer,'s')|arabicTime}}
+													</div>
+													<div round-progress max="timeForTimer" current="timer" clockwise="false" color="#ef473a" rounded="true" class="text-center"
+													 radius="30" stroke="8"></div>
+												</div>
 											</div>
-										</div>
+											</div>
 										<button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden" ng-click="skipQ()"><i class="icon ion-sad-outline"></i>
 									لا&nbsp;أعلم</button>
 									</div>
