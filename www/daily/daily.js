@@ -6,6 +6,6 @@
 controllers.controller('daily', function ($scope, $stateParams, Questionnaire, FB, Utils) {
     $scope.dailyStart = function () {
       FB.getDailyQuiz();
-      //Questionnaire.getDailyQuiz(parseInt($stateParams.dailyRandom));
+      Questionnaire.getDailyQuiz(parseInt($stateParams.dailyRandom));
     }
   })

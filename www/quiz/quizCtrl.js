@@ -7,6 +7,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   var shuffle, qquestion;
   var scrollLock = false;
   var cardCounter = 0;
+  var cardsTemp = [];
   $scope.round = 0;
   $scope.showingBackCard = false;
   $scope.busy = true;
@@ -84,7 +85,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.nextQ = function (start) {
     $scope.busy = true;
     if (!$scope.showingBackCard) $scope.busyShow();
-    Questionnaire.createNextQ(parseInt(start))
+    var makeQ = ($scope.dailyQuizRunning)?Questionnaire.createNextDailyQ:Questionnaire.createNextQ;
+    makeQ(parseInt(start))
       .then(function () {
         $scope.round = 0;
         shuffle = Utils.randperm(5);
@@ -113,7 +115,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
       });
-    if ((++cardCounter - 2) % 5 == 0) {
+    if ((++cardCounter - 2) % 5 == 0 && !$scope.dailyQuizRunning) {
       Utils.log("Checking QQNet ..");
       FB.getDailyQuiz().then(function (head) {
         Utils.log("DQ> Head: " + JSON.stringify(head));
@@ -202,6 +204,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.answerOK = function () {
     scrollLock = false;
     $ionicScrollDelegate.scrollBottom(true);
+    $scope.selectTimer(12);
     /*
     		$scope.flip();
     		$scope.showingBackCard = false;
@@ -223,9 +226,13 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     }, 50);
   }
 
-  $scope.$on('daily-started', function (event, head) {
+  $scope.$on('daily-started', async function (event, head) {
+    cardsTemp = $scope.questionCards;
+    $scope.questionCards = [];
     $scope.dailyQuizRunning = true;
-    $scope.selectTimer(10);
+    Questionnaire.initDailyQuiz(head.daily_random);
+    await $scope.nextQ();
+    $scope.selectTimer(12);
   });
   // Timer
   var mytimeout = null; // the current timeoutID

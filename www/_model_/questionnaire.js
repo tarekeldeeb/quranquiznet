@@ -63,13 +63,13 @@ angular.module('quranquiznet.questionnaire', [])
       if (isFinite(s) && s > 0 && s <= Utils.QuranWords) {
         start = s;
       }
-      this.qo.level = Profile.level;
+      self.qo.level = Profile.level;
       if (Profile.specialEnabled && selectSpecial()) { //TODO: remove! || true  - && false
         Utils.log('Creating a special question ..');
-        return this.createSpecialQ(start);
+        return self.createSpecialQ(start);
       } else {
         Utils.log('Creating a normal question ..');
-        return this.createNormalQ(start);
+        return self.createNormalQ(start);
       }
     }
 
@@ -549,27 +549,37 @@ angular.module('quranquiznet.questionnaire', [])
         return 0;
       }
     }
-    this.DQ = [];
-    this.getDailyQuiz = async function (dailyRandom) {
-      if (isNaN(dailyRandom)) dailyRandom = 100;
+    
+    this.DQ = []; // Only used for debugging
+    this.dailyStart = [];
+    this.dailyIndex = 0;
+
+    this.initDailyQuiz = function(dailyRandom){
+       if (isNaN(dailyRandom)) dailyRandom = 100;
       var i, j;
       var partLength, partStart, offset;
       Utils.log("Creating a new daily questionnaire .. rand: " + dailyRandom);
       var sparseQ = Profile.getDailyQuizStudyPartsWeights();
 
-      var dailyStart = [];
+      
       for (i = 1; i < sparseQ.length; i++) {
         partLength = Profile.parts[i].length;
         partStart = Profile.parts[i].start;
         for (j = 0; j < sparseQ[i]; j++) {
           offset = Math.round(Utils.DAILYQUIZ_QPERPART_DIST[j] * partLength + dailyRandom) % partLength;
-          dailyStart.push(partStart + offset);
+          self.dailyStart.push(partStart + offset);
         }
       }
-      Utils.log("::Daily Starts:: " + JSON.stringify(dailyStart));
+      Utils.log("::Daily Starts:: " + JSON.stringify(self.dailyStart));
+    }
+    this.createNextDailyQ = function() {
+      return self.createNormalQ(self.dailyStart[self.dailyIndex++]);
+    }
+    this.getDailyQuiz = async function (dailyRandom) {
+      await self.initDailyQuiz(dailyRandom);
 
       for (i = 0; i < Utils.DAILYQUIZ_QPERPART_COUNT; i++) {
-        await self.createNormalQ(dailyStart[i]);
+        await self.createNormalQ(self.dailyStart[i]);
         self.DQ[i] = Utils.deepCopy(self.qo);
       }
       //Utils.log(":::::::::::::::Daily Object::::::::::::::: "+i+">> "+JSON.stringify(self.DQ));
