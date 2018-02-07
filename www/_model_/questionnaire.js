@@ -4,7 +4,7 @@
  * License: see LICENSE.txt
  ****/
 angular.module('quranquiznet.questionnaire', [])
-  .factory('Questionnaire', function (Profile, Q, Utils, $q) {
+  .factory('Questionnaire', function (Profile, Q, Utils, $q, $rootScope) {
     var self = this;
     var sparsed;
     var QLEN_EXTRA_LIMIT = 2;
@@ -209,6 +209,7 @@ angular.module('quranquiznet.questionnaire', [])
           return self.fillText();
         }).then(function () {
           //Utils.log(JSON.stringify(self.qo));
+          return true;
         });
     }
 
@@ -560,7 +561,8 @@ angular.module('quranquiznet.questionnaire', [])
       var partLength, partStart, offset;
       Utils.log("Creating a new daily questionnaire .. rand: " + dailyRandom);
       var sparseQ = Profile.getDailyQuizStudyPartsWeights();
-
+      self.dailyStart = [];
+      self.dailyIndex = 0;
       
       for (i = 1; i < sparseQ.length; i++) {
         partLength = Profile.parts[i].length;
@@ -572,7 +574,11 @@ angular.module('quranquiznet.questionnaire', [])
       }
       Utils.log("::Daily Starts:: " + JSON.stringify(self.dailyStart));
     }
+    this.hasNextDailyQ = function(){
+      return !(self.dailyIndex>9);
+    }
     this.createNextDailyQ = function() {
+      if(self.dailyIndex>9) return Promise.resolve(false);
       return self.createNormalQ(self.dailyStart[self.dailyIndex++]);
     }
     this.getDailyQuiz = async function (dailyRandom) {

@@ -14,6 +14,8 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     this.DAILYQUIZ_PARTS_COUNT = 50;
     this.DAILYQUIZ_QPERPART_COUNT = 10;
     this.DAILYQUIZ_QPERPART_DIST = [0.4, 0.2, 0.83, 0.73, 0.44, 0.98, 0.522, 0.78, 0.33, 0.68]; //Some fixed random [0,1]
+    this.DAILYQUIZ_CHECKEVERY = 20;
+    this.DAILYQUIZ_CHECKAFTER = 2;
     this.blFixQ = true;
     this.answerLength = 24;
 

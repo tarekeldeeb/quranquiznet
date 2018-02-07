@@ -82,9 +82,12 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   }
 
 
-  $scope.nextQ = function (start) {
+  $scope.nextQ = async function (start) {
     $scope.busy = true;
     if (!$scope.showingBackCard) $scope.busyShow();
+    if($scope.dailyQuizRunning && !Questionnaire.hasNextDailyQ()){
+      await endDailyQuiz();
+    }
     var makeQ = ($scope.dailyQuizRunning)?Questionnaire.createNextDailyQ:Questionnaire.createNextQ;
     makeQ(parseInt(start))
       .then(function () {
@@ -115,7 +118,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
       });
-    if ((++cardCounter - 2) % 5 == 0 && !$scope.dailyQuizRunning) {
+    if (!$scope.dailyQuizRunning &&
+       (cardCounter++ - Utils.DAILYQUIZ_CHECKAFTER) % Utils.DAILYQUIZ_CHECKEVERY == 0 ) {
       Utils.log("Checking QQNet ..");
       FB.getDailyQuiz().then(function (head) {
         Utils.log("DQ> Head: " + JSON.stringify(head));
@@ -150,7 +154,6 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     }
 
   }
-
 
   $scope.getAnswer = function () {
     $scope.answer = Questionnaire.qo.txt.answer + ' ...';
@@ -204,7 +207,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.answerOK = function () {
     scrollLock = false;
     $ionicScrollDelegate.scrollBottom(true);
-    $scope.selectTimer(12);
+    if($scope.dailyQuizRunning) $scope.selectTimer(12);
     /*
     		$scope.flip();
     		$scope.showingBackCard = false;
@@ -234,6 +237,13 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     await $scope.nextQ();
     $scope.selectTimer(12);
   });
+  function endDailyQuiz(){
+    $scope.stopTimer();
+    $scope.dailyQuizRunning = false;
+    cardsTemp.pop(); // Remove the unanswered Card.
+    $scope.questionCards = cardsTemp;
+    Utils.log(JSON.stringify($scope.questionCards));
+  }
   // Timer
   var mytimeout = null; // the current timeoutID
   // actual timer method, counts down every second, stops on zero
