@@ -288,12 +288,17 @@ angular.module('quranquiznet.services', [])
   })
 
   .factory('FB', function($rootScope, $firebase, Utils){
+    var head = '';
     self.getDailyQuiz = function(){
       var dailyRef = $rootScope.database.ref('/daily/head');
       return dailyRef.once('value').then(function (snapshot) {
-        var head = snapshot.val();
-        return head;
+        this.head = snapshot.val();
+        Utils.log("DQ> Head: " + JSON.stringify(this.head));
+        return head.daily_random;
       });
+    }
+    self.submitResult = function(score){
+      var submitRef = $rootScope.database.ref(head.submit_to_ref);
     }
     return self;
   })

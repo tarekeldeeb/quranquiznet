@@ -122,7 +122,6 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
        (cardCounter++ - Utils.DAILYQUIZ_CHECKAFTER) % Utils.DAILYQUIZ_CHECKEVERY == 0 ) {
       Utils.log("Checking QQNet ..");
       FB.getDailyQuiz().then(function (head) {
-        Utils.log("DQ> Head: " + JSON.stringify(head));
         //TODO: Check head date .. is Quiz Valid for today?
         $ionicPopup.confirm({
           title: 'اختبار اليوم جاهز، هل تريد البدء الان؟<br />',
@@ -233,7 +232,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     cardsTemp = $scope.questionCards;
     $scope.questionCards = [];
     $scope.dailyQuizRunning = true;
-    Questionnaire.initDailyQuiz(head.daily_random);
+    Questionnaire.initDailyQuiz(head);
     await $scope.nextQ();
     $scope.selectTimer(12);
   });
