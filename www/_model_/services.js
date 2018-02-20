@@ -275,13 +275,14 @@ angular.module('quranquiznet.services', [])
     return self;
   })
 
-  .factory('RLocation', function($rootScope, Utils){
+  .factory('RLocation', function($rootScope, $http, Utils){
     self.getCity = function (){
       /* Could Try: https://geoip-db.com/json as well*/
-      Utils.getURLContent('https://ipinfo.io')
-      .then(function(data){
-        $rootScope.Loc.country = data.country;
-        $rootScope.Loc.city = data.region;
+      $http.get('https://ipinfo.io')
+      .then(function(response) {
+        $rootScope.Loc.country = response.data.country;
+        $rootScope.Loc.city = response.data.city;
+        Utils.log(JSON.stringify($rootScope.Loc));
       });
     }
     return self;
@@ -298,8 +299,18 @@ angular.module('quranquiznet.services', [])
       });
     }
     self.submitResult = function(score){
-      var submitRef = $rootScope.database.ref(head.submit_to_ref);
+      var submitRef = $rootScope.database.ref('/daily/'+this.head.submit_to_ref);
+      submitRef.push(score);
     }
+    self.getYesterdayReport = function(){
+      var yesterday = (this.head['yesterday']===undefined)?"/daily/reports/yesterday":"/daily/"+this.head.yesterday;
+      var yref = $rootScope.database.ref(yesterday);
+      return yref.once('value').then(function (snapshot) {
+        Utils.log("Yesterday Report: " + JSON.stringify(snapshot));
+        return snapshot;
+      });
+    }
+
     return self;
   })
 

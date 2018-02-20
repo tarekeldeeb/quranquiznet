@@ -16,6 +16,8 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     this.DAILYQUIZ_QPERPART_DIST = [0.4, 0.2, 0.83, 0.73, 0.44, 0.98, 0.522, 0.78, 0.33, 0.68]; //Some fixed random [0,1]
     this.DAILYQUIZ_CHECKEVERY = 20;
     this.DAILYQUIZ_CHECKAFTER = 2;
+    this.DAILYQUIZ_MAXTIME = 10*(12 + 9*5);
+    this.DAILYQUIZ_MINTIME = 10*(3  + 1*5);
     this.blFixQ = true;
     this.answerLength = 24;
 
@@ -467,19 +469,6 @@ angular.module('quranquiznet.utils', ['angular-md5'])
       //          }).then(function () {
       //	            console.log("done");
       //          });
-    }
-
-    this.getURLContent =  function(url) {
-      var deferred = $q.defer();
-      $http.get(url)
-        .success(function(data) { 
-          deferred.resolve({data: data});
-        })
-        .error(function(msg, code) {
-          deferred.reject(msg);
-          console.error(msg, code);
-        });
-      return deferred.promise;
     }
 
     return self;

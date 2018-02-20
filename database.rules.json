@@ -16,9 +16,7 @@
         ".read":  "auth != null",
 	  },
 	  "head_submit": {
-	    "$user_id": {
-		  ".write": "$user_id === auth.uid"
-	    }
+		".write": "auth != null",
 	  },
 	  "reports": {
 	    ".read":  "auth != null"

@@ -6,6 +6,8 @@
 controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, $timeout, DBA, Utils, Profile, Questionnaire, FB, $firebase) {
   var shuffle, qquestion;
   var scrollLock = false;
+  var dailyQuizScore = 0;
+  var dailyQuizTime = 0;
   var cardCounter = 0;
   var cardsTemp = [];
   $scope.round = 0;
@@ -70,6 +72,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.busyShow();
     $scope.nextQ();
     $scope.updateScore();
+    if($scope.dailyQuizRunning) dailyQuizScore += 1;
   }
   $scope.updateScore = function () {
     if ($scope.score == null) {
@@ -114,6 +117,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         };
         $scope.questionCards.push(card);
         $scope.$broadcast('scroll.infiniteScrollComplete');
+        if($scope.dailyQuizRunning) $scope.selectTimer(12);
         if (!scrollLock) setTimeout(function () {
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
@@ -232,16 +236,26 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     cardsTemp = $scope.questionCards;
     $scope.questionCards = [];
     $scope.dailyQuizRunning = true;
+    dailyQuizScore = 0;
+    dailyQuizTime = 0;
     Questionnaire.initDailyQuiz(head);
-    await $scope.nextQ();
-    $scope.selectTimer(12);
+    $scope.nextQ();
   });
-  function endDailyQuiz(){
+  async function endDailyQuiz(){
     $scope.stopTimer();
     $scope.dailyQuizRunning = false;
+    $scope.dailyScore = Profile.getDailyQuizScore(dailyQuizScore,dailyQuizTime/1000); 
+    var report={score: $scope.dailyScore,
+                name: (Profile.social.isAnonymous)?"مجهول/ة":Profile.social.displayName.split(' ')[0],
+                country:$rootScope.Loc.country,
+                city:$rootScope.Loc.city,
+                uid:Profile.uid
+                };
+    Utils.log("Sending Daily Report: "+JSON.stringify(report));
+    FB.submitResult(report);
     cardsTemp.pop(); // Remove the unanswered Card.
     $scope.questionCards = cardsTemp;
-    Utils.log(JSON.stringify($scope.questionCards));
+    await $scope.dailyQuizSubmittedReport();  
   }
   // Timer
   var mytimeout = null; // the current timeoutID
@@ -273,7 +287,6 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   // triggered, when the timer stops
   $scope.$on('timer-stopped', function (event, remaining) {
     $scope.skipQ();
-    $scope.selectTimer(10);
   });
   $scope.selectTimer = function (val) {
     $scope.stopTimer();
@@ -311,6 +324,32 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       card.style.boxShadow = "0px 0px 15px #F00";
     }
   }
+  $scope.dailyQuizSubmittedReport = function (submission) {
+    return $ionicPopup.show({
+      title: 'تظهر النتيجة الكلية غدا إن شاء الله',
+      template: "شكرا لاشتراكك في اختبار اليوم، حصلت على <b>{{dailyScore}}</b> نقطة، فضلا قم بمراجعة محفوظك من القران وسيكون لديك اختبارا جديدا غدا وكل يوم بمشيئة الله.",
+      scope: $scope,
+      buttons: [{
+          text: 'حسنا',
+          onTap: function (e) {
+            return false;
+          }
+        },
+        {
+          text: 'نتيجة الامس',
+          type: 'button-positive',
+          onTap: function (e) {
+            return true;
+          }
+        },
+      ]
+    }).then(function (res) {
+      if (res) {
+        Utils.log('Yesterday Report:');
+        FB.getYesterdayReport();
+      }
+    });
+  };  
   $scope.reportQuestion = function (card) {
     $scope.report = {}
     $ionicPopup.show({
@@ -347,7 +386,6 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         Utils.log('Reporting cancelled!');
       }
     });
-
   };
   $scope.nextQ($stateParams.customStart);
   $scope.updateScore();

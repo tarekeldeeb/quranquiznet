@@ -423,7 +423,20 @@ angular.module('quranquiznet.profile', [])
 				this.parts = Utils.deepCopy(remoteProfile.parts);
 				this.saveAll();
 			}
-		}
+    }
+    /**
+     * Gets a combined score to be submitted as a Daily Quiz Score
+     *  Pseudo = 10*correct - 5*Time - 5*StudyParts
+     * @param correct number of questions 
+     * @param time to complete the quiz
+     */
+    this.getDailyQuizScore = function(correct, time){
+      var score = 10*correct;
+      score -= 5*(time-Utils.DAILYQUIZ_MINTIME)/(Utils.DAILYQUIZ_MAXTIME - Utils.DAILYQUIZ_MINTIME);
+      score -= 5*(1 - this.getTotalStudyLength()/Utils.QuranWords);
+      score = Math.min(Math.max(score,0),100);
+      return Number.parseFloat(score).toFixed(2);
+    }
 
     return self;
   })
