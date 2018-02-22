@@ -17,6 +17,7 @@
 	  },
 	  "head_submit": {
 		".write": "auth != null",
+		".indexOn": ["score"]
 	  },
 	  "reports": {
 	    ".read":  "auth != null"

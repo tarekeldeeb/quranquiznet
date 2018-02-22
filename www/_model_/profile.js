@@ -435,7 +435,7 @@ angular.module('quranquiznet.profile', [])
       score -= 5*(time-Utils.DAILYQUIZ_MINTIME)/(Utils.DAILYQUIZ_MAXTIME - Utils.DAILYQUIZ_MINTIME);
       score -= 5*(1 - this.getTotalStudyLength()/Utils.QuranWords);
       score = Math.min(Math.max(score,0),100);
-      return Number.parseFloat(score).toFixed(2);
+      return Number.parseFloat(Number.parseFloat(score).toFixed(2));
     }
 
     return self;

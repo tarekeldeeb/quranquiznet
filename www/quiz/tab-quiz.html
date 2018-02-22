@@ -71,14 +71,11 @@
 								<button class="button button-small button-icon icon ion-flag assertive" style="position: absolute;bottom: 20px;left: 20px;"
 									ng-click="reportQuestion(card)"></button>
 							</div>
-							<script id="popup-template.html" type="text/ng-template">
-      						<input ng-model="report.msg" type="text" placeholder="برجاء توضيح الخطأ ..." style="font-size:13px">
-    					</script>
 							<div class="button-bar">
 								<button class="button button-stable" ng-click="answerOK()">حسنا</button>
 								<button class="button button-clear button-dark" ng-click="openModal(card.answer_pageURL)" style="overflow:hidden"><i class="icon ion-ios-book-outline"></i> 
 									شاهد</button>
-								<button class="button button-clear button-dark" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
+								<button class="button button-clear button-dark" ng-click="shareCard(card)" style="overflow:hidden"><i class="icon ion-ios-people-outline"></i> 
 									نافس</button>
 							</div>
 						</div>
@@ -90,6 +87,32 @@
 
 		<ion-infinite-scroll on-infinite="loadMore()" distance="1%"></ion-infinite-scroll>
 
+		<script id="popup-template-submit.html" type="text/ng-template">
+			<p>شكرا لاشتراكك في اختبار اليوم، حصلت على:</p>
+			<div id="top5score-container" style="margin: 0 auto;">
+				<div id="top5score" style="font-size:14pt">{{dailyScore}}</div>
+				نقطة
+			</div>
+			<p>فضلا قم بمراجعة محفوظك من القران وسيكون لديك اختبارا جديدا غدا وكل يوم بمشيئة الله.</p>
+		</script>
+		<script id="popup-template-report.html" type="text/ng-template">
+			<input ng-model="report.msg" type="text" placeholder="برجاء توضيح الخطأ ..." style="font-size:13px">
+		</script>		
+		<script id="popup-template-yday.html" type="text/ng-template">
+			<div class="list">
+				<div ng-repeat="top in yDay track by $index" class="item" style="padding:5px">
+						<div id="top5info" style="float:right;">
+							{{$index +1}}
+							<img src="img/blank.gif" ng-class="getCountryFlagClass(top.country)" />	
+							{{top.name}} 
+						</div>
+						<div id="top5score-container" style="float:left;">
+							<span id="top5score" style="font-size:14pt">{{top.score}}</span>
+							نقطة
+						</div>
+				</div>
+			</div>
+		</script>
 		<script id="image-modal.html" type="text/ng-template">
 			<ion-modal-view class="transparent fullscreen-image">
 				<button class="button icon ion-chevron-left qq-page-nav" style="left:0" ng-click="qPageNext()"></button>

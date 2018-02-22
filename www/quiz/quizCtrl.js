@@ -324,20 +324,28 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       card.style.boxShadow = "0px 0px 15px #F00";
     }
   }
-  $scope.dailyQuizSubmittedReport = function (submission) {
+  $scope.shareCard = function(card){
+    Utils.log("Sharing: "+JSON.stringify(card));
+    
+    //FOR DEBUG ONLY
+    //FB.getDailyQuiz();
+    //$scope.dailyQuizSubmittedReport();
+  }
+  $scope.dailyQuizSubmittedReport = function () {
     return $ionicPopup.show({
       title: 'تظهر النتيجة الكلية غدا إن شاء الله',
-      template: "شكرا لاشتراكك في اختبار اليوم، حصلت على <b>{{dailyScore}}</b> نقطة، فضلا قم بمراجعة محفوظك من القران وسيكون لديك اختبارا جديدا غدا وكل يوم بمشيئة الله.",
+      templateUrl: 'popup-template-submit.html',
       scope: $scope,
       buttons: [{
           text: 'حسنا',
+          type: 'button',
           onTap: function (e) {
             return false;
           }
         },
         {
           text: 'نتيجة الامس',
-          type: 'button-positive',
+          type: 'button icon-right ion-podium button-positive',
           onTap: function (e) {
             return true;
           }
@@ -345,15 +353,28 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       ]
     }).then(function (res) {
       if (res) {
-        Utils.log('Yesterday Report:');
-        FB.getYesterdayReport();
+        FB.getYesterdayReport().then(function(yday){
+          $scope.yDay = yday.val();
+          return $ionicPopup.show({
+            title: 'فليتنافس المتنافسون',
+            templateUrl: 'popup-template-yday.html',
+            cssClass: 'top5-popup',
+            scope: $scope,
+            buttons: [{
+                text: 'حسنا',
+                onTap: function (e) {
+                  return false;
+                }
+              }]
+          })
+        });
       }
     });
   };  
   $scope.reportQuestion = function (card) {
     $scope.report = {}
     $ionicPopup.show({
-      templateUrl: 'popup-template.html',
+      templateUrl: 'popup-template-report.html',
       title: 'الابلاغ عن خطأ',
       subTitle: 'هل تريد الابلاغ عن خطأ في السؤال؟',
       scope: $scope,
@@ -387,6 +408,9 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       }
     });
   };
+  $scope.getCountryFlagClass = function(code){
+    return "flag flag-"+code.toLowerCase();
+  }
   $scope.nextQ($stateParams.customStart);
   $scope.updateScore();
 })

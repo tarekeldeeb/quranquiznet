@@ -5,11 +5,11 @@ var functions = require('firebase-functions');
 const admin = require('firebase-admin');
 admin.initializeApp(functions.config().firebase);
 
-/*Just for local debugging ..*/
-//exports.helloWorld = functions.https.onRequest((request, response) => {
-  //removeAnonymous();	
-//  response.send("Hello from Firebase debugging!");  	
-// });
+/*Just for local debugging ..
+exports.helloWorld = functions.https.onRequest((request, response) => {
+  dailyQuiz();	
+  response.send("Hello from Firebase debugging!");  	
+});*/
 
 const rp = require('request-promise');
 const promisePool = require('es6-promise-pool');
@@ -25,6 +25,7 @@ exports.hourly_job =
 exports.daily_job =
   functions.pubsub.topic('daily-tick').onPublish((event) => {
     console.log(":: DailyJobs ::");
+	dailyQuiz();
 	return 0;
   });
 exports.weekly_job =
@@ -33,7 +34,33 @@ exports.weekly_job =
 	removeAnonymous();
 	return 0;
   });
+function dailyQuiz(){
+	var yesterday = Array();
+	admin.database().ref("daily/head_submit").orderByChild("score").limitToLast(5).once("value")
+	.then(function(top5) {
+		//Get Top-5 of Today's Quiz
+		top5.forEach(function(t){
+			yesterday.push(t.val());
+		});
+		yesterday.reverse();
+		//Store them in Yesterday
+		if(yesterday.length>0){
+		  admin.database().ref("daily/reports/yday").set(yesterday);
+		}
+		
+		var newDaily = {daily_random: Math.floor(Math.random() * 80000),
+						start_time: new Date().getTime(),
+						submit_to_ref: "head_submit",
+						yesterday: "reports/yday"};
+		//Set new head
+		admin.database().ref("daily/head").set(newDaily);
+		//Clear submissions
+		admin.database().ref("daily/head_submit").remove();		
+	})
+	.then(function(){
 
+	});
+}
 function removeAnonymous(){
   admin.database().ref("users").orderByChild("isAnonymous")
   .equalTo(true).once("value").then(function(snapshot) {
