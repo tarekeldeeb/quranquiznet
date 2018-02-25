@@ -272,7 +272,8 @@ angular.module('quranquiznet.profile', [])
         totCorrect += self.parts[i].numCorrect[0];
         totQuestions += self.parts[i].numQuestions[0];
       }
-      Utils.assert(totCorrect<=totQuestions, "Data corrupted or altered: Special Questions.");
+      //TODO: Special are not counted by questions, but by score!
+      // Cannot find a ratio?!!
       return Math.round((totQuestions == 0) ? 0 : (100 * totCorrect) / totQuestions) + '%';
     }
     //

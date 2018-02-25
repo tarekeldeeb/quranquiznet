@@ -182,9 +182,10 @@ angular.module('quranquiznet.questionnaire', [])
       return start;
     }
 
-    this.createNormalQ = function (start) {
+    this.createNormalQ = function (start, forcedLevel) {
       this.qo.rounds = 10;
       this.qo.qType = this.qTypeEnum.NOTSPECIAL;
+      if (typeof forcedLevel !== 'undefined') this.qo.level = forcedLevel;
 
       if (start < 0) {
         // +1 to compensate the rand-gen integer [0-QuranWords-1]
@@ -579,7 +580,7 @@ angular.module('quranquiznet.questionnaire', [])
     }
     this.createNextDailyQ = function() {
       if(self.dailyIndex>9) return Promise.resolve(false);
-      return self.createNormalQ(self.dailyStart[self.dailyIndex++]);
+      return self.createNormalQ(self.dailyStart[self.dailyIndex++],1); //Force Level-1
     }
     this.getDailyQuiz = async function (dailyRandom) {
       await self.initDailyQuiz(dailyRandom);
