@@ -94,7 +94,8 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $firebas
 
       } else { // User is signed out!
         $rootScope.social = {};
-        Profile.saveSocial($rootScope.social);
+        //Profile.saveSocial($rootScope.social);
+        Profile.delete();
       }
       $rootScope.$apply(); //Force UI update here ..
       $scope.$apply();

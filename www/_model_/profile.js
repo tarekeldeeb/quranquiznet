@@ -66,12 +66,10 @@ angular.module('quranquiznet.profile', [])
     }
     var getCorrectRatio = function (i) {
       var numCorrect, numQuestions;
-      numCorrect = self.parts[i].numCorrect[0] +
-        self.parts[i].numCorrect[1] +
+      numCorrect = self.parts[i].numCorrect[1] +
         self.parts[i].numCorrect[2] +
         self.parts[i].numCorrect[3];
-      numQuestions = self.parts[i].numQuestions[0] +
-        self.parts[i].numQuestions[1] +
+      numQuestions = self.parts[i].numQuestions[1] +
         self.parts[i].numQuestions[2] +
         self.parts[i].numQuestions[3];
       return (numQuestions == 0) ? 0 : (numCorrect / numQuestions);
@@ -121,7 +119,10 @@ angular.module('quranquiznet.profile', [])
 		this.setLastUpdate = function () {
 			this.lastUpdate = Utils.getTime();
 			Utils.save('prf_lastUpdate', this.lastUpdate);
-		}
+    }
+    this.delete = function () {
+      Utils.deleteAllLocalStorage();
+    }
     this.saveAll = function () {
       Utils.save('prf_uid', this.uid);
 			this.setLastUpdate();
@@ -249,6 +250,7 @@ angular.module('quranquiznet.profile', [])
         if (this.parts[i].numCorrect.reduce(Utils.add, 0) > 0)
           Tot += this.parts[i].length;
       }
+      Utils.assert(Tot<=Utils.QuranWords, "Data corrupted or altered: Correct Questions");
       return Math.round((Tot * 100) / Utils.QuranWords) + '%';
     }
     this.getPercentTotalRatio = function () {
@@ -270,6 +272,7 @@ angular.module('quranquiznet.profile', [])
         totCorrect += self.parts[i].numCorrect[0];
         totQuestions += self.parts[i].numQuestions[0];
       }
+      Utils.assert(totCorrect<=totQuestions, "Data corrupted or altered: Special Questions.");
       return Math.round((totQuestions == 0) ? 0 : (100 * totCorrect) / totQuestions) + '%';
     }
     //

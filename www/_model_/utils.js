@@ -299,7 +299,9 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     this.fromString64 = function (s) {
       return atob(s);
     }
-
+    this.deleteAllLocalStorage = function(){
+      $window.localStorage.clear();
+    }
     this.save = function (key, value) {
       $window.localStorage[key] = value;
     }
