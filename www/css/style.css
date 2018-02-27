@@ -159,9 +159,9 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 	direction:ltr
 }
 .quranquestion{
-    overflow-x: scroll !important;
-	white-space: nowrap;
-	text-overflow:initial;
+  overflow-x: auto !important;
+  white-space: nowrap;
+  text-overflow:initial;
 }
 .phone-container {
    /*position: relative;// Activated by JS on non-phones*/
