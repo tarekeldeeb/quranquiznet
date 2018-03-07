@@ -46,7 +46,19 @@ function dailyQuiz(){
 		//Store them in Yesterday
 		if(yesterday.length>0){
 		  admin.database().ref("daily/reports/yday").set(yesterday);
+		
+		  //Merge with all best
+		  admin.database().ref("daily/reports/all").once("value")
+		  .then(function(old){
+			var arr_old = old.val(); 
+			var oldPlusYesterday = arr_old.concat(yesterday);
+			oldPlusYesterday.sort(function(a,b) {
+			  return (a.score > b.score) ? -1 : ((b.score > a.score) ? 1 : 0);
+			}); 
+			admin.database().ref("daily/reports/all").set(oldPlusYesterday.slice(0,10));
+		  });
 		}
+	
 		
 		var newDaily = {daily_random: Math.floor(Math.random() * 80000),
 						start_time: new Date().getTime(),

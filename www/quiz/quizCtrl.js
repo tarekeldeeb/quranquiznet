@@ -3,7 +3,11 @@
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
-controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams, $ionicLoading, $ionicScrollDelegate, Q, $q, $ionicPopup, $ionicModal, $timeout, DBA, Utils, Profile, Questionnaire, FB, $firebase) {
+controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams, 
+                                             $ionicLoading, $ionicScrollDelegate, Q, $q, 
+                                             $ionicPopup, $ionicModal, $timeout, $sce,
+                                             DBA, Utils, Profile, Questionnaire, FB, 
+                                             $firebase) {
   var shuffle, qquestion;
   var scrollLock = false;
   var dailyQuizScore = 0;
@@ -121,6 +125,15 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         if (!scrollLock) setTimeout(function () {
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
+        setTimeout(function () {
+            html2canvas(document.querySelector('#flip-container-'+(cardCounter-1))).then(function(canvas) {
+            var a = document.createElement('a');
+            // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+            a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
+            a.download = 'card-'+(cardCounter-1)+'.jpg';
+            //a.click(); //Download a new image file..
+          });
+        }, 100)
       });
     if (!$scope.dailyQuizRunning &&
        (cardCounter++ - Utils.DAILYQUIZ_CHECKAFTER) % Utils.DAILYQUIZ_CHECKEVERY == 0 ) {
@@ -195,19 +208,41 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       shuffle = Utils.randperm(5);
       $scope.options = Utils.shuffle(Questionnaire.qo.txt.op[$scope.round], shuffle);
       qquestion = document.getElementById('qquestion-' + ($scope.questionCards.length - 1));
+
+
       setTimeout(function () {
-        qquestion.scrollLeft = 0
+        //  qquestion.scrollLeft = 0
+        scrollAnim_start = qquestion.scrollLeft;
+        if(scrollAnim_start){
+          scrollAnim_change = 0 - scrollAnim_start; // Scrolling to 0
+          scrollAnim_currentTime = 0;
+          animateScroll();
+        }
       }, 10);
+
+
       if($scope.dailyQuizRunning) $scope.selectTimer(5);
       //setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
     }
   }
+  var scrollAnim_change, scrollAnim_currentTime, scrollAnim_increment;
+  var scrollAnim_duration = 700;
+  scrollAnim_increment = 5;
+
+  var animateScroll = function(){        
+    scrollAnim_currentTime += scrollAnim_increment;
+    var val = Utils.easeInOutQuad(scrollAnim_currentTime, scrollAnim_start, scrollAnim_change, scrollAnim_duration);
+    qquestion.scrollLeft = val;
+    if(scrollAnim_currentTime < scrollAnim_duration) {
+        setTimeout(animateScroll, scrollAnim_increment);
+    }
+  };
 
   $scope.flip = function () {
     $scope.showingBackCard = true;
     angular.element(document.getElementById('flip-container-' + ($scope.questionCards.length - 1))).toggleClass('flip')
   }
-  $scope.answerOK = function () {
+  $scope.scrollDown = function () {
     scrollLock = false;
     $ionicScrollDelegate.scrollBottom(true);
     if($scope.dailyQuizRunning) $scope.selectTimer(12);
@@ -326,7 +361,17 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   }
   $scope.shareCard = function(card){
     Utils.log("Sharing: "+JSON.stringify(card));
-    
+    var newCard = {
+      isFreeContent:true,
+      freeConentHasTitle:true,
+      freeConentTitle:'انظر لجمال خلق الله ',
+      freeConentBody:$sce.trustAsHtml('<img src="https://i.pinimg.com/564x/a8/14/a3/a814a3ac99b9905161ce28d47907ac7d.jpg">\
+      <h2>ما هو "لوريم إيبسوم" ؟</h2>\
+<p>لوريم إيبسوم(Lorem Ipsum) هو ببساطة نص شكلي (بمعنى أن الغاية هي الشكل وليس المحتوى) ويُستخدم في صناعات المطابع ودور النشر. كان لوريم إيبسوم ولايزال المعيار للنص الشكلي منذ القرن الخامس عشر عندما قامت مطبعة مجهولة برص مجموعة من الأحرف بشكل عشوائي أخذتها من نص، لتكوّن كتيّب بمثابة دليل أو مرجع شكلي لهذه الأحرف. خمسة قرون من الزمن لم تقضي على هذا النص، بل انه حتى صار مستخدماً وبشكله الأصلي في الطباعة والتنضيد الإلكتروني. انتشر بشكل كبير في ستينيّات هذا القرن مع إصدار رقائق "ليتراسيت" (Letraset) البلاستيكية تحوي مقاطع من هذا النص، وعاد لينتشر مرة أخرى مؤخراَ مع ظهور برامج النشر الإلكتروني مثل "ألدوس بايج مايكر" (Aldus PageMaker) والتي حوت أيضاً على نسخ من نص لوريم إيبسوم.\
+      </p>\
+      ')
+    }
+    $scope.questionCards.push(newCard);
     //FOR DEBUG ONLY
     //FB.getDailyQuiz();
     //$scope.dailyQuizSubmittedReport();

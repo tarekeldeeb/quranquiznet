@@ -52,7 +52,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $firebas
       $rootScope.auth.signOut();
     };
 
-    this.onAuthStateChanged = function (user) {
+    this.onAuthStateChanged = function (user) { //Fixme: called twice ..
       $scope.user = Utils.deepCopy(user);
       if (user) { // User is signed in!
         if(user.isAnonymous){
@@ -125,4 +125,5 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $firebas
     $scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
     $scope.pcnt_total_rank = '0%';
     RLocation.getCity();
+
   })
