@@ -13,7 +13,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     'quranquiznet.utils', 'quranquiznet.profile', 'quranquiznet.questionnaire', 'ngCordova',
     'ngResource', 'firebase', 'angular-svg-round-progress'
   ])
-  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
+  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile ) {
     var allRowPromises = [];
     var QQ = {
       _httpGetJson: function (onSuccess, onError) {

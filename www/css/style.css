@@ -246,7 +246,7 @@ box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
 
 .card{
 	margin: 0px 10px; /*Ionic has: 20px 10px*/
-	border-radius: 10px;
+  border-radius: 10px;
 }
 
 /* flip speed goes here */
@@ -447,4 +447,22 @@ h3{
 }
 #top5info{
   padding-top: 6px;
+}
+
+.button-bar > .button:first-child {
+  border-radius: 2px 0px 10px 2px;
+}
+.button-bar > .button:last-child {
+  border-right-width: 1px;
+  border-radius: 0px 2px 2px 10px;
+}
+.free-content-title{
+  background-color: #fff;
+}
+.free-content-body{
+  height:300px;
+  padding:2px;
+}
+.free-content-body > *{
+  max-width:100%;
 }
