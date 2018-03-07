@@ -23,10 +23,10 @@
 
 body {
    /*background: #f7f7f7;*/
-    background-image: url("../img/qqnet_bg.jpg");
-    background-position: center;
-    background-repeat: no-repeat;
-    background-size: cover;
+   background-image: url("../img/qqnet_bg.jpg");
+   background-position: center;
+   background-repeat: no-repeat;
+   background-size: cover;
    direction: rtl;
    height: 100vh;
 }
@@ -424,10 +424,10 @@ h3{
 .popup-buttons .button.icon-right:not(.button-small) {
   line-height: 40px !important;
 }
-.top5-popup > .popup > .popup-body{
+.topList-popup > .popup > .popup-body{
     height: 180px;
 }
-#top5score-container{
+#top-score-container{
   border-radius: 4px;
   background-color: grey;
   padding-left: 7px;
@@ -435,7 +435,7 @@ h3{
   padding-top: 2px;
   width: 95px;
 }
-#top5score{
+#top-score{
   font-size: 12pt;
   padding-left: 5px;
   background-color: lightgray;
@@ -445,16 +445,19 @@ h3{
   width: 56px;
   display: inline-block;
 }
-#top5info{
+#top-info{
   padding-top: 6px;
 }
-
-.button-bar > .button:first-child {
-  border-radius: 2px 0px 10px 2px;
+.button-bar{
+  margin-bottom: -1px;
+  background-color:  #f8f8f8;
 }
-.button-bar > .button:last-child {
-  border-right-width: 1px;
-  border-radius: 0px 2px 2px 10px;
+.qcard-button-first-child {
+  border-radius: 2px 0px 10px 10px !important;
+  background-color: #FFF !important; 
+}
+.qcard-button-last-child {
+  border-radius: 0px 2px 2px 10px !important;
 }
 .free-content-title{
   background-color: #fff;

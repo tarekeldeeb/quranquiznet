@@ -399,19 +399,47 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     }).then(function (res) {
       if (res) {
         FB.getYesterdayReport().then(function(yday){
-          $scope.yDay = yday.val();
+          $scope.topList = yday.val();
           return $ionicPopup.show({
             title: 'فليتنافس المتنافسون',
-            templateUrl: 'popup-template-yday.html',
-            cssClass: 'top5-popup',
+            templateUrl: 'popup-template-top-list.html',
+            cssClass: 'topList-popup',
             scope: $scope,
             buttons: [{
-                text: 'حسنا',
-                onTap: function (e) {
-                  return false;
-                }
-              }]
-          })
+              text: 'حسنا',
+              type: 'button',
+              onTap: function (e) {
+                return false;
+              }
+            },
+            {
+              text: 'قائمة الأبطال',
+              type: 'button icon-right ion-podium button-positive',
+              onTap: function (e) {
+                return true;
+              }
+            },
+          ]
+          }).then(function (res){
+            if(res){
+              FB.getAllTopReport().then(function(allTop){
+                $scope.topList = allTop.val();
+                return $ionicPopup.show({
+                  title: 'قائمة أبطال إختبار القرآن',
+                  templateUrl: 'popup-template-top-list.html',
+                  cssClass: 'topList-popup',
+                  scope: $scope,
+                  buttons: [{
+                    text: 'حسنا',
+                    type: 'button',
+                    onTap: function (e) {
+                      return false;
+                    }
+                  }]
+                });
+              });
+            }
+          });
         });
       }
     });

@@ -86,7 +86,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     $rootScope.auth = firebase.auth();
     $rootScope.database = firebase.database();
     $rootScope.storage = firebase.storage();
-    $rootScope.source_version = "147";
+    $rootScope.source_version = "152";
     $rootScope.appName = "اختبار القرآن";
     $rootScope.Loc = {};
     
