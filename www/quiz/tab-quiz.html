@@ -81,13 +81,13 @@
                     ng-click="reportQuestion(card)"></button>
                 </div>
                 <div class="button-bar">
-                  <button class="button button-clear button-outline" style="color:#444" ng-click="scrollDown()">
+                  <button class="button button-clear button-outline qcard-button-first-child" style="color:#444" ng-click="scrollDown()">
                     <i class="icon ion-ios-arrow-down"></i>
                     حسنا</button>
                   <button class="button button-stable" ng-click="openModal(card.answer_pageURL)" style="overflow:hidden">
                     <i class="icon ion-ios-book-outline"></i>
                     شاهد</button>
-                  <button class="button button-stable" ng-click="shareCard(card)" style="overflow:hidden">
+                  <button class="button button-stable qcard-button-last-child" ng-click="shareCard(card)" style="overflow:hidden">
                     <i class="icon ion-ios-people-outline"></i>
                     نافس</button>
                 </div>
@@ -127,8 +127,8 @@
 
     <script id="popup-template-submit.html" type="text/ng-template">
       <p>شكرا لاشتراكك في اختبار اليوم، حصلت على:</p>
-      <div id="top5score-container" style="margin: 0 auto;">
-        <div id="top5score" style="font-size:14pt">{{dailyScore}}</div>
+      <div id="top-score-container" style="margin: 0 auto;">
+        <div id="top-score" style="font-size:14pt">{{dailyScore}}</div>
         نقطة
       </div>
       <p>فضلا قم بمراجعة محفوظك من القران وسيكون لديك اختبارا جديدا غدا وكل يوم بمشيئة الله.</p>
@@ -136,15 +136,15 @@
     <script id="popup-template-report.html" type="text/ng-template">
       <input ng-model="report.msg" type="text" placeholder="برجاء توضيح الخطأ ..." style="font-size:13px">
     </script>
-    <script id="popup-template-yday.html" type="text/ng-template">
+    <script id="popup-template-top-list.html" type="text/ng-template">
       <div class="list">
-        <div ng-repeat="top in yDay track by $index" class="item" style="padding:5px">
-          <div id="top5info" style="float:right;">
+        <div ng-repeat="top in topList track by $index" class="item" style="padding:5px">
+          <div id="top-info" style="float:right;">
             {{$index +1}}
             <img src="img/blank.gif" ng-class="getCountryFlagClass(top.country)" /> {{top.name}}
           </div>
-          <div id="top5score-container" style="float:left;">
-            <span id="top5score" style="font-size:14pt">{{top.score}}</span>
+          <div id="top-score-container" style="float:left;">
+            <span id="top-score" style="font-size:14pt">{{top.score}}</span>
             نقطة
           </div>
         </div>

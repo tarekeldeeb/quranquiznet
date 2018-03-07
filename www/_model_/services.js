@@ -310,6 +310,14 @@ angular.module('quranquiznet.services', [])
         return snapshot;
       });
     }
+    self.getAllTopReport = function(){
+      var all = "/daily/reports/all";
+      var allref = $rootScope.database.ref(all);
+      return allref.once('value').then(function (snapshot) {
+        Utils.log("All Top Report: " + JSON.stringify(snapshot));
+        return snapshot;
+      });
+    }
 
     return self;
   })
