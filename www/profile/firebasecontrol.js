@@ -122,8 +122,8 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $firebas
     //TODO: Get real numbers
     $scope.pcnt_total_study = Profile.getPercentTotalStudy();
     $scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
-    $scope.pcnt_total_special = Profile.getPercentTotalSpecialRatio();
-    $scope.pcnt_total_rank = '0%';
+    $scope.pcnt_total_special = '0%'; //FIXME: Profile.getPercentTotalSpecialRatio();
+    $scope.pcnt_total_rank = '0%'; //TODO
     RLocation.getCity();
 
   })
