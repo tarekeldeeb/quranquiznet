@@ -3,13 +3,23 @@
   "name": "اختبار القرآن",
   "short_name": "اختبار القرآن",
   "version": "0.2.152",
-  "start_url": "index.html?launcher=true",
+  "start_url": "./index.html?launcher=true",
   "display": "standalone",
   "background_color": "#003e67",
   "orientation": "portrait",
   "default_locale": "ar",
   "description": "اختبار القرآن هو مجتمع من حفظة كتاب الله يتنافسون في جودة حفظهم. يمكنك ان تشارك ولو كنت تحفظ جزء عم.",
   "icons": [
+    {
+      "src": "img/launcher_256.png",
+      "type": "image/png",
+      "sizes": "256x256"
+    },
+    {
+      "src": "img/launcher_144.png",
+      "type": "image/png",
+      "sizes": "144x144"
+    },
     {
       "src": "img/launcher_96.png",
       "type": "image/png",
