@@ -361,7 +361,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   }
   $scope.shareCard = function(card){
     Utils.log("Sharing: "+JSON.stringify(card));
-    var newCard = {
+    //FOR DEBUG ONLY
+    /*var newCard = {
       isFreeContent:true,
       freeConentHasTitle:true,
       freeConentTitle:'انظر لجمال خلق الله ',
@@ -371,8 +372,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       </p>\
       ')
     }
-    $scope.questionCards.push(newCard);
-    //FOR DEBUG ONLY
+    $scope.questionCards.push(newCard); */
     //FB.getDailyQuiz();
     //$scope.dailyQuizSubmittedReport();
   }
