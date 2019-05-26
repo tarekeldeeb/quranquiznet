@@ -5,8 +5,5 @@
  ****/
 
 var controllers = angular.module('quranquiznet.controllers', ['firebase'])
-  .controller('ahlanCtrl', function ($scope, Utils) {
-    Utils.log('Ahlan to Quran Quiz Net!');
-  })
 
-//Other Controllers are added as contollers.controller(..) in their separate folders.
+// Controllers are added as contollers.controller(..) in their separate folders.

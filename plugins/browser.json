@@ -1,18 +1,36 @@
 {
-    "prepare_queue": {
-        "installed": [],
-        "uninstalled": []
+  "prepare_queue": {
+    "installed": [],
+    "uninstalled": []
+  },
+  "config_munge": {
+    "files": {}
+  },
+  "installed_plugins": {
+    "me.rahul.plugins.sqlDB": {
+      "PACKAGE_NAME": "com.ionicframework.qqnet620644"
     },
-    "config_munge": {
-        "files": {}
+    "cordova-sqlite-storage": {
+      "PACKAGE_NAME": "io.ionic.starter"
     },
-    "installed_plugins": {
-        "cordova-sqlite-storage": {
-            "PACKAGE_NAME": "com.ionicframework.qqnet620644"
-        },
-        "me.rahul.plugins.sqlDB": {
-            "PACKAGE_NAME": "com.ionicframework.qqnet620644"
-        }
+    "cordova-plugin-whitelist": {
+      "PACKAGE_NAME": "io.ionic.starter"
     },
-    "dependent_plugins": {}
+    "cordova-plugin-statusbar": {
+      "PACKAGE_NAME": "io.ionic.starter"
+    },
+    "cordova-plugin-device": {
+      "PACKAGE_NAME": "io.ionic.starter"
+    },
+    "cordova-plugin-splashscreen": {
+      "PACKAGE_NAME": "io.ionic.starter"
+    },
+    "cordova-plugin-ionic-webview": {
+      "PACKAGE_NAME": "io.ionic.starter"
+    },
+    "cordova-plugin-ionic-keyboard": {
+      "PACKAGE_NAME": "io.ionic.starter"
+    }
+  },
+  "dependent_plugins": {}
 }

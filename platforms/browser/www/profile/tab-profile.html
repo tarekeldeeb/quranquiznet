@@ -1,0 +1,83 @@
+<ion-view view-title="{{appName}} - ملفي">
+	<ion-content ng-controller="firebasecontrol" padding="true">
+		<!-- Display login form in case if no social login-->
+		<div ng-if="!user">
+			<br />
+			<div class="card amiri">
+				<div class="item  item-divider item-icon-right" style="padding-top: 6px;">برجاء تسجيل الدخول ..  <i class="icon ion-android-contacts" style="font-size: 20px;"></i></div><br />
+				<div style="padding:10px">
+					السلام عليكم، تسجيل دخولك لشبكة اختبار القران يمكنك من التفاعل مع اهل القران والاشتراك بالاختبارات اليومية.
+					كما انه يحفظ ملفك على الشبكة مما يمكنك من استخدام عدة اجهزة الكترونية والوصول لنفس المحتوى.					<br />
+					تسجيلك يُعد موافقة منك على 
+					<a href="http://quranquiz.net/privacy-policy/">سياسة الخصوصية</a>
+					، التي تضمن عدم التتبع او المراقبة.
+					<br /><br />
+					<!--<div style="text-align:center;vertical-align:middle">-->
+					<div class="button-bar">
+						<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
+						<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+						<button ng-click="signInAnonymous();" id="sign-in-anonymous" class="button-small button-stable ion-person">&nbsp;مجهول&nbsp;</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!-- Display Profile when user has logged in -->
+		<div ng-if="user">
+			<div id="profile_bg"></div>
+			<div id="content">
+				<div id="profile_info">
+					<a ng-href={{social.data.additionalUserInfo.profile.link}}>
+						<img id="profile_image" ng-src={{user.photoURL}}>
+					</a>
+					<h3 id="profile_name">{{user.displayName}}</h3>
+					<div id="profile_description">{{user.email}}</div>
+					<div ng-if="!user.isAnonymous">
+					  <button ng-click="signOut();" hidden id="sign-out" class="button button-small button-stable">&nbsp;&nbsp;خروج&nbsp;&nbsp;</button>
+				  </div>
+				  <div ng-if="user.isAnonymous">
+						<div class="button-bar">
+							<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
+							<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<!-- Horizontal, rounded -->
+			<div class="chartcontainer horizontal rounded">
+				<div class="progress_bar horizontal">
+					<span class="progress_text">كم الحفظ</span>
+					<div class="progress_track">
+						<div class="progress_fill">
+							<span>{{pcnt_total_study}}</span>
+						</div>
+					</div>
+				</div>
+				<div class="progress_bar horizontal">
+					<span class="progress_text">صحة الحفظ</span>
+					<div class="progress_track">
+						<div class="progress_fill">
+							<span>{{pcnt_total_ratio}}</span>
+						</div>
+					</div>
+				</div>
+				<div class="progress_bar horizontal">
+					<span class="progress_text">الأسئلة الخاصة</span>
+					<div class="progress_track">
+						<div class="progress_fill">
+							<span>{{pcnt_total_special}}</span>
+						</div>
+					</div>
+				</div>
+				<div class="progress_bar horizontal">
+					<span class="progress_text">التصنيف</span>
+					<div class="progress_track">
+						<div class="progress_fill">
+							<span>{{pcnt_total_rank}}</span>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+	</ion-content>
+</ion-view>

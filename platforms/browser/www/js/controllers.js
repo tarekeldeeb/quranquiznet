@@ -1,28 +1,9 @@
-angular.module('starter.controllers', [])
+/****
+ * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Tarek Eldeeb <tarekeldeeb@gmail.com>
+ * License: see LICENSE.txt
+ ****/
 
-.controller('DashCtrl', function($scope) {})
+var controllers = angular.module('quranquiznet.controllers', ['firebase'])
 
-.controller('ChatsCtrl', function($scope, Chats) {
-  // With the new view caching in Ionic, Controllers are only called
-  // when they are recreated or on app start, instead of every page change.
-  // To listen for when this page is active (for example, to refresh data),
-  // listen for the $ionicView.enter event:
-  //
-  //$scope.$on('$ionicView.enter', function(e) {
-  //});
-
-  $scope.chats = Chats.all();
-  $scope.remove = function(chat) {
-    Chats.remove(chat);
-  };
-})
-
-.controller('ChatDetailCtrl', function($scope, $stateParams, Chats) {
-  $scope.chat = Chats.get($stateParams.chatId);
-})
-
-.controller('AccountCtrl', function($scope) {
-  $scope.settings = {
-    enableFriends: true
-  };
-});
+// Controllers are added as contollers.controller(..) in their separate folders.
