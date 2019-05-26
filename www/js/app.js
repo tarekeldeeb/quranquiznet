@@ -13,7 +13,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     'quranquiznet.utils', 'quranquiznet.profile', 'quranquiznet.questionnaire', 'ngCordova',
     'ngResource', 'firebase', 'angular-svg-round-progress'
   ])
-  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile ) {
+  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
     var allRowPromises = [];
     var QQ = {
       _httpGetJson: function (onSuccess, onError) {
@@ -86,7 +86,9 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     $rootScope.auth = firebase.auth();
     $rootScope.database = firebase.database();
     $rootScope.storage = firebase.storage();
-    $rootScope.source_version = "158";
+    $rootScope.messaging = firebase.messaging();
+    $rootScope.messaging.usePublicVapidKey("BD84KclfrcaNEhP4wPCiLHh73Mrsj3V_Tb4wC-NlPClDlcLlaDIwFDCXX2tYGmzLHEqKfCH22tTyOVkwKw6FHV0");
+    $rootScope.source_version = "159";
     $rootScope.appName = "اختبار القرآن";
     $rootScope.Loc = {};
 	
@@ -129,7 +131,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
             });
 			*/
 
-      } else { // Ionic serve syntax
+      } else { // Progressive Web App
 
         if (window.openDatabase) { // Browser  does support WebSQL!
           db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
@@ -143,10 +145,15 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
               console.log("Quran quiz database imported successfully");
               allRowPromises = [];
               $rootScope.loadingDone = true;
-              $state.go('q.profile');
               $rootScope.$apply();
             }, function (error) {
-              console.error("Error happened while importing quran quiz database", error);
+              if(error.message.includes('already exists')){
+                console.log("Quran quiz database imported successfully");
+                allRowPromises = [];
+                $rootScope.loadingDone = true;
+                return;
+              } 
+              console.error("Error happened while importing quran quiz database ", error);
             });
           }
           $rootScope.back = "";
@@ -257,7 +264,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     $stateProvider
       .state('ahlan', {
         url: '/ahlan',
-        controller: 'ahlanCtrl',
+        controller: 'firebasecontrol',
         templateUrl: 'templates/ahlan.html'
       });
     // if none of the above states are matched, use this as the fallback

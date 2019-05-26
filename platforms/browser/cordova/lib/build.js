@@ -18,46 +18,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
- 
-var path = require('path'),
-    fs = require('fs'),
-    clean = require('./clean'),
-    shjs = require('shelljs'),
-    zip = require('adm-zip'),
-    check_reqs = require('./check_reqs'),
-    platformWwwDir          = path.join('platforms', 'browser', 'www'),
-    platformBuildDir        = path.join('platforms', 'browser', 'build'),
-    packageFile             = path.join(platformBuildDir, 'package.zip');
+
+var path = require('path');
+var check_reqs = require('./check_reqs');
 
 /**
- * buildProject
+ * run
  *   Creates a zip file int platform/build folder
  */
-exports.buildProject = function(){
-
-    // Check that requirements are (stil) met
-    if (!check_reqs.run()) {
-        console.error('Please make sure you meet the software requirements in order to build a browser cordova project');
-        process.exit(2);
-    }
-    
-    clean.cleanProject(); // remove old build result
-
-    if (!fs.existsSync(platformBuildDir)) {
-        fs.mkdirSync(platformBuildDir);
-    }
-
-    // add the project to a zipfile
-    var zipFile = zip();
-    zipFile.addLocalFolder(platformWwwDir, '.');
-    zipFile.writeZip(packageFile);
-
-    console.log('Browser packaged app built in '+ packageFile);
-
-    process.exit(0);
+module.exports.run = function () {
+    return check_reqs.run();
 };
 
-module.exports.help = function() {
+module.exports.help = function () {
     console.log('Usage: cordova build browser');
-    console.log('Build will create the packaged app in \''+platformBuildDir+'\'.');
+    var wwwPath = path.resolve(path.join(__dirname, '../../www'));
+    console.log("Build will create the packaged app in '" + wwwPath + "'.");
 };

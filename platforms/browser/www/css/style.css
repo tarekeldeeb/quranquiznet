@@ -1,1 +1,469 @@
-/* Empty. Add your own CSS if you like */
+/****
+* Copyright (C) 2011-2016 Quran Quiz Net 
+* Tarek Eldeeb <tarekeldeeb@gmail.com>
+* License: see LICENSE.txt
+****/
+
+@font-face {
+    font-family: Amiri Quran ColoredWeb;
+    font-style: normal;
+    font-weight: 400;
+    src: url('../font/AmiriQuranColored.woff2') format('woff2'),
+         url('../font/AmiriQuranColored.woff') format('woff');
+}
+@font-face {
+    font-family: AmiriWeb;
+    font-style: normal;
+    font-weight: 400;
+    src: url('../font/Amiri-Regular.woff2') format('woff2'),
+         url('../font/Amiri-Regular.woff') format('woff');
+}
+
+body {
+   /*background: #f7f7f7;*/
+   background-image: url("../img/qqnet_bg.jpg");
+   background-position: center;
+   background-repeat: no-repeat;
+   background-size: cover;
+   direction: rtl;
+   height: 100vh;
+}
+
+body, span, button, h1, h2, h3, h4, h5, h6 {
+   font-family: "AmiriWeb";
+   line-height: 180%;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+	text-align: center;
+    display: block;
+}
+
+#loader-container {
+  width: 200px;
+  height: 200px;
+  color: white;
+  margin-top: 40%;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+  border: 5px solid #3498db;
+  border-radius: 50%;
+  -webkit-animation: borderScale 1s infinite ease-in-out;
+  animation: borderScale 1s infinite ease-in-out;
+}
+/*
+#loadingText {
+  font-weight: bold;
+  font-size: 2em;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  margin-right: -50%;
+  transform: translate(-50%, -50%);
+}
+
+@-webkit-keyframes borderScale {
+  0% {
+    border: 5px solid white;
+  }
+  50% {
+    border: 25px solid #3498db;
+  }
+  100% {
+    border: 5px solid white;
+  }
+}
+
+@keyframes borderScale {
+  0% {
+    border: 5px solid white;
+  }
+  50% {
+    border: 25px solid #3498db;
+  }
+  100% {
+    border: 5px solid white;
+  }
+}*/
+
+#profile_bg {
+        position: fixed;
+        left: 0;
+        top: 44px;
+        width: 100%;
+        background:#001a4d;/* url('../img/quran-bg.jpg') no-repeat; */
+      }
+
+#content {
+position: relative;
+margin-top: 80px;
+box-shadow: 0px -1px 10px rgba(0,0,0,0.4);
+padding-top: 160px;
+background-color: lemonchiffon;
+}
+
+#profile_info {
+position: absolute;
+top: -110px;
+width: 100%;
+z-index: 2;
+text-align: center;
+}
+#profile_name {
+color: #444;
+font-size: 26px;
+margin: 5px 0 5px 0;
+}
+#profile_description {
+font-size: 15px;
+color: #888;
+margin-bottom: 10px;
+}
+#profile_description a {
+color: #888;
+}
+
+#profile_image {
+display: block;
+border-radius: 100px;
+border: 1px solid #fff;
+width: 128px;
+height: 128px;
+margin: 30px auto 0;
+box-shadow: 0px 0px 4px rgba(0,0,0,0.7);
+}
+
+.list:last-child {
+    margin-bottom: -60px;
+}	  
+.item-body{
+	padding:4px;
+}
+.quran{
+	font-family: "Amiri Quran ColoredWeb";
+	line-height: 180%;
+	font-size: large;
+}
+.amiri{
+  font-family: "AmiriWeb";
+  line-height: 180%;
+}
+.score{
+	direction:ltr
+}
+.quranquestion{
+  overflow-x: auto !important;
+  white-space: nowrap;
+  text-overflow:initial;
+}
+.phone-container {
+   /*position: relative;// Activated by JS on non-phones*/
+   width: 370px;
+   height: 85vh;
+   margin: 10vh auto;
+   display: block;
+   padding: 16px;
+   box-shadow: 0 0 16px 16px rgba(0,0,0,0.16);
+   transition: box-shadow .3s ease-in-out;
+   /* background-color: rgba(255,255,255,0.5); */
+   border-radius: 2px;
+   outline: none;
+}
+
+.float-button {
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  width: 160px;
+  padding: 30px;
+  font-size: 40px;
+  position: fixed;
+  top: 20px; /* Adjust to where you want it */
+  left: 0px; /* Adjust to where you want it */
+  z-index: 9999;
+}
+
+.float-button .height_fix {
+  margin-top: 100%;
+}
+
+.float-button .content {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  margin-top: -20px; /* Note, this must be half the font size */
+}
+.platform-android .float-button {
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  width: 30px;
+  padding: 30px;
+  font-size: 30px;
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  z-index: 9999;
+}
+
+.platform-ios .float-button {
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  border-radius: 50%;
+  width: 30px;
+  padding: 30px;
+  font-size: 30px;
+  position: absolute;
+  bottom: 60px;
+  right: 20px;
+  z-index: 9999;
+}
+/************** Flipping Card *****************/
+/* entire container, keeps perspective */
+.flip-container {
+	perspective: 1000;
+}
+	/* flip the pane */ 
+	 .flip-container.flip .flipper {
+		transform: rotateY(180deg);
+	}
+
+.flip-container, .front, .back {
+	width: 100%;
+	height: 416px;
+  border-style: none;
+}
+
+.card{
+	margin: 0px 10px; /*Ionic has: 20px 10px*/
+  border-radius: 10px;
+}
+
+/* flip speed goes here */
+.flipper {
+	transition: 0.6s;
+	transform-style: preserve-3d;
+	position: relative;
+}
+
+/* hide back of pane during swap */
+.front, .back {
+	-webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+
+/* front pane, placed above back */
+.front {
+	z-index: 2;
+	/* for firefox 31 */
+	transform: rotateY(0deg);
+}
+
+/* back, initially hidden pane */
+.back {
+	transform: rotateY(180deg);
+}
+
+.row{
+	padding: 0 5px 0 5px;
+}
+#instruction{max-height:70px;}
+
+.item-radio input[type="radio"] {
+  display: none;
+}
+
+.button-icon .icon:before, .button-icon.icon:before {
+    font-size: 16px;
+}
+.item-checkbox{
+	padding-right: 60px;
+	padding-left: 0px;
+}
+
+/** Modal Quran Page*/
+.transparent {
+  background: transparent !important;
+}
+.image-modal {
+  width: 100% !important;
+  height: 100%;
+  top: 0 !important;
+  left: 0 !important;
+}
+.fullscreen-image {
+  max-width: 100%;
+  max-height: 100%;
+  bottom: 0;
+  left: 0;
+  margin: auto;
+  position: fixed;
+  right: 0;
+  top: 0;
+}
+
+/* Fix modal backdrop for smaller devices */
+@media (max-width: 679px) {
+  .active .modal-backdrop-bg {
+    opacity: .5;
+  }
+  .modal-backdrop-bg {
+    -webkit-transition: opacity 300ms ease-in-out;
+    transition: opacity 300ms ease-in-out;
+    background-color: #000;
+    opacity: 0;
+  }
+}
+
+/** Profile Bar charts*/
+.chartcontainer {
+  width: 100%;
+  background: #fff;
+  padding: 5px;
+  overflow: hidden;
+  float: left;
+}
+.progress_text{
+  width:25%;
+  float:right;
+  overflow: hidden;
+}
+.horizontal .progress_bar {
+  float: right;
+  height: 45px;
+  width: 100%;
+  padding: 12px 0;
+}
+
+.horizontal .progress_track {
+  position: relative;
+  width: 70%;
+  float:right;
+  height: 20px;
+  background: #ebebeb;
+}
+.horizontal .progress_fill {
+  position: relative;
+  background: #666;
+  height: 20px;
+  width: 50%;
+  color: #fff;
+  text-align: center;
+  font-family: "Lato","Verdana",sans-serif;
+  font-size: 12px;
+  line-height: 20px;
+}
+.buttons-left{ /*Fixes Study RTL header buttons*/
+  position:absolute;
+  left:10px;
+}
+.icon-small:before {
+    font-size: 22px !important;
+}
+
+.rounded .progress_track,
+.rounded .progress_fill {
+  border-radius: 3px;
+  box-shadow: inset 0 0 5px rgba(0,0,0,.2);
+}
+.qq-page-nav{
+  position:absolute;
+  top:50%;
+  z-index:11;
+  background:rgba(150,255,150,.60);
+}
+
+.item-note,
+h3{
+	line-height: 20px;
+}
+
+.flip-container.item{
+	padding-top: 10px;
+	padding-bottom: 10px;
+}
+.item.item-body{
+	padding-top: 0 px;
+  padding-bottom: 0px;
+}
+
+/*progress time text on middle of circle*/
+.timer-progress-wrapper{
+    position: relative;
+    padding-top: 10px;
+}
+.timer-progress{
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    line-height: 4em;
+    font-size: 0.9em;
+    text-align: center;
+    font-weight: 100;
+}
+
+.popup-container .popup{
+  width:270px;
+}
+.popup{
+  border-radius:10px !important;
+}
+.popup-buttons .button.icon-right:not(.button-small) {
+  line-height: 40px !important;
+}
+.topList-popup > .popup > .popup-body{
+    height: 180px;
+}
+#top-score-container{
+  border-radius: 4px;
+  background-color: grey;
+  padding-left: 7px;
+  padding-bottom: 1px;
+  padding-top: 2px;
+  width: 95px;
+}
+#top-score{
+  font-size: 12pt;
+  padding-left: 5px;
+  background-color: lightgray;
+  border-radius: 6px;
+  padding-right: 5px;
+  margin-left: 4px;
+  width: 56px;
+  display: inline-block;
+}
+#top-info{
+  padding-top: 6px;
+}
+.button-bar{
+  margin-bottom: -1px;
+  background-color:  #f8f8f8;
+}
+.qcard-button-first-child {
+  border-radius: 2px 0px 10px 10px !important;
+  background-color: #FFF !important; 
+}
+.qcard-button-last-child {
+  border-radius: 0px 2px 2px 10px !important;
+}
+.free-content-title{
+  background-color: #fff;
+}
+.free-content-body{
+  height:300px;
+  padding:2px;
+}
+.free-content-body > *{
+  max-width:100%;
+}

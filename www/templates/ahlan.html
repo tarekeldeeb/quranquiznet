@@ -1,15 +1,37 @@
 <ion-view hide-nav-bar="true">
     <ion-content padding="true">
 	  <div class="center">
-		<img src="https://cdn.rawgit.com/tarekeldeeb/quranquiz/master/android-app/res/drawable-xhdpi/ic_launcher.png" 
-			style="margin-top: 40%">
-		<h2>شبكة اختبار القران</h2>
-		<br><br>
+		<img src="img/launcher_144.png" style="margin-top: 30%; width:77px;">
 		<div ng-if="loadingDone!=true" ng-init="loadingDone = false">
+			<h3>شبكة اختبار القران</h3>
+			<br><br>
 		  <ion-spinner></ion-spinner>
 		</div>
 		<div ng-if="loadingDone==true">
-			<a nav-transition="android" href="#/q/study" class="button icon-right ion-chevron-right button-calm">دخول</a>
+			<!-- Display login form in case if no social login-->
+			<div ng-if="!user">
+				<br />
+				<div class="card amiri">
+					<div class="item  item-divider item-icon-right" style="padding-top: 6px;">برجاء تسجيل الدخول ..  <i class="icon ion-android-contacts" style="font-size: 20px;"></i></div><br />
+					<div style="padding:10px">
+						السلام عليكم، تسجيل دخولك لشبكة اختبار القران يمكنك من التفاعل مع اهل القران والاشتراك بالاختبارات اليومية.
+						كما انه يحفظ ملفك على الشبكة مما يمكنك من استخدام عدة اجهزة الكترونية والوصول لنفس المحتوى.					<br />
+						تسجيلك يُعد موافقة منك على 
+						<a href="http://quranquiz.net/privacy-policy/">سياسة الخصوصية</a>
+						، التي تضمن عدم التتبع او المراقبة.
+						<br /><br />
+						<!--<div style="text-align:center;vertical-align:middle">-->
+						<div class="button-bar">
+							<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
+							<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+							<button ng-click="signInAnonymous();" id="sign-in-anonymous" class="button-small button-stable ion-person">&nbsp;مجهول&nbsp;</button>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div ng-if="user">
+				<a nav-transition="android" href="#/q/profile" class="button icon-right ion-chevron-right button-calm">دخول</a>
+			</div>
 		</div>
 	  </div>
     </ion-content>
