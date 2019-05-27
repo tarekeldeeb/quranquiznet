@@ -133,16 +133,28 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         if (!scrollLock) setTimeout(function () {
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
-        /*
+        
         setTimeout(function () {
-            html2canvas(document.querySelector('#flip-container-'+(cardCounter-1))).then(function(canvas) {
+           //v0.x syntax
+           html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)+' div div div') ,
+               {onrendered: function (canvas) {
+                  var a = document.createElement('a');
+                  // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
+                  a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
+                  a.download = 'somefilename.jpg';
+                  //a.click();
+                }
+              });
+
+            // v1.x Syntax
+            /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1))).then(function(canvas) {
             var a = document.createElement('a');
             // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
             a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
             a.download = 'card-'+(cardCounter-1)+'.jpg';
             a.click(); //Download a new image file..
-          });
-        }, 100)*/
+            });*/
+        }, 1000)
       });
     if (!$scope.dailyQuizRunning &&
        (cardCounter++ - Utils.DAILYQUIZ_CHECKAFTER) % Utils.DAILYQUIZ_CHECKEVERY == 0 ) {
