@@ -8,16 +8,16 @@
             <div class="front">
               <!-- front content -->
               <div class="list card">
-                <div class="item item-divider item-text-wrap quran quranquestion" id="qquestion-{{ $index }}" align="right">{{question|removeAyaNum}}</div>
+                <div class="item item-divider item-text-wrap quran quranquestion" id="qquestion-{{ $index }}" align="right" style="text-align:right;">{{question|removeAyaNum}}</div>
                 <div class="item item-body">
                   <div class="row">
                     <div class="col-67">
                       <div ng-repeat="n in [0, 1, 2, 3, 4]">
-                        <button class="button button-stable button-block quran" ng-click="selectOption(n)">{{options[n]}}</button>
+                        <button class="button button-stable button-block" ng-click="selectOption(n)"><span class="quran" style="text-align:right;">{{options[n]}}</span></button>
                       </div>
                     </div>
                     <div class="col-33 col-center" style="padding-right:10px;">
-                      <button class="button button-small button-clear button-full button-positive" id="instruction-{{ $index }}">{{instructions}}</button>
+                      <button class="button button-small button-clear button-full button-positive" style="text-align:right;" id="instruction-{{ $index }}">{{instructions}}</button>
                       <div style="outline-style: dashed; outline-color: lightgrey; outline-width: thin;">
                         <div ng-if="!dailyQuizRunning">
                           <!-- Normally: Display the score -->
@@ -50,7 +50,7 @@
                           </div>
                         </div>
                       </div>
-                      <button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden" ng-click="skipQ()">
+                      <button class="button button-clear button-outline button-block button-assertive" style="overflow:hidden; text-align:right;" ng-click="skipQ()">
                         <i class="icon ion-sad-outline"></i>
                         لا&nbsp;أعلم</button>
                     </div>
