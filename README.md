@@ -10,4 +10,4 @@ Quran Quiz Network is still in beta and constantly under development.
 https://app.quranquiz.net
 
 ## Debugging Sandbox:
-http://tarekeldeeb.github.io/quranquiznet
+[served from githack](https://raw.githack.com/tarekeldeeb/quranquiznet/master/www/index.html)
