@@ -81,23 +81,20 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
         }.bind(this));
       }
     };
-
-    // Shortcuts to Firebase SDK features.
-    $rootScope.auth = firebase.auth();
-    $rootScope.database = firebase.database();
-    $rootScope.storage = firebase.storage();
-    $rootScope.messaging = firebase.messaging();
-    $rootScope.messaging.usePublicVapidKey("BD84KclfrcaNEhP4wPCiLHh73Mrsj3V_Tb4wC-NlPClDlcLlaDIwFDCXX2tYGmzLHEqKfCH22tTyOVkwKw6FHV0");
-    $rootScope.source_version = "159";
-    $rootScope.appName = "اختبار القرآن";
-    $rootScope.Loc = {};
 	
 	// Register worker for web App
 	if ('serviceWorker' in navigator) {
 	  navigator.serviceWorker.register('worker.js');
 	}
+
+  $rootScope.auth = firebase.auth();
+  $rootScope.database = firebase.database();
+  $rootScope.storage = firebase.storage();
+  $rootScope.source_version = "159";
+  $rootScope.appName = "اختبار القرآن";
+  $rootScope.Loc = {};
     
-    $ionicPlatform.ready(function () {
+  $ionicPlatform.ready(function () {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
       // for form inputs)
       if (window.cordova && window.cordova.plugins && window.cordova.plugins.Keyboard) {
@@ -138,6 +135,9 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
           if (Profile.load()) {
             console.log('Loaded profile with UID: ' + JSON.stringify(Profile.uid));
             $rootScope.loadingDone = true;
+            $rootScope.messaging = firebase.messaging();
+            $rootScope.messaging.usePublicVapidKey("BD84KclfrcaNEhP4wPCiLHh73Mrsj3V_Tb4wC-NlPClDlcLlaDIwFDCXX2tYGmzLHEqKfCH22tTyOVkwKw6FHV0");
+
             $state.go('q.profile');
           } else {
             console.log('Created new profile with UID: ' + Profile.uid);
