@@ -53,7 +53,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   }).then(function (modal) {
     $scope.shareModal = modal;
   });
-  $ionicPlatform.onHardwareBackButton(function () {
+  $ionicPlatform.registerBackButtonAction(function (event) {
+    Utils.log("Back Pressed!");
     if (  $scope.showingModal ) {
       event.preventDefault();
       event.stopPropagation();
@@ -144,7 +145,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         
         setTimeout(function () {
            //v0.x syntax
-           html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)+' div div div') ,
+           /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)+' div div div') ,
                {onrendered: function (canvas) {
                   var a = document.createElement('a');
                   // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
@@ -152,7 +153,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
                   a.download = 'somefilename.jpg';
                   //a.click();
                 }
-              });
+              });*/
 
             // v1.x Syntax
             /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1))).then(function(canvas) {
