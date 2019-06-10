@@ -278,7 +278,7 @@ angular.module('quranquiznet.services', [])
   .factory('RLocation', function($rootScope, $http, Utils){
     self.getCity = function (){
       /* Could Try: https://geoip-db.com/json as well*/
-      $http.get('https://ipinfo.io')
+      $http.get('https://ipinfo.io?token=c2dc00eae1ba76')
       .then(function(response) {
         $rootScope.Loc.country = response.data.country;
         $rootScope.Loc.city = response.data.city;
