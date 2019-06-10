@@ -47,6 +47,12 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.showingModal = false;
     $scope.modal.hide();
   };
+  $ionicModal.fromTemplateUrl('share-modal.html', {
+    scope: $scope,
+    animation: 'slide-in-up'
+  }).then(function (modal) {
+    $scope.shareModal = modal;
+  });
   $ionicPlatform.registerBackButtonAction(function () {
     if (  $scope.showingModal ) {
       $scope.closeModal();
@@ -381,7 +387,24 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     }
   }
   $scope.shareCard = function(card){
-    Utils.log("Sharing: "+JSON.stringify(card));
+    //Utils.log("Sharing: "+JSON.stringify(card));
+    $scope.socialshare_text = "نافسني في اختبار القرآن";
+    $scope.socialshare_url  = "https://app.quranquiz.net/#/q/quiz/"+card.qo.startIdx; 
+    $ionicPopup.show({
+        templateUrl: 'share-modal.html',
+        title: 'نافس أصدقاءك عبر احد الخيارات',
+        scope: $scope,
+        buttons: [
+          {
+            text: 'حسنا',
+            type: 'button-positive',
+            onTap: function(e) {
+              Utils.log("Done sharing!");
+            }
+          }
+        ]
+      });
+
     //FOR DEBUG ONLY
     /*var newCard = {
       isFreeContent:true,
