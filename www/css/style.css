@@ -446,6 +446,14 @@ h3{
 #top-info{
   padding-top: 6px;
 }
+#share-container{
+  border-radius: 4px;
+  background-color: grey;
+  padding-left: 7px;
+  padding-bottom: 1px;
+  padding-top: 2px;
+  width: 95px;
+}
 .button-bar{
   margin-bottom: -1px;
   background-color:  #f8f8f8;
