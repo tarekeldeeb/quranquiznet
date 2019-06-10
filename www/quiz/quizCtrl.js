@@ -53,8 +53,10 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   }).then(function (modal) {
     $scope.shareModal = modal;
   });
-  $ionicPlatform.registerBackButtonAction(function () {
+  $ionicPlatform.onHardwareBackButton(function () {
     if (  $scope.showingModal ) {
+      event.preventDefault();
+      event.stopPropagation();
       $scope.closeModal();
     }
   }, 100);
