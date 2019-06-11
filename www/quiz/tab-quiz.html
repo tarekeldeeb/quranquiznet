@@ -84,7 +84,7 @@
                   <button class="button button-clear button-outline qcard-button-first-child" style="color:#444" ng-click="scrollDown()">
                     <i class="icon ion-ios-arrow-down"></i>
                     حسنا</button>
-                  <button class="button button-stable" ng-click="openModal(card.answer_pageURL)" style="overflow:hidden">
+                  <button class="button button-stable" ng-click="openImageModal(card.answer_pageURL)" style="overflow:hidden">
                     <i class="icon ion-ios-book-outline"></i>
                     شاهد</button>
                   <button class="button button-stable qcard-button-last-child" ng-click="shareCard(card)" style="overflow:hidden">
@@ -154,7 +154,7 @@
       <ion-modal-view class="transparent fullscreen-image">
         <button class="button icon ion-chevron-left qq-page-nav" style="left:0" ng-click="qPageNext()"></button>
         <div class="modal image-modal transparent">
-          <img qq-src="{{imageSrc}}" class="fullscreen-image" style="background-color:white;" ng-click="closeModal()" />
+          <img qq-src="{{imageSrc}}" class="fullscreen-image" style="background-color:white;" ng-click="closeImageModal()" />
         </div>
         <button class="button icon ion-chevron-right qq-page-nav" style="right:0" ng-click="qPagePrevious()"></button>
       </ion-modal-view>
