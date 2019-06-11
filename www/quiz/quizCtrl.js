@@ -16,7 +16,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   var cardsTemp = [];
   $scope.round = 0;
   $scope.showingBackCard = false;
-  $scope.showingModal = false;
+  $scope.showingImageModal = false;
+  $scope.showingShareModal = false;
   $scope.busy = true;
   $scope.imageSrc = 'http://images.qurancomplex.gov.sa/publications/04_standard1/750/jpg_90/0011.jpg';
   $scope.questionCards = [];
@@ -36,31 +37,49 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     scope: $scope,
     animation: 'slide-in-up'
   }).then(function (modal) {
-    $scope.modal = modal;
+    $scope.imageModal = modal;
   });
-  $scope.openModal = function (url) {
+  $scope.openImageModal = function (url) {
     $scope.imageSrc = url;
-    $scope.showingModal = true;
-    $scope.modal.show();
+    $scope.showingImageModal = true;
+    $scope.imageModal.show();
   };
-  $scope.closeModal = function () {
-    $scope.showingModal = false;
-    $scope.modal.hide();
+  $scope.closeImageModal = function () {
+    $scope.showingImageModal = false;
+    $scope.imageModal.hide();
   };
-  $ionicModal.fromTemplateUrl('share-modal.html', {
-    scope: $scope,
-    animation: 'slide-in-up'
-  }).then(function (modal) {
-    $scope.shareModal = modal;
-  });
-  $ionicPlatform.registerBackButtonAction(function (event) {
-    Utils.log("Back Pressed!");
-    if (  $scope.showingModal ) {
+  $scope.openShareModal = function () {
+    $scope.showingShareModal = true;
+     $scope.shareModal = $ionicPopup.show({
+        templateUrl: 'share-modal.html',
+        title: 'نافس أصدقاءك عبر احد الخيارات',
+        scope: $scope,
+        buttons: [
+          {
+            text: 'حسنا',
+            type: 'button-positive',
+            onTap: function(e) {
+              $scope.showingShareModal = false;
+              Utils.log("Done sharing!");
+            }
+          }
+        ]
+      });
+  };
+  $scope.closeShareModal = function () {
+    $scope.showingShareModal = false;
+    $scope.shareModal.close();
+  };
+  $scope.$on('$stateChangeStart', function(event, toState, toParams, fromState, fromParams){
+    if( $scope.showingImageModal){
+      $scope.closeImageModal();
       event.preventDefault();
-      event.stopPropagation();
-      $scope.closeModal();
     }
-  }, 100);
+    if($scope.showingShareModal){
+      $scope.closeShareModal();
+      event.preventDefault();
+    }
+  });
   $scope.qPagePrevious = function () {
     var p = Utils.getPageNumberFromPageURL($scope.imageSrc);
     p--;
@@ -74,7 +93,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.imageSrc = Utils.getPageURLFromPageNumber(p);
   };
   $scope.$on('$destroy', function () {
-    $scope.modal.remove();
+    $scope.imageModal.remove();
   });
 
   function IncorrectQuestionHandler() {
@@ -392,21 +411,8 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.shareCard = function(card){
     //Utils.log("Sharing: "+JSON.stringify(card));
     $scope.socialshare_text = "نافسني في اختبار القرآن";
-    $scope.socialshare_url  = "https://app.quranquiz.net/#/q/quiz/"+card.qo.startIdx; 
-    $ionicPopup.show({
-        templateUrl: 'share-modal.html',
-        title: 'نافس أصدقاءك عبر احد الخيارات',
-        scope: $scope,
-        buttons: [
-          {
-            text: 'حسنا',
-            type: 'button-positive',
-            onTap: function(e) {
-              Utils.log("Done sharing!");
-            }
-          }
-        ]
-      });
+    $scope.socialshare_url  = "https://app.quranquiz.net/#/q/quiz/"+card.qo.startIdx;
+    $scope.openShareModal();
 
     //FOR DEBUG ONLY
     /*var newCard = {
