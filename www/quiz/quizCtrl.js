@@ -194,16 +194,16 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
           subTitle: 'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الاجابة بشكل صحيح وسريع',
           scope: $scope,
           buttons: [{
-              text: 'لا',
-              onTap: function (e) {
-                return false;
-              }
-            },
-            {
               text: '<b>نعم</b>',
               type: 'button-positive',
               onTap: function (e) {
                 return true;
+              }
+            },
+            {
+              text: 'لا',
+              onTap: function (e) {
+                return false;
               }
             }
           ]
