@@ -6,8 +6,5 @@ Quran Quiz is an open-source android client to the Quran Quiz Network. Quran Qui
 
 Quran Quiz Network is still in beta and constantly under development.
 
-# Live Web App
-https://app.quranquiz.net
-
-## Debugging Sandbox:
-[served from githack](https://raw.githack.com/tarekeldeeb/quranquiznet/master/www/index.html)
+[:white_check_mark: Live WPA](https://app.quranquiz.net) &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+[:warning: Debugging Sandbox](https://raw.githack.com/tarekeldeeb/quranquiznet/master/www/index.html)
