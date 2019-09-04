@@ -145,10 +145,12 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
               console.log("Quran quiz database imported successfully");
               allRowPromises = [];
               $rootScope.loadingDone = true;
-              $rootScope.$apply();
+              //$rootScope.$apply();
+              Utils.log('Jumping to Ahlan page .. [customStart='+$state.params.customStart+']');
+              if($state.current.name == 'q.quiz') $state.go('ahlan',{"customStart":$state.params.customStart});
             }, function (error) {
               if(error.message.includes('already exists')){
-                console.log("Quran quiz database imported successfully");
+                console.log("Quran quiz database already exists");
                 allRowPromises = [];
                 $rootScope.loadingDone = true;
                 return;
@@ -263,7 +265,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
 
     $stateProvider
       .state('ahlan', {
-        url: '/ahlan',
+        url: '/ahlan/:customStart',
         controller: 'firebasecontrol',
         templateUrl: 'templates/ahlan.html'
       });
