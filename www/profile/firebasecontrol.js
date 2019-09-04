@@ -27,12 +27,8 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $state, 
           if (e.code == 'auth/popup-blocked') {
             $rootScope.auth.signInWithRedirect(provider);
             Utils.log("Redirecting for facebook Oauth ...");
-          } else {
-            Utils.log("Unknown Facebook OAuth error? " + e);
-          }
-        })
-        .catch(function (error) {
-          if (error.code === 'auth/account-exists-with-different-credential') {
+          } 
+          else if (error.code == 'auth/account-exists-with-different-credential') {
             // User's Gmail already exists.
             // The pending Facebook credential.
             var pendingCred = error.credential;
@@ -45,6 +41,8 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $state, 
                 //goToApp();
               });
             });
+          } else {
+            Utils.log("Unknown Facebook OAuth error? " + e);
           }
         });
     };
