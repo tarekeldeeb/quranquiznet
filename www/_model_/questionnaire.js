@@ -362,7 +362,7 @@ angular.module('quranquiznet.questionnaire', [])
           return Q.sim2cnt(start_shadow)
             .then(function (sim2cnt) {
               srch_cond = (sim2cnt == 0); //Continue searching if not motashabeha
-              Utils.log('Start_shadow= ' + start_shadow + ' sim2snt= ' + sim2cnt + ' cnd=' + srch_cond);
+              //Utils.log('Start_shadow= ' + start_shadow + ' sim2snt= ' + sim2cnt + ' cnd=' + srch_cond);
               if (!srch_cond) {
                 if (self.qo.level == 1 || self.qo.level == 2) {
                   self.qo.validCount = 1;
@@ -446,7 +446,7 @@ angular.module('quranquiznet.questionnaire', [])
         return Q.sim3cnt(idx).then(function (sim3cnt) {
           q_sim3cnt = sim3cnt;
           if (sim3cnt > 0) extra++;
-          Utils.log('sim3cnt@' + idx + ' = ' + sim3cnt);
+          //Utils.log('sim3cnt@' + idx + ' = ' + sim3cnt);
           idx += dir;
         });
       }).then(function (ctx) {
