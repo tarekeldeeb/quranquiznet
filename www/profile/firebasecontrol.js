@@ -53,7 +53,11 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $state, 
     this.onAuthStateChanged = function (user) { //Fixme: called twice ..
       $scope.user = Utils.deepCopy(user);
       if (user) { // User is signed in!
-        if($state.current.name != 'q.profile') $state.go('q.profile');
+        if($state.current.name == 'ahlan' && $state.params.customStart ){
+          $state.go('q.quiz', {"customStart":$state.params.customStart});
+        } else if($state.current.name != 'q.profile'){
+          $state.go('q.profile');
+        } 
 
         if(user.isAnonymous){
           $scope.user.photoURL="img/anon.png";

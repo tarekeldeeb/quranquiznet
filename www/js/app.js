@@ -90,7 +90,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
   $rootScope.auth = firebase.auth();
   $rootScope.database = firebase.database();
   $rootScope.storage = firebase.storage();
-  $rootScope.source_version = "193";
+  $rootScope.source_version = "194";
   $rootScope.appName = "اختبار القرآن";
   $rootScope.Loc = {};
     
@@ -128,8 +128,8 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
             });
 			*/
 
-      } else { // Progressive Web App
-
+      } 
+      else { // Progressive Web App
         if (window.openDatabase) { // Browser  does support WebSQL!
           db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
           if (Profile.load()) {
@@ -145,9 +145,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
               console.log("Quran quiz database imported successfully");
               allRowPromises = [];
               $rootScope.loadingDone = true;
-              //$rootScope.$apply();
-              Utils.log('Jumping to Ahlan page .. [customStart='+$state.params.customStart+']');
-              if($state.current.name == 'q.quiz') $state.go('ahlan',{"customStart":$state.params.customStart});
+              $rootScope.$apply(); 
             }, function (error) {
               if(error.message.includes('already exists')){
                 console.log("Quran quiz database already exists");
@@ -270,7 +268,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
         templateUrl: 'templates/ahlan.html'
       });
     // if none of the above states are matched, use this as the fallback
-    $urlRouterProvider.otherwise('/ahlan');
+    $urlRouterProvider.otherwise('/ahlan/');
 
   })
   .config(function ($ionicConfigProvider) {
