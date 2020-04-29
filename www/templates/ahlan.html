@@ -29,7 +29,10 @@
 					</div>
 				</div>
 			</div>
-			<div ng-if="user">
+			<div ng-if="user && customStart > 0">
+				<a nav-transition="android" href="#/q/quiz/{{customStart}}" class="button icon-right ion-chevron-right button-calm">دخول</a>
+			</div>
+			<div ng-if="user && customStart == undefined">
 				<a nav-transition="android" href="#/q/profile" class="button icon-right ion-chevron-right button-calm">دخول</a>
 			</div>
 		</div>
