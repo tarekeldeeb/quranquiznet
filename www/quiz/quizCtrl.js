@@ -411,7 +411,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.shareCard = function(card){
     //Utils.log("Sharing: "+JSON.stringify(card));
     $scope.socialshare_text = "😀نافسني في اختبار القرآن";
-    $scope.socialshare_url  = "https://app.quranquiz.net/#/q/quiz/"+card.qo.startIdx;
+    $scope.socialshare_url  = "https://app.quranquiz.net/#/ahlan/"+card.qo.startIdx;
     $scope.openShareModal();
 
     //FOR DEBUG ONLY
