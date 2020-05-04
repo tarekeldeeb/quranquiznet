@@ -282,7 +282,7 @@ angular.module('quranquiznet.services', [])
       .then(function(response) {
         $rootScope.Loc.country = response.data.country;
         $rootScope.Loc.city = response.data.city;
-        Utils.log(JSON.stringify($rootScope.Loc));
+        //Utils.log(JSON.stringify($rootScope.Loc));
       });
     }
     return self;
