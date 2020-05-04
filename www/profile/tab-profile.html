@@ -30,60 +30,87 @@
 						<img id="profile_image" ng-src={{user.photoURL}}>
 					</a>
 					<h3 id="profile_name">{{user.displayName}}</h3>
-					<div id="profile_description">{{user.email}}</div>
-					<div ng-if="!user.isAnonymous">
-					  <button ng-click="signOut();" hidden id="sign-out" class="button button-small button-stable">&nbsp;&nbsp;خروج&nbsp;&nbsp;</button>
-				  </div>
-				  <div ng-if="user.isAnonymous">
-						<div class="button-bar" id="button-bar-social">
-							<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive button-outline button-social-login ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
-							<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive button-outline button-social-login ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+					<!--<div id="profile_description">{{user.email}}</div>-->
+					<!-- Horizontal, rounded -->
+					<div class="chartcontainer horizontal rounded">
+						<div class="progress_bar horizontal">
+							<span class="progress_text">كم الحفظ</span>
+							<div class="progress_track">
+								<div class="progress_fill">
+									<span>{{pcnt_total_study}}</span>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
-			</div>
-			<!-- Horizontal, rounded -->
-			<div class="chartcontainer horizontal rounded">
-				<div class="progress_bar horizontal">
-					<span class="progress_text">كم الحفظ</span>
-					<div class="progress_track">
-						<div class="progress_fill">
-							<span>{{pcnt_total_study}}</span>
+						<div class="progress_bar horizontal">
+							<span class="progress_text">صحة الحفظ</span>
+							<div class="progress_track">
+								<div class="progress_fill">
+									<span>{{pcnt_total_ratio}}</span>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
-				<div class="progress_bar horizontal">
-					<span class="progress_text">صحة الحفظ</span>
-					<div class="progress_track">
-						<div class="progress_fill">
-							<span>{{pcnt_total_ratio}}</span>
+						<!--
+						<div class="progress_bar horizontal">
+							<span class="progress_text">الأسئلة الخاصة</span>
+							<div class="progress_track">
+								<div class="progress_fill">
+									<span>{{pcnt_total_special}}</span>
+								</div>
+							</div>
 						</div>
-					</div>
-				</div>
-				<div class="progress_bar horizontal">
-					<span class="progress_text">الأسئلة الخاصة</span>
-					<div class="progress_track">
-						<div class="progress_fill">
-							<span>{{pcnt_total_special}}</span>
+						<div class="progress_bar horizontal">
+							<span class="progress_text">التصنيف</span>
+							<div class="progress_track">
+								<div class="progress_fill">
+									<span>{{pcnt_total_rank}}</span>
+								</div>
+							</div>
 						</div>
+						-->
 					</div>
-				</div>
-				<div class="progress_bar horizontal">
-					<span class="progress_text">التصنيف</span>
-					<div class="progress_track">
-						<div class="progress_fill">
-							<span>{{pcnt_total_rank}}</span>
-						</div>
-					</div>
-				</div>
-			</div>
-			<center>
-				<a class="button button-positive" nav-clear menu-close ui-sref="q.quiz">
-						<i class="icon ion-ios-barcode-outline"></i>
-						ابدأ الاختبار
-				</a>
-			</center>
-		</div>
 
+					<div ng-if="!user.isAnonymous">
+					  <button ng-click="signOut();" hidden id="sign-out" class="button button-small button-logout-float button-stable ion-log-out"></button>
+				  </div>
+				</div>
+			</div>
+				<div ng-if="user.isAnonymous">
+					<div class="button-bar" id="button-bar-social">
+						<button ng-click="signInFacebook();" id="sign-in-facebook" class="button button-positive button-outline button-social-login ion-social-facebook">&nbsp;فيسبوك&nbsp;</button>
+						<button ng-click="signInGoogle();" id="sign-in-google" class="button button-assertive button-outline button-social-login ion-social-googleplus">&nbsp;جوجل&nbsp;</button>
+					</div>
+				</div>
+				<div class="row" style="padding:0;">
+					<div class="col col-50" style="height:230px;">
+						<ul class="list">
+							<li class="item item-icon-left item-divider">
+								حفظ ضعيف <i class="icon icon-small ion-flag assertive"></i>
+							</li>
+							<li class="item item-narrow" ng-repeat="p in topBadParts track by $index">{{p}}</li>
+						</ul>
+					</div>
+					<div class="col col-50">
+						<ul class="list">
+							<li class="item item-icon-left item-divider">
+								حفظ جيد <i class="icon icon-small ion-heart balanced"></i></li>
+								<li class="item item-narrow" ng-repeat="p in topGoodParts track by $index">{{p}}</li>
+						</ul>
+					</div>
+				</div>
+				<div class="row">
+					<div class="col col-50">
+						<a class="button button-block" nav-clear menu-close ui-sref="q.study">
+							<i class="icon ion-ios-toggle-outline"></i>
+							تعديل السور 
+						</a>
+					</div>
+					<div class="col col-50">
+						<a class="button button-block button-positive" nav-clear menu-close ui-sref="q.quiz">
+							<i class="icon ion-ios-barcode-outline"></i>
+							ابدأ الاختبار
+						</a>
+					</div>	
+				</div>
+		</div>
 	</ion-content>
 </ion-view>

@@ -442,5 +442,35 @@ angular.module('quranquiznet.profile', [])
       return Number.parseFloat(Number.parseFloat(score).toFixed(2));
     }
 
+    /**
+     * Returns a sorted list of Sura names with best results so far
+     */
+    this.getTopGoodParts = function(){
+      var top = Array(5).fill("-");
+      var correct_ratio = Array(50).fill()
+          .map((_, i) => {return {key: i, ratio: getCorrectRatio(i), range: self.getCorrectRatioRange(i)} })
+          .filter(function(o) { return o.range == self.correctRatioRange.HIGH; })
+          .sort(function(a, b){return b.ratio-a.ratio})
+          .slice(0, 5)
+          .map( o => self.parts[o.key].name);
+      correct_ratio.forEach((n,i) => top[i]=n);
+      return top;
+    }
+    
+    /**
+     * Returns a sorted list of Sura names with worst results so far
+     */
+    this.getTopBadParts = function(){
+      var top = Array(5).fill("-");
+      var correct_ratio = Array(50).fill()
+          .map((_, i) => {return {key: i, ratio: getCorrectRatio(i), range: self.getCorrectRatioRange(i)} })
+          .filter(function(o) { return (o.range == self.correctRatioRange.MID || o.range == self.correctRatioRange.LOW) })
+          .sort(function(a, b){return a.ratio-b.ratio})
+          .slice(0, 5)
+          .map( o => self.parts[o.key].name);
+      correct_ratio.forEach((n,i) => top[i]=n);
+      return top;
+    }
+
     return self;
   })
