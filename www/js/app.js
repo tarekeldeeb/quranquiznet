@@ -90,7 +90,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
   $rootScope.auth = firebase.auth();
   $rootScope.database = firebase.database();
   $rootScope.storage = firebase.storage();
-  $rootScope.source_version = "195";
+  $rootScope.source_version = "??";
   $rootScope.appName = "اختبار القرآن";
   $rootScope.Loc = {};
     
@@ -169,6 +169,14 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
           });
         }
       }
+
+      /* Get App version from the Service Worker (Cache) */
+      navigator.serviceWorker.onmessage = (event) => {
+        if (event.data && event.data.type === 'APP_VERSION')
+          $rootScope.source_version = event.data.version;
+          $rootScope.$apply();
+      };
+      navigator.serviceWorker.controller.postMessage({type: 'GET_APP_VERSION',});
     });
   })
 
