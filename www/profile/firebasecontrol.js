@@ -3,7 +3,8 @@
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
-controllers.controller('firebasecontrol', function ($rootScope, $scope, $state, $firebase, Utils, Profile, RLocation) {
+controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPlatform, $state, $firebase, Utils, Profile, RLocation) {
+  $ionicPlatform.ready(function() { // Controller is forced to wait for platform (Need: Profile, ..etc)
     $rootScope.social = Profile.social;
     $scope.signInAnonymous = function (){
       firebase.auth().signInAnonymously().catch(function(error) {
@@ -126,11 +127,12 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $state, 
     }
     // Initiates Firebase auth and listen to auth state changes.
     $rootScope.auth.onAuthStateChanged(this.onAuthStateChanged.bind(this));
-    //TODO: Get real numbers
     $scope.pcnt_total_study = Profile.getPercentTotalStudy();
     $scope.pcnt_total_ratio = Profile.getPercentTotalRatio();
     $scope.pcnt_total_special = '0%'; //FIXME: Profile.getPercentTotalSpecialRatio();
     $scope.pcnt_total_rank = '0%'; //TODO
+    $scope.topGoodParts = Profile.getTopGoodParts();
+    $scope.topBadParts  = Profile.getTopBadParts();
     RLocation.getCity();
-
-  })
+  });
+})
