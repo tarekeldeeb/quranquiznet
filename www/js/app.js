@@ -176,7 +176,8 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
           $rootScope.source_version = event.data.version;
           $rootScope.$apply();
       };
-      navigator.serviceWorker.controller.postMessage({type: 'GET_APP_VERSION',});
+      var sw_cont = navigator.serviceWorker.controller;
+      sw_cont && sw_cont.postMessage({type: 'GET_APP_VERSION',});
     });
   })
 
