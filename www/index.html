@@ -35,7 +35,13 @@
 <script src="js/sqlite.min.js"></script>
 <!--<script src="js/ng-cordova.min.js"></script> too many plugins, just stripped SQLite above-->
 <!--<script src=cordova.js></script> Only in production-->
-<script src="https://www.gstatic.com/firebasejs/4.13.0/firebase.js"></script>
+<!-- Firebase App (the core Firebase SDK) is always required and must be listed first -->
+<script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-messaging.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-database.js"></script>
+<script src="https://www.gstatic.com/firebasejs/7.14.2/firebase-storage.js"></script>
+
 <script src="https://cdn.firebase.com/libs/angularfire/2.3.0/angularfire.min.js"></script>
 <script>
   // Initialize Firebase
@@ -45,9 +51,12 @@
     databaseURL: "https://quranquiznet-3a54c.firebaseio.com",
     projectId: "quranquiznet-3a54c",
     storageBucket: "quranquiznet-3a54c.appspot.com",
-    messagingSenderId: "635224907527"
+    messagingSenderId: "635224907527",
+    appId: "1:635224907527:web:bb6cd3e8d858130d3a6fa2",
+    measurementId: "G-Y9MJ3PD6KV"
   };
   firebase.initializeApp(config);
+  //firebase.analytics();
 </script>
 <script src="js/app.js"></script>
 <script src="lib/moment/moment.min.js"></script>
