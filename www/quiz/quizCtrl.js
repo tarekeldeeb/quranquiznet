@@ -48,7 +48,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.showingImageModal = false;
     $scope.imageModal.hide();
   };
-  $scope.openShareModal = function () {
+  $scope.openShareModal = function () { //FIXME: Pass the object here (last always appears!)
     $scope.showingShareModal = true;
      $scope.shareModal = $ionicPopup.show({
         templateUrl: 'share-modal.html',
