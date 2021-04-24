@@ -1,12 +1,12 @@
 /****
- * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Copyright (C) 2011-2016 Quran Quiz Net
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
-controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams, 
-                                             $ionicLoading, $ionicScrollDelegate, Q, $q, 
+controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams,
+                                             $ionicLoading, $ionicScrollDelegate, Q, $q,
                                              $ionicPopup, $ionicModal, $timeout, $sce,
-                                             $ionicPlatform, DBA, Utils, Profile, Questionnaire, 
+                                             $ionicPlatform, DBA, Utils, Profile, Questionnaire,
                                              FB, $firebase) {
   var shuffle, qquestion;
   var scrollLock = false;
@@ -161,7 +161,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         if (!scrollLock) setTimeout(function () {
           $ionicScrollDelegate.scrollBottom(true);
         }, 200);
-        
+
         setTimeout(function () {
            //v0.x syntax
            /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)+' div div div') ,
@@ -260,29 +260,27 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
 
 
       setTimeout(function () {
-        //  qquestion.scrollLeft = 0
+        // qquestion.scrollLeft = 0 (most right) --> - BIG_NUM (left)
         scrollAnim_start = qquestion.scrollLeft;
-        if(scrollAnim_start){
-          scrollAnim_change = 0 - scrollAnim_start; // Scrolling to 0
-          scrollAnim_currentTime = 0;
-          animateScroll();
-        }
+        scrollAnim_change = (qquestion.offsetWidth - qquestion.scrollWidth) - scrollAnim_start;
+        scrollAnim_currentTime = 0;
+        animateScroll();
       }, 10);
 
 
       if($scope.dailyQuizRunning) $scope.selectTimer(5);
-      //setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);	
+      //setTimeout(function() {qquestion.animate({scrollLeft :0},800);},10);
     }
   }
   var scrollAnim_change, scrollAnim_currentTime, scrollAnim_increment;
   var scrollAnim_duration = 700;
-  scrollAnim_increment = 5;
+  scrollAnim_increment = 20;
 
-  var animateScroll = function(){        
+  var animateScroll = function(){
     scrollAnim_currentTime += scrollAnim_increment;
     var val = Utils.easeInOutQuad(scrollAnim_currentTime, scrollAnim_start, scrollAnim_change, scrollAnim_duration);
     qquestion.scrollLeft = val;
-    if(scrollAnim_currentTime < scrollAnim_duration) {
+    if(val && scrollAnim_currentTime < scrollAnim_duration) {
         setTimeout(animateScroll, scrollAnim_increment);
     }
   };
@@ -328,7 +326,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   async function endDailyQuiz(){
     $scope.stopTimer();
     $scope.dailyQuizRunning = false;
-    $scope.dailyScore = Profile.getDailyQuizScore(dailyQuizScore,dailyQuizTime/1000); 
+    $scope.dailyScore = Profile.getDailyQuizScore(dailyQuizScore,dailyQuizTime/1000);
     var report={score: $scope.dailyScore,
                 name: (Profile.social.isAnonymous)?"مجهول/ة":Profile.social.displayName.split(' ')[0],
                 country:$rootScope.Loc.country,
@@ -339,7 +337,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     FB.submitResult(report);
     cardsTemp.pop(); // Remove the unanswered Card.
     $scope.questionCards = cardsTemp;
-    await $scope.dailyQuizSubmittedReport();  
+    await $scope.dailyQuizSubmittedReport();
   }
   // Timer
   var mytimeout = null; // the current timeoutID
@@ -481,7 +479,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         });
       }
     });
-  };  
+  };
   $scope.reportQuestion = function (card) {
     $scope.report = {}
     $ionicPopup.show({
