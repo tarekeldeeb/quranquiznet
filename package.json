@@ -6,7 +6,7 @@
     "cordova-android": "8.0.0",
     "cordova-browser": "^6.0.0",
     "cordova-sqlite-storage": "2.2.0",
-    "firebase-admin": "^5.6.0",
+    "firebase-admin": "^5.13.1",
     "firebase-functions": "^0.8.0",
     "firebase-tools": "^3.17.4",
     "html2canvas": "^1.0.0-alpha.10",
