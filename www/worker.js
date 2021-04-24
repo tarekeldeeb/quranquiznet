@@ -1,5 +1,5 @@
 // use a cacheName for cache versioning
-var cacheName = 'v200:app';
+var cacheName = 'v201:app';
 const cacheNameAssets = 'v1:assets';
 
 // during the install phase you usually want to cache static APP assets
@@ -54,7 +54,7 @@ self.addEventListener('activate', function(event) {
       return Promise.all(
         cacheNames.filter(function(cn) {
           // Remove outdates caches
-          return cn != cacheName && cn != cacheNameAssets; 
+          return cn != cacheName && cn != cacheNameAssets;
         }).map(function(cn) {
           return caches.delete(cn);
         })
