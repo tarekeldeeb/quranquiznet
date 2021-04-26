@@ -29,7 +29,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
             $rootScope.auth.signInWithRedirect(provider);
             Utils.log("Redirecting for facebook Oauth ...");
           } 
-          else if (error.code == 'auth/account-exists-with-different-credential') {
+          else if (e.code == 'auth/account-exists-with-different-credential') {
             // User's Gmail already exists.
             // The pending Facebook credential.
             var pendingCred = error.credential;
