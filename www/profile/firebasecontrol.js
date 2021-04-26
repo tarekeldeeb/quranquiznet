@@ -32,7 +32,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
           else if (e.code == 'auth/account-exists-with-different-credential') {
             // User's Gmail already exists.
             // The pending Facebook credential.
-            var pendingCred = error.credential;
+            var pendingCred = e.credential;
             var provider = new firebase.auth.GoogleAuthProvider();
             $rootScope.auth.signInWithPopup(provider).then(function (result) {
               // Link to Facebook credential.
