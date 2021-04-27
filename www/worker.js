@@ -71,7 +71,7 @@ self.addEventListener('fetch', function(event) {
   var activeCache = (event.request.url.includes("madina_images"))? cacheNameAssets: cacheName;
   event.respondWith(
     caches.open(activeCache).then(function(cache) {
-      return cache.match(event.request).then(function (response) {
+      return cache.match(event.request, {ignoreSearch: true}).then(function (response) {
         return response || fetch(event.request).then(function(response) {
           cache.put(event.request, response.clone());
           return response;
