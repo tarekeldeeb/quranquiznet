@@ -1,5 +1,5 @@
 /****
- * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Copyright (C) 2011-2016 Quran Quiz Net
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
@@ -13,7 +13,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
         var errorMessage = error.message;
         Utils.log(errorCode+": "+errorMessage);
       });
-    };    
+    };
     $scope.signInGoogle = function () {
       var provider = new firebase.auth.GoogleAuthProvider();
       $rootScope.auth.signInWithPopup(provider);
@@ -28,7 +28,7 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
           if (e.code == 'auth/popup-blocked') {
             $rootScope.auth.signInWithRedirect(provider);
             Utils.log("Redirecting for facebook Oauth ...");
-          } 
+          }
           else if (e.code == 'auth/account-exists-with-different-credential') {
             // User's Gmail already exists.
             // The pending Facebook credential.
@@ -55,11 +55,11 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
       $scope.user = Utils.deepCopy(user);
       if (user) { // User is signed in!
         if($state.current.name == 'ahlan' && $state.params.customStart ){
-          Utils.log("going to quiz ..");
+          Utils.log("Going to quiz ..");
           $state.go('q.quiz', {"customStart":$state.params.customStart});
         } else if($state.current.name != 'q.profile'){
           $state.go('q.profile');
-        } 
+        }
 
         if(user.isAnonymous){
           $scope.user.photoURL="img/anon.png";
@@ -68,14 +68,14 @@ controllers.controller('firebasecontrol', function ($rootScope, $scope, $ionicPl
         }
 
         /*
-        if(Profile.uid != user.uid){ // Check if another profile is found  
+        if(Profile.uid != user.uid){ // Check if another profile is found
           Utils.log("Old UID: "+JSON.stringify(Profile.uid)+", new UID: "+JSON.stringify(user.uid));
           if(Profile.social.isAnonymous){
             //Found an anonymous old profile:
             //  Case#1 Both are anonymous .. keep the old one
-            //  Case#2 The new is Auth, should also use his/her anon 
+            //  Case#2 The new is Auth, should also use his/her anon
             //Do nothing ..
-          } 
+          }
           else { //Someone else's profile .. reset it.
             Profile.reset();
           }

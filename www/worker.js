@@ -1,5 +1,5 @@
 // use a cacheName for cache versioning
-var cacheName = 'v203:app';
+var cacheName = 'v205:app';
 const cacheNameAssets = 'v1:assets';
 
 // during the install phase you usually want to cache static APP assets
@@ -41,9 +41,9 @@ self.addEventListener('install', function(event) {
           '/_model_/services.js',
           '/_model_/utils.js',
         ]
-      ).then(function() {
-                self.skipWaiting();
-            });
+      )
+      .then(function() { self.skipWaiting(); })
+      .catch(function(err) { console.error("[worker.js] Error trying to pre-fetch cache files:", err ); });
     })
   );
 });
@@ -53,7 +53,7 @@ self.addEventListener('activate', function(event) {
     caches.keys().then(function(cacheNames) {
       return Promise.all(
         cacheNames.filter(function(cn) {
-          // Remove outdates caches
+          // Remove outdated caches
           return cn != cacheName && cn != cacheNameAssets;
         }).map(function(cn) {
           return caches.delete(cn);

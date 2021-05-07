@@ -148,7 +148,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       })
       .then(function () {
         var card = {
-          qo: Questionnaire.qo,
+          qo: Utils.deepCopy(Questionnaire.qo),
           answer: $scope.answer,
           answer_sura: $scope.answer_sura,
           answer_sura_info: $scope.answer_sura_info,
@@ -409,7 +409,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
   $scope.shareCard = function(card){
     //Utils.log("Sharing: "+JSON.stringify(card));
     $scope.socialshare_text = "😀نافسني في اختبار القرآن";
-    $scope.socialshare_url  = "https://app.quranquiz.net/#/ahlan/"+card.qo.startIdx;
+    $scope.socialshare_url  = "https://quranquiz.net/#/ahlan/"+card.qo.startIdx;
     $scope.openShareModal();
   }
   $scope.dailyQuizSubmittedReport = function () {

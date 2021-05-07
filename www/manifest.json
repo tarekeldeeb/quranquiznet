@@ -2,8 +2,8 @@
   "manifest_version": 2,
   "name": "اختبار القرآن",
   "short_name": "اختبار القرآن",
-  "version": "0.2.152",
-  "start_url": "./index.html?launcher=true",
+  "version": "0.2.205",
+  "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#003e67",
   "orientation": "portrait",
@@ -37,10 +37,10 @@
     }],
   "app": {
     "urls": [
-      "https://app.quranquiz.net/"
+      "https://quranquiz.net/"
     ],
     "launch": {
-      "web_url": "https://app.quranquiz.net/"
+      "web_url": "https://quranquiz.net/"
     }
   },
   "externally_connectable": {
