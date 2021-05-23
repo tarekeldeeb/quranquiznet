@@ -13,7 +13,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
     'quranquiznet.utils', 'quranquiznet.profile', 'quranquiznet.questionnaire', 'ngCordova',
     'ngResource', 'firebase', 'angular-svg-round-progress', '720kb.socialshare'
   ])
-  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile) {
+  .run(function ($ionicPlatform, $cordovaSQLite, $rootScope, $ionicPopup, $resource, $http, $state, Utils, Profile, IDB) {
     var allRowPromises = [];
     var QQ = {
       _httpGetJson: function (onSuccess, onError) {
@@ -115,8 +115,10 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
         StatusBar.styleDefault();
       }
 
+      IDB.initDb();
+
       if (window.cordova) {
-        // App syntax
+        // Mobile App syntax
         db = $cordovaSQLite.openDB("myapp.db"); // to be replaced
         /*
 			//TODO: Check if DB exists
