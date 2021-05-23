@@ -6,6 +6,79 @@
 
 angular.module('quranquiznet.services', [])
 
+  .factory('IDB', function(Utils){
+    var self = this;
+    var jsstoreCon = new JsStore.Connection(new Worker("js/jsstore.worker.js"));
+
+    /**
+     * A flag to mark if Indexed DB is ready (Opened, or Created)
+     */
+    self.isDbReady = false;
+
+    /**
+     * Utility function to convert JSON row to JsStore Row Object
+     */
+    function oq(l) {
+      return {_id:l[0], txt:l[1], txtsym:l[2], sim1:l[3], sim2:l[4], sim3:l[5], aya:l[6]}
+    }
+
+    /**
+     * DB Schema
+     */
+    function getDbSchema() {  
+      var table_q = {
+        name: 'q',
+        columns: {
+          _id:    { primaryKey: true, autoIncrement: true },
+          txt:    { notNull: true, dataType: 'string' },
+          txtsym: { notNull: true, dataType: 'string', enableSearch: false },        
+          sim1:   { notNull: true, dataType: 'number', default: 1 },
+          sim2:   { notNull: true, dataType: 'number', default: 0 },
+          sim3:   { notNull: true, dataType: 'number', default: 0 },
+          aya:    { dataType: 'number', default: null }
+        }
+      };
+      var db = { name: 'QuranIDB', tables: [ table_q ] }; //TODO: Add more tables
+      return db;
+    }
+
+    /**
+     * Init DB must be called before any other DB operation.
+     * This function sets the above ready flag.
+     */
+    self.initDb = async function() {
+      var isDbCreated = await jsstoreCon.initDb(getDbSchema());
+      if (isDbCreated) {
+          Utils.log('IDb created');
+          $.getJSON('q.json', function(json){
+            rows = json.objects[0].rows;
+            Utils.log("  > Loaded q.json:");
+            rows_fixed = []
+            rows.forEach( function(w){ rows_fixed.push(oq(w)); });
+            jsstoreCon.insert({into: 'q', values: rows_fixed })
+              .then(function(){isDbReady = true; });
+          });
+      }
+      else {
+          isDbReady = true;
+          Utils.log('IDb opened');
+      }
+    }
+
+    self.txt = async function(start, len){
+      var results = await jsstoreCon.select({
+        from: "q",
+        limit: len,
+        where: {
+            _id: { '>': start },
+          },
+      }); 
+      return results.map(x => x.txtsym);
+    }
+
+    return self;
+  })
+
   .factory('DBA', function ($cordovaSQLite, $q, $timeout, $ionicPlatform) {
     var self = this;
 
