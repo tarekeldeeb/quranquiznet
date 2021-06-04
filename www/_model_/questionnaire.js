@@ -174,7 +174,7 @@ angular.module('quranquiznet.questionnaire', [])
             dir = -dir;
             break;
           }
-          srch_cond = Q.sim2cnt(start_shadow) > 0;
+          srch_cond = IDB.sim2cnt(start_shadow) > 0;
         }
 
         start = start_shadow;
@@ -359,7 +359,7 @@ angular.module('quranquiznet.questionnaire', [])
           });
         } else {
           // [Level 1-3] Get a Motashabehat
-          return Q.sim2cnt(start_shadow)
+          return IDB.sim2cnt(start_shadow)
             .then(function (sim2cnt) {
               srch_cond = (sim2cnt == 0); //Continue searching if not motashabeha
               //Utils.log('Start_shadow= ' + start_shadow + ' sim2snt= ' + sim2cnt + ' cnd=' + srch_cond);
@@ -392,13 +392,13 @@ angular.module('quranquiznet.questionnaire', [])
                   disp2 = 0;
                   disp3 = 0;
 
-                  if (Q.sim3cnt(start_shadow) < 5 &&
-                    Q.sim3cnt(start_shadow) > 0)
-                    disp3 = Q.sim3cnt(start_shadow);
+                  if (IDB.sim3cnt(start_shadow) < 5 &&
+                    IDB.sim3cnt(start_shadow) > 0)
+                    disp3 = IDB.sim3cnt(start_shadow);
 
-                  if (Q.sim2cnt(start_shadow) < 5 &&
-                    Q.sim2cnt(start_shadow) > 0)
-                    disp2 = Q.sim2cnt(start_shadow);
+                  if (IDB.sim2cnt(start_shadow) < 5 &&
+                    IDB.sim2cnt(start_shadow) > 0)
+                    disp2 = IDB.sim2cnt(start_shadow);
 
                   // Motashabehat not found,continue!
                   srch_cond = (disp3 == 0 && disp2 == 0);
@@ -443,7 +443,7 @@ angular.module('quranquiznet.questionnaire', [])
       return Utils.promiseWhile(function () {
         return (q_sim3cnt > 0);
       }, function () {
-        return Q.sim3cnt(idx).then(function (sim3cnt) {
+        return IDB.sim3cnt(idx).then(function (sim3cnt) {
           q_sim3cnt = sim3cnt;
           if (sim3cnt > 0) extra++;
           //Utils.log('sim3cnt@' + idx + ' = ' + sim3cnt);
