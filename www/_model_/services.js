@@ -1,5 +1,5 @@
 /****
-* Copyright (C) 2011-2016 Quran Quiz Net 
+* Copyright (C) 2011-2016 Quran Quiz Net
 * Tarek Eldeeb <tarekeldeeb@gmail.com>
 * License: see LICENSE.txt
 ****/
@@ -25,13 +25,13 @@ angular.module('quranquiznet.services', [])
     /**
      * DB Schema
      */
-    function getDbSchema() {  
+    function getDbSchema() {
       var table_q = {
         name: 'q',
         columns: {
           _id:    { primaryKey: true, autoIncrement: true },
           txt:    { notNull: true, dataType: 'string' },
-          txtsym: { notNull: true, dataType: 'string', enableSearch: false },        
+          txtsym: { notNull: true, dataType: 'string', enableSearch: false },
           sim1:   { notNull: true, dataType: 'number', default: 1 },
           sim2:   { notNull: true, dataType: 'number', default: 0 },
           sim3:   { notNull: true, dataType: 'number', default: 0 },
@@ -65,16 +65,46 @@ angular.module('quranquiznet.services', [])
       }
     }
 
-    self.txt = async function(start, len){
-      var results = await jsstoreCon.select({
-        from: "q",
-        limit: len,
-        where: {
-            _id: { '>': start },
-          },
-      }); 
-      return results.map(x => x.txtsym);
+    self.txt = async function(start, len, params) {
+      var limit = len || 1;
+      var insertAyaMark = (params.indexOf("ayaMark") > -1);
+      if((start + limit)>Utils.QuranWords){ // Two ranges are needed
+         var results = await jsstoreCon.union([
+         {
+          from: "q",
+          where: {
+              _id: { '>': start -1 },
+            },
+        },
+        {
+          from: "q",
+          where: {
+              _id: { '<': Utils.modQWords(start + limit) },
+            },
+        }
+        ]);
+      }
+      else {
+        var results = await jsstoreCon.select({
+          from: "q",
+          limit: limit,
+          where: {
+              _id: { '>': start -1 },
+            },
+        });
+      }
+      var query_result = results.map(x => {
+        if(insertAyaMark && x.aya!=null){
+           return x.txtsym+Utils.formattedAyaMark(x.aya, Utils.TextFormatEnum.AYAMARKS_FULL);
+        }
+        return x.txtsym;
+        });
+      if((start + limit)>Utils.QuranWords){
+        Utils.arrayRotate(query_result, limit-(Utils.QuranWords-start+1));
+      }
+      return query_result;
     }
+
 
     return self;
   })
@@ -165,11 +195,11 @@ angular.module('quranquiznet.services', [])
 
     /**
      * Return a quran text, optionally formatted
-     * supports: 
+     * supports:
      *  - Q.txt(wordIndex)
      *  - Q.txt(startIndex, Length)
      *  - Q.txt(startIndex, Length, Format)
-     * 
+     *
      * Format, comma separated string, currently supports:
      *  - ayaMark: Adds an aya mark within the text: Word_m{[NUM]} Word+m+1 ..
      */
@@ -177,18 +207,18 @@ angular.module('quranquiznet.services', [])
       var llen = len || 1;
       var insertAyaMark = (params.indexOf("ayaMark") > -1);
       var query,parameters;
-    
+
       // Prepare query and parameters
       parameters = [(idx - 1), (idx + llen)];
       if (insertAyaMark) {
-        query = "select txtsym,aya from q where _id > (?) and _id < (?)";    
+        query = "select txtsym,aya from q where _id > (?) and _id < (?)";
       }else{
         query = "select txtsym from q where _id > (?) and _id < (?)";
       }
       if(parameters[1]>Utils.QuranWords){ // Two ranges are needed
           query += " UNION ALL "+query;
           parameters = [(idx - 1), Utils.QuranWords+1, 0, Utils.modQWords(idx + llen)];
-      }    
+      }
 
       // Execute query and parse results
       return DBA.query(query, parameters).then(function (result) {

@@ -1,5 +1,5 @@
 /****
- * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Copyright (C) 2011-2016 Quran Quiz Net
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
@@ -136,8 +136,8 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     ];
     this.QQ_MD5_KEY = ""; // Edited only upon release!
 
-    /** 
-     * Each Study Part Weight in relative to an average Juz2. 
+    /**
+     * Each Study Part Weight in relative to an average Juz2.
      * Fatiha is 1%, while Juz2 Amma is 95% of an average Juz2 length
      */
     this.PartWeight100 = [1, 236, 134, 145, 108, 118, 128, 48,
@@ -147,7 +147,7 @@ angular.module('quranquiznet.utils', ['angular-md5'])
     ];
 
     /**
-     * If study parts contain suras count more than this threshold, then 
+     * If study parts contain suras count more than this threshold, then
      * the user profile is eligible for more special questions.
      */
     this.SurasSpecialQuestionEligibilityThreshold = 7;
@@ -290,12 +290,12 @@ angular.module('quranquiznet.utils', ['angular-md5'])
       else return 1;
     }
 
-    // Write the object to a Base64 string. 
+    // Write the object to a Base64 string.
     this.toString64 = function (o) {
       return btoa(o);
     }
 
-    // Read the object from a Base64 string. 
+    // Read the object from a Base64 string.
     this.fromString64 = function (s) {
       return atob(s);
     }
@@ -383,6 +383,11 @@ angular.module('quranquiznet.utils', ['angular-md5'])
       var pad = new Array(1 + p).join(pad_char);
       return (pad + n).slice(-pad.length);
     }
+    this.arrayRotate = function(arr, count) { // +ve is rotate left
+      count -= arr.length * Math.floor(count / arr.length);
+      arr.push.apply(arr, arr.splice(0, count));
+      return arr;
+    }
     this.getPageFromSuraAyah = function (s, a) {
       var start = pageSuraStart[s];
       if (start < 604)
@@ -463,8 +468,8 @@ angular.module('quranquiznet.utils', ['angular-md5'])
       /***** Usage *****/
       //var index;
       //promiseFor(function () { index = 0; },
-      //           function () { return index <= 11; }, 
-      //           function () { index++; }, 
+      //           function () { return index <= 11; },
+      //           function () { index++; },
       //           function () {
       //	            console.log(index);
       //	            return $q.defer(); // arbitrary async
@@ -478,7 +483,7 @@ angular.module('quranquiznet.utils', ['angular-md5'])
       t--;
       return -c/2 * (t*(t-2) - 1) + b;
     }
-    
+
     return self;
   })
 
