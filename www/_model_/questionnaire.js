@@ -1,10 +1,10 @@
 /****
- * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Copyright (C) 2011-2016 Quran Quiz Net
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
 angular.module('quranquiznet.questionnaire', [])
-  .factory('Questionnaire', function (Profile, Q, Utils, $q, $rootScope) {
+  .factory('Questionnaire', function (Profile, Q, IDB, Utils, $q, $rootScope) {
     var self = this;
     var sparsed;
     var QLEN_EXTRA_LIMIT = 2;
@@ -110,13 +110,13 @@ angular.module('quranquiznet.questionnaire', [])
             case self.qTypeEnum.SURANAME.id:
               //Correct Answer:
               self.qo.op[0][0] = Utils.getSuraIdx(self.qo.startIdx);
-              //Incorrect Answers		
+              //Incorrect Answers
               self.fillIncorrectRandomIdx(self.qo.op[0][0], 114);
               break;
             case self.qTypeEnum.SURAAYACOUNT.id:
               //Correct Answer:
               self.qo.op[0][0] = Utils.sura_ayas[Utils.getSuraIdx(self.qo.startIdx)]
-              //Incorrect Answers		
+              //Incorrect Answers
               self.fillIncorrectRandomNonZeroIdx(self.qo.op[0][0], 50);
               break;
             case self.qTypeEnum.AYANUMBER.id:
@@ -124,7 +124,7 @@ angular.module('quranquiznet.questionnaire', [])
               Q.ayaNumberOf(self.qo.startIdx)
                 .then(function (aya) {
                   self.qo.op[0][0] = aya;
-                  //Incorrect Answers		
+                  //Incorrect Answers
                   self.fillIncorrectRandomNonZeroIdx(self.qo.op[0][0], 50);
                   return this;
                 });
@@ -153,7 +153,7 @@ angular.module('quranquiznet.questionnaire', [])
       this.qo.oLen = 1;
       //Correct Answer:
       this.qo.op[0][0] = Q.ayaNumberOf(this.qo.startIdx);
-      //Incorrect Answers		
+      //Incorrect Answers
       this.fillIncorrectRandomNonZeroIdx(this.qo.op[0][0], 50);
     }
 
@@ -375,7 +375,7 @@ angular.module('quranquiznet.questionnaire', [])
                   }
                   // [Level 1-2] Add extra Length for unique answer!
 
-                  var extraQDirection = 1; //TODO: Randomize +/- 1							
+                  var extraQDirection = 1; //TODO: Randomize +/- 1
                   return self.extraQLength(start_shadow, self.qo.qLen, false, extraQDirection)
                     .then(function (extraLength) {
                       self.qo.qLen = extraLength.qLen;
@@ -424,11 +424,11 @@ angular.module('quranquiznet.questionnaire', [])
 
     this.extraQLength = function (start, qLen, long_q, direction) {
       //TODO: Review and apply!
-      /**                  <qLen>,--{start} 
+      /**                  <qLen>,--{start}
        *  <----------{M M M M M M M M}------->
        *            U M M M M M M M       < Long_question:   forward only >
        *            U M M M               < Forward Search:  direction=1  >
-       *                        M M M U   < Backward Search: direction=-1 
+       *                        M M M U   < Backward Search: direction=-1
        *
        * Assumptions:
        * 	- direction is only +1 or -1
@@ -484,7 +484,7 @@ angular.module('quranquiznet.questionnaire', [])
                     if (!isFinite(tmp)) {
                       tmp = 0;
                       console.warn('Bad op[' + k + '][' + l + ']');
-                      //TODO: Handle the exception! 
+                      //TODO: Handle the exception!
                     }
                     op.push(tmp);
                   }
@@ -515,11 +515,11 @@ angular.module('quranquiznet.questionnaire', [])
               }
               break;
             case self.qTypeEnum.MAKKI.id:
-              // Do nothing! 
+              // Do nothing!
               break;
 
             default:
-              // Do nothing! 
+              // Do nothing!
               break;
           }
         });
@@ -539,7 +539,7 @@ angular.module('quranquiznet.questionnaire', [])
         case this.qTypeEnum.AYANUMBER.id:
           return this.qTypeEnum.AYANUMBER.score;
         default:
-          // Do nothing! 
+          // Do nothing!
           break;
       }
     }
@@ -551,7 +551,7 @@ angular.module('quranquiznet.questionnaire', [])
         return 0;
       }
     }
-    
+
     this.DQ = []; // Only used for debugging
     this.dailyStart = [];
     this.dailyIndex = 0;
@@ -564,7 +564,7 @@ angular.module('quranquiznet.questionnaire', [])
       var sparseQ = Profile.getDailyQuizStudyPartsWeights();
       self.dailyStart = [];
       self.dailyIndex = 0;
-      
+
       for (i = 1; i < sparseQ.length; i++) {
         partLength = Profile.parts[i].length;
         partStart = Profile.parts[i].start;
