@@ -119,6 +119,30 @@ angular.module('quranquiznet.services', [])
       return query_result;
     }
 
+    self.sim2cnt = async function (idx) {
+      var results = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: idx
+        }
+      });
+      var query_result = results[0].sim2 ;
+      return query_result;
+    }
+
+    self.sim3cnt = async function (idx) {
+      var results = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: idx
+        }
+      });
+      var query_result = results[0].sim3 ;
+      return query_result;
+    }
+
+
+
     return self;
   })
 
@@ -260,13 +284,6 @@ angular.module('quranquiznet.services', [])
         }
         return DBA.getStringSet(result);
       });
-    }
-
-    self.sim1idx = function (idx) {
-      return DBA.query("select _id from q where txt=(select txt from q where _id=" + idx + ") and _id !=" + idx, [])
-        .then(function (result) {
-          return DBA.getIDSet(result);
-        });
     }
 
     self.sim2idx = function (idx) {
