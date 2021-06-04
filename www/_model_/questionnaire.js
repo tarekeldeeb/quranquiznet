@@ -467,7 +467,7 @@ angular.module('quranquiznet.questionnaire', [])
     }
 
     this.fillText = function () {
-      return Q.txt(this.qo.startIdx, Utils.answerLength, 'ayaMark')
+      return IDB.txt(this.qo.startIdx, Utils.answerLength, 'ayaMark')
         .then(function (txt) {
           self.qo.txt.question = txt.slice(0, self.qo.qLen).join(' ');
           self.qo.txt.answer = txt.slice(0, Utils.answerLength).join(' ');
@@ -490,7 +490,7 @@ angular.module('quranquiznet.questionnaire', [])
                   }
                 }
               }
-              return Q.txts(op)
+              return IDB.txts(op)
                 .then(function (txt) {
                   for (var k = 0; k < self.qo.rounds; k++) {
                     for (var l = 0; l < 5; l++) {

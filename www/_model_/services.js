@@ -105,6 +105,19 @@ angular.module('quranquiznet.services', [])
       return query_result;
     }
 
+    self.txts = async function (ids) {
+      /* Returned text must be ordered with redundancies*/
+      var results = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: {
+                in: ids
+            }
+        }
+      });
+      var query_result = results.map(x => x.txtsym );
+      return query_result;
+    }
 
     return self;
   })
