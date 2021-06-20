@@ -93,12 +93,14 @@ angular.module('quranquiznet.services', [])
             },
         });
       }
+      var noSym = (params.indexOf("noSym") > -1);
       var query_result = results.map(x => {
+        if(noSym) return x.txt;
         if(insertAyaMark && x.aya!=null){
            return x.txtsym+Utils.formattedAyaMark(x.aya, Utils.TextFormatEnum.AYAMARKS_FULL);
         }
         return x.txtsym;
-        });
+      });
       if((start + limit)>Utils.QuranWords){
         Utils.arrayRotate(query_result, limit-(Utils.QuranWords-start+1));
       }
@@ -141,6 +143,51 @@ angular.module('quranquiznet.services', [])
       return query_result;
     }
 
+    self.sim2idx = async function (idx) {
+      var txt =  await self.txt(idx,2,"noSym");
+      Utils.log("Query for: " + txt);
+
+      var results1 = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: { '!=': idx },
+            txt: txt[0]
+        }
+      });
+      var results2 = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: { '!=': idx +1 },
+            txt: txt[1]
+        }
+      });
+      return  results1.map(x=> x._id )
+                      .filter(value => results2.map(x=> x._id -1).includes(value));
+
+      /*
+      var results = await jsstoreCon.select({
+        from: "q",
+        where: {
+            "txt": txt
+        },
+        join: {
+            with: "q",
+            on: "q._id=q.joined_id+1",
+            as:{
+              "_id": "joined_id",
+              "txt": "joined_txt"
+            }, 
+            //type:"inner",
+            //where: {
+            //    [column name]: some value
+           // }
+        }
+      });
+      Utils.log("Query result: " + results );
+      var query_result = results.map(x => x._id );
+      return query_result;
+      */
+    }
 
 
     return self;
