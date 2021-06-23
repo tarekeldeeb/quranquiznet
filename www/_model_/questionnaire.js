@@ -222,13 +222,14 @@ angular.module('quranquiznet.questionnaire', [])
       for (var k = 1; k < this.qo.rounds; k++) {
         this.qo.op[k][0] = Utils.modQWords(this.qo.op[k - 1][0] + this.qo.oLen);
       }
-      if (self.qo.level > 1) { //TODO: Port async
+      if (self.qo.level > 1) { //TODO: Put more correct answers :: DEAD Code! Only 1 answer exists.
         if (this.qo.qLen == 1) { // A 2-word Question
-          tmp = Q.sim2idx(this.qo.startIdx);
+          tmp = IDB.sim2idx(this.qo.startIdx);
           for (var i = 1; i < qo.validCount; i++)
             this.qo.op[0][i] = tmp[i];
+
         } else { // A 3-word Question
-          tmp = Q.sim3idx(this.qo.startIdx);
+          tmp = IDB.sim3idx(this.qo.startIdx);
           for (var i = 1; i < this.qo.validCount; i++)
             this.qo.op[0][i] = tmp[i];
         }
@@ -268,7 +269,7 @@ angular.module('quranquiznet.questionnaire', [])
               }
             } else {
               // We need Random unique and does not match correct
-              return Q.randomUnique4NotMatching(self.qo.op[i][0]);
+              return IDB.randomUnique4NotMatching(self.qo.op[i][0]);
             }
             return this;
           }).then(function (randList) {
