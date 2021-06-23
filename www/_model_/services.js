@@ -144,6 +144,7 @@ angular.module('quranquiznet.services', [])
     }
 
     self.sim2idx = async function (idx) {
+      return []; //Function is very slow, not needed.
       var txt =  await self.txt(idx,2,"noSym");
       Utils.log("Query for: " + txt);
 
@@ -163,32 +164,26 @@ angular.module('quranquiznet.services', [])
       });
       return  results1.map(x=> x._id )
                       .filter(value => results2.map(x=> x._id -1).includes(value));
-
-      /*
-      var results = await jsstoreCon.select({
-        from: "q",
-        where: {
-            "txt": txt
-        },
-        join: {
-            with: "q",
-            on: "q._id=q.joined_id+1",
-            as:{
-              "_id": "joined_id",
-              "txt": "joined_txt"
-            }, 
-            //type:"inner",
-            //where: {
-            //    [column name]: some value
-           // }
-        }
-      });
-      Utils.log("Query result: " + results );
-      var query_result = results.map(x => x._id );
-      return query_result;
-      */
     }
 
+    self.sim3idx = async function (idx) {
+      return []; //Function is very slow, not needed.
+    }
+
+    self.randomUnique4NotMatching = async function (idx) {
+      var randomStart = Math.ceil((Math.random() * (Utils.QuranWords - 201)) + 1);
+      var word = self.txts([idx])
+      var results = await jsstoreCon.select({
+          from: "q",
+          limit: 50,
+          where: {
+              _id: { '>': randomStart -1 },
+            },
+        })
+      results = results.filter(value => word[0] != value.txt);
+      results = [1, 8, 13, 19].map(function (x) { return results[x] })
+      return { i: idx, set: results.map(x => x._id) };
+    }
 
     return self;
   })
