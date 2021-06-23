@@ -37,10 +37,10 @@ if __name__ == "__main__":
         aya_dict[aya_idx + len(aya) - 1] = tokens[1]
         aya_idx += len(aya)
         text_dial.extend(aya)
+  f.close()
   text_full = remove_dialects(" ".join(text_dial))
   text_no_dialect = text_full.split(" ")
   print("Found words: " + str(len(text_no_dialect)))
-  open("2-" + uthmani_text, "w", encoding='utf-8').write(text_full)
   json_head = '{"type":"database","name":"qq-noIdx",' \
               '"objects":[{"type":"table","name":"q","ddl":"CREATE TABLE \\"q\\" ' \
               '(\\"_id\\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' \
