@@ -10,6 +10,7 @@ import re
 from tqdm import tqdm
 
 uthmani_text: str = "quran-uthmani-min.txt"
+columns_idx: bool = False
 
 
 def remove_dialects(s):
@@ -73,11 +74,11 @@ if __name__ == "__main__":
             sim3idx += str(j) + ","
     sim2idx = "null" if len(sim2idx) == 1 else "\"" + sim2idx[:-1] + "]\""
     sim3idx = "null" if len(sim3idx) == 1 else "\"" + sim3idx[:-1] + "]\""
+    idxs = sim2idx + "," + sim3idx + "," if columns_idx else ""
     aya_cnt = str(aya_dict[i]) if i in aya_dict else "null"
     comma = "" if i == len(text_no_dialect) - 3 else ","
 
-    row += str(sim1) + "," + str(sim2) + "," + str(sim3) + "," \
-           + sim2idx + "," + sim3idx + "," + aya_cnt + "]" + comma
+    row += str(sim1) + "," + str(sim2) + "," + str(sim3) + "," + idxs + aya_cnt + "]" + comma
     jf.write(row)
   jf.write(json_tail)
   jf.close()
