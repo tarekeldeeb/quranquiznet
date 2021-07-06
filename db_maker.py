@@ -5,6 +5,8 @@
     URL     : Text:  http://tanzil.net
     AUTHORS : Tarek Eldeeb
 """
+import multiprocessing as mp
+from functools import partial
 import requests
 import re
 from tqdm import tqdm
@@ -21,6 +23,42 @@ def remove_dialects(s):
 
 def limited_sample(my_list, limit):
   return my_list if len(my_list) < limit else sample(my_list, limit)
+
+
+def append_row(text_dial, text_no_dialect, aya_dict, i):
+  row = "[" + str(i + 1) + ",\"" + text_no_dialect[i] + "\",\"" + text_dial[i] + "\","
+  tot_words = len(text_no_dialect)
+  sim1 = 0
+  sim2 = 0
+  sim3 = 0
+  sim2idx = []
+  sim3idx = []
+  sim1not2p1 = []
+  sim1not2p1txt = []
+  for j in [x for x in range(tot_words) if x != i]:
+    if text_no_dialect[i] == text_no_dialect[j]:
+      sim1 += 1
+      check_index = i < tot_words - 1 and j < tot_words - 1
+      if check_index and text_no_dialect[i + 1] == text_no_dialect[j + 1]:
+        sim2 += 1
+        sim2idx.append(j)
+        check_index = i < tot_words - 2 and j < tot_words - 2
+        if check_index and text_no_dialect[i + 2] == text_no_dialect[j + 2]:
+          sim3 += 1
+          sim3idx.append(j)
+      else:  # Sim1 but not Sim2, add next unique words
+        if j < tot_words - 1 and text_no_dialect[j + 1] not in sim1not2p1txt:
+          sim1not2p1.append(j + 1)
+          sim1not2p1txt.append(text_no_dialect[j + 1])
+  sim2idx = "null" if len(sim2idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim2idx, 10))) + "]\""
+  sim3idx = "null" if len(sim3idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim3idx, 10))) + "]\""
+  sim1not2p1 = "null" if len(sim1not2p1) == 0 else \
+    "\"[" + ",".join(map(str, limited_sample(sim1not2p1, 10))) + "]\""
+  idxs = sim2idx + "," + sim3idx + "," if columns_idx else ""
+  aya_cnt = str(aya_dict[i]) if i in aya_dict else "null"
+  comma = "" if i == tot_words - 1 else ","
+  row += str(sim1) + "," + str(sim2) + "," + str(sim3) + "," + idxs + sim1not2p1 + "," + aya_cnt + "]" + comma
+  return row
 
 
 def db_maker():
@@ -44,7 +82,8 @@ def db_maker():
   f.close()
   text_full = remove_dialects(" ".join(text_dial))
   text_no_dialect = text_full.split(" ")
-  print("Found words: " + str(len(text_no_dialect)))
+  tot_words = len(text_no_dialect)
+  print("Found words: " + str(tot_words))
   json_head = '{"type":"database","name":"qq-noIdx",' \
               '"objects":[{"type":"table","name":"q","ddl":"CREATE TABLE \\"q\\" ' \
               '(\\"_id\\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' \
@@ -61,37 +100,9 @@ def db_maker():
   json_tail = ']}]}'
   jf = open("q.json", "w", encoding='utf-8')
   jf.write(json_head)
-  for i in tqdm(range(len(text_no_dialect) - 2)):
-    row = "[" + str(i + 1) + ",\"" + text_no_dialect[i] + "\",\"" + text_dial[i] + "\","
-    sim1 = 0
-    sim2 = 0
-    sim3 = 0
-    sim2idx = []
-    sim3idx = []
-    sim1not2p1 = []
-    sim1not2p1txt = []
-    for j in [x for x in range(len(text_no_dialect) - 2) if x != i]:
-      if text_no_dialect[i] == text_no_dialect[j]:
-        sim1 += 1
-        if text_no_dialect[i + 1] == text_no_dialect[j + 1]:
-          sim2 += 1
-          sim2idx.append(j)
-          if text_no_dialect[i + 2] == text_no_dialect[j + 2]:
-            sim3 += 1
-            sim3idx.append(j)
-        else:  # Sim1 but not Sim2, add next unique words
-          if text_no_dialect[j + 1] not in sim1not2p1txt:
-            sim1not2p1.append(j + 1)
-            sim1not2p1txt.append(text_no_dialect[j + 1])
-    sim2idx = "null" if len(sim2idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim2idx, 10))) + "]\""
-    sim3idx = "null" if len(sim3idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim3idx, 10))) + "]\""
-    sim1not2p1 = "null" if len(sim1not2p1) == 0 else \
-      "\"[" + ",".join(map(str, limited_sample(sim1not2p1, 10))) + "]\""
-    idxs = sim2idx + "," + sim3idx + "," if columns_idx else ""
-    aya_cnt = str(aya_dict[i]) if i in aya_dict else "null"
-    comma = "" if i == len(text_no_dialect) - 3 else ","
-    row += str(sim1) + "," + str(sim2) + "," + str(sim3) + "," + idxs + sim1not2p1 + "," + aya_cnt + "]" + comma
-    jf.write(row)
+  with mp.Pool(mp.cpu_count()) as p:
+    r = list(tqdm(p.imap(partial(append_row, text_dial, text_no_dialect, aya_dict), range(tot_words)), total=tot_words))
+  jf.write(''.join(r))
   jf.write(json_tail)
   jf.close()
   print("Done!")
