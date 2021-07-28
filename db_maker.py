@@ -96,7 +96,7 @@ def db_maker():
       "\"[" + ",".join(map(str, limited_sample(sim1not2p1, 10))) + "]\""
     indexes = sim2idx + "," + sim3idx + "," if columns_idx else ""
     aya_cnt = str(aya_dict[i]) if i in aya_dict else "null"
-    comma = "" if i == tot_words - 3 else ","
+    comma = "" if i == tot_words - 1 else ","
     row += str(sim1) + "," + str(sim2) + "," + str(sim3) + "," + indexes + sim1not2p1 + "," + aya_cnt + "]" + comma
     jf.write(row)
   jf.write(json_tail)
