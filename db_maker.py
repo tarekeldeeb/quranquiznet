@@ -50,6 +50,7 @@ def db_maker():
   text_no_dialect = text_full.split(" ")
   tot_words = len(text_no_dialect)
   print("Found words: " + str(tot_words))
+  json_head_idx = '\\"sim2idx\\" TEXT NULL,\\"sim3idx\\" TEXT NULL,' if columns_idx else ""
   json_head = '{"type":"database","name":"qq-noIdx",' \
               '"objects":[{"type":"table","name":"q","ddl":"CREATE TABLE \\"q\\" ' \
               '(\\"_id\\" INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,' \
@@ -58,8 +59,7 @@ def db_maker():
               '\\"sim1\\" INTEGER NOT NULL DEFAULT (1),' \
               '\\"sim2\\" INTEGER NOT NULL DEFAULT (0),' \
               '\\"sim3\\" INTEGER NOT NULL DEFAULT (0),' \
-              '\\"sim2idx\\" TEXT NULL,' \
-              '\\"sim3idx\\" TEXT NULL,' \
+              + json_head_idx + \
               '\\"sim1not2p1\\" TEXT NULL,' \
               '\\"aya\\" INTEGER DEFAULT(NULL))",' \
               '"rows":['
