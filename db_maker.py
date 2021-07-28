@@ -9,6 +9,8 @@ import requests
 import re
 from tqdm import tqdm
 from random import sample
+from zipfile import ZipFile
+
 
 uthmani_text: str = "quran-uthmani-min.txt"
 columns_idx: bool = False
@@ -59,7 +61,7 @@ def db_maker():
               '\\"aya\\" INTEGER DEFAULT(NULL))",' \
               '"rows":['
   json_tail = ']}]}'
-  jf = open("q.json", "w", encoding='utf-8')
+  jf = open("www/q.json", "w", encoding='utf-8')
   jf.write(json_head)
   for i in tqdm(range(len(text_no_dialect) - 2)):
     row = "[" + str(i + 1) + ",\"" + text_no_dialect[i] + "\",\"" + text_dial[i] + "\","
@@ -94,6 +96,9 @@ def db_maker():
     jf.write(row)
   jf.write(json_tail)
   jf.close()
+  zipObj = ZipFile('www/q.json.zip', 'w', zipfile.ZIP_DEFLATED)
+  zipObj.write('www/q.json')
+  zipObj.close()
   print("Done!")
 
 
