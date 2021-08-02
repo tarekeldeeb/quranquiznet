@@ -19,7 +19,7 @@ angular.module('quranquiznet.services', [])
      * Utility function to convert JSON row to JsStore Row Object
      */
     function oq(l) {
-      return {_id:l[0], txt:l[1], txtsym:l[2], sim1:l[3], sim2:l[4], sim3:l[5], aya:l[6]}
+      return {_id:l[0], txt:l[1], txtsym:l[2], sim1:l[3], sim2:l[4], sim3:l[5], sim1not2p1:l[6], aya:l[7]}
     }
 
     /**
@@ -29,13 +29,14 @@ angular.module('quranquiznet.services', [])
       var table_q = {
         name: 'q',
         columns: {
-          _id:    { primaryKey: true, autoIncrement: true },
-          txt:    { notNull: true, dataType: 'string' },
-          txtsym: { notNull: true, dataType: 'string', enableSearch: false },
-          sim1:   { notNull: true, dataType: 'number', default: 1 },
-          sim2:   { notNull: true, dataType: 'number', default: 0 },
-          sim3:   { notNull: true, dataType: 'number', default: 0 },
-          aya:    { dataType: 'number', default: null }
+          _id:        { primaryKey: true, autoIncrement: true },
+          txt:        { notNull: true, dataType: 'string' },
+          txtsym:     { notNull: true, dataType: 'string', enableSearch: false },
+          sim1:       { notNull: true, dataType: 'number', default: 1 },
+          sim2:       { notNull: true, dataType: 'number', default: 0 },
+          sim3:       { notNull: true, dataType: 'number', default: 0 },
+          sim1not2p1: { dataType: 'string', default: null },
+          aya:        { dataType: 'number', default: null }
         }
       };
       var db = { name: 'QuranIDB', tables: [ table_q ] }; //TODO: Add more tables
@@ -56,7 +57,10 @@ angular.module('quranquiznet.services', [])
             rows_fixed = []
             rows.forEach( function(w){ rows_fixed.push(oq(w)); });
             jsstoreCon.insert({into: 'q', values: rows_fixed })
-              .then(function(){isDbReady = true; });
+              .then(function(){
+                isDbReady = true;
+                Utils.log("  > Quran Quiz data imported successfully")
+              });
           });
       }
       else {
