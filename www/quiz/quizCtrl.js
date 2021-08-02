@@ -4,9 +4,9 @@
  * License: see LICENSE.txt
  ****/
 controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateParams,
-                                             $ionicLoading, $ionicScrollDelegate, Q, $q,
+                                             $ionicLoading, $ionicScrollDelegate, IDB, $q,
                                              $ionicPopup, $ionicModal, $timeout, $sce,
-                                             $ionicPlatform, DBA, Utils, Profile, Questionnaire,
+                                             $ionicPlatform, Utils, Profile, Questionnaire,
                                              FB, $firebase) {
   var shuffle, qquestion;
   var scrollLock = false;
@@ -226,7 +226,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.answer_sura = Utils.sura_name[sura];
     $scope.answer_sura_info = Utils.getSuraTanzilFromWordIdx(Questionnaire.qo.startIdx) +
       ' اياتها ' + Utils.sura_ayas[Utils.getSuraIdx(Questionnaire.qo.startIdx)];
-    return Q.ayaNumberOf(Questionnaire.qo.startIdx)
+    return IDB.ayaNumberOf(Questionnaire.qo.startIdx) //TODO: Remove dependency on IDB
       .then(function (res) {
         $scope.answer_aya = res;
         $scope.answer_pageURL = Utils.getPageURLFromSuraAyah(sura, res);

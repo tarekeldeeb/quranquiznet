@@ -4,7 +4,7 @@
  * License: see LICENSE.txt
  ****/
 angular.module('quranquiznet.questionnaire', [])
-  .factory('Questionnaire', function (Profile, Q, IDB, Utils, $q, $rootScope) {
+  .factory('Questionnaire', function (Profile, IDB, Utils, $q, $rootScope) {  //Q,
     var self = this;
     var sparsed;
     var QLEN_EXTRA_LIMIT = 2;
@@ -121,7 +121,7 @@ angular.module('quranquiznet.questionnaire', [])
               break;
             case self.qTypeEnum.AYANUMBER.id:
               //Correct Answer:
-              Q.ayaNumberOf(self.qo.startIdx)
+              IDB.ayaNumberOf(self.qo.startIdx)
                 .then(function (aya) {
                   self.qo.op[0][0] = aya;
                   //Incorrect Answers
@@ -152,7 +152,7 @@ angular.module('quranquiznet.questionnaire', [])
       this.qo.qLen = (self.qo.level == 1) ? 3 : 2;
       this.qo.oLen = 1;
       //Correct Answer:
-      this.qo.op[0][0] = Q.ayaNumberOf(this.qo.startIdx);
+      this.qo.op[0][0] = IDB.ayaNumberOf(this.qo.startIdx);
       //Incorrect Answers
       this.fillIncorrectRandomNonZeroIdx(this.qo.op[0][0], 50);
     }
@@ -256,7 +256,7 @@ angular.module('quranquiznet.questionnaire', [])
         // We want to remove redundant correct choices from the given
         // options, this is made by removing subset sim2 from sim1
         // then finding the next unique set of words
-        return Q.uniqueSim1Not2Plus1(last_correct)
+        return IDB.uniqueSim1Not2Plus1(last_correct)
           .then(function (d) {
             diffList = d;
             uniq_cnt = diffList.length;
@@ -355,7 +355,7 @@ angular.module('quranquiznet.questionnaire', [])
           self.qo.validCount = 1; //TODO: Check it's unique!
           self.qo.qLen = 3;
           self.qo.oLen = 2;
-          return Q.isAyaStart(start_shadow).then(function (isAyaStart) {
+          return IDB.isAyaStart(start_shadow).then(function (isAyaStart) {
             srch_cond = !isAyaStart;
           });
         } else {
