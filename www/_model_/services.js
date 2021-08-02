@@ -150,8 +150,6 @@ angular.module('quranquiznet.services', [])
     self.sim2idx = async function (idx) {
       return []; //Function is very slow, not needed.
       var txt =  await self.txt(idx,2,"noSym");
-      Utils.log("Query for: " + txt);
-
       var results1 = await jsstoreCon.select({
         from: "q",
         where: {
@@ -187,6 +185,44 @@ angular.module('quranquiznet.services', [])
       results = results.filter(value => word[0] != value.txt);
       results = [1, 8, 13, 19].map(function (x) { return results[x] })
       return { i: idx, set: results.map(x => x._id) };
+    }
+
+    self.uniqueSim1Not2Plus1 = async function (idx) {
+      var results = await jsstoreCon.select({
+        from: "q",
+        where: {
+            _id: idx
+        }
+      });
+      var query_result = JSON.parse(results[0].sim1not2p1);
+      if (query_result == null)  query_result = [];
+      return query_result;
+    }
+
+    self.ayaNumberOf = async function (idx) {
+      var results = await jsstoreCon.select({
+          from: "q",
+          limit: 1,
+          where: {
+              _id: { '>': idx -1 },
+              aya: { '>': 0 }
+            },
+      });
+      var query_result = results[0].aya;
+      return query_result;
+    }
+
+    self.isAyaStart = async function (idx) {
+      var results = await jsstoreCon.select({
+          from: "q",
+          limit: 1,
+          where: {
+              _id: { '>=': idx-1 },
+              aya: { '>': 0 }
+            },
+      });
+      var query_result = results[0]._id == idx-1;
+      return query_result;
     }
 
     return self;

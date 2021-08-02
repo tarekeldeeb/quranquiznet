@@ -88,7 +88,7 @@ def db_maker():
             sim3idx.append(j)
         else:  # Sim1 but not Sim2, add next unique words
           if j < tot_words - 1 and text_no_dialect[j + 1] not in sim1not2p1txt:
-            sim1not2p1.append(j + 1)
+            sim1not2p1.append(j + 2)  # Accounting for 0-index
             sim1not2p1txt.append(text_no_dialect[j + 1])
     sim2idx = "null" if len(sim2idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim2idx, 10))) + "]\""
     sim3idx = "null" if len(sim3idx) == 0 else "\"[" + ",".join(map(str, limited_sample(sim3idx, 10))) + "]\""
