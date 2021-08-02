@@ -1,5 +1,5 @@
 /****
- * Copyright (C) 2011-2016 Quran Quiz Net 
+ * Copyright (C) 2011-2016 Quran Quiz Net
  * Tarek Eldeeb <tarekeldeeb@gmail.com>
  * License: see LICENSE.txt
  ****/
@@ -28,7 +28,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
       },
       _formatInsertQueries: function (json) {
         var insertQueries = [];
-        var insertTpl = "({0},'{1}','{2}',{3},{4},{5},{6})";
+        var insertTpl = "({0},'{1}','{2}',{3},{4},{5},'{6}',{7})";
         for (var i = 0; i < json.rows.length; i++) {
           if (i % 500 === 0) {
             if (insertQueries.length > 0) insertQueries[(insertQueries.length - 1)] = insertQueries[(insertQueries.length - 1)].substr(0, insertQueries[(insertQueries.length - 1)].length - 2) + ";";
@@ -47,13 +47,13 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
         //			if(r.rows.item(0)){ // Table exists, check size:: FIXME! Cannot select field: "COUNT ( * )" bad syntax
         //				$cordovaSQLite.execute(db, "SELECT Count(*) FROM q", [])
         //				.then(function(c) {
-        //					if(c.rows.item(0) != Utils.QuranWords){ 
+        //					if(c.rows.item(0) != Utils.QuranWords){
         //						console.log("DB not complete, drop it and import!");
         //						$cordovaSQLite.execute(db, "DROP TABLE IF EXISTS q", [])
         //							.then(function(x) {
         //								this.ImportDatabase(db, onSuccess, onError);
         //							});
-        //					}	
+        //					}
         //				});
         //			} else { // Table does not exist, first run!
         this.ImportDatabase(db, onSuccess, onError);
@@ -81,7 +81,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
         }.bind(this));
       }
     };
-	
+
 	// Register worker for web App
 	if ('serviceWorker' in navigator) {
 	  navigator.serviceWorker.register('worker.js');
@@ -93,7 +93,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
   $rootScope.source_version = "??";
   $rootScope.appName = "اختبار القرآن";
   $rootScope.Loc = {};
-    
+
   $ionicPlatform.ready(function () {
       // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
       // for form inputs)
@@ -130,7 +130,7 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
             });
 			*/
 
-      } 
+      }
       else { // Progressive Web App
         if (window.openDatabase) { // Browser  does support WebSQL!
           db = window.openDatabase("myapp.db", "1.0", "My app", 5000000);
@@ -184,13 +184,13 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
                 console.log('Token already sent to server so won\'t send it again ' +
                     'unless it changes');
               }
-          
+
             }
-          
+
             function isTokenSentToServer() {
               return window.localStorage.getItem('sentToServer') === '1';
             }
-          
+
             function setTokenSentToServer(sent) {
               window.localStorage.setItem('sentToServer', sent ? '1' : '0');
             }
@@ -228,14 +228,14 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
               console.log("Quran quiz database imported successfully");
               allRowPromises = [];
               $rootScope.loadingDone = true;
-              $rootScope.$apply(); 
+              $rootScope.$apply();
             }, function (error) {
               if(error.message.includes('already exists')){
                 console.log("Quran quiz database already exists");
                 allRowPromises = [];
                 $rootScope.loadingDone = true;
                 return;
-              } 
+              }
               console.error("Error happened while importing quran quiz database ", error);
             });
           }
