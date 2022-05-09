@@ -1,5 +1,5 @@
 // use a cacheName for cache versioning
-var cacheName = 'v205:app';
+var cacheName = 'v206:app';
 const cacheNameAssets = 'v1:assets';
 
 // during the install phase you usually want to cache static APP assets
