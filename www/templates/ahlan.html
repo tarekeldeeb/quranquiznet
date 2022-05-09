@@ -2,12 +2,12 @@
     <ion-content padding="true">
 	  <div class="center">
 		<img src="img/launcher_144.png" style="margin-top: 30%; width:77px;">
-		<div ng-if="loadingDone!=true" ng-init="loadingDone = false">
+		<div ng-if="loadingDBDone!=true || loadingProfileDone!=true" ng-init="loadingDBDone=false; loadingProfileDone=false">
 			<h3>شبكة اختبار القران</h3>
 			<br><br>
 		  <ion-spinner></ion-spinner>
 		</div>
-		<div ng-if="loadingDone==true">
+		<div ng-if="loadingDBDone && loadingProfileDone">
 			<!-- Display login form in case if no social login-->
 			<div ng-if="!user">
 				<br />
@@ -16,7 +16,7 @@
 					<div style="padding:10px">
 						السلام عليكم، تسجيل دخولك لشبكة اختبار القران يمكنك من التفاعل مع اهل القران والاشتراك بالاختبارات اليومية.
 						كما انه يحفظ ملفك على الشبكة مما يمكنك من استخدام عدة اجهزة الكترونية والوصول لنفس المحتوى.					<br />
-						تسجيلك يُعد موافقة منك على 
+						تسجيلك يُعد موافقة منك على
 						<a href="http://quranquiz.net/privacy-policy/">سياسة الخصوصية</a>
 						، التي تضمن عدم التتبع او المراقبة.
 						<br /><br />

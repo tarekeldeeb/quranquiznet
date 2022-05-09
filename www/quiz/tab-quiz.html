@@ -18,7 +18,7 @@
                     </div>
                     <div class="col-33 col-center" style="padding-right:10px;">
                       <button class="button button-small button-clear button-full button-positive" style="text-align:right;" id="instruction-{{ $index }}">{{instructions}}</button>
-                      <div style="outline-style: dashed; outline-color: lightgrey; outline-width: thin;">
+                      <div style="outline-style: dashed; outline-color: lightgrey; outline-width: thin;" data-html2canvas-ignore="true">
                         <div ng-if="!dailyQuizRunning">
                           <!-- Normally: Display the score -->
                           <button class="button button-large button-clear button-full button-balanced score">{{score}}</button>

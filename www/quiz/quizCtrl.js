@@ -48,7 +48,7 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     $scope.showingImageModal = false;
     $scope.imageModal.hide();
   };
-  $scope.openShareModal = function () { //FIXME: Pass the object here (last always appears!)
+  $scope.openShareModal = function () {
     $scope.showingShareModal = true;
      $scope.shareModal = $ionicPopup.show({
         templateUrl: 'share-modal.html',
@@ -148,12 +148,17 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
       })
       .then(function () {
         var card = {
+		  index: $scope.questionCards.length,
           qo: Utils.deepCopy(Questionnaire.qo),
           answer: $scope.answer,
           answer_sura: $scope.answer_sura,
           answer_sura_info: $scope.answer_sura_info,
           answer_aya: $scope.answer_aya,
-          answer_pageURL: $scope.answer_pageURL
+          answer_pageURL: $scope.answer_pageURL,
+		  social: {
+			  url: "https://quranquiz.net/#/ahlan/"+Questionnaire.qo.startIdx,
+			  text: "😀نافسني في اختبار القرآن",
+		  }
         };
         $scope.questionCards.push(card);
         $scope.$broadcast('scroll.infiniteScrollComplete');
@@ -163,26 +168,16 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
         }, 200);
 
         setTimeout(function () {
-           //v0.x syntax
-           /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)+' div div div') ,
-               {onrendered: function (canvas) {
-                  var a = document.createElement('a');
-                  // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
-                  a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
-                  a.download = 'somefilename.jpg';
-                  //a.click();
-                }
-              });*/
-
             // v1.x Syntax
-            /*html2canvas(document.querySelector('#flip-container-'+(cardCounter-1))).then(function(canvas) {
+            html2canvas(document.querySelector('#flip-container-'+(cardCounter-1)), { height: 380}).then(function(canvas) {
             var a = document.createElement('a');
             // toDataURL defaults to png, so we need to request a jpeg, then convert for file download.
             a.href = canvas.toDataURL("image/jpeg").replace("image/jpeg", "image/octet-stream");
             a.download = 'card-'+(cardCounter-1)+'.jpg';
-            a.click(); //Download a new image file..
-            });*/
-        }, 1000)
+            //a.click(); //Download a new image file..
+			document.querySelector('#backcard-'+(cardCounter-1)).appendChild(a);
+            });
+        }, 250)
       });
     if (!$scope.dailyQuizRunning &&
        (cardCounter++ - Utils.DAILYQUIZ_CHECKAFTER) % Utils.DAILYQUIZ_CHECKEVERY == 0 ) {
@@ -407,9 +402,10 @@ controllers.controller('quizCtrl', function ($scope, $rootScope, $state, $stateP
     }
   }
   $scope.shareCard = function(card){
-    //Utils.log("Sharing: "+JSON.stringify(card));
-    $scope.socialshare_text = "😀نافسني في اختبار القرآن";
-    $scope.socialshare_url  = "https://quranquiz.net/#/ahlan/"+card.qo.startIdx;
+    Utils.log("Sharing: "+JSON.stringify(card));
+    $scope.socialshare_text  = card.social.text;
+    $scope.socialshare_url   = card.social.url;
+    $scope.socialshare_media = document.getElementById('backcard-' + card.index).lastChild.href;
     $scope.openShareModal();
   }
   $scope.dailyQuizSubmittedReport = function () {
