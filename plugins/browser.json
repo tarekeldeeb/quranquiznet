@@ -7,12 +7,6 @@
     "files": {}
   },
   "installed_plugins": {
-    "me.rahul.plugins.sqlDB": {
-      "PACKAGE_NAME": "com.ionicframework.qqnet620644"
-    },
-    "cordova-sqlite-storage": {
-      "PACKAGE_NAME": "io.ionic.starter"
-    },
     "cordova-plugin-whitelist": {
       "PACKAGE_NAME": "io.ionic.starter"
     },

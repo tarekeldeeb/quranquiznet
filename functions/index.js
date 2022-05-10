@@ -17,19 +17,19 @@ const PromisePool = promisePool.PromisePool;
 // Maximum concurrent account deletions.
 const MAX_CONCURRENT = 3;
 
-exports.hourly_job =
-  functions.pubsub.topic('hourly-tick').onPublish((event) => {
-    console.log(": HourlyJobs :");
+exports.hourly_sched =
+  functions.pubsub.schedule('every 60 minutes').onRun((event) => {
+    console.log(": Empty Hourly Job :");
 	return 0;
-  });
-exports.daily_job =
-  functions.pubsub.topic('daily-tick').onPublish((event) => {
+  }); 
+exports.daily_sched =
+  functions.pubsub.schedule('every 24 hours').onRun((event) => {
     console.log(":: DailyJobs ::");
 	dailyQuiz();
 	return 0;
   });
-exports.weekly_job =
-  functions.pubsub.topic('weekly-tick').onPublish((event) => {
+exports.weekly_sched =
+  functions.pubsub.schedule('every 168 hours').onRun((event) => {
     console.log(":::: WeeklyJobs ::::");
 	removeAnonymous();
 	return 0;
