@@ -204,7 +204,17 @@ angular.module('quranquiznet', ['ionic', 'ui.router', 'quranquiznet.controllers'
           }
         }
       })
-
+	  
+      .state('q.one', {
+        url: '/one',
+        views: {
+          'menuContent': {
+            templateUrl: 'one/tab-one.html',
+            controller: 'oneCtrl'
+          }
+        }
+      })
+	  
       .state('q.settings', {
         url: '/settings',
         views: {

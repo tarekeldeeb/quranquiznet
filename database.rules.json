@@ -1,5 +1,6 @@
 {
   "rules": {
+	".read": "auth != null",
     "users": {
       "$user_id": {
         ".read":  "$user_id === auth.uid",
@@ -22,6 +23,16 @@
 	  "reports": {
 	    ".read":  "auth != null"
 	  }
+    },
+	"one-on-one": {
+	  "waiting": {
+		".read": "auth != null",
+		".write": "auth != null"
+	  },
+	  "running": {
+		".read":  "auth != null",
+		".write": "auth != null"
+      }
     }
   }
 }
