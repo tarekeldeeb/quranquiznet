@@ -1,5 +1,5 @@
 // use a cacheName for cache versioning
-var cacheName = 'v206:app';
+var cacheName = 'v207:app';
 const cacheNameAssets = 'v1:assets';
 
 // during the install phase you usually want to cache static APP assets
@@ -30,6 +30,8 @@ self.addEventListener('install', function(event) {
           '/profile/firebasecontrol.js',
           '/quiz/tab-quiz.html',
           '/quiz/quizCtrl.js',
+		  '/one/tab-one.html',
+          '/one/oneCtrl.js',
           '/settings/tab-settings.html',
           '/settings/settingsCtrl.js',
           '/study/tab-study.html',
