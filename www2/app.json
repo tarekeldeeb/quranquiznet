@@ -1,34 +1,17 @@
 {
   "expo": {
-    "name": "www2",
-    "slug": "www2",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "newArchEnabled": true,
-    "splash": {
-      "image": "./assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "predictiveBackGestureEnabled": false,
-      "package": "com.anonymous.www2"
-    },
-    "web": {
-      "favicon": "./assets/favicon.png"
-    },
-    "plugins": [
-      "expo-sqlite"
-    ]
+    "name": "Quran Quiz",
+    "slug": "qq-net-mobile",
+    "version": "0.1.0",
+    "sdkVersion": "48.0.0",
+    "platforms": ["ios", "android", "web"],
+    "extra": {
+      "FIREBASE_API_KEY": "",
+      "FIREBASE_AUTH_DOMAIN": "",
+      "FIREBASE_PROJECT_ID": "",
+      "FIREBASE_STORAGE_BUCKET": "",
+      "FIREBASE_MESSAGING_SENDER_ID": "",
+      "FIREBASE_APP_ID": ""
+    }
   }
 }
