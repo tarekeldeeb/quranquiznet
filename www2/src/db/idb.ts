@@ -1,152 +1,136 @@
-import { Platform } from 'react-native';
-import {
-  getDb,
-  queryRowsByIds,
-  queryRowsByRange,
-  queryFieldById,
-  findFirstAyaAfter,
-  findFirstAyaStart,
-} from './dbAdapter';
+// IndexedDB abstraction — mirrors www/_model_/services.js IDB factory
+// All methods use expo-sqlite (works on iOS, Android, and web via WASM).
 
-function mapResultRow(row: any, insertAyaMark: boolean) {
-  let t = row.txtsym || '';
-  if (insertAyaMark && row.aya != null) {
-    t = t + '\uFD3F' + row.aya + '\uFD3E';
-  }
-  return t;
+import { getDb } from './initDb';
+import { QURAN_WORDS, modQWords, formattedAyaMark } from '../models/constants';
+
+interface QRow {
+  _id: number;
+  txt: string;
+  txtsym: string;
+  sim1: number;
+  sim2: number;
+  sim3: number;
+  sim1not2p1: string | null;
+  aya: number | null;
 }
 
-export async function txt(start: number, len = 1, params = ''): Promise<string[]> {
-  const insertAyaMark = params.indexOf('ayaMark') > -1;
-  const limit = len;
-  const end = start + limit - 1;
+export async function txt(
+  start: number,
+  len: number,
+  params: string,
+): Promise<string[]> {
+  const db = await getDb();
+  const limit = len || 1;
+  const insertAyaMark = params.includes('ayaMark');
+  const noSym = params.includes('noSym');
 
-  if (Platform.OS === 'web') {
-    const rows = await queryRowsByRange(start, end);
-    const out = rows.map(row => mapResultRow(row, insertAyaMark));
-    if (out.length < limit) {
-      const remaining = limit - out.length;
-      const wrapRows = await queryRowsByRange(1, remaining);
-      out.push(...wrapRows.map(row => mapResultRow(row, insertAyaMark)));
-    }
-    return out;
+  let results: QRow[];
+  if (start + limit > QURAN_WORDS) {
+    // wrap-around: two ranges
+    const part1 = await db.getAllAsync<QRow>(
+      'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
+      [start, QURAN_WORDS - start + 1],
+    );
+    const wrapEnd = modQWords(start + limit);
+    const part2 = await db.getAllAsync<QRow>(
+      'SELECT * FROM q WHERE _id < ? ORDER BY _id',
+      [wrapEnd],
+    );
+    results = [...part1, ...part2];
+  } else {
+    results = await db.getAllAsync<QRow>(
+      'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
+      [start, limit],
+    );
   }
 
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    db.transaction((tx: any) => {
-      const q = `SELECT txtsym, aya FROM q WHERE _id >= ? AND _id <= ? ORDER BY _id ASC`;
-      tx.executeSql(q, [start, end], (_: any, result: any) => {
-        const out: string[] = [];
-        for (let i = 0; i < result.rows.length; i++) {
-          const row = result.rows.item(i);
-          out.push(mapResultRow(row, insertAyaMark));
-        }
-        if (out.length < limit) {
-          const remaining = limit - out.length;
-          tx.executeSql(`SELECT txtsym, aya FROM q WHERE _id <= ? ORDER BY _id ASC`, [remaining], (_: any, r2: any) => {
-            for (let j = 0; j < r2.rows.length; j++) {
-              out.push(mapResultRow(r2.rows.item(j), insertAyaMark));
-            }
-            resolve(out);
-          });
-        } else {
-          resolve(out);
-        }
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
+  return results.map((x) => {
+    if (noSym) return x.txt;
+    if (insertAyaMark && x.aya != null) {
+      return x.txtsym + formattedAyaMark(x.aya);
+    }
+    return x.txtsym;
   });
 }
 
 export async function txts(ids: number[]): Promise<string[]> {
-  if (!ids || ids.length === 0) return [];
-
-  if (Platform.OS === 'web') {
-    const rows = await queryRowsByIds(ids);
-    return rows.map(row => (row ? row.txtsym : ''));
-  }
-
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    const placeholders = ids.map(() => '?').join(',');
-    const q = `SELECT txtsym, _id FROM q WHERE _id IN (${placeholders}) ORDER BY CASE ${ids
-      .map((id, idx) => `WHEN _id=${id} THEN ${idx}`)
-      .join(' ')} END`;
-    db.transaction((tx: any) => {
-      tx.executeSql(q, ids, (_: any, result: any) => {
-        const out: string[] = [];
-        for (let i = 0; i < result.rows.length; i++) out.push(result.rows.item(i).txtsym);
-        resolve(out);
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
-  });
+  if (ids.length === 0) return [];
+  const db = await getDb();
+  const placeholders = ids.map(() => '?').join(',');
+  const rows = await db.getAllAsync<QRow>(
+    `SELECT * FROM q WHERE _id IN (${placeholders})`,
+    ids,
+  );
+  // preserve order including duplicates
+  const map = new Map(rows.map((r) => [r._id, r.txtsym]));
+  return ids.map((id) => map.get(id) ?? '');
 }
 
 export async function sim2cnt(idx: number): Promise<number> {
-  if (Platform.OS === 'web') {
-    const value = await queryFieldById(idx, 'sim2');
-    return value ?? 0;
-  }
-
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    db.transaction((tx: any) => {
-      tx.executeSql(`SELECT sim2 FROM q WHERE _id = ?`, [idx], (_: any, result: any) => {
-        if (result.rows.length === 0) return resolve(0);
-        resolve(result.rows.item(0).sim2 || 0);
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
-  });
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ sim2: number }>(
+    'SELECT sim2 FROM q WHERE _id = ?',
+    [idx],
+  );
+  return row?.sim2 ?? 0;
 }
 
 export async function sim3cnt(idx: number): Promise<number> {
-  if (Platform.OS === 'web') {
-    const value = await queryFieldById(idx, 'sim3');
-    return value ?? 0;
-  }
-
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    db.transaction((tx: any) => {
-      tx.executeSql(`SELECT sim3 FROM q WHERE _id = ?`, [idx], (_: any, result: any) => {
-        if (result.rows.length === 0) return resolve(0);
-        resolve(result.rows.item(0).sim3 || 0);
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
-  });
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ sim3: number }>(
+    'SELECT sim3 FROM q WHERE _id = ?',
+    [idx],
+  );
+  return row?.sim3 ?? 0;
 }
 
-export async function ayaNumberOf(idx: number): Promise<number|null> {
-  if (Platform.OS === 'web') {
-    const row = await findFirstAyaAfter(idx);
-    return row ? row.aya : null;
+export async function uniqueSim1Not2Plus1(idx: number): Promise<number[]> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ sim1not2p1: string | null }>(
+    'SELECT sim1not2p1 FROM q WHERE _id = ?',
+    [idx],
+  );
+  if (!row?.sim1not2p1) return [];
+  try {
+    return JSON.parse(row.sim1not2p1) as number[];
+  } catch {
+    return [];
   }
+}
 
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    db.transaction((tx: any) => {
-      tx.executeSql(`SELECT aya FROM q WHERE _id >= ? AND aya IS NOT NULL LIMIT 1`, [idx], (_: any, result: any) => {
-        if (result.rows.length === 0) return resolve(null);
-        resolve(result.rows.item(0).aya);
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
-  });
+export async function randomUnique4NotMatching(
+  idx: number,
+): Promise<{ i: number; set: number[] }> {
+  const db = await getDb();
+  const randomStart = Math.ceil(Math.random() * (QURAN_WORDS - 201)) + 1;
+  const wordRow = await db.getFirstAsync<{ txt: string }>(
+    'SELECT txt FROM q WHERE _id = ?',
+    [idx],
+  );
+  const wordTxt = wordRow?.txt ?? '';
+  const rows = await db.getAllAsync<QRow>(
+    'SELECT * FROM q WHERE _id >= ? AND txt != ? ORDER BY _id LIMIT 50',
+    [randomStart, wordTxt],
+  );
+  const sampled = [1, 8, 13, 19].map((x) => rows[x]?._id ?? x);
+  return { i: idx, set: sampled };
+}
+
+export async function ayaNumberOf(idx: number): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ aya: number }>(
+    'SELECT aya FROM q WHERE _id >= ? AND aya IS NOT NULL ORDER BY _id LIMIT 1',
+    [idx],
+  );
+  return row?.aya ?? 0;
 }
 
 export async function isAyaStart(idx: number): Promise<boolean> {
-  if (Platform.OS === 'web') {
-    return findFirstAyaStart(idx);
-  }
-
-  const db = getDb();
-  return new Promise((resolve, reject) => {
-    db.transaction((tx: any) => {
-      tx.executeSql(`SELECT _id FROM q WHERE _id >= ? AND aya IS NOT NULL LIMIT 1`, [idx], (_: any, result: any) => {
-        if (result.rows.length === 0) return resolve(false);
-        resolve(result.rows.item(0)._id === idx);
-      }, (_: any, err: any) => { reject(err); return false as any; });
-    });
-  });
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ _id: number }>(
+    'SELECT _id FROM q WHERE _id >= ? AND aya IS NOT NULL ORDER BY _id LIMIT 1',
+    [idx - 1],
+  );
+  return row?._id === idx - 1;
 }
-
-export default { txt, txts, sim2cnt, sim3cnt, ayaNumberOf, isAyaStart };

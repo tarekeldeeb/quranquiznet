@@ -1,17 +1,47 @@
 {
   "expo": {
-    "name": "Quran Quiz",
-    "slug": "qq-net-mobile",
-    "version": "0.1.0",
-    "sdkVersion": "48.0.0",
-    "platforms": ["ios", "android", "web"],
-    "extra": {
-      "FIREBASE_API_KEY": "",
-      "FIREBASE_AUTH_DOMAIN": "",
-      "FIREBASE_PROJECT_ID": "",
-      "FIREBASE_STORAGE_BUCKET": "",
-      "FIREBASE_MESSAGING_SENDER_ID": "",
-      "FIREBASE_APP_ID": ""
+    "name": "اختبار القرآن",
+    "slug": "quranquiznet",
+    "version": "2.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "quranquiz",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/images/icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#1a5276"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "net.quranquiz.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/icon.png",
+        "backgroundColor": "#1a5276"
+      },
+      "package": "net.quranquiz.app"
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Amiri-Regular.woff2",
+            "./assets/fonts/AmiriQuranColored.woff2"
+          ]
+        }
+      ]
+    ],
+    "experiments": {
+      "typedRoutes": true
     }
   }
 }
