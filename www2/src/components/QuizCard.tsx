@@ -1,46 +1,51 @@
-// Flip-card component for a single quiz question.
-// Front: question prompt + 5 options + score/timer + skip.
-// Back:  answer text + sura info + action buttons.
-
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Dimensions,
-  ScrollView, Modal, Image, Share, Platform, Alert,
+  ScrollView, Modal, Image, Share, Platform,
 } from 'react-native';
 import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, interpolate, Extrapolation,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
 import { QuestionObject } from '../models/questionnaire';
-import { removeAyaNum, SURA_NAME, SURA_AYAS, getSuraIdx, getSuraTanzil, getPageURLFromSuraAyah } from '../models/constants';
+import {
+  removeAyaNum, SURA_NAME, SURA_AYAS, getSuraIdx,
+  getSuraTanzil, getPageURLFromSuraAyah,
+} from '../models/constants';
 
 const { width: SW } = Dimensions.get('window');
-const CARD_W = SW - 24;
+// Cap card width so it's not absurdly wide on desktop/tablet
+const CARD_W = Math.min(SW - 32, 480);
+
+// Font families: Amiri works on web; native falls back to system Arabic
+const QURAN_FONT = Platform.OS === 'web' ? 'AmiriQuranColored' : undefined;
+const AMIRI_FONT  = Platform.OS === 'web' ? 'Amiri-Regular'     : undefined;
 
 export interface CardData {
   index: number;
   qo: QuestionObject;
   answerAya: number;
   socialURL: string;
+  wasCorrect?: boolean;   // set when card is answered; undefined = still active
 }
 
 interface Props {
   card: CardData;
-  isActive: boolean;           // last card = editable question
+  isActive: boolean;
   score: number;
   scoreUp: number;
   scoreDown: number;
   isDailyMode: boolean;
   timerValue: number;
   timerMax: number;
-  onSelectOption: (optionIndex: number) => void;
+  onSelectOption: (i: number) => void;
   onSkip: () => void;
   onScrollDown: () => void;
   onReport: (card: CardData) => void;
-  round: number;               // current round (for progress dots)
+  round: number;
   totalRounds: number;
-  shuffledOptions: string[];   // 5 display-text options already shuffled
-  flipTrigger: number;         // increment to trigger flip
+  shuffledOptions: string[];
+  flipTrigger: number;
   isCorrect: boolean;
 }
 
@@ -50,138 +55,139 @@ export default function QuizCard({
   shuffledOptions, flipTrigger, isCorrect,
 }: Props) {
   const flip = useSharedValue(0);
-  const sura = getSuraIdx(card.qo.startIdx);
-  const suraName = SURA_NAME[sura];
-  const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · اياتها ${SURA_AYAS[sura]}`;
   const [imgVisible, setImgVisible] = React.useState(false);
-  const pageURL = getPageURLFromSuraAyah(sura, card.answerAya);
+
+  const sura     = getSuraIdx(card.qo.startIdx);
+  const suraName = SURA_NAME[sura];
+  const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · ${SURA_AYAS[sura]} آية`;
+  const pageURL  = getPageURLFromSuraAyah(sura, card.answerAya);
 
   useEffect(() => {
-    if (flipTrigger > 0) {
-      flip.value = withTiming(1, { duration: 450 });
-    }
+    if (flipTrigger > 0) flip.value = withTiming(1, { duration: 420 });
   }, [flipTrigger]);
 
-  const frontAnim = useAnimatedStyle(() => ({
+  const frontStyle = useAnimatedStyle(() => ({
     backfaceVisibility: 'hidden',
     transform: [{ rotateY: `${interpolate(flip.value, [0, 1], [0, 180], Extrapolation.CLAMP)}deg` }],
   }));
-  const backAnim = useAnimatedStyle(() => ({
+  const backStyle = useAnimatedStyle(() => ({
     backfaceVisibility: 'hidden',
     position: 'absolute', top: 0, left: 0, width: CARD_W,
     transform: [{ rotateY: `${interpolate(flip.value, [0, 1], [180, 360], Extrapolation.CLAMP)}deg` }],
   }));
 
-  const timerPct = timerMax > 0 ? timerValue / timerMax : 0;
+  const timerPct    = timerMax > 0 ? timerValue / timerMax : 0;
+  const borderColor = isCorrect ? '#27ae60' : '#e74c3c';
 
   async function handleShare() {
     try {
-      await Share.share({
-        message: `نافسني في اختبار القرآن 😀\n${card.socialURL}`,
-        url: card.socialURL,
-      });
+      await Share.share({ message: `نافسني في اختبار القرآن\n${card.socialURL}`, url: card.socialURL });
     } catch { /* ignore */ }
   }
 
   return (
     <View style={s.wrapper}>
-      {/* FRONT */}
-      <Animated.View style={[s.card, frontAnim]}>
-        {/* Question text */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.questionBox}>
-          <Text style={s.questionText} numberOfLines={1}>
-            {removeAyaNum(card.qo.txt.question)}
-          </Text>
-        </ScrollView>
+      {/* ── FRONT ─────────────────────────────────────────────────────────── */}
+      <Animated.View style={[s.card, frontStyle]}>
 
-        {/* Options + meta column */}
+        {/* Instruction + progress dots */}
+        <View style={s.topBar}>
+          <Text style={s.instruction}>{card.qo.qType.txt}</Text>
+          <View style={s.dotsRow}>
+            {Array.from({ length: totalRounds }, (_, i) => (
+              <View key={i} style={[s.dot, i < round ? s.dotDone : i === round ? s.dotCurrent : s.dotPending]} />
+            ))}
+          </View>
+        </View>
+
+        {/* Question text */}
+        <View style={s.questionBox}>
+          <ScrollView contentContainerStyle={s.questionScroll}>
+            <Text style={s.questionText}>{removeAyaNum(card.qo.txt.question)}</Text>
+          </ScrollView>
+        </View>
+
+        {/* Body: options + meta */}
         <View style={s.body}>
-          {/* Options (67%) */}
+          {/* Options */}
           <View style={s.optionsCol}>
             {[0, 1, 2, 3, 4].map((i) => (
               <TouchableOpacity
                 key={i}
-                style={s.optionBtn}
+                style={[s.optionBtn, !isActive && s.optionBtnInactive]}
                 onPress={() => isActive && onSelectOption(i)}
-                activeOpacity={isActive ? 0.7 : 1}
+                activeOpacity={isActive ? 0.65 : 1}
               >
-                <Text style={s.optionText}>{shuffledOptions[i] ?? ''}</Text>
+                <Text style={[s.optionText, !isActive && s.optionTextInactive]}>
+                  {shuffledOptions[i] ?? ''}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Meta column (33%) */}
+          {/* Meta */}
           <View style={s.metaCol}>
-            <Text style={s.instructionText}>{card.qo.qType.txt}</Text>
-
             {isDailyMode ? (
               <View style={s.timerBox}>
-                <Text style={s.timerText}>{timerValue}ث</Text>
+                <Text style={s.timerText}>{timerValue}</Text>
+                <Text style={s.timerUnit}>ث</Text>
                 <View style={s.timerTrack}>
-                  <View style={[s.timerFill, { height: `${timerPct * 100}%` }]} />
+                  <View style={[s.timerFill, { height: `${timerPct * 100}%` as unknown as number }]} />
                 </View>
               </View>
             ) : (
               <View style={s.scoreBox}>
                 <Text style={s.scoreMain}>{score}</Text>
-                <View style={s.scoreRow}>
-                  <Text style={s.scoreUp}>+{scoreUp} ↑</Text>
-                  <Text style={s.scoreDown}>-{scoreDown} ↓</Text>
-                </View>
+                <Text style={s.scoreUp}>+{scoreUp}</Text>
+                <Text style={s.scoreDown}>−{scoreDown}</Text>
               </View>
             )}
 
-            <TouchableOpacity style={s.skipBtn} onPress={() => isActive && onSkip()}>
-              <Ionicons name="sad-outline" size={16} color="#c0392b" />
-              <Text style={s.skipText}> لا أعلم</Text>
+            <TouchableOpacity style={s.skipBtn} onPress={() => isActive && onSkip()} activeOpacity={isActive ? 0.7 : 1}>
+              <Ionicons name="remove-circle-outline" size={18} color={isActive ? '#c0392b' : '#ccc'} />
+              <Text style={[s.skipText, !isActive && { color: '#ccc' }]}>لا أعلم</Text>
             </TouchableOpacity>
           </View>
         </View>
-
-        {/* Round progress dots */}
-        <View style={s.progressRow}>
-          {Array.from({ length: totalRounds }, (_, i) => (
-            <View key={i} style={[s.dot, i < round ? s.dotDone : s.dotPending]} />
-          ))}
-        </View>
       </Animated.View>
 
-      {/* BACK */}
-      <Animated.View style={[s.card, backAnim, { borderColor: isCorrect ? '#27ae60' : '#c0392b', borderWidth: 2 }]}>
+      {/* ── BACK ──────────────────────────────────────────────────────────── */}
+      <Animated.View style={[s.card, backStyle, { borderColor, borderWidth: 2 }]}>
+
         {/* Sura / aya header */}
-        <View style={s.backHeader}>
-          <Text style={s.backSura} numberOfLines={1}>
-            الآية {card.answerAya} ﴾ سورة {suraName} ﴿
-          </Text>
-          <Text style={s.backSuraInfo}>{suraInfo}</Text>
+        <View style={[s.backHeader, { borderBottomColor: borderColor, borderBottomWidth: 2 }]}>
+          <View style={s.backHeaderLeft}>
+            <Text style={s.backSuraInfo}>{suraInfo}</Text>
+          </View>
+          <Text style={s.backSuraName}>سورة {suraName} · آية {card.answerAya}</Text>
         </View>
 
         {/* Answer text */}
         <ScrollView style={s.answerScroll} contentContainerStyle={s.answerContent}>
-          <Text style={s.answerText}>{card.qo.txt.answer} ...</Text>
+          <Text style={s.answerText}>{card.qo.txt.answer} …</Text>
         </ScrollView>
 
-        {/* Action buttons */}
+        {/* Action row */}
         <View style={s.actionRow}>
           <TouchableOpacity style={[s.actionBtn, s.btnOk]} onPress={onScrollDown}>
-            <Ionicons name="chevron-down" size={18} color="#fff" />
-            <Text style={s.actionBtnText}> حسناً</Text>
+            <Ionicons name="chevron-down" size={16} color="#fff" />
+            <Text style={s.actionBtnTxt}> حسناً</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.actionBtn, s.btnView]} onPress={() => setImgVisible(true)}>
-            <Ionicons name="book-outline" size={18} color="#555" />
-            <Text style={[s.actionBtnText, { color: '#555' }]}> شاهد</Text>
+          <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={() => setImgVisible(true)}>
+            <Ionicons name="book-outline" size={16} color="#1a5276" />
+            <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> شاهد</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.actionBtn, s.btnShare]} onPress={handleShare}>
-            <Ionicons name="people-outline" size={18} color="#555" />
-            <Text style={[s.actionBtnText, { color: '#555' }]}> نافس</Text>
+          <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={handleShare}>
+            <Ionicons name="share-social-outline" size={16} color="#1a5276" />
+            <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> نافس</Text>
           </TouchableOpacity>
           <TouchableOpacity style={s.reportBtn} onPress={() => onReport(card)}>
-            <Ionicons name="flag-outline" size={18} color="#c0392b" />
+            <Ionicons name="flag-outline" size={17} color="#c0392b" />
           </TouchableOpacity>
         </View>
       </Animated.View>
 
-      {/* Quran page image modal */}
+      {/* Quran page modal */}
       <Modal visible={imgVisible} transparent animationType="fade" onRequestClose={() => setImgVisible(false)}>
         <View style={s.modalOverlay}>
           <TouchableOpacity style={StyleSheet.absoluteFill} onPress={() => setImgVisible(false)} />
@@ -193,69 +199,188 @@ export default function QuizCard({
 }
 
 const s = StyleSheet.create({
-  wrapper: { width: CARD_W, marginHorizontal: 12, marginBottom: 16, minHeight: 420 },
+  wrapper: {
+    width: CARD_W,
+    alignSelf: 'center',
+    marginBottom: 8,
+  },
   card: {
-    width: CARD_W, backgroundColor: '#fff', borderRadius: 12,
-    shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 6, elevation: 3,
+    width: CARD_W,
+    backgroundColor: '#fff',
+    borderRadius: 14,
+    // Web shadow via boxShadow would be better, but elevation is cross-platform
+    shadowColor: '#000',
+    shadowOpacity: 0.08,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 8,
+    elevation: 3,
     overflow: 'hidden',
   },
+
+  // ── FRONT ────────────────────────────────────────────────────────────────
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    backgroundColor: '#f0f4f8',
+    borderBottomWidth: 1,
+    borderColor: '#e0e6ed',
+  },
+  instruction: {
+    fontSize: 11,
+    color: '#7f8c8d',
+    fontFamily: AMIRI_FONT,
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+  dotsRow: {
+    flexDirection: 'row',
+    gap: 4,
+    flexWrap: 'wrap',
+    justifyContent: 'flex-end',
+    maxWidth: '55%',
+  },
+  dot: { width: 8, height: 8, borderRadius: 4 },
+  dotDone:    { backgroundColor: '#27ae60' },
+  dotCurrent: { backgroundColor: '#1a5276' },
+  dotPending: { backgroundColor: '#d5dce5' },
+
   questionBox: {
-    backgroundColor: '#f5f5f5', padding: 10, borderBottomWidth: 1, borderColor: '#ddd',
-    maxHeight: 56,
+    backgroundColor: '#fdfaf5',
+    borderBottomWidth: 1,
+    borderColor: '#e8e0d0',
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    minHeight: 54,
   },
+  questionScroll: { flexGrow: 1 },
   questionText: {
-    fontSize: 20, fontFamily: Platform.OS === 'web' ? 'AmiriQuranColored' : undefined,
-    textAlign: 'right', writingDirection: 'rtl', color: '#1a1a1a', lineHeight: 34,
+    fontSize: 22,
+    fontFamily: QURAN_FONT,
+    color: '#1a1a1a',
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    lineHeight: 38,
   },
+
   body: { flexDirection: 'row', padding: 10, gap: 8 },
-  optionsCol: { flex: 3, gap: 6 },
+
+  optionsCol: { flex: 2, gap: 5 },
   optionBtn: {
-    backgroundColor: '#ecf0f1', borderRadius: 6, paddingVertical: 8, paddingHorizontal: 10,
+    backgroundColor: '#eef2f7',
+    borderRadius: 8,
+    paddingVertical: 9,
+    paddingHorizontal: 10,
+    borderWidth: 1,
+    borderColor: '#dde4ed',
+  },
+  optionBtnInactive: {
+    backgroundColor: '#f7f9fb',
+    borderColor: '#eaecef',
   },
   optionText: {
-    fontSize: 16, textAlign: 'right', writingDirection: 'rtl',
-    fontFamily: Platform.OS === 'web' ? 'AmiriQuranColored' : undefined, color: '#2c3e50',
+    fontSize: 17,
+    fontFamily: QURAN_FONT,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    color: '#2c3e50',
+    lineHeight: 28,
   },
-  metaCol: { flex: 1.5, alignItems: 'center', gap: 8 },
-  instructionText: { fontSize: 11, color: '#7f8c8d', textAlign: 'center', flexWrap: 'wrap' },
-  scoreBox: { alignItems: 'center', borderWidth: 1, borderColor: '#bdc3c7', borderRadius: 6, padding: 6, width: '100%' },
-  scoreMain: { fontSize: 22, fontWeight: 'bold', color: '#27ae60' },
-  scoreRow: { flexDirection: 'row', gap: 4, marginTop: 2 },
-  scoreUp: { color: '#27ae60', fontSize: 11 },
-  scoreDown: { color: '#c0392b', fontSize: 11 },
-  timerBox: { alignItems: 'center', gap: 4 },
-  timerText: { fontSize: 18, fontWeight: 'bold', color: '#e74c3c' },
-  timerTrack: { width: 8, height: 60, backgroundColor: '#ecf0f1', borderRadius: 4, overflow: 'hidden', justifyContent: 'flex-end' },
-  timerFill: { backgroundColor: '#e74c3c', borderRadius: 4 },
-  skipBtn: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6 },
-  skipText: { fontSize: 12, color: '#c0392b' },
-  progressRow: {
-    flexDirection: 'row', paddingHorizontal: 10, paddingBottom: 8, gap: 4,
-    justifyContent: 'flex-end', flexWrap: 'wrap',
-  },
-  dot: { width: 10, height: 10, borderRadius: 5 },
-  dotDone: { backgroundColor: '#27ae60' },
-  dotPending: { backgroundColor: '#bdc3c7' },
+  optionTextInactive: { color: '#95a5a6' },
 
-  // Back
-  backHeader: { padding: 10, borderBottomWidth: 1, borderColor: '#eee', flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  backSura: { fontSize: 16, fontWeight: '700', color: '#1a5276', textAlign: 'right', flex: 1 },
-  backSuraInfo: { fontSize: 11, color: '#7f8c8d', textAlign: 'left', marginLeft: 8 },
-  answerScroll: { maxHeight: 280 },
+  metaCol: {
+    width: 68,
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 4,
+  },
+  scoreBox: {
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d5dce5',
+    borderRadius: 8,
+    paddingVertical: 8,
+    paddingHorizontal: 6,
+    width: '100%',
+    gap: 2,
+  },
+  scoreMain: { fontSize: 20, fontWeight: '700', color: '#1a5276' },
+  scoreUp:   { color: '#27ae60', fontSize: 12, fontWeight: '600' },
+  scoreDown: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
+
+  timerBox: { alignItems: 'center', gap: 2 },
+  timerText: { fontSize: 22, fontWeight: '700', color: '#e74c3c' },
+  timerUnit: { fontSize: 12, color: '#e74c3c' },
+  timerTrack: {
+    width: 8, height: 56,
+    backgroundColor: '#fadbd8', borderRadius: 4, overflow: 'hidden', justifyContent: 'flex-end',
+  },
+  timerFill: { backgroundColor: '#e74c3c', borderRadius: 4 },
+
+  skipBtn: { alignItems: 'center', gap: 3, paddingVertical: 4 },
+  skipText: { fontSize: 11, color: '#c0392b', fontFamily: AMIRI_FONT },
+
+  // ── BACK ─────────────────────────────────────────────────────────────────
+  backHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    backgroundColor: '#fafafa',
+  },
+  backHeaderLeft: { alignItems: 'flex-start' },
+  backSuraName: {
+    fontSize: 16,
+    fontFamily: AMIRI_FONT,
+    fontWeight: '700',
+    color: '#1a5276',
+    textAlign: 'right',
+    flexShrink: 1,
+  },
+  backSuraInfo: {
+    fontSize: 12,
+    fontFamily: AMIRI_FONT,
+    color: '#7f8c8d',
+  },
+
+  answerScroll: { maxHeight: 260 },
   answerContent: { padding: 14 },
   answerText: {
-    fontSize: 20, lineHeight: 38, textAlign: 'right', writingDirection: 'rtl',
-    fontFamily: Platform.OS === 'web' ? 'AmiriQuranColored' : undefined, color: '#1a1a1a',
+    fontSize: 22,
+    fontFamily: QURAN_FONT,
+    lineHeight: 42,
+    textAlign: 'right',
+    writingDirection: 'rtl',
+    color: '#1a1a1a',
   },
-  actionRow: { flexDirection: 'row', borderTopWidth: 1, borderColor: '#eee' },
-  actionBtn: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12 },
-  btnOk: { backgroundColor: '#1a5276' },
-  btnView: { backgroundColor: '#f5f5f5' },
-  btnShare: { backgroundColor: '#f5f5f5' },
-  actionBtnText: { color: '#fff', fontWeight: '600', fontSize: 13 },
-  reportBtn: { width: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: '#f5f5f5' },
 
-  // Image modal
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.85)', justifyContent: 'center', alignItems: 'center' },
-  pageImage: { width: SW - 16, height: (SW - 16) * 1.4, borderRadius: 8 },
+  actionRow: {
+    flexDirection: 'row',
+    borderTopWidth: 1,
+    borderColor: '#eee',
+  },
+  actionBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 11,
+    gap: 2,
+  },
+  btnOk:        { backgroundColor: '#1a5276' },
+  btnSecondary: { backgroundColor: '#f5f7fa' },
+  actionBtnTxt: { color: '#fff', fontWeight: '600', fontSize: 13, fontFamily: AMIRI_FONT },
+  reportBtn: {
+    width: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fdf0f0',
+  },
+
+  // ── Modal ─────────────────────────────────────────────────────────────────
+  modalOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.88)',
+    justifyContent: 'center', alignItems: 'center',
+  },
+  pageImage: { width: SW - 24, height: (SW - 24) * 1.42, borderRadius: 6, maxWidth: 480, maxHeight: 680 },
 });

@@ -19,6 +19,10 @@ export let qo: QuestionObject = makeEmptyQO();
 let dailyStarts: number[] = [];
 let dailyIndex = 0;
 
+// Set to true by initDailyQuiz so the quiz screen knows to enter daily mode on next focus
+export let pendingDailyStart = false;
+export function clearPendingDailyStart() { pendingDailyStart = false; }
+
 // ---------- public init ----------
 export function initQuestionnaire(seed: number) {
   rand = seedrandom(String(seed));
@@ -291,6 +295,7 @@ export function initDailyQuiz(
   if (isNaN(dailyRandom)) dailyRandom = 100;
   dailyStarts = [];
   dailyIndex = 0;
+  pendingDailyStart = true;
   for (let i = 1; i < weights.length; i++) {
     const partLength = parts[i]?.length ?? 0;
     const partStart  = parts[i]?.start ?? 0;

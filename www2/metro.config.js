@@ -2,8 +2,8 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Allow large JSON assets (q.json is ~7MB)
-config.resolver.assetExts.push('db');
+// Allow font and DB assets
+config.resolver.assetExts.push('woff2', 'woff', 'ttf', 'otf', 'db');
 config.resolver.sourceExts.push('cjs');
 
 module.exports = config;

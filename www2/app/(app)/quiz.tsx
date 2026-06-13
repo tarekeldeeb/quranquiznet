@@ -5,7 +5,7 @@ import {
   TouchableOpacity, Modal, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect } from 'expo-router';
 
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import { useProfileStore } from '../../src/stores/profileStore';
@@ -39,14 +39,14 @@ function makeActive(qo: QuestionObject, round = 0): ActiveCard {
 }
 
 export default function QuizScreen() {
-  const params = useLocalSearchParams<{ customStart?: string }>();
+  const params = useLocalSearchParams<{ customStart?: string; dailyMode?: string }>();
   const profile = useProfileStore();
 
   const [cards, setCards] = useState<CardData[]>([]);
   const [active, setActive] = useState<ActiveCard | null>(null);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [dailyMode, setDailyMode] = useState(false);
+  const [dailyMode, setDailyMode] = useState(params.dailyMode === '1');
   const [dailyScore, setDailyScore] = useState(0);
   const [timerValue, setTimerValue] = useState(0);
   const [timerMax, setTimerMax] = useState(0);
@@ -65,7 +65,7 @@ export default function QuizScreen() {
 
   const isInitialized = useRef(false);
 
-  // ── init ──────────────────────────────────────────────────────────────────
+  // ── first mount: start normal quiz ────────────────────────────────────────
   useEffect(() => {
     if (isInitialized.current) return;
     isInitialized.current = true;
@@ -73,10 +73,25 @@ export default function QuizScreen() {
     setScore(profile.getScore());
     const start = params.customStart ? parseInt(params.customStart) : undefined;
     loadNextQuestion(start);
-    return () => {
-      clearTimers();
-    };
+    return () => { clearTimers(); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // ── on focus: detect pending daily start from Daily tab ───────────────────
+  useFocusEffect(useCallback(() => {
+    if (!QS.pendingDailyStart) return;
+    QS.clearPendingDailyStart();
+    clearTimers();
+    setCards([]);
+    setActive(null);
+    setDailyMode(true);
+    dailyScoreRef.current = 0;
+    dailyTimeRef.current = 0;
+    cardCounterRef.current = 0;
+    dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; }, 1000);
+    loadNextQuestion(undefined, true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []));
 
   function clearTimers() {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -84,10 +99,12 @@ export default function QuizScreen() {
   }
 
   // ── load next question ────────────────────────────────────────────────────
-  async function loadNextQuestion(start?: number) {
+  // isDaily can be passed explicitly to avoid stale closure when entering daily mode
+  async function loadNextQuestion(start?: number, isDaily?: boolean) {
+    const daily = isDaily ?? dailyMode;
     setLoading(true);
     try {
-      if (dailyMode) {
+      if (daily) {
         const hasMore = await QS.createNextDailyQ(
           profile.getSparsePoint.bind(profile),
           profile.getTotalStudyLength.bind(profile),
@@ -108,7 +125,6 @@ export default function QuizScreen() {
         );
       }
       profile.setLastSeed(QS.qo.startIdx);
-      const sura = getSuraIdx(QS.qo.startIdx);
       const aya = await ayaNumberOf(QS.qo.startIdx);
       const newCard: CardData = {
         index: cards.length,
@@ -116,15 +132,11 @@ export default function QuizScreen() {
         answerAya: aya,
         socialURL: `https://quranquiz.net/#/ahlan/${QS.qo.startIdx}`,
       };
-      setCards((prev) => {
-        const next = [...prev, newCard];
-        return next;
-      });
+      setCards((prev) => [...prev, newCard]);
       setActive(makeActive(QS.qo));
-      // check daily quiz availability every N questions
       cardCounterRef.current++;
       const cc = cardCounterRef.current;
-      if (!dailyMode && (cc - DAILYQUIZ_CHECKAFTER) % DAILYQUIZ_CHECKEVERY === 0) {
+      if (!daily && (cc - DAILYQUIZ_CHECKAFTER) % DAILYQUIZ_CHECKEVERY === 0) {
         checkForDailyQuiz();
       }
     } catch (e) {
@@ -132,7 +144,7 @@ export default function QuizScreen() {
     } finally {
       setLoading(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 200);
-      if (dailyMode) startTimer(12);
+      if (daily) startTimer(12);
     }
   }
 
@@ -175,57 +187,68 @@ export default function QuizScreen() {
 
   function handleCorrect() {
     profile.addCorrect(QS.qo);
-    const newScore = profile.getScore();
-    setScore(newScore);
+    setScore(profile.getScore());
     if (dailyMode) dailyScoreRef.current++;
+    // Store wasCorrect in the card so historical cards keep the right border color
+    setCards((prev) => {
+      if (prev.length === 0) return prev;
+      const next = [...prev];
+      next[next.length - 1] = { ...next[next.length - 1], wasCorrect: true };
+      return next;
+    });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true } : null);
-    flipLastCard(true);
     setTimeout(() => loadNextQuestion(), 600);
   }
 
   function handleIncorrect() {
     profile.addIncorrect(QS.qo);
     setScore(profile.getScore());
-    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false } : null);
-    flipLastCard(false);
-    setTimeout(() => loadNextQuestion(), 600);
-  }
-
-  function skipQ() {
-    handleIncorrect();
-  }
-
-  function flipLastCard(correct: boolean) {
     setCards((prev) => {
       if (prev.length === 0) return prev;
       const next = [...prev];
-      // Mark last card as flipped (tracked via flipTrigger in active, not in card data)
+      next[next.length - 1] = { ...next[next.length - 1], wasCorrect: false };
       return next;
     });
+    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false } : null);
+    setTimeout(() => loadNextQuestion(), 600);
   }
+
+  function skipQ() { handleIncorrect(); }
 
   // ── daily quiz ────────────────────────────────────────────────────────────
   async function checkForDailyQuiz() {
-    const head = await FB.getDailyHead();
-    if (!head) return;
-    Alert.alert(
-      'اختبار اليوم جاهز',
-      'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع',
-      [
-        { text: 'لا', style: 'cancel' },
-        { text: 'نعم', onPress: () => startDailyQuiz(head.daily_random) },
-      ],
-    );
-  }
-
-  function startDailyQuiz(dailyRandom: number) {
-    const weights = profile.getDailyQuizStudyPartsWeights();
-    QS.initDailyQuiz(dailyRandom, profile.parts, weights);
-    setDailyMode(true);
-    dailyScoreRef.current = 0;
-    dailyTimeRef.current = 0;
-    dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; }, 1000);
-    loadNextQuestion();
+    try {
+      const head = await FB.getDailyHead();
+      if (!head) return;
+      Alert.alert(
+        'اختبار اليوم جاهز',
+        'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع',
+        [
+          { text: 'لا', style: 'cancel' },
+          {
+            text: 'نعم',
+            onPress: () => {
+              const weights = profile.getDailyQuizStudyPartsWeights();
+              QS.initDailyQuiz(head.daily_random, profile.parts, weights);
+              // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
+              // already on this screen — handle directly:
+              QS.clearPendingDailyStart();
+              clearTimers();
+              setCards([]);
+              setActive(null);
+              setDailyMode(true);
+              dailyScoreRef.current = 0;
+              dailyTimeRef.current = 0;
+              cardCounterRef.current = 0;
+              dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; }, 1000);
+              loadNextQuestion(undefined, true);
+            },
+          },
+        ],
+      );
+    } catch (e) {
+      console.error('checkForDailyQuiz error:', e);
+    }
   }
 
   async function endDailyQuiz() {
@@ -316,11 +339,12 @@ export default function QuizScreen() {
               totalRounds={item.qo.rounds}
               shuffledOptions={isLast ? (active?.shuffledOptions ?? []) : (item.qo.txt.op[0] ?? [])}
               flipTrigger={isLast ? (active?.flipTrigger ?? 0) : 1}
-              isCorrect={isLast ? (active?.isCorrect ?? false) : true}
+              isCorrect={isLast ? (active?.isCorrect ?? false) : (item.wasCorrect ?? true)}
             />
           );
         }}
         contentContainerStyle={s.listContent}
+        centerContent
         showsVerticalScrollIndicator={false}
       />
 
@@ -368,7 +392,7 @@ export default function QuizScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#f0f4f8' },
-  listContent: { paddingTop: 12, paddingBottom: 40 },
+  listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#f0f4f8' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%' },

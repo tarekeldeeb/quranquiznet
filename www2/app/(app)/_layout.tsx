@@ -41,6 +41,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="daily"
+        options={{
+          title: 'يومي',
+          tabBarIcon: ({ color, size }) => <TabIcon name="star-outline" color={color} size={size} />,
+        }}
+      />
+      <Tabs.Screen
         name="profile"
         options={{
           title: 'ملفي',
