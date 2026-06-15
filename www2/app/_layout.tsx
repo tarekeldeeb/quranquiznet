@@ -31,6 +31,7 @@ export default function RootLayout() {
       await initDb((pct) => setDbProgress(pct));
       setDbReady(true);
     })();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   if (!dbReady || !fontsLoaded) {

@@ -8,7 +8,7 @@ import {
   QURAN_WORDS, JUZ2_AVG_WORDS, PART_WEIGHT_100,
   DAILYQUIZ_PARTS_COUNT, DAILYQUIZ_QPERPART_COUNT,
   DAILYQUIZ_MAXTIME, DAILYQUIZ_MINTIME,
-  getSuraIdx, countedScore,
+  countedScore,
 } from '../models/constants';
 
 export interface StudyPart {
@@ -147,7 +147,7 @@ interface ProfileState {
   updateScoreRecord(): boolean;
   syncTo(remote: Partial<ProfileState>): Promise<void>;
 
-  levels: Array<{ value: number; text: string; comment: string; disabled: boolean }>;
+  levels: { value: number; text: string; comment: string; disabled: boolean }[];
 }
 
 const KEYS = {

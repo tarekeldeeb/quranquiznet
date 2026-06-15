@@ -13,11 +13,10 @@ import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import {
   randperm, shuffleByPerm, deepCopy,
-  getSuraIdx, SURA_NAME, SURA_AYAS, getSuraTanzil, getPageURLFromSuraAyah,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER,
 } from '../../src/models/constants';
 import { ayaNumberOf } from '../../src/db/idb';
-import { Q_TYPE, QuestionObject } from '../../src/models/questionnaire';
+import { QuestionObject } from '../../src/models/questionnaire';
 
 interface ActiveCard {
   round: number;
@@ -47,7 +46,6 @@ export default function QuizScreen() {
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(true);
   const [dailyMode, setDailyMode] = useState(params.dailyMode === '1');
-  const [dailyScore, setDailyScore] = useState(0);
   const [timerValue, setTimerValue] = useState(0);
   const [timerMax, setTimerMax] = useState(0);
   const [reportVisible, setReportVisible] = useState(false);

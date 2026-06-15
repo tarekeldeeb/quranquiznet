@@ -1,7 +1,6 @@
 // Settings screen — mirrors www/settings/tab-settings.html + settingsCtrl.js
 import { View, Text, Switch, TouchableOpacity, StyleSheet, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { useProfileStore } from '../../src/stores/profileStore';
 
 export default function SettingsScreen() {

@@ -64,6 +64,7 @@ export default function QuizCard({
 
   useEffect(() => {
     if (flipTrigger > 0) flip.value = withTiming(1, { duration: 420 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flipTrigger]);
 
   const frontStyle = useAnimatedStyle(() => ({

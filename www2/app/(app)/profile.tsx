@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { onAuthChange, signInAnon, signInGoogle, signInFacebook, signOut, fetchRemoteProfile, pushProfile } from '../../src/services/firebase';
-import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
+import { useProfileStore } from '../../src/stores/profileStore';
 import type { User } from 'firebase/auth';
 
 function ProgressBar({ label, pct }: { label: string; pct: number }) {
@@ -56,6 +56,7 @@ export default function ProfileScreen() {
       }
     });
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleSignOut() {

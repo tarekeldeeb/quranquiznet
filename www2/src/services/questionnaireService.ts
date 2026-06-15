@@ -3,12 +3,12 @@
 
 import seedrandom, { type PRNG } from 'seedrandom';
 import {
-  QURAN_WORDS, SURA_IDX, SURA_NAME, SURA_AYAS,
-  DAILYQUIZ_QPERPART_COUNT, DAILYQUIZ_QPERPART_DIST,
-  getSuraIdx, modQWords, randperm, deepCopy,
+  QURAN_WORDS, SURA_NAME, SURA_AYAS,
+  DAILYQUIZ_QPERPART_DIST,
+  getSuraIdx, modQWords, randperm,
   ANSWER_LENGTH,
 } from '../models/constants';
-import { Q_TYPE, QType, QuestionObject, makeEmptyQO } from '../models/questionnaire';
+import { Q_TYPE, QuestionObject, makeEmptyQO } from '../models/questionnaire';
 import * as idb from '../db/idb';
 
 // ---------- singleton state ----------
@@ -289,7 +289,7 @@ function selectSpecial(level: number, isSurasEligible: boolean): boolean {
 // ---------- daily quiz ----------
 export function initDailyQuiz(
   dailyRandom: number,
-  parts: Array<{ start: number; length: number }>,
+  parts: { start: number; length: number }[],
   weights: number[],
 ) {
   if (isNaN(dailyRandom)) dailyRandom = 100;

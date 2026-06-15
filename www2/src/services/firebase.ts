@@ -7,7 +7,7 @@ import {
   signInWithPopup, GoogleAuthProvider, FacebookAuthProvider,
   signOut as fbSignOut, User, Auth,
 } from 'firebase/auth';
-import { getDatabase, ref, onValue, set, push, get as dbGet, Database } from 'firebase/database';
+import { getDatabase, ref, set, push, get as dbGet, Database } from 'firebase/database';
 
 // ─── Replace these values with your Firebase project config ───────────────────
 // Copy from: Firebase Console → Project Settings → Your apps → Web app → Config

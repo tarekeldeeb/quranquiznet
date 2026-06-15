@@ -1,8 +1,7 @@
 // Welcome / login screen — mirrors www/templates/ahlan.html + www/profile/firebasecontrol.js
 import { useEffect } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, Image,
-  ActivityIndicator, Alert,
+  View, Text, TouchableOpacity, StyleSheet, Image, Alert,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,6 +15,7 @@ export default function AuthScreen() {
       if (user) router.replace('/(app)/quiz');
     });
     return unsub;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function handleGoogle() {
