@@ -2,7 +2,7 @@
 // All methods use expo-sqlite (works on iOS, Android, and web via WASM).
 
 import { getDb } from './initDb';
-import { QURAN_WORDS, modQWords, formattedAyaMark } from '../models/constants';
+import { QURAN_WORDS, formattedAyaMark } from '../models/constants';
 
 interface QRow {
   _id: number;
@@ -25,24 +25,24 @@ export async function txt(
   const insertAyaMark = params.includes('ayaMark');
   const noSym = params.includes('noSym');
 
-  let results: QRow[];
-  if (start + limit > QURAN_WORDS) {
-    // wrap-around: two ranges
-    const part1 = await db.getAllAsync<QRow>(
-      'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
-      [start, QURAN_WORDS - start + 1],
-    );
-    const wrapEnd = modQWords(start + limit);
+  // Fetch up to `limit` words from `start`. If we reach the end of the table
+  // before `limit` words, wrap around to the beginning of the Quran.
+  // The boundary MUST be data-driven: the table actually holds more rows than
+  // QURAN_WORDS (77878) — the final verse of An-Nas (114:6) lives at _id
+  // 77879-77881. Assuming the last _id equals QURAN_WORDS dropped that verse
+  // and wrapped to Al-Fatiha three words early.
+  const part1 = await db.getAllAsync<QRow>(
+    'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
+    [start, limit],
+  );
+  let results: QRow[] = part1;
+  if (part1.length < limit) {
+    const remaining = limit - part1.length;
     const part2 = await db.getAllAsync<QRow>(
-      'SELECT * FROM q WHERE _id < ? ORDER BY _id',
-      [wrapEnd],
+      'SELECT * FROM q WHERE _id >= 1 ORDER BY _id LIMIT ?',
+      [remaining],
     );
     results = [...part1, ...part2];
-  } else {
-    results = await db.getAllAsync<QRow>(
-      'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
-      [start, limit],
-    );
   }
 
   return results.map((x) => {

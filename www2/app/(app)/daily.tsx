@@ -89,7 +89,7 @@ export default function DailyScreen() {
         <View style={s.card}>
           {status === 'loading' && (
             <View style={s.center}>
-              <ActivityIndicator size="large" color="#1a5276" />
+              <ActivityIndicator size="large" color="#0d2d4e" />
               <Text style={s.statusTxt}>جارٍ التحقق من اختبار اليوم...</Text>
             </View>
           )}
@@ -125,7 +125,7 @@ export default function DailyScreen() {
               <Text style={s.errorTitle}>تعذّر الاتصال بالخادم</Text>
               {!!errorMsg && <Text style={s.errorMsg}>{errorMsg}</Text>}
               <TouchableOpacity style={s.retryBtn} onPress={checkDaily}>
-                <Ionicons name="refresh" size={16} color="#1a5276" />
+                <Ionicons name="refresh" size={16} color="#0d2d4e" />
                 <Text style={s.retryTxt}> إعادة المحاولة</Text>
               </TouchableOpacity>
             </View>
@@ -137,7 +137,7 @@ export default function DailyScreen() {
           <View style={s.card}>
             <Text style={s.sectionTitle}>أفضل 5 بالأمس</Text>
             {reportsLoading
-              ? <ActivityIndicator color="#1a5276" />
+              ? <ActivityIndicator color="#0d2d4e" />
               : yday.map((r, i) => (
                 <View key={i} style={s.row}>
                   <Text style={s.rank}>#{i + 1}</Text>
@@ -153,7 +153,7 @@ export default function DailyScreen() {
           <View style={s.card}>
             <Text style={s.sectionTitle}>أعلى النتائج</Text>
             {reportsLoading
-              ? <ActivityIndicator color="#1a5276" />
+              ? <ActivityIndicator color="#0d2d4e" />
               : allTop.map((r, i) => (
                 <View key={i} style={s.row}>
                   <Text style={s.rank}>#{i + 1}</Text>
@@ -170,35 +170,35 @@ export default function DailyScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1, backgroundColor: '#edf1f5' },
   scroll: { padding: 16, gap: 16 },
   card: {
     backgroundColor: '#fff', borderRadius: 12, padding: 16,
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   center: { alignItems: 'center', gap: 12, paddingVertical: 8 },
-  readyTitle: { fontSize: 20, fontWeight: '700', color: '#1a5276', textAlign: 'center' },
+  readyTitle: { fontSize: 20, fontWeight: '700', color: '#0d2d4e', textAlign: 'center' },
   readyBody: { fontSize: 14, color: '#555', textAlign: 'center', lineHeight: 22 },
   statusTxt: { fontSize: 16, color: '#555', textAlign: 'center', marginTop: 8 },
   subTxt: { fontSize: 13, color: '#aaa', textAlign: 'center' },
   errorTitle: { fontSize: 16, fontWeight: '700', color: '#c0392b', textAlign: 'center' },
   errorMsg: { fontSize: 12, color: '#e74c3c', textAlign: 'center', fontFamily: 'monospace' },
   startBtn: {
-    flexDirection: 'row', alignItems: 'center', backgroundColor: '#1a5276',
+    flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d2d4e',
     paddingHorizontal: 28, paddingVertical: 14, borderRadius: 10, marginTop: 8,
   },
   startBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 16 },
   retryBtn: {
-    flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#1a5276',
+    flexDirection: 'row', alignItems: 'center', borderWidth: 1, borderColor: '#0d2d4e',
     paddingHorizontal: 20, paddingVertical: 10, borderRadius: 8, marginTop: 4,
   },
-  retryTxt: { color: '#1a5276', fontWeight: '600' },
+  retryTxt: { color: '#0d2d4e', fontWeight: '600' },
   sectionTitle: {
-    fontSize: 14, fontWeight: '700', color: '#1a5276', textAlign: 'right',
+    fontSize: 14, fontWeight: '700', color: '#0d2d4e', textAlign: 'right',
     marginBottom: 8, borderBottomWidth: 1, borderColor: '#eee', paddingBottom: 6,
   },
   row: { flexDirection: 'row', alignItems: 'center', paddingVertical: 6, borderBottomWidth: 1, borderColor: '#f5f5f5' },
   rank: { width: 28, fontSize: 12, color: '#888' },
   rowName: { flex: 1, fontSize: 14, color: '#333', textAlign: 'right' },
-  rowScore: { fontSize: 15, fontWeight: '700', color: '#1a5276', marginLeft: 8 },
+  rowScore: { fontSize: 15, fontWeight: '700', color: '#0d2d4e', marginLeft: 8 },
 });

@@ -52,7 +52,7 @@ export default function SettingsScreen() {
             <Switch
               value={profile.specialEnabled}
               onValueChange={toggleSpecial}
-              trackColor={{ false: '#ccc', true: '#1a5276' }}
+              trackColor={{ false: '#ccc', true: '#0d2d4e' }}
               thumbColor={profile.specialEnabled ? '#fff' : '#f4f3f4'}
             />
           </View>
@@ -66,22 +66,22 @@ export default function SettingsScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1, backgroundColor: '#edf1f5' },
   scroll: { padding: 16, gap: 16 },
   section: {
     backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden',
     shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
   },
   sectionHeader: {
-    fontSize: 14, fontWeight: '700', color: '#1a5276', textAlign: 'right',
+    fontSize: 14, fontWeight: '700', color: '#0d2d4e', textAlign: 'right',
     padding: 14, borderBottomWidth: 1, borderColor: '#eee', backgroundColor: '#f8f9fa',
   },
   levelRow: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, gap: 12, borderBottomWidth: 1, borderColor: '#f0f0f0' },
   disabled: { opacity: 0.5 },
   levelLeft: { paddingTop: 2 },
-  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#1a5276', alignItems: 'center', justifyContent: 'center' },
-  radioSelected: { borderColor: '#1a5276' },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#1a5276' },
+  radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, borderColor: '#0d2d4e', alignItems: 'center', justifyContent: 'center' },
+  radioSelected: { borderColor: '#0d2d4e' },
+  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: '#0d2d4e' },
   levelRight: { flex: 1, alignItems: 'flex-end' },
   levelName: { fontSize: 15, fontWeight: '600', color: '#1a1a1a', textAlign: 'right' },
   levelComment: { fontSize: 12, color: '#777', textAlign: 'right', marginTop: 2 },

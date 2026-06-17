@@ -1,21 +1,78 @@
 // Bottom-tab navigator — mirrors the side-menu in www/templates/menu.html
 import { Tabs, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { onAuthChange } from '../../src/services/firebase';
+import { Image, View, Text, StyleSheet } from 'react-native';
+import {
+  onAuthChange, fetchRemoteProfile, pushProfile,
+} from '../../src/services/firebase';
+import { useProfileStore } from '../../src/stores/profileStore';
 import { Ionicons } from '@expo/vector-icons';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
+
+const appIcon = require('../../assets/images/app-icon.png');
 
 function TabIcon({ name, color, size }: { name: IconName; color: string; size: number }) {
   return <Ionicons name={name} size={size} color={color} />;
 }
 
+function HeaderLogo() {
+  return (
+    <View style={s.headerLogo}>
+      <Image source={appIcon} style={s.headerIcon} />
+      <Text style={s.headerTitle}>شبكة اختبار القرآن</Text>
+    </View>
+  );
+}
+
+async function detectCountry(setCountry: (c: string) => void) {
+  try {
+    const res = await fetch('https://ipinfo.io?token=c2dc00eae1ba76');
+    const data = await res.json() as { country?: string };
+    if (data.country) setCountry(data.country.toLowerCase());
+  } catch { /* non-critical, silently ignore */ }
+}
+
 export default function AppLayout() {
   const router = useRouter();
+  const profile = useProfileStore();
 
   useEffect(() => {
-    const unsub = onAuthChange((user) => {
-      if (!user) router.replace('/(auth)');
+    detectCountry(profile.setCountry);
+    const unsub = onAuthChange(async (user) => {
+      if (!user) {
+        router.replace('/(auth)');
+        return;
+      }
+
+      // Sync auth identity + remote profile immediately, regardless of active tab
+      if (!user.isAnonymous) {
+        await profile.setSocial({
+          uid: user.uid,
+          displayName: user.displayName ?? undefined,
+          photoURL: user.photoURL ?? undefined,
+          email: user.email ?? undefined,
+          isAnonymous: false,
+        });
+        const remote = await fetchRemoteProfile(user.uid);
+        if (remote) {
+          await profile.syncTo(remote as Parameters<typeof profile.syncTo>[0]);
+        }
+        // Push local profile up (after sync so we write the merged result)
+        const s = useProfileStore.getState();
+        await pushProfile(user.uid, {
+          uid: s.uid,
+          lastSeed: s.lastSeed,
+          lastUpdate: s.lastUpdate,
+          lastSync: Date.now(),
+          level: s.level,
+          specialEnabled: s.specialEnabled,
+          scores: s.scores,
+          parts: s.parts,
+        });
+      } else {
+        profile.setSocial({ uid: user.uid, displayName: 'مجهول(ة)', isAnonymous: true });
+      }
     });
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -24,51 +81,73 @@ export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: '#1a5276' },
+        headerStyle: { backgroundColor: '#0d2d4e' },
         headerTintColor: '#fff',
         headerTitleStyle: { fontWeight: 'bold' },
-        tabBarActiveTintColor: '#1a5276',
+        headerTitle: () => <HeaderLogo />,
+        tabBarActiveTintColor: '#0d2d4e',
         tabBarInactiveTintColor: '#888',
         tabBarStyle: { backgroundColor: '#fff' },
         tabBarLabelStyle: { fontSize: 12 },
         headerTitleAlign: 'center',
       }}
     >
+      {/* Declared right-to-left for RTL: the tab bar renders in declaration
+          order (LTR), so listing me → league → quiz → home puts الرئيسية (Home)
+          on the right. The app always navigates to /(app)/home explicitly, so
+          ordering does not affect the initial tab. */}
+      <Tabs.Screen
+        name="me"
+        options={{
+          tabBarIcon: ({ color, size }) => <TabIcon name="person-outline" color={color} size={size} />,
+          tabBarLabel: 'ملفي',
+        }}
+      />
+      <Tabs.Screen
+        name="league"
+        options={{
+          tabBarIcon: ({ color, size }) => <TabIcon name="trophy-outline" color={color} size={size} />,
+          tabBarLabel: 'البطولة',
+        }}
+      />
       <Tabs.Screen
         name="quiz"
         options={{
-          title: 'الاختبار',
-          tabBarIcon: ({ color, size }) => <TabIcon name="help-circle-outline" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="play-circle-outline" color={color} size={size} />,
+          tabBarLabel: 'العب',
         }}
       />
       <Tabs.Screen
-        name="daily"
+        name="home"
         options={{
-          title: 'يومي',
-          tabBarIcon: ({ color, size }) => <TabIcon name="star-outline" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="home-outline" color={color} size={size} />,
+          tabBarLabel: 'الرئيسية',
         }}
       />
-      <Tabs.Screen
-        name="profile"
-        options={{
-          title: 'ملفي',
-          tabBarIcon: ({ color, size }) => <TabIcon name="person-outline" color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="study"
-        options={{
-          title: 'حفظي',
-          tabBarIcon: ({ color, size }) => <TabIcon name="book-outline" color={color} size={size} />,
-        }}
-      />
-      <Tabs.Screen
-        name="settings"
-        options={{
-          title: 'الإعدادات',
-          tabBarIcon: ({ color, size }) => <TabIcon name="settings-outline" color={color} size={size} />,
-        }}
-      />
+      {/* Legacy screens — hidden from tab bar */}
+      <Tabs.Screen name="daily"    options={{ href: null }} />
+      <Tabs.Screen name="profile"  options={{ href: null }} />
+      <Tabs.Screen name="study"    options={{ href: null }} />
+      <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
 }
+
+const s = StyleSheet.create({
+  headerLogo: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+  },
+  headerIcon: {
+    width: 30,
+    height: 30,
+    borderRadius: 6,
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '700',
+    letterSpacing: 0.3,
+  },
+});

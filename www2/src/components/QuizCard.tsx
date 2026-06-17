@@ -220,7 +220,7 @@ const s = StyleSheet.create({
 
   // ── FRONT ────────────────────────────────────────────────────────────────
   topBar: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
@@ -237,10 +237,10 @@ const s = StyleSheet.create({
     flexShrink: 1,
   },
   dotsRow: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     gap: 4,
     flexWrap: 'wrap',
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
     maxWidth: '55%',
   },
   dot: { width: 8, height: 8, borderRadius: 4 },
@@ -359,7 +359,7 @@ const s = StyleSheet.create({
   },
 
   actionRow: {
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     borderTopWidth: 1,
     borderColor: '#eee',
   },
@@ -383,5 +383,11 @@ const s = StyleSheet.create({
     flex: 1, backgroundColor: 'rgba(0,0,0,0.88)',
     justifyContent: 'center', alignItems: 'center',
   },
-  pageImage: { width: SW - 24, height: (SW - 24) * 1.42, borderRadius: 6, maxWidth: 480, maxHeight: 680 },
+  // The page PNG has a transparent background, so it needs a white backing —
+  // otherwise the black text renders on the dark overlay and is unreadable.
+  pageImage: {
+    width: SW - 24, height: (SW - 24) * 1.42,
+    borderRadius: 6, maxWidth: 480, maxHeight: 680,
+    backgroundColor: '#fff',
+  },
 });

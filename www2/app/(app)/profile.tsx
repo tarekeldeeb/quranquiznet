@@ -67,7 +67,7 @@ export default function ProfileScreen() {
   }
 
   const photoURL = user?.isAnonymous
-    ? require('../../assets/images/icon.png')
+    ? require('../../assets/images/app-icon.png')
     : { uri: user?.photoURL ?? '' };
 
   const pctStudy = profile.getPercentTotalStudy();
@@ -152,7 +152,7 @@ export default function ProfileScreen() {
           <Text style={p.actionBtnTxt}> تعديل السور</Text>
         </TouchableOpacity>
         <View style={p.btnRow}>
-          <TouchableOpacity style={[p.actionBtn, { flex: 1, backgroundColor: '#1a5276' }]} onPress={() => router.push('/(app)/quiz')}>
+          <TouchableOpacity style={[p.actionBtn, { flex: 1, backgroundColor: '#0d2d4e' }]} onPress={() => router.push('/(app)/quiz')}>
             <Ionicons name="barcode-outline" size={18} color="#fff" />
             <Text style={p.actionBtnTxt}> اختبار فردي</Text>
           </TouchableOpacity>
@@ -163,24 +163,24 @@ export default function ProfileScreen() {
 }
 
 const p = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1, backgroundColor: '#edf1f5' },
   scroll: { padding: 16, gap: 16 },
   header: { alignItems: 'center', gap: 8, paddingVertical: 16, position: 'relative' },
-  avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#1a5276' },
-  name: { fontSize: 18, fontWeight: '700', color: '#1a5276' },
+  avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#0d2d4e' },
+  name: { fontSize: 18, fontWeight: '700', color: '#0d2d4e' },
   signOutBtn: { position: 'absolute', top: 16, left: 0 },
   section: { backgroundColor: '#fff', borderRadius: 12, padding: 16, gap: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
   barContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barLabel: { width: 80, fontSize: 12, color: '#555', textAlign: 'right' },
   barTrack: { flex: 1, height: 10, backgroundColor: '#ecf0f1', borderRadius: 5, overflow: 'hidden' },
-  barFill: { height: '100%', backgroundColor: '#1a5276', borderRadius: 5 },
-  barPct: { width: 36, fontSize: 12, color: '#1a5276', fontWeight: '700' },
+  barFill: { height: '100%', backgroundColor: '#0d2d4e', borderRadius: 5 },
+  barPct: { width: 36, fontSize: 12, color: '#0d2d4e', fontWeight: '700' },
   anonBox: { backgroundColor: '#fff', borderRadius: 12, padding: 16 },
   twoCol: { flexDirection: 'row', gap: 12 },
   col: { flex: 1, backgroundColor: '#fff', borderRadius: 12, padding: 12, gap: 6 },
-  colHeader: { fontSize: 13, fontWeight: '700', textAlign: 'right', color: '#1a5276', borderBottomWidth: 1, borderColor: '#eee', paddingBottom: 6 },
+  colHeader: { fontSize: 13, fontWeight: '700', textAlign: 'right', color: '#0d2d4e', borderBottomWidth: 1, borderColor: '#eee', paddingBottom: 6 },
   partItem: { fontSize: 12, color: '#444', textAlign: 'right' },
-  actionBtn: { backgroundColor: '#1a5276', borderRadius: 10, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  actionBtn: { backgroundColor: '#0d2d4e', borderRadius: 10, padding: 14, flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
   actionBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 15 },
   btnRow: { flexDirection: 'row', gap: 8 },
   btn: { flex: 1, paddingVertical: 12, borderRadius: 8, alignItems: 'center' },
@@ -189,6 +189,6 @@ const p = StyleSheet.create({
   btnAnon: { backgroundColor: '#ecf0f1' },
   btnTxt: { color: '#fff', fontWeight: '700' },
   loginBox: { flex: 1, padding: 24, justifyContent: 'center', gap: 16 },
-  loginTitle: { fontSize: 18, fontWeight: '700', textAlign: 'right', color: '#1a5276' },
+  loginTitle: { fontSize: 18, fontWeight: '700', textAlign: 'right', color: '#0d2d4e' },
   loginBody: { fontSize: 14, color: '#444', textAlign: 'right', lineHeight: 22 },
 });

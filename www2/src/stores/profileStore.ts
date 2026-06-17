@@ -118,6 +118,10 @@ interface ProfileState {
   social: ProfileSocial;
   version: ProfileVersion;
   loaded: boolean;
+  streak: number;
+  lastPlayDate: string;
+  lastDailyCompletedDate: string;   // 'YYYY-MM-DD' of the last completed daily quiz
+  country: string;                  // 2-letter ISO country code detected from IP (not persisted)
 
   // Actions
   load(): Promise<boolean>;
@@ -130,6 +134,9 @@ interface ProfileState {
   setLastSeed(seed: number): void;
   addCorrect(qo: QORef): Promise<void>;
   addIncorrect(qo: QORef): Promise<void>;
+  recordPlay(): void;
+  markDailyCompleted(): void;
+  setCountry(code: string): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -144,6 +151,7 @@ interface ProfileState {
   getDailyQuizScore(correct: number, time: number): number;
   getTopGoodParts(): string[];
   getTopBadParts(): string[];
+  getPartIndexOf(wordIdx: number): number;
   updateScoreRecord(): boolean;
   syncTo(remote: Partial<ProfileState>): Promise<void>;
 
@@ -161,6 +169,9 @@ const KEYS = {
   parts: 'prf_parts',
   version: 'prf_version',
   social: 'prf_social',
+  streak: 'prf_streak',
+  lastPlayDate: 'prf_lastPlayDate',
+  lastDailyCompletedDate: 'prf_lastDailyDate',
 };
 
 async function saveKey(key: string, value: unknown) {
@@ -184,6 +195,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   social: {},
   version: { db: 1.0, app: 2.0, profile: 1.0 },
   loaded: false,
+  streak: 0,
+  lastPlayDate: '',
+  lastDailyCompletedDate: '',
+  country: '',
 
   levels: [
     { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الاية، ولا يزيد النقاط', disabled: false },
@@ -201,7 +216,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -212,17 +227,19 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<StudyPart[]>(KEYS.parts, makeDefaultParts()),
         loadKey<ProfileVersion>(KEYS.version, { db: 1, app: 2, profile: 1 }),
         loadKey<ProfileSocial>(KEYS.social, {}),
+        loadKey<number>(KEYS.streak, 0),
+        loadKey<string>(KEYS.lastPlayDate, ''),
+        loadKey<string>(KEYS.lastDailyCompletedDate, ''),
       ]);
-    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, loaded: true });
+    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, loaded: true });
     return true;
   },
 
   async saveAll() {
     const s = get();
-    const now = Date.now();
     await AsyncStorage.multiSet([
       [KEYS.uid,            JSON.stringify(s.uid)],
-      [KEYS.lastUpdate,     JSON.stringify(now)],
+      [KEYS.lastUpdate,     JSON.stringify(s.lastUpdate)],
       [KEYS.lastSync,       JSON.stringify(s.lastSync)],
       [KEYS.lastSeed,       JSON.stringify(s.lastSeed)],
       [KEYS.level,          JSON.stringify(s.level)],
@@ -231,8 +248,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.parts,          JSON.stringify(s.parts)],
       [KEYS.version,        JSON.stringify(s.version)],
       [KEYS.social,         JSON.stringify(s.social)],
+      [KEYS.streak,                    JSON.stringify(s.streak)],
+      [KEYS.lastPlayDate,              JSON.stringify(s.lastPlayDate)],
+      [KEYS.lastDailyCompletedDate,     JSON.stringify(s.lastDailyCompletedDate)],
     ]);
-    set({ lastUpdate: now });
   },
 
   async saveParts() {
@@ -255,7 +274,17 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   async delete() {
     await AsyncStorage.multiRemove(Object.values(KEYS));
-    set({ uid: '0', parts: [], loaded: false });
+    set({
+      uid: '0',
+      lastUpdate: 0, lastSync: 0, lastSeed: 0,
+      level: 1, specialEnabled: false,
+      scores: [{ date: Date.now(), score: 0 }],
+      parts: [],
+      social: {},
+      streak: 0, lastPlayDate: '',
+      lastDailyCompletedDate: '',
+      loaded: false,
+    });
   },
 
   async setSocial(social: ProfileSocial) {
@@ -268,38 +297,81 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveKey(KEYS.lastSeed, seed);
   },
 
+  recordPlay() {
+    const today = new Date().toISOString().split('T')[0];
+    const { lastPlayDate, streak } = get();
+    if (lastPlayDate === today) return;
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    const newStreak = lastPlayDate === yesterday ? streak + 1 : 1;
+    set({ streak: newStreak, lastPlayDate: today });
+    saveKey(KEYS.streak, newStreak);
+    saveKey(KEYS.lastPlayDate, today);
+  },
+
+  markDailyCompleted() {
+    const today = new Date().toISOString().split('T')[0];
+    set({ lastDailyCompletedDate: today });
+    saveKey(KEYS.lastDailyCompletedDate, today);
+  },
+
+  setCountry(code: string) {
+    set({ country: code });
+  },
+
   async addCorrect(qo: QORef) {
-    const parts = [...get().parts];
     const cp = qo.currentPart;
-    if (cp < parts.length && qo.level > 0) {
+    const oldParts = get().parts;
+    if (cp < oldParts.length && qo.level > 0) {
+      const p = oldParts[cp];
+      const nc = [...p.numCorrect] as [number, number, number, number];
+      const nq = [...p.numQuestions] as [number, number, number, number];
       if (qo.qType.id > 1) {
-        parts[cp].numCorrect[0] += qo.qType.score;
-        parts[cp].numQuestions[0] += 1;
+        nc[0] += qo.qType.score;
+        nq[0] += 1;
       } else {
-        parts[cp].numCorrect[qo.level] += 1;
-        parts[cp].numQuestions[qo.level] += 1;
+        nc[qo.level] += 1;
+        nq[qo.level] += 1;
       }
-      set({ parts });
-      await saveKey(KEYS.parts, parts);
+      const now = Date.now();
+      const parts = oldParts.map((x, i) =>
+        i === cp ? { ...x, numCorrect: nc, numQuestions: nq } : x,
+      );
+      set({ parts, lastUpdate: now });
+      await Promise.all([
+        saveKey(KEYS.parts, parts),
+        saveKey(KEYS.lastUpdate, now),
+      ]);
     }
   },
 
   async addIncorrect(qo: QORef) {
-    const parts = [...get().parts];
     const cp = qo.currentPart;
-    if (cp < parts.length && qo.level > 0) {
+    const oldParts = get().parts;
+    if (cp < oldParts.length && qo.level > 0) {
+      const p = oldParts[cp];
+      const nq = [...p.numQuestions] as [number, number, number, number];
       if (qo.qType.id > 1) {
-        parts[cp].numQuestions[0] += 1;
+        nq[0] += 1;
       } else {
-        parts[cp].numQuestions[qo.level] += 1;
+        nq[qo.level] += 1;
       }
-      set({ parts });
-      await saveKey(KEYS.parts, parts);
+      const now = Date.now();
+      const parts = oldParts.map((x, i) =>
+        i === cp ? { ...x, numQuestions: nq } : x,
+      );
+      set({ parts, lastUpdate: now });
+      await Promise.all([
+        saveKey(KEYS.parts, parts),
+        saveKey(KEYS.lastUpdate, now),
+      ]);
     }
   },
 
   getScore() {
-    return Math.max(0, get().parts.reduce((acc, p) => acc + calculatePartScore(p), 0));
+    // Matches the original profile.js: score may be negative (accuracy below 50%
+    // subtracts). Do NOT clamp to 0 — that hid every decrease and made the score
+    // appear permanently zero.
+    return Math.round(get().parts.reduce((acc, p) => acc + calculatePartScore(p), 0));
   },
 
   getTotalStudyLength() {
@@ -369,10 +441,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   getDailyQuizStudyPartsWeights() {
     const { parts } = get();
     const sparse: number[] = new Array(DAILYQUIZ_PARTS_COUNT).fill(0);
-    const totalStudyWeight = Math.ceil(get().getTotalStudyLength() / JUZ2_AVG_WORDS);
+    const totalStudyLength = get().getTotalStudyLength();
+    const totalStudyWeight = Math.ceil(totalStudyLength / JUZ2_AVG_WORDS);
+    console.warn('[DAILY] getDailyQuizStudyPartsWeights: totalStudyLength=', totalStudyLength,
+      'totalStudyWeight=', totalStudyWeight, 'checkedParts=',
+      parts.filter(p => p.checked).map(p => p.name));
     let sum = 0;
     for (let i = 0; i < DAILYQUIZ_PARTS_COUNT; i++) {
-      if (i === 0 || countedScore(parts[i]?.numQuestions as unknown as number[]) === 0 || !parts[i]?.checked) {
+      const qs = countedScore(parts[i]?.numQuestions as unknown as number[]);
+      if (i === 0 || qs === 0 || !parts[i]?.checked) {
+        if (i > 0 && parts[i]?.checked && qs === 0) {
+          console.warn(`[DAILY] part[${i}] (${parts[i]?.name}) is checked but has 0 answered questions → weight=0`);
+        }
         sparse[i] = 0;
       } else {
         const Wn = Math.ceil((DAILYQUIZ_QPERPART_COUNT * PART_WEIGHT_100[i]) / (totalStudyWeight * 100));
@@ -380,7 +460,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
       sum += sparse[i];
     }
+    console.warn('[DAILY] weights sum=', sum, '(0 means fallback to last juz)');
     if (sum === 0) {
+      console.warn('[DAILY] WARNING: all weights are 0 — falling back to last part only');
       sparse[DAILYQUIZ_PARTS_COUNT - 1] = DAILYQUIZ_QPERPART_COUNT;
       return sparse;
     }
@@ -425,6 +507,16 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     return top;
   },
 
+  getPartIndexOf(wordIdx: number): number {
+    const { parts } = get();
+    for (let i = 0; i < parts.length; i++) {
+      if (wordIdx >= parts[i].start && wordIdx < parts[i].start + parts[i].length) {
+        return i;
+      }
+    }
+    return parts.length - 1;
+  },
+
   updateScoreRecord() {
     const { scores } = get();
     const now = Date.now();
@@ -440,11 +532,15 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   async syncTo(remote) {
     if (!remote.uid || remote.uid !== get().uid) return;
-    const remoteSync = (remote.lastSync ?? 0);
-    if (get().lastSync === 0 || remoteSync > get().lastSync) {
+    const remoteUpdate = (remote.lastUpdate ?? 0);
+    const localUpdate = get().lastUpdate;
+    // Only overwrite local if never synced, OR remote data is genuinely newer than local.
+    // This prevents a session's quiz answers (saved locally) from being overwritten by
+    // the older Firebase copy when the app restarts before the next push.
+    if (get().lastSync === 0 || remoteUpdate > localUpdate) {
       const now = Date.now();
       set({
-        lastUpdate: now, lastSync: now,
+        lastUpdate: remoteUpdate, lastSync: now,
         lastSeed: remote.lastSeed ?? get().lastSeed,
         level: remote.level ?? get().level,
         specialEnabled: remote.specialEnabled ?? get().specialEnabled,

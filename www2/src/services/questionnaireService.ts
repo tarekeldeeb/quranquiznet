@@ -18,6 +18,7 @@ export let qo: QuestionObject = makeEmptyQO();
 // daily quiz state
 let dailyStarts: number[] = [];
 let dailyIndex = 0;
+export let currentDailyRandom = 0;
 
 // Set to true by initDailyQuiz so the quiz screen knows to enter daily mode on next focus
 export let pendingDailyStart = false;
@@ -195,6 +196,7 @@ export async function createNormalQ(
   profileTotalStudy: () => number,
   profileLevel: number,
   forcedLevel?: number,
+  profilePartIndexOf?: (wordIdx: number) => number,
 ): Promise<void> {
   qo = makeEmptyQO();
   qo.rounds = 10;
@@ -206,7 +208,10 @@ export async function createNormalQ(
     const total = profileTotalStudy();
     sparsed = profileSparsePoint((Math.abs(getRand().int32()) % total) + 1);
   } else {
-    sparsed = { idx: start, part: getSuraIdx(start) };
+    // Use profilePartIndexOf to map word index → parts index (0-49).
+    // getSuraIdx returns a sura index 0-113 which is wrong for parts beyond index 44.
+    const partIdx = profilePartIndexOf ? profilePartIndexOf(start) : getSuraIdx(start);
+    sparsed = { idx: start, part: partIdx };
   }
   qo.currentPart = sparsed.part;
 
@@ -270,6 +275,7 @@ export async function createNextQ(
   profileLevel: number,
   specialEnabled: boolean,
   isSurasEligible: boolean,
+  profilePartIndexOf?: (wordIdx: number) => number,
 ): Promise<void> {
   const isSpecial = specialEnabled && selectSpecial(profileLevel, isSurasEligible);
   if (isSpecial) {
@@ -278,6 +284,7 @@ export async function createNextQ(
   return createNormalQ(
     start !== undefined && isFinite(start) && start > 0 ? start : -1,
     profileSparsePoint, profileTotalStudy, profileLevel,
+    undefined, profilePartIndexOf,
   );
 }
 
@@ -295,14 +302,35 @@ export function initDailyQuiz(
   if (isNaN(dailyRandom)) dailyRandom = 100;
   dailyStarts = [];
   dailyIndex = 0;
+  currentDailyRandom = dailyRandom;
   pendingDailyStart = true;
+
+  console.warn('[DAILY] initDailyQuiz called. dailyRandom=', dailyRandom,
+    'parts.length=', parts.length, 'weights.length=', weights.length);
+  console.warn('[DAILY] weights (non-zero):', weights.map((w, i) => w > 0 ? `[${i}]=${w}` : null).filter(Boolean));
+
   for (let i = 1; i < weights.length; i++) {
     const partLength = parts[i]?.length ?? 0;
     const partStart  = parts[i]?.start ?? 0;
     for (let j = 0; j < weights[i]; j++) {
-      const offset = Math.round(DAILYQUIZ_QPERPART_DIST[j] * partLength + dailyRandom) % partLength;
+      if (partLength === 0) {
+        console.warn(`[DAILY] WARNING: part[${i}] has length=0, skipping`);
+        continue;
+      }
+      const dist = DAILYQUIZ_QPERPART_DIST[j];
+      if (dist === undefined) {
+        console.warn(`[DAILY] WARNING: DAILYQUIZ_QPERPART_DIST[${j}] is undefined`);
+        continue;
+      }
+      const offset = Math.round(dist * partLength + dailyRandom) % partLength;
       dailyStarts.push(partStart + offset);
     }
+  }
+
+  console.warn('[DAILY] initDailyQuiz result: dailyStarts.length=', dailyStarts.length,
+    'starts=', dailyStarts);
+  if (dailyStarts.length === 0) {
+    console.warn('[DAILY] ERROR: dailyStarts is empty — daily quiz has no questions!');
   }
 }
 
@@ -314,8 +342,24 @@ export async function createNextDailyQ(
   profileSparsePoint: (n: number) => { idx: number; part: number },
   profileTotalStudy: () => number,
   profileLevel: number,
+  profilePartIndexOf: (wordIdx: number) => number,
 ): Promise<boolean> {
-  if (dailyIndex > 9) return false;
-  await createNormalQ(dailyStarts[dailyIndex++], profileSparsePoint, profileTotalStudy, profileLevel, 1);
+  console.warn(`[DAILY] createNextDailyQ called. dailyIndex=${dailyIndex}, dailyStarts.length=${dailyStarts.length}`);
+  if (dailyIndex > 9) {
+    console.warn('[DAILY] createNextDailyQ: dailyIndex > 9 → returning false (quiz complete)');
+    return false;
+  }
+  if (dailyStarts.length === 0) {
+    console.warn('[DAILY] createNextDailyQ: dailyStarts is EMPTY → cannot produce question');
+    return false;
+  }
+  const start = dailyStarts[dailyIndex];
+  console.warn(`[DAILY] createNextDailyQ: question ${dailyIndex + 1}/10, start=${start}`);
+  if (start === undefined || isNaN(start)) {
+    console.warn(`[DAILY] createNextDailyQ: start is invalid (${start}) for index ${dailyIndex}`);
+    return false;
+  }
+  dailyIndex++;
+  await createNormalQ(start, profileSparsePoint, profileTotalStudy, profileLevel, 1, profilePartIndexOf);
   return true;
 }

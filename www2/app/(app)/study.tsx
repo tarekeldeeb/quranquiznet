@@ -54,7 +54,7 @@ export default function StudyScreen() {
       {/* Filter action bar */}
       <View style={s.actionBar}>
         <TouchableOpacity style={s.actionBtn} onPress={selectAll}>
-          <Ionicons name="checkmark" size={18} color="#1a5276" />
+          <Ionicons name="checkmark" size={18} color="#0d2d4e" />
           <Text style={s.actionTxt}> الكل</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.actionBtn} onPress={selectGood}>
@@ -79,7 +79,7 @@ export default function StudyScreen() {
               <Switch
                 value={item.checked}
                 onValueChange={() => togglePart(index)}
-                trackColor={{ false: '#ccc', true: '#1a5276' }}
+                trackColor={{ false: '#ccc', true: '#0d2d4e' }}
                 thumbColor={item.checked ? '#fff' : '#f4f3f4'}
               />
               <Ionicons name={iconName} size={18} color={iconColor} style={s.icon} />
@@ -100,7 +100,7 @@ export default function StudyScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1, backgroundColor: '#edf1f5' },
   actionBar: { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderColor: '#ddd', gap: 16 },
   actionBtn: { flexDirection: 'row', alignItems: 'center' },
   actionTxt: { fontSize: 14, color: '#555' },

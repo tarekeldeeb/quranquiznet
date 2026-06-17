@@ -2,10 +2,10 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, Alert, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput,
+  TouchableOpacity, Modal, TextInput, ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useFocusEffect } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import { useProfileStore } from '../../src/stores/profileStore';
@@ -37,15 +37,39 @@ function makeActive(qo: QuestionObject, round = 0): ActiveCard {
   };
 }
 
-export default function QuizScreen() {
-  const params = useLocalSearchParams<{ customStart?: string; dailyMode?: string }>();
-  const profile = useProfileStore();
+// Module-level session cache. expo-router can unmount an inactive tab on web, so
+// component state/refs do NOT survive leaving to another tab (e.g. Me) and back.
+// This module object outlives remounts, letting us resume the in-progress run.
+interface SessionCache {
+  active: boolean;       // a run is in progress and resumable
+  dailyMode: boolean;
+  dailyEnded: boolean;
+  cards: CardData[];
+  activeCard: ActiveCard | null;
+  score: number;
+  cardCounter: number;
+  sessionCorrect: number;
+  dailyScore: number;
+  dailyTime: number;
+  lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
+}
+const sessionCache: SessionCache = {
+  active: false, dailyMode: false, dailyEnded: false,
+  cards: [], activeCard: null, score: 0,
+  cardCounter: 0, sessionCorrect: 0, dailyScore: 0, dailyTime: 0,
+  lastNonce: undefined,
+};
 
-  const [cards, setCards] = useState<CardData[]>([]);
-  const [active, setActive] = useState<ActiveCard | null>(null);
-  const [score, setScore] = useState(0);
+export default function QuizScreen() {
+  const params = useLocalSearchParams<{ customStart?: string; dailyMode?: string; nonce?: string }>();
+  const profile = useProfileStore();
+  const router = useRouter();
+
+  const [cards, setCards] = useState<CardData[]>(() => sessionCache.cards);
+  const [active, setActive] = useState<ActiveCard | null>(() => sessionCache.activeCard);
+  const [score, setScore] = useState(() => sessionCache.score);
   const [loading, setLoading] = useState(true);
-  const [dailyMode, setDailyMode] = useState(params.dailyMode === '1');
+  const [dailyMode, setDailyMode] = useState(() => params.dailyMode === '1' || sessionCache.dailyMode);
   const [timerValue, setTimerValue] = useState(0);
   const [timerMax, setTimerMax] = useState(0);
   const [reportVisible, setReportVisible] = useState(false);
@@ -53,43 +77,126 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
+  // Session chooser — shown when no mode or customStart is pre-set
+  const [chooserVisible, setChooserVisible] = useState(
+    params.dailyMode !== '1' && !params.customStart,
+  );
+  // Post-session summary
+  const [summaryVisible, setSummaryVisible] = useState(false);
 
   const listRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
-  const cardCounterRef = useRef(0);
-  const dailyScoreRef = useRef(0);
-  const dailyTimeRef = useRef(0);
+  const cardCounterRef = useRef(sessionCache.cardCounter);
+  const sessionCorrectRef = useRef(sessionCache.sessionCorrect);
+  const dailyScoreRef = useRef(sessionCache.dailyScore);
+  const dailyTimeRef = useRef(sessionCache.dailyTime);
   const dailyTimeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Guard: prevents loadNextQuestion from re-entering after daily quiz ends
+  const dailyEndedRef = useRef(sessionCache.dailyEnded);
 
-  const isInitialized = useRef(false);
+  // Tracks the last navigation nonce we acted on, so a tab refocus (no new nonce)
+  // does not restart a stale deep-linked sura. Restored from cache so a remount
+  // doesn't treat a still-present nonce as a fresh deep-link.
+  const lastNonceRef = useRef<string | undefined>(sessionCache.lastNonce);
+  // True while a quiz run is in progress (and resumable). Lets us tell a genuine
+  // in-progress session (return from the Me tab) apart from a fresh entry.
+  const sessionActiveRef = useRef(sessionCache.active);
+  // Mirror of dailyMode for use inside the focus callback (avoids stale closure).
+  const dailyModeRef = useRef(sessionCache.dailyMode);
 
-  // ── first mount: start normal quiz ────────────────────────────────────────
+  // Mirror the visible session into the module cache so it survives a remount.
   useEffect(() => {
-    if (isInitialized.current) return;
-    isInitialized.current = true;
+    sessionCache.cards = cards;
+    sessionCache.activeCard = active;
+    sessionCache.score = score;
+    sessionCache.dailyMode = dailyMode;
+  }, [cards, active, score, dailyMode]);
+
+  // Reset all per-session state, then start a fresh quiz/daily run.
+  function startSession(start: number | undefined, daily: boolean) {
+    clearTimers();
+    setChooserVisible(false);
+    setCards([]);
+    setActive(null);
+    setDailyMode(daily);
+    dailyModeRef.current = daily;
+    sessionActiveRef.current = true;
+    cardCounterRef.current = 0;
+    sessionCorrectRef.current = 0;
+    dailyScoreRef.current = 0;
+    dailyTimeRef.current = 0;
+    dailyEndedRef.current = false;
+    syncCacheFlags();
+    profile.recordPlay();
     QS.initQuestionnaire(profile.lastSeed);
     setScore(profile.getScore());
-    const start = params.customStart ? parseInt(params.customStart) : undefined;
-    loadNextQuestion(start);
-    return () => { clearTimers(); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (daily) {
+      dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+    }
+    loadNextQuestion(start, daily);
+  }
 
-  // ── on focus: detect pending daily start from Daily tab ───────────────────
-  useFocusEffect(useCallback(() => {
-    if (!QS.pendingDailyStart) return;
-    QS.clearPendingDailyStart();
+  // Resume an in-progress session left running on this (persistent) tab — e.g.
+  // after popping over to the Me tab to toggle suras. Cards + the current
+  // question are preserved; any sura changes apply to subsequent questions.
+  function resumeSession() {
+    setLoading(false);
+    setScore(profile.getScore());
+    if (dailyModeRef.current && !dailyEndedRef.current) {
+      // Daily is timed: re-arm the elapsed-time tracker and the question timer.
+      dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+      startTimer(12);
+    }
+  }
+
+  // Reset to the start chooser (random / specific sura).
+  function openChooser() {
     clearTimers();
     setCards([]);
     setActive(null);
-    setDailyMode(true);
-    dailyScoreRef.current = 0;
-    dailyTimeRef.current = 0;
-    cardCounterRef.current = 0;
-    dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; }, 1000);
-    loadNextQuestion(undefined, true);
+    setDailyMode(false);
+    dailyModeRef.current = false;
+    sessionActiveRef.current = false;
+    dailyEndedRef.current = false;
+    syncCacheFlags();
+    setScore(profile.getScore());
+    setChooserVisible(true);
+  }
+
+  // Push the ref-held flags/counters into the module cache (refs alone don't
+  // trigger the state-sync effect above).
+  function syncCacheFlags() {
+    sessionCache.active = sessionActiveRef.current;
+    sessionCache.dailyMode = dailyModeRef.current;
+    sessionCache.dailyEnded = dailyEndedRef.current;
+    sessionCache.cardCounter = cardCounterRef.current;
+    sessionCache.sessionCorrect = sessionCorrectRef.current;
+    sessionCache.dailyScore = dailyScoreRef.current;
+    sessionCache.dailyTime = dailyTimeRef.current;
+  }
+
+  // ── on focus: decide what to show every time the screen is entered ─────────
+  // Persistent tab ⇒ component stays mounted, so this is the only reliable hook
+  // for re-offering the chooser / resuming / starting on re-entry.
+  useFocusEffect(useCallback(() => {
+    if (QS.pendingDailyStart) {
+      QS.clearPendingDailyStart();
+      startSession(undefined, true);
+    } else if (params.customStart && params.nonce && params.nonce !== lastNonceRef.current) {
+      // Fresh deep-link to a specific sura (from home weak-sura or the Me list).
+      lastNonceRef.current = params.nonce;
+      sessionCache.lastNonce = params.nonce;
+      startSession(parseInt(params.customStart), false);
+    } else if (sessionActiveRef.current) {
+      // Returning to a live session (e.g. from the Me tab) ⇒ keep the scroll.
+      resumeSession();
+    } else {
+      // Plain entry with no live session ⇒ offer the chooser.
+      openChooser();
+    }
+    return () => { clearTimers(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []));
+  }, [params.customStart, params.nonce]));
 
   function clearTimers() {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -100,15 +207,24 @@ export default function QuizScreen() {
   // isDaily can be passed explicitly to avoid stale closure when entering daily mode
   async function loadNextQuestion(start?: number, isDaily?: boolean) {
     const daily = isDaily ?? dailyMode;
+    // Guard: once the daily quiz has ended, the timer must not restart the loop
+    if (daily && dailyEndedRef.current) return;
+    console.warn('[QUIZ] loadNextQuestion: daily=', daily, 'start=', start,
+      'dailyMode state=', dailyMode, 'isDaily param=', isDaily);
     setLoading(true);
     try {
       if (daily) {
+        console.warn('[QUIZ] calling createNextDailyQ...');
         const hasMore = await QS.createNextDailyQ(
           profile.getSparsePoint.bind(profile),
           profile.getTotalStudyLength.bind(profile),
           profile.level,
+          profile.getPartIndexOf.bind(profile),
         );
+        console.warn('[QUIZ] createNextDailyQ returned hasMore=', hasMore);
         if (!hasMore) {
+          console.warn('[QUIZ] daily quiz ended → calling endDailyQuiz');
+          dailyEndedRef.current = true;
           await endDailyQuiz();
           return;
         }
@@ -120,6 +236,7 @@ export default function QuizScreen() {
           profile.level,
           profile.specialEnabled,
           profile.isSurasSpecialQuestionEligible(),
+          profile.getPartIndexOf.bind(profile),
         );
       }
       profile.setLastSeed(QS.qo.startIdx);
@@ -133,16 +250,18 @@ export default function QuizScreen() {
       setCards((prev) => [...prev, newCard]);
       setActive(makeActive(QS.qo));
       cardCounterRef.current++;
+      syncCacheFlags();
       const cc = cardCounterRef.current;
       if (!daily && (cc - DAILYQUIZ_CHECKAFTER) % DAILYQUIZ_CHECKEVERY === 0) {
         checkForDailyQuiz();
       }
+      // Start the per-question timer only after a question was successfully loaded
+      if (daily) startTimer(12);
     } catch (e) {
       console.error('loadNextQuestion error:', e);
     } finally {
       setLoading(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 200);
-      if (daily) startTimer(12);
     }
   }
 
@@ -187,6 +306,8 @@ export default function QuizScreen() {
     profile.addCorrect(QS.qo);
     setScore(profile.getScore());
     if (dailyMode) dailyScoreRef.current++;
+    sessionCorrectRef.current++;
+    syncCacheFlags();
     // Store wasCorrect in the card so historical cards keep the right border color
     setCards((prev) => {
       if (prev.length === 0) return prev;
@@ -195,7 +316,12 @@ export default function QuizScreen() {
       return next;
     });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true } : null);
-    setTimeout(() => loadNextQuestion(), 600);
+    if (!dailyMode && sessionCorrectRef.current % 10 === 0) {
+      profile.updateScoreRecord();
+      setTimeout(() => setSummaryVisible(true), 650);
+    } else {
+      setTimeout(() => loadNextQuestion(), 600);
+    }
   }
 
   function handleIncorrect() {
@@ -231,15 +357,7 @@ export default function QuizScreen() {
               // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
               // already on this screen — handle directly:
               QS.clearPendingDailyStart();
-              clearTimers();
-              setCards([]);
-              setActive(null);
-              setDailyMode(true);
-              dailyScoreRef.current = 0;
-              dailyTimeRef.current = 0;
-              cardCounterRef.current = 0;
-              dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; }, 1000);
-              loadNextQuestion(undefined, true);
+              startSession(undefined, true);
             },
           },
         ],
@@ -252,6 +370,12 @@ export default function QuizScreen() {
   async function endDailyQuiz() {
     clearTimers();
     setDailyMode(false);
+    dailyModeRef.current = false;
+    sessionActiveRef.current = false;
+    dailyEndedRef.current = true;
+    syncCacheFlags();
+    profile.markDailyCompleted();
+    profile.updateScoreRecord();
     const finalScore = profile.getDailyQuizScore(
       dailyScoreRef.current,
       dailyTimeRef.current / 1000,
@@ -262,6 +386,7 @@ export default function QuizScreen() {
       score: finalScore,
       name: social.isAnonymous ? 'مجهول/ة' : (social.displayName ?? 'مجهول').split(' ')[0],
       uid: profile.uid,
+      country: profile.country || undefined,
     });
     setDailyEndVisible(true);
   }
@@ -309,7 +434,7 @@ export default function QuizScreen() {
     <SafeAreaView style={s.container} edges={['bottom']}>
       {loading && cards.length === 0 && (
         <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color="#1a5276" />
+          <ActivityIndicator size="large" color="#0d2d4e" />
         </View>
       )}
 
@@ -378,9 +503,67 @@ export default function QuizScreen() {
             <Text style={s.modalBody}>حصلت على:</Text>
             <Text style={s.bigScore}>{dailyFinalScore} نقطة</Text>
             <Text style={s.modalBody}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
-            <TouchableOpacity style={s.btnConfirm} onPress={() => setDailyEndVisible(false)}>
+            <TouchableOpacity style={s.btnConfirm} onPress={() => { setDailyEndVisible(false); router.replace('/(app)/home'); }}>
               <Text style={s.btnConfirmText}>حسناً</Text>
             </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Session chooser modal */}
+      <Modal visible={chooserVisible} transparent animationType="slide" onRequestClose={() => {}}>
+        <View style={s.modalBg}>
+          <View style={[s.modalBox, { maxHeight: '80%' }]}>
+            <Text style={s.modalTitle}>ابدأ اختباراً</Text>
+            <TouchableOpacity
+              style={s.chooserOption}
+              onPress={() => {
+                setChooserVisible(false);
+                loadNextQuestion(undefined);
+              }}
+            >
+              <Text style={s.chooserOptionTxt}>🎲 اختبار عشوائي</Text>
+            </TouchableOpacity>
+            <Text style={[s.modalBody, { marginTop: 12 }]}>أو اختر سورة:</Text>
+            <ScrollView style={s.chooserList}>
+              {profile.parts.map((p, i) => (
+                <TouchableOpacity
+                  key={i}
+                  style={s.chooserItem}
+                  onPress={() => {
+                    setChooserVisible(false);
+                    loadNextQuestion(p.start);
+                  }}
+                >
+                  <Text style={s.chooserItemTxt}>{p.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Post-session summary modal */}
+      <Modal visible={summaryVisible} transparent animationType="fade" onRequestClose={() => { setSummaryVisible(false); loadNextQuestion(); }}>
+        <View style={s.modalBg}>
+          <View style={s.modalBox}>
+            <Text style={s.modalTitle}>ممتاز! 🎉</Text>
+            <Text style={s.modalBody}>أجبت على {sessionCorrectRef.current} سؤال صحيح في هذه الجلسة</Text>
+            <Text style={s.bigScore}>{score.toLocaleString()}</Text>
+            <Text style={[s.modalBody, { textAlign: 'center', marginBottom: 16 }]}>نقطة إجمالية</Text>
+            {profile.getTopBadParts()[0] !== '-' && (
+              <Text style={[s.modalBody, { color: '#f39c12' }]}>
+                💡 {profile.getTopBadParts()[0]} تحتاج مراجعة
+              </Text>
+            )}
+            <View style={s.modalRow}>
+              <TouchableOpacity style={s.btnCancel} onPress={() => { setSummaryVisible(false); router.replace('/(app)/home'); }}>
+                <Text style={s.btnCancelText}>الرئيسية</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.btnConfirm} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>
+                <Text style={s.btnConfirmText}>واصل</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
@@ -389,18 +572,35 @@ export default function QuizScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#f0f4f8' },
+  container: { flex: 1, backgroundColor: '#edf1f5' },
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
-  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#f0f4f8' },
+  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%' },
-  modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#1a5276' },
+  modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
   modalBody: { fontSize: 14, textAlign: 'right', color: '#444', marginBottom: 8 },
   bigScore: { fontSize: 36, fontWeight: 'bold', color: '#27ae60', textAlign: 'center', marginVertical: 12 },
   reportInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
   modalRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
   btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#ecf0f1' },
   btnCancelText: { color: '#555', fontWeight: '600' },
-  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#1a5276', marginTop: 8 },
+  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#0d2d4e', marginTop: 8 },
   btnConfirmText: { color: '#fff', fontWeight: '700', textAlign: 'center' },
+  chooserOption: {
+    backgroundColor: '#d8e8f2',
+    borderRadius: 8,
+    padding: 14,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: '#d6eaf8',
+  },
+  chooserOptionTxt: { fontSize: 16, fontWeight: '700', color: '#0d2d4e' },
+  chooserList: { maxHeight: 300, marginTop: 4 },
+  chooserItem: {
+    paddingVertical: 12,
+    paddingHorizontal: 4,
+    borderBottomWidth: 1,
+    borderColor: '#f0f0f0',
+  },
+  chooserItemTxt: { fontSize: 14, color: '#333', textAlign: 'right' },
 });

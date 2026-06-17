@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
-import { I18nManager, ActivityIndicator, View, Text } from 'react-native';
+import { I18nManager, ActivityIndicator, View, Text, Image } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { initDb } from '../src/db/initDb';
 import { getFirebaseApp } from '../src/services/firebase';
 import { useProfileStore } from '../src/stores/profileStore';
+
+const appIcon = require('../assets/images/app-icon.png');
 
 // Force RTL layout for Arabic
 I18nManager.allowRTL(true);
@@ -37,10 +39,11 @@ export default function RootLayout() {
   if (!dbReady || !fontsLoaded) {
     return (
       <SafeAreaProvider>
-        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#1a5276', gap: 16 }}>
-          <ActivityIndicator size="large" color="#fff" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0d2d4e', gap: 20 }}>
+          <Image source={appIcon} style={{ width: 96, height: 96, borderRadius: 20 }} />
+          <ActivityIndicator size="large" color="#f39c12" />
           {dbProgress > 0 && dbProgress < 1 && (
-            <Text style={{ color: '#fff', fontSize: 13, opacity: 0.8 }}>
+            <Text style={{ color: '#9bbdd4', fontSize: 13 }}>
               تحميل البيانات {Math.round(dbProgress * 100)}٪
             </Text>
           )}
