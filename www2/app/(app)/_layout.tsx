@@ -27,7 +27,7 @@ function HeaderLogo() {
 
 async function detectCountry(setCountry: (c: string) => void) {
   try {
-    const res = await fetch('https://ipinfo.io?token=c2dc00eae1ba76');
+    const res = await fetch(`https://ipinfo.io?token=${process.env.EXPO_PUBLIC_IPINFO_TOKEN ?? ''}`);
     const data = await res.json() as { country?: string };
     if (data.country) setCountry(data.country.toLowerCase());
   } catch { /* non-critical, silently ignore */ }

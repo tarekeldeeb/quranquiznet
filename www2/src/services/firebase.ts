@@ -9,17 +9,19 @@ import {
 } from 'firebase/auth';
 import { getDatabase, ref, set, push, get as dbGet, Database } from 'firebase/database';
 
-// ─── Replace these values with your Firebase project config ───────────────────
-// Copy from: Firebase Console → Project Settings → Your apps → Web app → Config
+// Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
+// values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
+// inlined into the client bundle — the Firebase web apiKey is a public project
+// identifier, not a secret; protect data via Firebase Security Rules / App Check.
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyCGxNSZizDrqsm58SIi1mmBAe4tWfvCmJk",
-  authDomain: "quranquiznet-3a54c.firebaseapp.com",
-  databaseURL: "https://quranquiznet-3a54c.firebaseio.com",
-  projectId: "quranquiznet-3a54c",
-  storageBucket: "quranquiznet-3a54c.firebasestorage.app",
-  messagingSenderId: "635224907527",
-  appId: "1:635224907527:web:bb6cd3e8d858130d3a6fa2",
-  measurementId: "G-Y9MJ3PD6KV"
+  apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.EXPO_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  databaseURL: process.env.EXPO_PUBLIC_FIREBASE_DATABASE_URL,
+  projectId: process.env.EXPO_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.EXPO_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.EXPO_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.EXPO_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.EXPO_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 // ─────────────────────────────────────────────────────────────────────────────
 

@@ -4,3 +4,9 @@
 
 expo-env.d.ts
 # @end expo-cli
+
+# Local environment files (Firebase / ipinfo config). Keep .env.example tracked.
+.env
+.env.local
+.env*.local
+!.env.example
