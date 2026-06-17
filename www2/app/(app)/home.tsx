@@ -21,10 +21,8 @@ export default function HomeScreen() {
 
   function startDaily() {
     if (!dailyHead || dailyHead === 'loading') return;
-    console.warn('[DAILY] home: startDaily called. dailyHead=', JSON.stringify(dailyHead));
     const weights = profile.getDailyQuizStudyPartsWeights();
     QS.initDailyQuiz(dailyHead.daily_random, profile.parts, weights);
-    console.warn('[DAILY] home: navigating to quiz with dailyMode=1');
     router.push({ pathname: '/(app)/quiz', params: { dailyMode: '1' } });
   }
 
@@ -44,9 +42,10 @@ export default function HomeScreen() {
     && profile.lastDailyCompletedDate === today;
 
   const weakSura = profile.getTopBadParts()[0];
-  const weakPart = weakSura !== '-'
-    ? profile.parts.find((p) => p.name === weakSura)
-    : null;
+  const weakPartIndex = weakSura !== '-'
+    ? profile.parts.findIndex((p) => p.name === weakSura)
+    : -1;
+  const weakPart = weakPartIndex >= 0 ? profile.parts[weakPartIndex] : null;
 
   return (
     <SafeAreaView style={s.container} edges={['top', 'bottom']}>
@@ -112,7 +111,7 @@ export default function HomeScreen() {
         {weakPart && (
           <TouchableOpacity
             style={s.alertCard}
-            onPress={() => router.push({ pathname: '/(app)/quiz', params: { customStart: String(weakPart.start), nonce: String(Date.now()) } })}
+            onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
             activeOpacity={0.8}
           >
             <View style={s.alertAccent} />
@@ -160,9 +159,7 @@ const s = StyleSheet.create({
     padding: 22,
     alignItems: 'center',
     gap: 8,
-    shadowColor: '#000',
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    boxShadow: '0px 0px 8px rgba(0,0,0,0.15)',
     elevation: 4,
   },
   dailyCardLoading: {
@@ -177,9 +174,7 @@ const s = StyleSheet.create({
     padding: 22,
     alignItems: 'center',
     gap: 6,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   dailyCardDone: {
@@ -190,9 +185,7 @@ const s = StyleSheet.create({
     gap: 6,
     borderWidth: 1.5,
     borderColor: '#27ae60',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   dailyIcon: { fontSize: 40 },
@@ -219,9 +212,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     padding: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
     gap: 4,
   },
@@ -237,9 +228,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     flexDirection: 'row-reverse',
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   alertAccent: { width: 4, backgroundColor: '#f39c12' },
@@ -252,9 +241,7 @@ const s = StyleSheet.create({
     borderRadius: 12,
     paddingVertical: 16,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.1)',
     elevation: 3,
   },
   quickBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '700' },

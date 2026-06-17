@@ -52,16 +52,17 @@ interface SessionCache {
   dailyScore: number;
   dailyTime: number;
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
+  customPart: number | null;       // selected sura/juz part index, or null = whole profile
 }
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
   cardCounter: 0, sessionCorrect: 0, dailyScore: 0, dailyTime: 0,
-  lastNonce: undefined,
+  lastNonce: undefined, customPart: null,
 };
 
 export default function QuizScreen() {
-  const params = useLocalSearchParams<{ customStart?: string; dailyMode?: string; nonce?: string }>();
+  const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string }>();
   const profile = useProfileStore();
   const router = useRouter();
 
@@ -77,9 +78,9 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
-  // Session chooser — shown when no mode or customStart is pre-set
+  // Session chooser — shown when no mode or part is pre-set
   const [chooserVisible, setChooserVisible] = useState(
-    params.dailyMode !== '1' && !params.customStart,
+    params.dailyMode !== '1' && !params.customPart,
   );
   // Post-session summary
   const [summaryVisible, setSummaryVisible] = useState(false);
@@ -103,6 +104,10 @@ export default function QuizScreen() {
   const sessionActiveRef = useRef(sessionCache.active);
   // Mirror of dailyMode for use inside the focus callback (avoids stale closure).
   const dailyModeRef = useRef(sessionCache.dailyMode);
+  // Selected sura/juz part for "custom part" mode. null ⇒ random across the
+  // profile's enabled parts. When set, questions are drawn at random from within
+  // this single part's word range only (bypassing the profile's part selection).
+  const customPartRef = useRef<number | null>(sessionCache.customPart);
 
   // Mirror the visible session into the module cache so it survives a remount.
   useEffect(() => {
@@ -112,14 +117,19 @@ export default function QuizScreen() {
     sessionCache.dailyMode = dailyMode;
   }, [cards, active, score, dailyMode]);
 
-  // Reset all per-session state, then start a fresh quiz/daily run.
-  function startSession(start: number | undefined, daily: boolean) {
+  // Reset all per-session state, then start a fresh run.
+  //   { daily: true }        → daily quiz
+  //   { partIndex: i }       → "custom part": random questions within sura/juz i
+  //   {}                     → random across the profile's enabled parts
+  function startSession(opts: { daily?: boolean; partIndex?: number | null }) {
+    const daily = !!opts.daily;
     clearTimers();
     setChooserVisible(false);
     setCards([]);
     setActive(null);
     setDailyMode(daily);
     dailyModeRef.current = daily;
+    customPartRef.current = opts.partIndex ?? null;
     sessionActiveRef.current = true;
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
@@ -133,7 +143,7 @@ export default function QuizScreen() {
     if (daily) {
       dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
     }
-    loadNextQuestion(start, daily);
+    loadNextQuestion();
   }
 
   // Resume an in-progress session left running on this (persistent) tab — e.g.
@@ -156,6 +166,7 @@ export default function QuizScreen() {
     setActive(null);
     setDailyMode(false);
     dailyModeRef.current = false;
+    customPartRef.current = null;
     sessionActiveRef.current = false;
     dailyEndedRef.current = false;
     syncCacheFlags();
@@ -173,6 +184,7 @@ export default function QuizScreen() {
     sessionCache.sessionCorrect = sessionCorrectRef.current;
     sessionCache.dailyScore = dailyScoreRef.current;
     sessionCache.dailyTime = dailyTimeRef.current;
+    sessionCache.customPart = customPartRef.current;
   }
 
   // ── on focus: decide what to show every time the screen is entered ─────────
@@ -181,12 +193,12 @@ export default function QuizScreen() {
   useFocusEffect(useCallback(() => {
     if (QS.pendingDailyStart) {
       QS.clearPendingDailyStart();
-      startSession(undefined, true);
-    } else if (params.customStart && params.nonce && params.nonce !== lastNonceRef.current) {
-      // Fresh deep-link to a specific sura (from home weak-sura or the Me list).
+      startSession({ daily: true });
+    } else if (params.customPart && params.nonce && params.nonce !== lastNonceRef.current) {
+      // Fresh deep-link to a specific sura/juz (from home weak-sura or the Me list).
       lastNonceRef.current = params.nonce;
       sessionCache.lastNonce = params.nonce;
-      startSession(parseInt(params.customStart), false);
+      startSession({ partIndex: parseInt(params.customPart) });
     } else if (sessionActiveRef.current) {
       // Returning to a live session (e.g. from the Me tab) ⇒ keep the scroll.
       resumeSession();
@@ -196,7 +208,7 @@ export default function QuizScreen() {
     }
     return () => { clearTimers(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.customStart, params.nonce]));
+  }, [params.customPart, params.nonce]));
 
   function clearTimers() {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -204,33 +216,47 @@ export default function QuizScreen() {
   }
 
   // ── load next question ────────────────────────────────────────────────────
-  // isDaily can be passed explicitly to avoid stale closure when entering daily mode
-  async function loadNextQuestion(start?: number, isDaily?: boolean) {
-    const daily = isDaily ?? dailyMode;
+  // Source of truth is the refs (dailyModeRef / customPartRef), set before each
+  // call — avoids stale-closure issues with state.
+  async function loadNextQuestion() {
+    const daily = dailyModeRef.current;
     // Guard: once the daily quiz has ended, the timer must not restart the loop
     if (daily && dailyEndedRef.current) return;
-    console.warn('[QUIZ] loadNextQuestion: daily=', daily, 'start=', start,
-      'dailyMode state=', dailyMode, 'isDaily param=', isDaily);
     setLoading(true);
     try {
       if (daily) {
-        console.warn('[QUIZ] calling createNextDailyQ...');
         const hasMore = await QS.createNextDailyQ(
           profile.getSparsePoint.bind(profile),
           profile.getTotalStudyLength.bind(profile),
           profile.level,
           profile.getPartIndexOf.bind(profile),
         );
-        console.warn('[QUIZ] createNextDailyQ returned hasMore=', hasMore);
         if (!hasMore) {
-          console.warn('[QUIZ] daily quiz ended → calling endDailyQuiz');
           dailyEndedRef.current = true;
           await endDailyQuiz();
           return;
         }
+      } else if (customPartRef.current != null) {
+        // Custom Sura/Juz: draw a random word from within this part's range only.
+        const pi = customPartRef.current;
+        const part = profile.parts[pi];
+        const sparsePoint = (n: number) => ({
+          idx: part.start + ((n - 1) % part.length),
+          part: pi,
+        });
+        const total = () => part.length;
+        await QS.createNextQ(
+          undefined,
+          sparsePoint,
+          total,
+          profile.level,
+          profile.specialEnabled,
+          profile.isSurasSpecialQuestionEligible(),
+          profile.getPartIndexOf.bind(profile),
+        );
       } else {
         await QS.createNextQ(
-          start,
+          undefined,
           profile.getSparsePoint.bind(profile),
           profile.getTotalStudyLength.bind(profile),
           profile.level,
@@ -357,7 +383,7 @@ export default function QuizScreen() {
               // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
               // already on this screen — handle directly:
               QS.clearPendingDailyStart();
-              startSession(undefined, true);
+              startSession({ daily: true });
             },
           },
         ],
@@ -517,10 +543,7 @@ export default function QuizScreen() {
             <Text style={s.modalTitle}>ابدأ اختباراً</Text>
             <TouchableOpacity
               style={s.chooserOption}
-              onPress={() => {
-                setChooserVisible(false);
-                loadNextQuestion(undefined);
-              }}
+              onPress={() => startSession({})}
             >
               <Text style={s.chooserOptionTxt}>🎲 اختبار عشوائي</Text>
             </TouchableOpacity>
@@ -530,10 +553,7 @@ export default function QuizScreen() {
                 <TouchableOpacity
                   key={i}
                   style={s.chooserItem}
-                  onPress={() => {
-                    setChooserVisible(false);
-                    loadNextQuestion(p.start);
-                  }}
+                  onPress={() => startSession({ partIndex: i })}
                 >
                   <Text style={s.chooserItemTxt}>{p.name}</Text>
                 </TouchableOpacity>

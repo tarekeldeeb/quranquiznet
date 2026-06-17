@@ -169,7 +169,7 @@ const p = StyleSheet.create({
   avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#0d2d4e' },
   name: { fontSize: 18, fontWeight: '700', color: '#0d2d4e' },
   signOutBtn: { position: 'absolute', top: 16, left: 0 },
-  section: { backgroundColor: '#fff', borderRadius: 12, padding: 16, gap: 12, shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2 },
+  section: { backgroundColor: '#fff', borderRadius: 12, padding: 16, gap: 12, boxShadow: '0px 0px 4px rgba(0,0,0,0.05)', elevation: 2 },
   barContainer: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   barLabel: { width: 80, fontSize: 12, color: '#555', textAlign: 'right' },
   barTrack: { flex: 1, height: 10, backgroundColor: '#ecf0f1', borderRadius: 5, overflow: 'hidden' },

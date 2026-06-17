@@ -68,7 +68,7 @@ const s = StyleSheet.create({
   title: { color: '#fff', fontSize: 22, fontWeight: 'bold', marginBottom: 24, textAlign: 'center' },
   card: {
     backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%',
-    shadowColor: '#000', shadowOpacity: 0.15, shadowRadius: 8, elevation: 4,
+    boxShadow: '0px 0px 8px rgba(0,0,0,0.15)', elevation: 4,
     gap: 12,
   },
   cardHeader: { fontSize: 17, fontWeight: '700', textAlign: 'right', color: '#0d2d4e' },

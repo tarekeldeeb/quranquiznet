@@ -174,7 +174,7 @@ const s = StyleSheet.create({
   scroll: { padding: 16, gap: 16 },
   card: {
     backgroundColor: '#fff', borderRadius: 12, padding: 16,
-    shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, elevation: 2,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.05)', elevation: 2,
   },
   center: { alignItems: 'center', gap: 12, paddingVertical: 8 },
   readyTitle: { fontSize: 20, fontWeight: '700', color: '#0d2d4e', textAlign: 'center' },

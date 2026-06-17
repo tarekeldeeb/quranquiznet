@@ -176,7 +176,7 @@ export default function MeScreen() {
                 <View style={s.partRow}>
                   <TouchableOpacity
                     style={s.partPlay}
-                    onPress={() => router.push({ pathname: '/(app)/quiz', params: { customStart: String(part.start), nonce: String(Date.now()) } })}
+                    onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(index), nonce: String(Date.now()) } })}
                   >
                     <Ionicons name="play-circle-outline" size={22} color="#0d2d4e" />
                   </TouchableOpacity>
@@ -254,9 +254,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
 

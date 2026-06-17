@@ -209,11 +209,7 @@ const s = StyleSheet.create({
     width: CARD_W,
     backgroundColor: '#fff',
     borderRadius: 14,
-    // Web shadow via boxShadow would be better, but elevation is cross-platform
-    shadowColor: '#000',
-    shadowOpacity: 0.08,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 8,
+    boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
     elevation: 3,
     overflow: 'hidden',
   },

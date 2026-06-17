@@ -443,16 +443,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const sparse: number[] = new Array(DAILYQUIZ_PARTS_COUNT).fill(0);
     const totalStudyLength = get().getTotalStudyLength();
     const totalStudyWeight = Math.ceil(totalStudyLength / JUZ2_AVG_WORDS);
-    console.warn('[DAILY] getDailyQuizStudyPartsWeights: totalStudyLength=', totalStudyLength,
-      'totalStudyWeight=', totalStudyWeight, 'checkedParts=',
-      parts.filter(p => p.checked).map(p => p.name));
     let sum = 0;
     for (let i = 0; i < DAILYQUIZ_PARTS_COUNT; i++) {
       const qs = countedScore(parts[i]?.numQuestions as unknown as number[]);
       if (i === 0 || qs === 0 || !parts[i]?.checked) {
-        if (i > 0 && parts[i]?.checked && qs === 0) {
-          console.warn(`[DAILY] part[${i}] (${parts[i]?.name}) is checked but has 0 answered questions → weight=0`);
-        }
         sparse[i] = 0;
       } else {
         const Wn = Math.ceil((DAILYQUIZ_QPERPART_COUNT * PART_WEIGHT_100[i]) / (totalStudyWeight * 100));
@@ -460,9 +454,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       }
       sum += sparse[i];
     }
-    console.warn('[DAILY] weights sum=', sum, '(0 means fallback to last juz)');
     if (sum === 0) {
-      console.warn('[DAILY] WARNING: all weights are 0 — falling back to last part only');
+      // No eligible parts → fall back to the last juz only.
       sparse[DAILYQUIZ_PARTS_COUNT - 1] = DAILYQUIZ_QPERPART_COUNT;
       return sparse;
     }

@@ -80,10 +80,8 @@ export default function LeagueScreen() {
         {
           text: 'ابدأ',
           onPress: () => {
-            console.warn('[DAILY] league: startDaily confirmed. head=', JSON.stringify(head));
             const weights = profile.getDailyQuizStudyPartsWeights();
             QS.initDailyQuiz(head.daily_random, profile.parts, weights);
-            console.warn('[DAILY] league: navigating to quiz with dailyMode=1');
             router.push({ pathname: '/(app)/quiz', params: { dailyMode: '1' } });
           },
         },
@@ -192,9 +190,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 10,
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   dailyStripError: { borderWidth: 1, borderColor: '#f5b7b1' },
@@ -229,9 +225,7 @@ const s = StyleSheet.create({
     backgroundColor: '#fff',
     borderRadius: 12,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
+    boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   cardTitle: {

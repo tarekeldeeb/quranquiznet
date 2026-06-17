@@ -128,13 +128,9 @@ export interface DailyHead {
 export async function getDailyHead(): Promise<DailyHead | null> {
   try {
     const snap = await dbGet(ref(getFirebaseDb(), '/daily/head'));
-    const val = snap.val() as DailyHead | null;
-    console.warn('[DAILY] getDailyHead raw value:', JSON.stringify(val));
-    if (!val) console.warn('[DAILY] getDailyHead: node is null/missing in Firebase');
-    else if (val.daily_random == null) console.warn('[DAILY] getDailyHead: daily_random is missing');
-    return val;
+    return snap.val() as DailyHead | null;
   } catch (e) {
-    console.warn('[DAILY] getDailyHead EXCEPTION:', e);
+    console.error('getDailyHead error:', e);
     return null;
   }
 }
