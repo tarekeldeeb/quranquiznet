@@ -15,7 +15,12 @@ export default function Index() {
   }, []);
 
   if (user === 'loading' || onboardingDone === null) return null;
+  // A logged-in user has already been through onboarding — never show the tutorial,
+  // even if this browser/session is missing the local `onboarding_done` flag.
+  if (user) {
+    if (!onboardingDone) AsyncStorage.setItem('onboarding_done', 'true');
+    return <Redirect href="/(app)/home" />;
+  }
   if (!onboardingDone) return <Redirect href="/(onboarding)/slides" />;
-  if (!user) return <Redirect href="/(auth)" />;
-  return <Redirect href="/(app)/home" />;
+  return <Redirect href="/(auth)" />;
 }
