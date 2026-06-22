@@ -8,6 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 
 import QuizCard, { CardData } from '../../src/components/QuizCard';
+import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
@@ -84,6 +85,9 @@ export default function QuizScreen() {
   );
   // Post-session summary
   const [summaryVisible, setSummaryVisible] = useState(false);
+  // Mirror of customPartRef as state, so the read-only settings strip re-renders
+  // when the active scope changes (refs alone don't trigger a render).
+  const [customPartIndex, setCustomPartIndex] = useState<number | null>(() => sessionCache.customPart);
 
   const listRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -130,6 +134,7 @@ export default function QuizScreen() {
     setDailyMode(daily);
     dailyModeRef.current = daily;
     customPartRef.current = opts.partIndex ?? null;
+    setCustomPartIndex(opts.partIndex ?? null);
     sessionActiveRef.current = true;
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
@@ -167,6 +172,7 @@ export default function QuizScreen() {
     setDailyMode(false);
     dailyModeRef.current = false;
     customPartRef.current = null;
+    setCustomPartIndex(null);
     sessionActiveRef.current = false;
     dailyEndedRef.current = false;
     syncCacheFlags();
@@ -456,12 +462,30 @@ export default function QuizScreen() {
   }
 
   // ── render ────────────────────────────────────────────────────────────────
+  // Read-only summary of the settings driving the current run.
+  const scopeMode: ScopeMode = dailyMode ? 'daily' : customPartIndex != null ? 'custom' : 'random';
+  const levelText = profile.levels.find((l) => l.value === profile.level)?.text ?? '';
+  const scopeNames =
+    scopeMode === 'daily' ? []
+    : scopeMode === 'custom' ? [profile.parts[customPartIndex!]?.name ?? '—']
+    : profile.parts.filter((p) => p.checked).map((p) => p.name);
+  const showSettingsBar = !chooserVisible && cards.length > 0;
+
   return (
     <SafeAreaView style={s.container} edges={['bottom']}>
       {loading && cards.length === 0 && (
         <View style={s.loadingOverlay}>
           <ActivityIndicator size="large" color="#0d2d4e" />
         </View>
+      )}
+
+      {showSettingsBar && (
+        <QuizSettingsBar
+          levelText={levelText}
+          specialEnabled={profile.specialEnabled}
+          scopeNames={scopeNames}
+          scopeMode={scopeMode}
+        />
       )}
 
       <FlatList
