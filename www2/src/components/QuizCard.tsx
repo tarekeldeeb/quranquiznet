@@ -101,11 +101,10 @@ export default function QuizCard({
           </View>
         </View>
 
-        {/* Question text */}
+        {/* Question text — render directly so the box grows with the text
+            (a ScrollView here collapsed and cropped the diacritics). */}
         <View style={s.questionBox}>
-          <ScrollView contentContainerStyle={s.questionScroll}>
-            <Text style={s.questionText}>{removeAyaNum(card.qo.txt.question)}</Text>
-          </ScrollView>
+          <Text style={s.questionText}>{removeAyaNum(card.qo.txt.question)}</Text>
         </View>
 
         {/* Body: options + meta */}
@@ -248,21 +247,23 @@ const s = StyleSheet.create({
     backgroundColor: '#fdfaf5',
     borderBottomWidth: 1,
     borderColor: '#e8e0d0',
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: 12,
-    minHeight: 54,
+    minHeight: 60,
   },
-  questionScroll: { flexGrow: 1 },
   questionText: {
     fontSize: 22,
     fontFamily: QURAN_FONT,
     color: '#1a1a1a',
     textAlign: 'right',
     writingDirection: 'rtl',
-    lineHeight: 38,
+    // Generous line height so the Quran diacritics are not clipped.
+    lineHeight: 46,
   },
 
-  body: { flexDirection: 'row', padding: 10, gap: 8 },
+  // RTL: options on the right, score/timer meta on the left (forceRTL does not
+  // flip flexbox on react-native-web, so reverse it explicitly).
+  body: { flexDirection: 'row-reverse', padding: 10, gap: 8 },
 
   optionsCol: { flex: 2, gap: 5 },
   optionBtn: {
@@ -348,7 +349,7 @@ const s = StyleSheet.create({
   answerText: {
     fontSize: 22,
     fontFamily: QURAN_FONT,
-    lineHeight: 42,
+    lineHeight: 46,
     textAlign: 'right',
     writingDirection: 'rtl',
     color: '#1a1a1a',

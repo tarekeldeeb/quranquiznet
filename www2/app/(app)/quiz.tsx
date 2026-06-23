@@ -446,6 +446,8 @@ export default function QuizScreen() {
         flipTrigger: 0,
         isCorrect: false,
       });
+      // The question grew a line — scroll so the options stay in view.
+      setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
       if (dailyMode) startTimer(5);
     }
   }
