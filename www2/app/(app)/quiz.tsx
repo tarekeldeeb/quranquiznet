@@ -54,12 +54,26 @@ interface SessionCache {
   dailyTime: number;
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
   customPart: number | null;       // selected sura/juz part index, or null = whole profile
+  // A normal (non-daily) session suspended while a daily quiz runs. The daily
+  // quiz uses its own empty card stack; this lets the normal run reappear after.
+  normalSnapshot: NormalSnapshot | null;
+}
+// Suspended normal session — its own card stack plus the engine state (active
+// question + seed) needed to keep answering where it left off.
+interface NormalSnapshot {
+  cards: CardData[];
+  active: ActiveCard | null;
+  cardCounter: number;
+  sessionCorrect: number;
+  customPart: number | null;
+  qo: QuestionObject;   // the live question when the normal run was suspended
+  seed: number;         // questionnaire seed at suspension (= active question idx)
 }
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
   cardCounter: 0, sessionCorrect: 0, dailyScore: 0, dailyTime: 0,
-  lastNonce: undefined, customPart: null,
+  lastNonce: undefined, customPart: null, normalSnapshot: null,
 };
 
 export default function QuizScreen() {
@@ -127,6 +141,24 @@ export default function QuizScreen() {
   //   {}                     → random across the profile's enabled parts
   function startSession(opts: { daily?: boolean; partIndex?: number | null }) {
     const daily = !!opts.daily;
+    if (daily) {
+      // Entering the daily quiz: if a normal run is live, suspend it (with its
+      // own card stack + engine state) so it can reappear once the daily ends.
+      if (sessionActiveRef.current && !dailyModeRef.current) {
+        sessionCache.normalSnapshot = {
+          cards: sessionCache.cards,
+          active: sessionCache.activeCard,
+          cardCounter: cardCounterRef.current,
+          sessionCorrect: sessionCorrectRef.current,
+          customPart: customPartRef.current,
+          qo: deepCopy(QS.qo),
+          seed: profile.lastSeed,
+        };
+      }
+    } else {
+      // A fresh normal run replaces any previously suspended one.
+      sessionCache.normalSnapshot = null;
+    }
     clearTimers();
     setChooserVisible(false);
     setCards([]);
@@ -178,6 +210,43 @@ export default function QuizScreen() {
     syncCacheFlags();
     setScore(profile.getScore());
     setChooserVisible(true);
+  }
+
+  // Bring back a normal run that was suspended for a daily quiz. Restores its
+  // card stack and the engine state (active question + seed) so the user can
+  // keep answering. Returns true if a suspended run existed.
+  function restoreNormalSession(): boolean {
+    const snap = sessionCache.normalSnapshot;
+    if (!snap) return false;
+    sessionCache.normalSnapshot = null;
+    clearTimers();
+    // Re-seat the questionnaire engine on the suspended normal question.
+    QS.initQuestionnaire(snap.seed);
+    QS.setQo(snap.qo);
+    profile.setLastSeed(snap.seed);
+
+    dailyModeRef.current = false;
+    customPartRef.current = snap.customPart;
+    sessionActiveRef.current = true;
+    dailyEndedRef.current = false;
+    cardCounterRef.current = snap.cardCounter;
+    sessionCorrectRef.current = snap.sessionCorrect;
+    dailyScoreRef.current = 0;
+    dailyTimeRef.current = 0;
+
+    setDailyMode(false);
+    setCustomPartIndex(snap.customPart);
+    setCards(snap.cards);
+    setActive(snap.active);
+    setScore(profile.getScore());
+
+    // Write through to the cache so a remount (web tab unmount) restores it too.
+    sessionCache.cards = snap.cards;
+    sessionCache.activeCard = snap.active;
+    sessionCache.score = profile.getScore();
+    sessionCache.dailyMode = false;
+    syncCacheFlags();
+    return true;
   }
 
   // Push the ref-held flags/counters into the module cache (refs alone don't
@@ -553,7 +622,7 @@ export default function QuizScreen() {
             <Text style={s.modalBody}>حصلت على:</Text>
             <Text style={s.bigScore}>{dailyFinalScore} نقطة</Text>
             <Text style={s.modalBody}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
-            <TouchableOpacity style={s.btnConfirm} onPress={() => { setDailyEndVisible(false); router.replace('/(app)/home'); }}>
+            <TouchableOpacity style={s.btnConfirm} onPress={() => { setDailyEndVisible(false); restoreNormalSession(); router.replace('/(app)/home'); }}>
               <Text style={s.btnConfirmText}>حسناً</Text>
             </TouchableOpacity>
           </View>
@@ -569,17 +638,17 @@ export default function QuizScreen() {
               style={s.chooserOption}
               onPress={() => startSession({})}
             >
-              <Text style={s.chooserOptionTxt}>🎲 اختبار عشوائي</Text>
+              <Text style={s.chooserOptionTxt}>˖ ݁𖥔 ݁ اختبار عشوائي</Text>
             </TouchableOpacity>
-            <Text style={[s.modalBody, { marginTop: 12 }]}>أو اختر سورة:</Text>
+            <Text style={[s.modalBody, { marginTop: 12 }]}>أو راجع سورة تحتاج تحسيناً:</Text>
             <ScrollView style={s.chooserList}>
-              {profile.parts.map((p, i) => (
+              {profile.getWeakCheckedParts(3).map(({ index, name }) => (
                 <TouchableOpacity
-                  key={i}
-                  style={s.chooserItem}
-                  onPress={() => startSession({ partIndex: i })}
+                  key={index}
+                  style={[s.chooserOption, s.chooserSuraBtn]}
+                  onPress={() => startSession({ partIndex: index })}
                 >
-                  <Text style={s.chooserItemTxt}>{p.name}</Text>
+                  <Text style={s.chooserOptionTxt}>{name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -640,11 +709,5 @@ const s = StyleSheet.create({
   },
   chooserOptionTxt: { fontSize: 16, fontWeight: '700', color: '#0d2d4e' },
   chooserList: { maxHeight: 300, marginTop: 4 },
-  chooserItem: {
-    paddingVertical: 12,
-    paddingHorizontal: 4,
-    borderBottomWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  chooserItemTxt: { fontSize: 14, color: '#333', textAlign: 'right' },
+  chooserSuraBtn: { marginTop: 8 },
 });

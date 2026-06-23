@@ -151,6 +151,7 @@ interface ProfileState {
   getDailyQuizScore(correct: number, time: number): number;
   getTopGoodParts(): string[];
   getTopBadParts(): string[];
+  getWeakCheckedParts(limit: number): { index: number; name: string }[];
   getPartIndexOf(wordIdx: number): number;
   updateScoreRecord(): boolean;
   syncTo(remote: Partial<ProfileState>): Promise<void>;
@@ -498,6 +499,19 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       .slice(0, 5)
       .forEach((o, i) => { top[i] = parts[o.i].name; });
     return top;
+  },
+
+  // Enabled (checked) study parts only, ordered worst-quality first (lowest
+  // correct ratio), capped to `limit`. Drives the quiz chooser so the user is
+  // nudged toward the suras that most need review. Unattempted parts (ratio 0)
+  // sort to the top as "needs practice".
+  getWeakCheckedParts(limit: number) {
+    return get().parts
+      .map((p, index) => ({ index, name: p.name, checked: p.checked, ratio: getCorrectRatio(p) }))
+      .filter((o) => o.checked)
+      .sort((a, b) => a.ratio - b.ratio)
+      .slice(0, limit)
+      .map(({ index, name }) => ({ index, name }));
   },
 
   getPartIndexOf(wordIdx: number): number {

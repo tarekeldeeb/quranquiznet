@@ -30,6 +30,12 @@ export function initQuestionnaire(seed: number) {
   qo = makeEmptyQO();
 }
 
+// Restore the live question object — used when resuming a normal session whose
+// `qo` was overwritten by a daily quiz running in between.
+export function setQo(q: QuestionObject) {
+  qo = q;
+}
+
 function getRand(): PRNG {
   if (!rand) rand = seedrandom('0');
   return rand;

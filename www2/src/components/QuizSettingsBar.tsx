@@ -29,7 +29,9 @@ export default function QuizSettingsBar({
   const [overflow, setOverflow] = useState(false);
   const widthRef = useRef(0);
 
-  const summary = `${levelText} - الأسئلة الخاصة ${specialEnabled ? 'مُفعّلة' : 'غير مُفعّلة'}`;
+  const summary = scopeMode === 'daily'
+    ? 'اختبار اليوم النشط'
+    : `${levelText} - الأسئلة الخاصة ${specialEnabled ? 'مُفعّلة' : 'غير مُفعّلة'}`;
   const scopeKey = scopeNames.join('|');
 
   // Reset measurement whenever the scope changes (new session / mode).
