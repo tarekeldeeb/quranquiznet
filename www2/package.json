@@ -36,6 +36,7 @@
   "devDependencies": {
     "@babel/core": "^7.24.0",
     "@testing-library/react-native": "^12.4.1",
+    "@types/jest": "^30.0.0",
     "@types/react": "~18.3.12",
     "@types/seedrandom": "^3.0.8",
     "eslint": "^8.57.0",

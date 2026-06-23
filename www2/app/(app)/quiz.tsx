@@ -18,6 +18,7 @@ import {
 } from '../../src/models/constants';
 import { ayaNumberOf } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
+import { decideFocusAction, isAnswerable, shouldSuspendNormalRun } from '../../src/models/quizFlow';
 
 interface ActiveCard {
   round: number;
@@ -144,7 +145,7 @@ export default function QuizScreen() {
     if (daily) {
       // Entering the daily quiz: if a normal run is live, suspend it (with its
       // own card stack + engine state) so it can reappear once the daily ends.
-      if (sessionActiveRef.current && !dailyModeRef.current) {
+      if (shouldSuspendNormalRun(sessionActiveRef.current, dailyModeRef.current)) {
         sessionCache.normalSnapshot = {
           cards: sessionCache.cards,
           active: sessionCache.activeCard,
@@ -194,6 +195,27 @@ export default function QuizScreen() {
       dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
       startTimer(12);
     }
+  }
+
+  // Recover a session that is flagged active but has no answerable question
+  // (e.g. the first/next question failed to load earlier, or the engine's `qo`
+  // was lost). Re-arms the engine and generates a question so the screen is
+  // usable again rather than dead.
+  function recoverStrandedSession() {
+    if (dailyModeRef.current) {
+      if (dailyEndedRef.current) { openChooser(); return; }
+      // Daily still in progress but lost its question → re-arm and generate.
+      setLoading(true);
+      if (dailyTimeInterval.current == null) {
+        dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+      }
+      loadNextQuestion();
+      return;
+    }
+    // Normal session: re-seat the engine from the saved seed, then load.
+    setLoading(true);
+    QS.initQuestionnaire(profile.lastSeed);
+    loadNextQuestion();
   }
 
   // Reset to the start chooser (random / specific sura).
@@ -266,20 +288,38 @@ export default function QuizScreen() {
   // Persistent tab ⇒ component stays mounted, so this is the only reliable hook
   // for re-offering the chooser / resuming / starting on re-entry.
   useFocusEffect(useCallback(() => {
-    if (QS.pendingDailyStart) {
-      QS.clearPendingDailyStart();
-      startSession({ daily: true });
-    } else if (params.customPart && params.nonce && params.nonce !== lastNonceRef.current) {
-      // Fresh deep-link to a specific sura/juz (from home weak-sura or the Me list).
-      lastNonceRef.current = params.nonce;
-      sessionCache.lastNonce = params.nonce;
-      startSession({ partIndex: parseInt(params.customPart) });
-    } else if (sessionActiveRef.current) {
-      // Returning to a live session (e.g. from the Me tab) ⇒ keep the scroll.
-      resumeSession();
-    } else {
-      // Plain entry with no live session ⇒ offer the chooser.
-      openChooser();
+    const action = decideFocusAction({
+      pendingDailyStart: QS.pendingDailyStart,
+      freshDeepLink: !!(params.customPart && params.nonce && params.nonce !== lastNonceRef.current),
+      sessionActive: sessionActiveRef.current,
+      // Answerable only if a card exists AND the engine still holds a real
+      // question — guards the dead-screen case where qo was reset/lost.
+      answerable: !!sessionCache.activeCard && isAnswerable(QS.qo),
+    });
+    switch (action) {
+      case 'start-daily':
+        QS.clearPendingDailyStart();
+        startSession({ daily: true });
+        break;
+      case 'start-part':
+        // Fresh deep-link to a specific sura/juz (from home weak-sura or the Me list).
+        lastNonceRef.current = params.nonce;
+        sessionCache.lastNonce = params.nonce;
+        startSession({ partIndex: parseInt(params.customPart!) });
+        break;
+      case 'resume':
+        // Returning to a live session (e.g. from the Me tab) ⇒ keep the scroll.
+        resumeSession();
+        break;
+      case 'recover':
+        // Session flagged active but nothing to answer ⇒ re-arm instead of
+        // stranding the user on a blank screen with no question.
+        recoverStrandedSession();
+        break;
+      case 'chooser':
+        // Plain entry with no live session ⇒ offer the chooser.
+        openChooser();
+        break;
     }
     return () => { clearTimers(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -360,6 +400,13 @@ export default function QuizScreen() {
       if (daily) startTimer(12);
     } catch (e) {
       console.error('loadNextQuestion error:', e);
+      // If the failure left the screen with nothing to answer, don't strand the
+      // user — drop back to the chooser so there is always an available action.
+      if (sessionCache.cards.length === 0) {
+        sessionActiveRef.current = false;
+        syncCacheFlags();
+        setChooserVisible(true);
+      }
     } finally {
       setLoading(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 200);
