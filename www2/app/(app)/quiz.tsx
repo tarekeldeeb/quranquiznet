@@ -18,7 +18,10 @@ import {
 } from '../../src/models/constants';
 import { ayaNumberOf } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
-import { decideFocusAction, isAnswerable, shouldSuspendNormalRun } from '../../src/models/quizFlow';
+import {
+  decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
+  shouldShowSummary, shouldRestoreNormalRunAfterDaily,
+} from '../../src/models/quizFlow';
 
 interface ActiveCard {
   round: number;
@@ -78,7 +81,7 @@ const sessionCache: SessionCache = {
 };
 
 export default function QuizScreen() {
-  const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string }>();
+  const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string; chooser?: string }>();
   const profile = useProfileStore();
   const router = useRouter();
 
@@ -113,6 +116,14 @@ export default function QuizScreen() {
   const dailyTimeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
   // Guard: prevents loadNextQuestion from re-entering after daily quiz ends
   const dailyEndedRef = useRef(sessionCache.dailyEnded);
+  // Prevents loadNextQuestion from re-entering while a load is already in flight.
+  const loadingNextRef = useRef(false);
+  // An answered card is owed its next question (auto-advance scheduled). Lets
+  // "حسناً" advance immediately and dedupes with the timer.
+  const advancePendingRef = useRef(false);
+  // True between the Nth-correct answer and the summary modal appearing, so the
+  // OK-button stall-recovery doesn't skip past the pending summary.
+  const summaryPendingRef = useRef(false);
 
   // Tracks the last navigation nonce we acted on, so a tab refocus (no new nonce)
   // does not restart a stale deep-linked sura. Restored from cache so a remount
@@ -288,13 +299,19 @@ export default function QuizScreen() {
   // Persistent tab ⇒ component stays mounted, so this is the only reliable hook
   // for re-offering the chooser / resuming / starting on re-entry.
   useFocusEffect(useCallback(() => {
-    const action = decideFocusAction({
+    const action = decideFocusFromContext({
       pendingDailyStart: QS.pendingDailyStart,
-      freshDeepLink: !!(params.customPart && params.nonce && params.nonce !== lastNonceRef.current),
+      customPartParam: params.customPart,
+      chooserParam: params.chooser,
+      nonceParam: params.nonce,
+      lastActedNonce: lastNonceRef.current,
       sessionActive: sessionActiveRef.current,
-      // Answerable only if a card exists AND the engine still holds a real
-      // question — guards the dead-screen case where qo was reset/lost.
-      answerable: !!sessionCache.activeCard && isAnswerable(QS.qo),
+      hasActiveCard: !!sessionCache.activeCard,
+      // Guards the dead-screen case where the engine's qo was reset/lost.
+      engineAnswerable: isAnswerable(QS.qo),
+      // A flipped card (flipTrigger > 0) has already been answered; resuming it
+      // would strand the user, so treat it as needing recovery.
+      activeCardFlipTrigger: sessionCache.activeCard?.flipTrigger ?? 0,
     });
     switch (action) {
       case 'start-daily':
@@ -317,13 +334,17 @@ export default function QuizScreen() {
         recoverStrandedSession();
         break;
       case 'chooser':
-        // Plain entry with no live session ⇒ offer the chooser.
+        // Plain entry with no live session, or an explicit "start a quiz"
+        // request. Record the nonce so a tab refocus doesn't reopen the chooser
+        // and wipe a session the user starts from it.
+        lastNonceRef.current = params.nonce;
+        sessionCache.lastNonce = params.nonce;
         openChooser();
         break;
     }
     return () => { clearTimers(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.customPart, params.nonce]));
+  }, [params.customPart, params.nonce, params.chooser]));
 
   function clearTimers() {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -333,10 +354,20 @@ export default function QuizScreen() {
   // ── load next question ────────────────────────────────────────────────────
   // Source of truth is the refs (dailyModeRef / customPartRef), set before each
   // call — avoids stale-closure issues with state.
+  // Advance to the next question, deduped: whichever of the auto-advance timer
+  // or the "حسناً" button fires first wins; the other becomes a no-op.
+  function tryAdvance() {
+    if (!advancePendingRef.current || loadingNextRef.current) return;
+    advancePendingRef.current = false;
+    loadNextQuestion();
+  }
+
   async function loadNextQuestion() {
     const daily = dailyModeRef.current;
     // Guard: once the daily quiz has ended, the timer must not restart the loop
     if (daily && dailyEndedRef.current) return;
+    if (loadingNextRef.current) return; // a load is already in flight
+    loadingNextRef.current = true;
     setLoading(true);
     try {
       if (daily) {
@@ -390,6 +421,7 @@ export default function QuizScreen() {
       };
       setCards((prev) => [...prev, newCard]);
       setActive(makeActive(QS.qo));
+      advancePendingRef.current = false; // a fresh, unanswered question is now active
       cardCounterRef.current++;
       syncCacheFlags();
       const cc = cardCounterRef.current;
@@ -408,6 +440,7 @@ export default function QuizScreen() {
         setChooserVisible(true);
       }
     } finally {
+      loadingNextRef.current = false;
       setLoading(false);
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 200);
     }
@@ -466,11 +499,13 @@ export default function QuizScreen() {
       return next;
     });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true } : null);
-    if (!dailyMode && sessionCorrectRef.current % 10 === 0) {
+    if (shouldShowSummary(sessionCorrectRef.current, dailyMode)) {
       profile.updateScoreRecord();
-      setTimeout(() => setSummaryVisible(true), 650);
+      summaryPendingRef.current = true;
+      setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
     } else {
-      setTimeout(() => loadNextQuestion(), 600);
+      advancePendingRef.current = true;
+      setTimeout(tryAdvance, 600);
     }
   }
 
@@ -484,7 +519,8 @@ export default function QuizScreen() {
       return next;
     });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false } : null);
-    setTimeout(() => loadNextQuestion(), 600);
+    advancePendingRef.current = true;
+    setTimeout(tryAdvance, 600);
   }
 
   function skipQ() { handleIncorrect(); }
@@ -565,6 +601,18 @@ export default function QuizScreen() {
   function onScrollDown() {
     listRef.current?.scrollToEnd({ animated: true });
     if (dailyMode) startTimer(12);
+    if (advancePendingRef.current) {
+      // "حسناً" pressed before the auto-advance fired → advance now (deduped).
+      tryAdvance();
+    } else if (
+      sessionActiveRef.current && !dailyEndedRef.current && !summaryVisible
+      && !summaryPendingRef.current && !loadingNextRef.current
+      && (active?.flipTrigger ?? 0) > 0
+    ) {
+      // Stall recovery: the visible card is answered but nothing will advance it
+      // (auto-advance already consumed/failed). Don't dead-end — load the next.
+      loadNextQuestion();
+    }
   }
 
   // ── report ────────────────────────────────────────────────────────────────
@@ -618,7 +666,6 @@ export default function QuizScreen() {
               isActive={isLast}
               score={score}
               scoreUp={QS.getUpScore()}
-              scoreDown={QS.getDownScore()}
               isDailyMode={dailyMode}
               timerValue={timerValue}
               timerMax={timerMax}
@@ -671,7 +718,11 @@ export default function QuizScreen() {
             <Text style={s.modalBody}>حصلت على:</Text>
             <Text style={s.bigScore}>{dailyFinalScore} نقطة</Text>
             <Text style={s.modalBody}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
-            <TouchableOpacity style={s.btnConfirm} onPress={() => { setDailyEndVisible(false); restoreNormalSession(); router.replace('/(app)/home'); }}>
+            <TouchableOpacity style={s.btnConfirm} onPress={() => {
+              setDailyEndVisible(false);
+              if (shouldRestoreNormalRunAfterDaily(!!sessionCache.normalSnapshot)) restoreNormalSession();
+              router.replace('/(app)/me');
+            }}>
               <Text style={s.btnConfirmText}>حسناً</Text>
             </TouchableOpacity>
           </View>
@@ -719,7 +770,7 @@ export default function QuizScreen() {
               </Text>
             )}
             <View style={s.modalRow}>
-              <TouchableOpacity style={s.btnCancel} onPress={() => { setSummaryVisible(false); router.replace('/(app)/home'); }}>
+              <TouchableOpacity style={s.btnCancel} onPress={() => { setSummaryVisible(false); router.replace('/(app)/me'); }}>
                 <Text style={s.btnCancelText}>الرئيسية</Text>
               </TouchableOpacity>
               <TouchableOpacity style={s.btnConfirm} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>
@@ -738,7 +789,7 @@ const s = StyleSheet.create({
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%' },
+  modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 432 },
   modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
   modalBody: { fontSize: 14, textAlign: 'right', color: '#444', marginBottom: 8 },
   bigScore: { fontSize: 36, fontWeight: 'bold', color: '#27ae60', textAlign: 'center', marginVertical: 12 },

@@ -175,7 +175,9 @@ export function deepCopy<T>(o: T): T {
 }
 
 export function countedScore(arr: number[]): number {
-  return arr.length > 3 ? arr[1] + arr[2] + arr[3] : 0;
+  if (!arr || arr.length <= 3) return 0;
+  // Levels 1–3 plus the beginner slot (index 4, may be absent in old profiles).
+  return arr[1] + arr[2] + arr[3] + (arr[4] ?? 0);
 }
 
 export function removeAyaNum(text: string): string {

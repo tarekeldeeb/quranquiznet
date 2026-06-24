@@ -19,7 +19,7 @@ export default function Index() {
   // even if this browser/session is missing the local `onboarding_done` flag.
   if (user) {
     if (!onboardingDone) AsyncStorage.setItem('onboarding_done', 'true');
-    return <Redirect href="/(app)/home" />;
+    return <Redirect href="/(app)/me" />;
   }
   if (!onboardingDone) return <Redirect href="/(onboarding)/slides" />;
   return <Redirect href="/(auth)" />;

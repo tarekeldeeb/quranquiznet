@@ -72,8 +72,8 @@ export default function StudyScreen() {
         keyExtractor={(_, i) => String(i)}
         renderItem={({ item, index }) => {
           const { name: iconName, color: iconColor } = getPartIcon(profile.getCorrectRatioRange(index));
-          const correct = item.numCorrect[1] + item.numCorrect[2] + item.numCorrect[3];
-          const questions = item.numQuestions[1] + item.numQuestions[2] + item.numQuestions[3];
+          const correct = item.numCorrect[1] + item.numCorrect[2] + item.numCorrect[3] + (item.numCorrect[4] ?? 0);
+          const questions = item.numQuestions[1] + item.numQuestions[2] + item.numQuestions[3] + (item.numQuestions[4] ?? 0);
           return (
             <View style={s.row}>
               <Switch

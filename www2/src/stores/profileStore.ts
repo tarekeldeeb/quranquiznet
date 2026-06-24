@@ -14,8 +14,11 @@ import {
 export interface StudyPart {
   start: number;
   length: number;
-  numCorrect: [number, number, number, number];
-  numQuestions: [number, number, number, number];
+  // Index 0: special-question points bucket. Indices 1–3: per-level correct/
+  // question counts. Index 4: beginner (level-0) correct/question counts.
+  // Older saved profiles may have length-4 arrays; reads guard with `?? 0`.
+  numCorrect: number[];
+  numQuestions: number[];
   name: string;
   checked: boolean;
 }
@@ -59,8 +62,8 @@ function makeDefaultParts(): StudyPart[] {
   parts.push({
     start: 1,
     length: SURA_IDX[0],
-    numCorrect: [0, 0, 0, 0],
-    numQuestions: [0, 0, 0, 0],
+    numCorrect: [0, 0, 0, 0, 0],
+    numQuestions: [0, 0, 0, 0, 0],
     name: 'سورة ' + SURA_NAME[0],
     checked: true,
   });
@@ -69,8 +72,8 @@ function makeDefaultParts(): StudyPart[] {
     parts.push({
       start: SURA_IDX[i - 1],
       length: SURA_IDX[i] - SURA_IDX[i - 1],
-      numCorrect: [0, 0, 0, 0],
-      numQuestions: [0, 0, 0, 0],
+      numCorrect: [0, 0, 0, 0, 0],
+      numQuestions: [0, 0, 0, 0, 0],
       name: 'سورة ' + SURA_NAME[i],
       checked: false,
     });
@@ -80,8 +83,8 @@ function makeDefaultParts(): StudyPart[] {
     parts.push({
       start: LAST5_JUZ_IDX[i],
       length: LAST5_JUZ_IDX[i + 1] - LAST5_JUZ_IDX[i],
-      numCorrect: [0, 0, 0, 0],
-      numQuestions: [0, 0, 0, 0],
+      numCorrect: [0, 0, 0, 0, 0],
+      numQuestions: [0, 0, 0, 0, 0],
       name: 'جزء ' + LAST5_JUZ_NAME[i],
       checked: false,
     });
@@ -90,18 +93,32 @@ function makeDefaultParts(): StudyPart[] {
   return parts;
 }
 
+// Copy a counts array and ensure it has 5 slots (older profiles stored 4), so
+// the beginner slot (index 4) is always writable.
+function padCounts(arr: number[]): number[] {
+  const out = [...arr];
+  while (out.length < 5) out.push(0);
+  return out;
+}
+
 function calculatePartScore(p: StudyPart): number {
+  // Points come only from correct answers; wrong answers never subtract.
+  // Index 0 = special-question points; index 4 = beginner (level-0) correct count
+  // worth 5 each.
   return (
-    p.numCorrect[0] +
-    (2 * p.numCorrect[1] - p.numQuestions[1]) * 10 +
-    (2 * p.numCorrect[2] - p.numQuestions[2]) * 20 +
-    (2 * p.numCorrect[3] - p.numQuestions[3]) * 30
+    (p.numCorrect[0] ?? 0) +
+    (p.numCorrect[1] ?? 0) * 10 +
+    (p.numCorrect[2] ?? 0) * 20 +
+    (p.numCorrect[3] ?? 0) * 30 +
+    (p.numCorrect[4] ?? 0) * 5
   );
 }
 
-function getCorrectRatio(p: StudyPart): number {
-  const correct = p.numCorrect[1] + p.numCorrect[2] + p.numCorrect[3];
-  const questions = p.numQuestions[1] + p.numQuestions[2] + p.numQuestions[3];
+function getCorrectRatio(p: StudyPart | undefined): number {
+  if (!p) return 0; // parts can be empty mid-logout, before this screen unmounts
+  // Levels 1–3 plus beginner (index 4) count toward accuracy.
+  const correct = (p.numCorrect[1] ?? 0) + (p.numCorrect[2] ?? 0) + (p.numCorrect[3] ?? 0) + (p.numCorrect[4] ?? 0);
+  const questions = (p.numQuestions[1] ?? 0) + (p.numQuestions[2] ?? 0) + (p.numQuestions[3] ?? 0) + (p.numQuestions[4] ?? 0);
   return questions === 0 ? 0 : correct / questions;
 }
 
@@ -202,7 +219,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   country: '',
 
   levels: [
-    { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الاية، ولا يزيد النقاط', disabled: false },
+    { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
     { value: 1, text: 'مستوى أولي',   comment: 'السؤال من ثلاث كلمات، يزيد النقاط بعشرة', disabled: false },
     { value: 2, text: 'مستوى ثانوي',  comment: 'السؤال من كلمتين، يزيد النقاط بعشرين', disabled: false },
     { value: 3, text: 'مستوى متقدم',  comment: 'أكثر من اجابة صحيحة، يزيد النقاط بثلاثين', disabled: true },
@@ -322,13 +339,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   async addCorrect(qo: QORef) {
     const cp = qo.currentPart;
     const oldParts = get().parts;
-    if (cp < oldParts.length && qo.level > 0) {
+    if (cp < oldParts.length) {
       const p = oldParts[cp];
-      const nc = [...p.numCorrect] as [number, number, number, number];
-      const nq = [...p.numQuestions] as [number, number, number, number];
+      const nc = padCounts(p.numCorrect);
+      const nq = padCounts(p.numQuestions);
       if (qo.qType.id > 1) {
         nc[0] += qo.qType.score;
         nq[0] += 1;
+      } else if (qo.level === 0) {
+        // Beginner level: a correct answer counts at index 4 (worth +5 in score)
+        // so it also shows up in the part's correct/total and accuracy.
+        nc[4] += 1;
+        nq[4] += 1;
       } else {
         nc[qo.level] += 1;
         nq[qo.level] += 1;
@@ -348,11 +370,15 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   async addIncorrect(qo: QORef) {
     const cp = qo.currentPart;
     const oldParts = get().parts;
-    if (cp < oldParts.length && qo.level > 0) {
+    if (cp < oldParts.length) {
       const p = oldParts[cp];
-      const nq = [...p.numQuestions] as [number, number, number, number];
+      const nq = padCounts(p.numQuestions);
       if (qo.qType.id > 1) {
         nq[0] += 1;
+      } else if (qo.level === 0) {
+        // Beginner level has no score penalty, but the attempt still counts
+        // toward the part's total/accuracy.
+        nq[4] += 1;
       } else {
         nq[qo.level] += 1;
       }
@@ -369,10 +395,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   },
 
   getScore() {
-    // Matches the original profile.js: score may be negative (accuracy below 50%
-    // subtracts). Do NOT clamp to 0 — that hid every decrease and made the score
-    // appear permanently zero.
-    return Math.round(get().parts.reduce((acc, p) => acc + calculatePartScore(p), 0));
+    // Wrong answers no longer subtract, so the score can only grow. Clamp at 0 so
+    // any previously-stored negative total recovers to zero.
+    return Math.max(0, Math.round(get().parts.reduce((acc, p) => acc + calculatePartScore(p), 0)));
   },
 
   getTotalStudyLength() {
@@ -527,14 +552,30 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   updateScoreRecord() {
     const { scores } = get();
     const now = Date.now();
-    const isOld = (t: number) => now - t > 86400000;
-    if (scores.length === 0 || isOld(scores[scores.length - 1].date)) {
-      const next = [...scores, { date: now, score: get().getScore() }];
-      set({ scores: next });
-      saveKey(KEYS.scores, next);
-      return true;
+    const score = get().getScore();
+    const dayOf = (t: number) => new Date(t).toISOString().split('T')[0];
+    const today = dayOf(now);
+    const last = scores[scores.length - 1];
+
+    let next: ScoreRecord[];
+    if (last && dayOf(last.date) === today) {
+      // One point per calendar day: refresh today's snapshot in place so the
+      // latest bar always reflects the current score (instead of a stale 0).
+      next = [...scores];
+      next[next.length - 1] = { date: now, score };
+    } else {
+      next = [...scores, { date: now, score }];
     }
-    return false;
+    // Cap history so the array can't grow unbounded over the years.
+    const MAX_RECORDS = 365;
+    if (next.length > MAX_RECORDS) next = next.slice(next.length - MAX_RECORDS);
+
+    // Bump lastUpdate so this change is treated as "newer" and actually syncs
+    // up to Firebase on the next push (updateScoreRecord alone used not to).
+    set({ scores: next, lastUpdate: now });
+    saveKey(KEYS.scores, next);
+    saveKey(KEYS.lastUpdate, now);
+    return true;
   },
 
   async syncTo(remote) {

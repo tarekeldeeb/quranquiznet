@@ -44,16 +44,13 @@ function getRand(): PRNG {
 // ---------- score helpers ----------
 export function getUpScore(): number {
   switch (qo.qType.id) {
-    case Q_TYPE.NOTSPECIAL.id:   return Q_TYPE.NOTSPECIAL.score * qo.level;
+    case Q_TYPE.NOTSPECIAL.id:   return qo.level === 0 ? 5 : Q_TYPE.NOTSPECIAL.score * qo.level;
     case Q_TYPE.SURANAME.id:     return Q_TYPE.SURANAME.score;
     case Q_TYPE.SURAAYACOUNT.id: return Q_TYPE.SURAAYACOUNT.score;
     case Q_TYPE.MAKKI.id:        return Q_TYPE.MAKKI.score;
     case Q_TYPE.AYANUMBER.id:    return Q_TYPE.AYANUMBER.score;
     default: return 0;
   }
-}
-export function getDownScore(): number {
-  return qo.qType.id === Q_TYPE.NOTSPECIAL.id ? Q_TYPE.NOTSPECIAL.score * qo.level : 0;
 }
 
 // ---------- helpers ----------

@@ -1,12 +1,12 @@
 // Read-only strip showing the current quiz settings: a centered summary line
-// (level + special-questions state) followed directly by the in-scope sura chips.
-// The chips show in full when they fit on one line; if they wrap to multiple
-// lines they collapse to a single row with a "المزيد" toggle. This applies on
-// every platform (web included) and re-measures on width changes (window resize).
+// (level + special-questions state) followed by the in-scope sura chips.
+// The sura list is collapsible: it defaults to a single clipped row with a
+// "المزيد ▾" toggle and expands to show every chip on tap. Deterministic — no
+// layout measurement — so it collapses reliably on every platform.
 // Informative only — no editing here.
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, LayoutChangeEvent,
+  View, Text, TouchableOpacity, StyleSheet,
 } from 'react-native';
 
 export type ScopeMode = 'random' | 'custom' | 'daily';
@@ -22,38 +22,24 @@ const CHIP_LINE = 16;       // chip text lineHeight
 const CHIP_PAD_V = 4;       // chip vertical padding
 const ROW_HEIGHT = CHIP_LINE + CHIP_PAD_V * 2;   // height of a single chip row
 
+// Below this many chips they comfortably fit on one row, so no toggle is shown.
+const COLLAPSE_THRESHOLD = 3;
+
 export default function QuizSettingsBar({
   levelText, specialEnabled, scopeNames, scopeMode,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const [overflow, setOverflow] = useState(false);
-  const widthRef = useRef(0);
 
   const summary = scopeMode === 'daily'
     ? 'اختبار اليوم النشط'
     : `${levelText} - الأسئلة الخاصة ${specialEnabled ? 'مُفعّلة' : 'غير مُفعّلة'}`;
   const scopeKey = scopeNames.join('|');
 
-  // Reset measurement whenever the scope changes (new session / mode).
-  useEffect(() => {
-    setOverflow(false);
-    setExpanded(false);
-  }, [scopeKey]);
+  // Collapse again whenever the scope changes (new session / mode).
+  useEffect(() => { setExpanded(false); }, [scopeKey]);
 
-  const clamp = overflow && !expanded;
-
-  // Measure the chips container: taller than one row ⇒ the chips wrapped.
-  // A width change (e.g. window resize) re-measures from scratch.
-  function onContainerLayout(e: LayoutChangeEvent) {
-    const { width, height } = e.nativeEvent.layout;
-    if (widthRef.current && Math.abs(width - widthRef.current) > 1) {
-      widthRef.current = width;
-      setOverflow(false);      // next (unclamped) pass re-measures
-      return;
-    }
-    widthRef.current = width;
-    if (!clamp && height > ROW_HEIGHT + 6 && !overflow) setOverflow(true);
-  }
+  const collapsible = scopeMode !== 'daily' && scopeNames.length > COLLAPSE_THRESHOLD;
+  const clamp = collapsible && !expanded;
 
   return (
     <View style={s.wrapper}>
@@ -63,21 +49,20 @@ export default function QuizSettingsBar({
         <Text style={s.note}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
       ) : (
         <>
-          <View
-            style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}
-            onLayout={onContainerLayout}
-          >
+          <View style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
             {scopeNames.map((name, i) => (
               <Text key={i} style={s.chip}>{name}</Text>
             ))}
           </View>
-          {overflow && (
+          {collapsible && (
             <TouchableOpacity
               style={s.toggle}
               onPress={() => setExpanded((v) => !v)}
               activeOpacity={0.7}
             >
-              <Text style={s.toggleTxt}>{expanded ? 'أقل ▴' : 'المزيد ▾'}</Text>
+              <Text style={s.toggleTxt}>
+                {expanded ? 'أقل ▴' : `المزيد (${scopeNames.length}) ▾`}
+              </Text>
             </TouchableOpacity>
           )}
         </>

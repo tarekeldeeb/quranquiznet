@@ -34,7 +34,6 @@ interface Props {
   isActive: boolean;
   score: number;
   scoreUp: number;
-  scoreDown: number;
   isDailyMode: boolean;
   timerValue: number;
   timerMax: number;
@@ -50,12 +49,16 @@ interface Props {
 }
 
 export default function QuizCard({
-  card, isActive, score, scoreUp, scoreDown, isDailyMode, timerValue, timerMax,
+  card, isActive, score, scoreUp, isDailyMode, timerValue, timerMax,
   onSelectOption, onSkip, onScrollDown, onReport, round, totalRounds,
   shuffledOptions, flipTrigger, isCorrect,
 }: Props) {
   const flip = useSharedValue(0);
   const [imgVisible, setImgVisible] = React.useState(false);
+  // Once the flip completes we swap which face is in normal flow, so the
+  // wrapper collapses to the (shorter) back height instead of keeping the
+  // taller front height. Safe because a card never flips back.
+  const [flipped, setFlipped] = React.useState(false);
 
   const sura     = getSuraIdx(card.qo.startIdx);
   const suraName = SURA_NAME[sura];
@@ -63,7 +66,16 @@ export default function QuizCard({
   const pageURL  = getPageURLFromSuraAyah(sura, card.answerAya);
 
   useEffect(() => {
-    if (flipTrigger > 0) flip.value = withTiming(1, { duration: 420 });
+    if (flipTrigger > 0) {
+      flip.value = withTiming(1, { duration: 420 });
+      const t = setTimeout(() => setFlipped(true), 430);
+      return () => clearTimeout(t);
+    }
+    // Unanswered/active card (incl. a component instance reused for a new
+    // question): always reset to the front face. Without this a leftover
+    // flipped state shows a "completed" back face with no answer options.
+    flip.value = 0;
+    setFlipped(false);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flipTrigger]);
 
@@ -73,7 +85,6 @@ export default function QuizCard({
   }));
   const backStyle = useAnimatedStyle(() => ({
     backfaceVisibility: 'hidden',
-    position: 'absolute', top: 0, left: 0, width: CARD_W,
     transform: [{ rotateY: `${interpolate(flip.value, [0, 1], [180, 360], Extrapolation.CLAMP)}deg` }],
   }));
 
@@ -89,7 +100,7 @@ export default function QuizCard({
   return (
     <View style={s.wrapper}>
       {/* ── FRONT ─────────────────────────────────────────────────────────── */}
-      <Animated.View style={[s.card, frontStyle]}>
+      <Animated.View testID="quiz-card-front" style={[s.card, frontStyle, flipped && s.faceAbsolute]}>
 
         {/* Instruction + progress dots */}
         <View style={s.topBar}>
@@ -139,7 +150,6 @@ export default function QuizCard({
               <View style={s.scoreBox}>
                 <Text style={s.scoreMain}>{score}</Text>
                 <Text style={s.scoreUp}>+{scoreUp}</Text>
-                <Text style={s.scoreDown}>−{scoreDown}</Text>
               </View>
             )}
 
@@ -152,7 +162,7 @@ export default function QuizCard({
       </Animated.View>
 
       {/* ── BACK ──────────────────────────────────────────────────────────── */}
-      <Animated.View style={[s.card, backStyle, { borderColor, borderWidth: 2 }]}>
+      <Animated.View testID="quiz-card-back" style={[s.card, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}>
 
         {/* Sura / aya header */}
         <View style={[s.backHeader, { borderBottomColor: borderColor, borderBottomWidth: 2 }]}>
@@ -202,7 +212,7 @@ const s = StyleSheet.create({
   wrapper: {
     width: CARD_W,
     alignSelf: 'center',
-    marginBottom: 8,
+    marginBottom: 16,
   },
   card: {
     width: CARD_W,
@@ -212,6 +222,9 @@ const s = StyleSheet.create({
     elevation: 3,
     overflow: 'hidden',
   },
+  // The out-of-flow face: stacked on top, so only the in-flow face drives the
+  // wrapper height (front before the flip, back after it).
+  faceAbsolute: { position: 'absolute', top: 0, left: 0 },
 
   // ── FRONT ────────────────────────────────────────────────────────────────
   topBar: {
@@ -281,7 +294,7 @@ const s = StyleSheet.create({
   optionText: {
     fontSize: 17,
     fontFamily: QURAN_FONT,
-    textAlign: 'right',
+    textAlign: 'center',
     writingDirection: 'rtl',
     color: '#2c3e50',
     lineHeight: 28,
@@ -306,7 +319,6 @@ const s = StyleSheet.create({
   },
   scoreMain: { fontSize: 20, fontWeight: '700', color: '#1a5276' },
   scoreUp:   { color: '#27ae60', fontSize: 12, fontWeight: '600' },
-  scoreDown: { color: '#e74c3c', fontSize: 12, fontWeight: '600' },
 
   timerBox: { alignItems: 'center', gap: 2 },
   timerText: { fontSize: 22, fontWeight: '700', color: '#e74c3c' },

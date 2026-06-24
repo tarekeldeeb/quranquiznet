@@ -1,7 +1,7 @@
 // Bottom-tab navigator — mirrors the side-menu in www/templates/menu.html
 import { Tabs, useRouter } from 'expo-router';
 import { useEffect } from 'react';
-import { Image, View, Text, StyleSheet } from 'react-native';
+import { Image, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import {
   onAuthChange, fetchRemoteProfile, pushProfile,
 } from '../../src/services/firebase';
@@ -17,11 +17,18 @@ function TabIcon({ name, color, size }: { name: IconName; color: string; size: n
 }
 
 function HeaderLogo() {
+  const router = useRouter();
   return (
-    <View style={s.headerLogo}>
+    <TouchableOpacity
+      style={s.headerLogo}
+      onPress={() => router.navigate('/(app)/me')}
+      activeOpacity={0.7}
+      accessibilityRole="button"
+      accessibilityLabel="الصفحة الرئيسية"
+    >
       <Image source={appIcon} style={s.headerIcon} />
       <Text style={s.headerTitle}>شبكة اختبار القرآن</Text>
-    </View>
+    </TouchableOpacity>
   );
 }
 
@@ -88,21 +95,13 @@ export default function AppLayout() {
         tabBarActiveTintColor: '#0d2d4e',
         tabBarInactiveTintColor: '#888',
         tabBarStyle: { backgroundColor: '#fff' },
-        tabBarLabelStyle: { fontSize: 12 },
+        tabBarShowLabel: false,
         headerTitleAlign: 'center',
       }}
     >
       {/* Declared right-to-left for RTL: the tab bar renders in declaration
-          order (LTR), so listing me → league → quiz → home puts الرئيسية (Home)
-          on the right. The app always navigates to /(app)/home explicitly, so
-          ordering does not affect the initial tab. */}
-      <Tabs.Screen
-        name="me"
-        options={{
-          tabBarIcon: ({ color, size }) => <TabIcon name="person-outline" color={color} size={size} />,
-          tabBarLabel: 'ملفي',
-        }}
-      />
+          order (LTR), so listing league → quiz → me puts ملفي (Me / home)
+          on the right as the landing tab. */}
       <Tabs.Screen
         name="league"
         options={{
@@ -118,13 +117,14 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
-        name="home"
+        name="me"
         options={{
-          tabBarIcon: ({ color, size }) => <TabIcon name="home-outline" color={color} size={size} />,
+          tabBarIcon: ({ color, size }) => <TabIcon name="home" color={color} size={size} />,
           tabBarLabel: 'الرئيسية',
         }}
       />
       {/* Legacy screens — hidden from tab bar */}
+      <Tabs.Screen name="home"     options={{ href: null }} />
       <Tabs.Screen name="daily"    options={{ href: null }} />
       <Tabs.Screen name="profile"  options={{ href: null }} />
       <Tabs.Screen name="study"    options={{ href: null }} />
