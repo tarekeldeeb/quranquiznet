@@ -158,6 +158,10 @@ function FeatureBadges() {
 export default function SlidesScreen() {
   const router = useRouter();
   const [current, setCurrent] = useState(0);
+  // Width of the actual rendered column (the web frame caps it at ~512px),
+  // NOT the full browser window. Measured via onLayout so each slide and the
+  // paging offsets match the visible container instead of overflowing it.
+  const [frameW, setFrameW] = useState(SW);
   const listRef = useRef<FlatList>(null);
 
   function goNext() {
@@ -181,7 +185,13 @@ export default function SlidesScreen() {
   }
 
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView
+      style={s.container}
+      onLayout={(e) => {
+        const w = e.nativeEvent.layout.width;
+        if (w > 0 && w !== frameW) setFrameW(w);
+      }}
+    >
       <View style={s.header}>
         {current > 0 ? (
           <TouchableOpacity style={s.backBtn} onPress={goBack}>
@@ -201,8 +211,11 @@ export default function SlidesScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         scrollEnabled={false}
+        style={s.list}
+        extraData={frameW}
+        getItemLayout={(_, index) => ({ length: frameW, offset: frameW * index, index })}
         renderItem={({ item }) => (
-          <View style={s.slide}>
+          <View style={[s.slide, { width: frameW }]}>
             <Text style={s.title}>{item.title}</Text>
             <Text style={s.body}>{item.body}</Text>
             {item.points && (
@@ -247,8 +260,8 @@ const s = StyleSheet.create({
   backBtn: { padding: 16, width: 54 },
   skipBtn: { padding: 16 },
   skipTxt: { color: '#9bbdd4', fontSize: 14 },
+  list: { flex: 1, width: '100%' },
   slide: {
-    width: SW,
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
