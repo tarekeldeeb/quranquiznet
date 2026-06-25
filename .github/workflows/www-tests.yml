@@ -1,20 +1,20 @@
-name: www2 Tests
+name: www Tests
 
 on:
   push:
     branches: [master]
     paths:
-      - 'www2/**'
-      - '.github/workflows/www2-tests.yml'
+      - 'www/**'
+      - '.github/workflows/www-tests.yml'
   pull_request:
     paths:
-      - 'www2/**'
-      - '.github/workflows/www2-tests.yml'
+      - 'www/**'
+      - '.github/workflows/www-tests.yml'
   workflow_dispatch:
 
 defaults:
   run:
-    working-directory: www2
+    working-directory: www
 
 jobs:
   test:
@@ -28,12 +28,12 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
-          cache-dependency-path: www2/package-lock.json
+          cache-dependency-path: www/package-lock.json
 
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci
 
       - name: Lint
         run: npm run lint
