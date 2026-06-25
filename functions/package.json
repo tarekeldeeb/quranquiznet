@@ -11,13 +11,13 @@
   "dependencies": {
     "clean-cache": "^1.0.2",
     "es6-promise-pool": "^2.4.4",
-    "firebase-admin": "^8.11.0",
-    "firebase-functions": "^3.21.0",
+    "firebase-admin": "^12.7.0",
+    "firebase-functions": "^4.9.0",
     "request": "^2.79.0",
     "request-promise": "^4.1.1"
   },
   "engines": {
-    "node": "10"
+    "node": "20"
   },
   "private": true
 }
