@@ -4,11 +4,11 @@
     "slug": "quranquiznet",
     "version": "2.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/app-icon.png",
     "scheme": "quranquiz",
     "userInterfaceStyle": "light",
     "splash": {
-      "image": "./assets/images/icon.png",
+      "image": "./assets/images/app-icon.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a5276"
     },
@@ -18,15 +18,14 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/icon.png",
+        "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#1a5276"
       },
       "package": "net.quranquiz.app"
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/icon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",

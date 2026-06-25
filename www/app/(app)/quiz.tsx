@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, Alert, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView,
+  TouchableOpacity, Modal, TextInput, ScrollView, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
@@ -545,24 +545,24 @@ export default function QuizScreen() {
     try {
       const head = await FB.getDailyHead();
       if (!head) return;
-      Alert.alert(
-        'اختبار اليوم جاهز',
-        'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع',
-        [
-          { text: 'لا', style: 'cancel' },
-          {
-            text: 'نعم',
-            onPress: () => {
-              const weights = profile.getDailyQuizStudyPartsWeights();
-              QS.initDailyQuiz(head.daily_random, profile.parts, weights);
-              // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
-              // already on this screen — handle directly:
-              QS.clearPendingDailyStart();
-              startSession({ daily: true });
-            },
-          },
-        ],
-      );
+      const begin = () => {
+        const weights = profile.getDailyQuizStudyPartsWeights();
+        QS.initDailyQuiz(head.daily_random, profile.parts, weights);
+        // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
+        // already on this screen — handle directly:
+        QS.clearPendingDailyStart();
+        startSession({ daily: true });
+      };
+      const msg = 'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع';
+      // RN Alert is a no-op on react-native-web, so use the browser confirm there.
+      if (Platform.OS === 'web') {
+        if (typeof window === 'undefined' || window.confirm(`اختبار اليوم جاهز\n\n${msg}`)) begin();
+        return;
+      }
+      Alert.alert('اختبار اليوم جاهز', msg, [
+        { text: 'لا', style: 'cancel' },
+        { text: 'نعم', onPress: begin },
+      ]);
     } catch (e) {
       console.error('checkForDailyQuiz error:', e);
     }

@@ -208,6 +208,7 @@ export default function SlidesScreen() {
         data={SLIDES}
         keyExtractor={(_, i) => String(i)}
         horizontal
+        inverted
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         scrollEnabled={false}
@@ -252,7 +253,7 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0d2d4e', alignItems: 'center' },
   header: {
     width: '100%',
-    flexDirection: 'row',
+    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 8,
@@ -284,7 +285,7 @@ const s = StyleSheet.create({
   },
   pointText: { color: '#e8f0f7', fontSize: 14, textAlign: 'right', flexShrink: 1 },
   visualWrap: { marginTop: 8, alignItems: 'center' },
-  dots: { flexDirection: 'row', gap: 8, marginBottom: 24 },
+  dots: { flexDirection: 'row-reverse', gap: 8, marginBottom: 24 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
   dotActive: { backgroundColor: '#f39c12', width: 24 },
   nextBtn: {

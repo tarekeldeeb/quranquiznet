@@ -1,7 +1,7 @@
 // Profile screen — mirrors www/profile/tab-profile.html + firebasecontrol.js
 import { useEffect, useState } from 'react';
 import {
-  View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert,
+  View, Text, Image, TouchableOpacity, StyleSheet, ScrollView, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -60,7 +60,13 @@ export default function ProfileScreen() {
   }, []);
 
   async function handleSignOut() {
-    Alert.alert('تسجيل الخروج', 'هل تريد تسجيل الخروج؟', [
+    const msg = 'هل تريد تسجيل الخروج؟';
+    // RN Alert is a no-op on react-native-web, so use the browser confirm there.
+    if (Platform.OS === 'web') {
+      if (typeof window === 'undefined' || window.confirm(`تسجيل الخروج\n\n${msg}`)) await signOut();
+      return;
+    }
+    Alert.alert('تسجيل الخروج', msg, [
       { text: 'لا', style: 'cancel' },
       { text: 'نعم', style: 'destructive', onPress: async () => { await signOut(); } },
     ]);

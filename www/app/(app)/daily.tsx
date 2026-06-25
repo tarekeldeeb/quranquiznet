@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  ActivityIndicator, Alert,
+  ActivityIndicator, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -64,21 +64,21 @@ export default function DailyScreen() {
 
   function startDaily() {
     if (!head) return;
-    Alert.alert(
-      'اختبار اليوم',
-      'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع',
-      [
-        { text: 'لا', style: 'cancel' },
-        {
-          text: 'ابدأ',
-          onPress: () => {
-            const weights = profile.getDailyQuizStudyPartsWeights();
-            QS.initDailyQuiz(head.daily_random, profile.parts, weights);
-            router.push({ pathname: '/(app)/quiz', params: { dailyMode: '1' } });
-          },
-        },
-      ],
-    );
+    const begin = () => {
+      const weights = profile.getDailyQuizStudyPartsWeights();
+      QS.initDailyQuiz(head.daily_random, profile.parts, weights);
+      router.push({ pathname: '/(app)/quiz', params: { dailyMode: '1' } });
+    };
+    const msg = 'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع';
+    // RN Alert is a no-op on react-native-web, so use the browser confirm there.
+    if (Platform.OS === 'web') {
+      if (typeof window === 'undefined' || window.confirm(`اختبار اليوم\n\n${msg}`)) begin();
+      return;
+    }
+    Alert.alert('اختبار اليوم', msg, [
+      { text: 'لا', style: 'cancel' },
+      { text: 'ابدأ', onPress: begin },
+    ]);
   }
 
   return (

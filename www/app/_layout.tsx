@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import {
-  I18nManager, ActivityIndicator, View, Text, Image, Platform, StyleSheet,
+  I18nManager, ActivityIndicator, View, Text, TextInput, Image, Platform, StyleSheet,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -15,6 +15,24 @@ const appIcon = require('../assets/images/app-icon.png');
 // Force RTL layout for Arabic
 I18nManager.allowRTL(true);
 I18nManager.forceRTL(true);
+
+// Apply Amiri as the app-wide default font (web only — the Amiri woff2 face is
+// loaded via expo-font for web; native keeps the system Arabic font, as before).
+// We prepend it to each element's own style so RNW's built-in "System" default is
+// overridden, while any explicit fontFamily (e.g. the Quran face,
+// AmiriQuranColored) still wins because it comes after ours in the merged array.
+if (Platform.OS === 'web') {
+  const DEFAULT_FONT = { fontFamily: 'Amiri-Regular' };
+  const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __amiriPatched?: boolean }) => {
+    if (typeof Comp.render !== 'function' || Comp.__amiriPatched) return;
+    const origRender = Comp.render;
+    Comp.render = (props: any, ref: any) =>
+      origRender({ ...props, style: [DEFAULT_FONT, props.style] }, ref);
+    Comp.__amiriPatched = true;
+  };
+  patchDefaultFont(Text as unknown as { render?: (props: any, ref: any) => unknown });
+  patchDefaultFont(TextInput as unknown as { render?: (props: any, ref: any) => unknown });
+}
 
 // Initialize Firebase eagerly
 getFirebaseApp();
