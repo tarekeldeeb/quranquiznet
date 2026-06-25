@@ -4,3 +4,6 @@
 node_modules/
 .idea/
 
+# Firebase CLI local deploy cache (machine-local, regenerated on each deploy).
+.firebase/
+

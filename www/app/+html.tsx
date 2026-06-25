@@ -14,6 +14,26 @@ if ('serviceWorker' in navigator) {
 }
 `;
 
+// Google Analytics 4. Keep this ID in sync with GA_MEASUREMENT_ID in
+// src/services/analytics.ts. Automatic page_view is disabled because this is an
+// SPA — page_views are sent per route from src/components/Analytics.tsx.
+const GA_MEASUREMENT_ID = 'G-KBJMQL8WT5';
+const gaInit = `
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+// Consent Mode v2: default everything to denied until the user accepts (see
+// src/components/ConsentBanner.tsx). GA sends only cookieless pings meanwhile.
+gtag('consent', 'default', {
+  ad_storage: 'denied',
+  ad_user_data: 'denied',
+  ad_personalization: 'denied',
+  analytics_storage: 'denied',
+  wait_for_update: 500
+});
+gtag('config', '${GA_MEASUREMENT_ID}', { send_page_view: false });
+`;
+
 export default function Root({ children }: PropsWithChildren) {
   return (
     <html lang="en">
@@ -42,6 +62,10 @@ export default function Root({ children }: PropsWithChildren) {
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png?v=2" />
 
         <ScrollViewStyleReset />
+
+        {/* Google Analytics (gtag.js) */}
+        <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
+        <script dangerouslySetInnerHTML={{ __html: gaInit }} />
 
         {/* Register the service worker once the page has loaded. */}
         <script dangerouslySetInnerHTML={{ __html: swRegistration }} />

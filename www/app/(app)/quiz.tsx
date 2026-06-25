@@ -12,6 +12,7 @@ import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
+import { trackEvent } from '../../src/services/analytics';
 import {
   randperm, shuffleByPerm, deepCopy,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER,
@@ -58,6 +59,7 @@ interface SessionCache {
   dailyScore: number;
   dailyTime: number;
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
+  lastStart: string | undefined;   // consumed ?start=<wordIdx> deep-link (shared question)
   customPart: number | null;       // selected sura/juz part index, or null = whole profile
   // A normal (non-daily) session suspended while a daily quiz runs. The daily
   // quiz uses its own empty card stack; this lets the normal run reappear after.
@@ -79,11 +81,11 @@ const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
   cardCounter: 0, sessionCorrect: 0, sessionAnswered: 0, dailyScore: 0, dailyTime: 0,
-  lastNonce: undefined, customPart: null, normalSnapshot: null,
+  lastNonce: undefined, lastStart: undefined, customPart: null, normalSnapshot: null,
 };
 
 export default function QuizScreen() {
-  const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string; chooser?: string }>();
+  const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string; chooser?: string; start?: string; lvl?: string }>();
   const profile = useProfileStore();
   const router = useRouter();
 
@@ -101,7 +103,7 @@ export default function QuizScreen() {
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
   // Session chooser — shown when no mode or part is pre-set
   const [chooserVisible, setChooserVisible] = useState(
-    params.dailyMode !== '1' && !params.customPart,
+    params.dailyMode !== '1' && !params.customPart && !params.start,
   );
   // Post-session summary
   const [summaryVisible, setSummaryVisible] = useState(false);
@@ -132,6 +134,15 @@ export default function QuizScreen() {
   // does not restart a stale deep-linked sura. Restored from cache so a remount
   // doesn't treat a still-present nonce as a fresh deep-link.
   const lastNonceRef = useRef<string | undefined>(sessionCache.lastNonce);
+  // Same idea for the shared-question link (/quiz?start=<wordIdx>): track the last
+  // ?start value we acted on so a tab refocus doesn't restart it.
+  const lastStartRef = useRef<string | undefined>(sessionCache.lastStart);
+  // Word index for the *next* question to start at exactly (a shared question),
+  // consumed once by loadNextQuestion; null ⇒ normal random selection.
+  const pendingStartIdxRef = useRef<number | null>(null);
+  // Level the shared question was created at (from ?lvl), so it reproduces exactly
+  // regardless of the viewer's own level; null ⇒ use the viewer's level.
+  const pendingStartLevelRef = useRef<number | null>(null);
   // True while a quiz run is in progress (and resumable). Lets us tell a genuine
   // in-progress session (return from the Me tab) apart from a fresh entry.
   const sessionActiveRef = useRef(sessionCache.active);
@@ -153,8 +164,10 @@ export default function QuizScreen() {
   // Reset all per-session state, then start a fresh run.
   //   { daily: true }        → daily quiz
   //   { partIndex: i }       → "custom part": random questions within sura/juz i
+  //   { startIdx: w,         → shared question: first question starts at word w
+  //     startLevel: n }        (at level n, if given), then random thereafter
   //   {}                     → random across the profile's enabled parts
-  function startSession(opts: { daily?: boolean; partIndex?: number | null }) {
+  function startSession(opts: { daily?: boolean; partIndex?: number | null; startIdx?: number; startLevel?: number }) {
     const daily = !!opts.daily;
     if (daily) {
       // Entering the daily quiz: if a normal run is live, suspend it (with its
@@ -183,6 +196,10 @@ export default function QuizScreen() {
     dailyModeRef.current = daily;
     customPartRef.current = opts.partIndex ?? null;
     setCustomPartIndex(opts.partIndex ?? null);
+    // A shared question forces the first question's start word (and level);
+    // cleared after use.
+    pendingStartIdxRef.current = opts.startIdx ?? null;
+    pendingStartLevelRef.current = opts.startLevel ?? null;
     sessionActiveRef.current = true;
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
@@ -191,6 +208,11 @@ export default function QuizScreen() {
     dailyTimeRef.current = 0;
     dailyEndedRef.current = false;
     syncCacheFlags();
+    trackEvent('quiz_start', {
+      mode: daily ? 'daily' : opts.startIdx != null ? 'shared' : opts.partIndex != null ? 'custom' : 'random',
+      level: profile.level,
+      part: opts.partIndex ?? undefined,
+    });
     profile.recordPlay();
     QS.initQuestionnaire(profile.lastSeed);
     setScore(profile.getScore());
@@ -306,6 +328,20 @@ export default function QuizScreen() {
   // Persistent tab ⇒ component stays mounted, so this is the only reliable hook
   // for re-offering the chooser / resuming / starting on re-entry.
   useFocusEffect(useCallback(() => {
+    // Fresh shared-question link (/quiz?start=<wordIdx>). Acted on once per value
+    // so a tab refocus (same URL) doesn't restart it — then it falls through to
+    // the normal session logic (which will `resume`).
+    if (params.start && params.start !== lastStartRef.current) {
+      lastStartRef.current = params.start;
+      sessionCache.lastStart = params.start;
+      const idx = parseInt(params.start, 10);
+      if (isFinite(idx) && idx > 0) {
+        const lvl = params.lvl != null ? parseInt(params.lvl, 10) : NaN;
+        const startLevel = isFinite(lvl) && lvl >= 0 && lvl <= 3 ? lvl : undefined;
+        startSession({ startIdx: idx, startLevel });
+        return () => { clearTimers(); };
+      }
+    }
     const action = decideFocusFromContext({
       pendingDailyStart: QS.pendingDailyStart,
       customPartParam: params.customPart,
@@ -351,7 +387,7 @@ export default function QuizScreen() {
     }
     return () => { clearTimers(); };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [params.customPart, params.nonce, params.chooser]));
+  }, [params.customPart, params.nonce, params.chooser, params.start, params.lvl]));
 
   function clearTimers() {
     if (timerRef.current) clearInterval(timerRef.current);
@@ -407,6 +443,22 @@ export default function QuizScreen() {
           profile.isSurasSpecialQuestionEligible(),
           profile.getPartIndexOf.bind(profile),
         );
+      } else if (pendingStartIdxRef.current != null) {
+        // Shared question (/quiz?start=<wordIdx>): reproduce the exact question at
+        // this word. Use createNormalQ directly so it can't be swapped for a
+        // random "special" question. Consumed once — later questions go random.
+        const startIdx = pendingStartIdxRef.current;
+        const startLevel = pendingStartLevelRef.current;
+        pendingStartIdxRef.current = null;
+        pendingStartLevelRef.current = null;
+        await QS.createNormalQ(
+          startIdx,
+          profile.getSparsePoint.bind(profile),
+          profile.getTotalStudyLength.bind(profile),
+          profile.level,
+          startLevel ?? undefined,   // reproduce at the shared level when provided
+          profile.getPartIndexOf.bind(profile),
+        );
       } else {
         await QS.createNextQ(
           undefined,
@@ -424,7 +476,7 @@ export default function QuizScreen() {
         index: cards.length,
         qo: deepCopy(QS.qo),
         answerAya: aya,
-        socialURL: `https://quranquiz.net/#/ahlan/${QS.qo.startIdx}`,
+        socialURL: `https://quranquiz.net/quiz?start=${QS.qo.startIdx}&lvl=${QS.qo.level}`,
       };
       setCards((prev) => [...prev, newCard]);
       setActive(makeActive(QS.qo));
@@ -500,6 +552,12 @@ export default function QuizScreen() {
     syncCacheFlags();
     if (shouldShowSummary(sessionAnsweredRef.current, dailyMode)) {
       profile.updateScoreRecord();
+      trackEvent('quiz_complete', {
+        mode: customPartRef.current != null ? 'custom' : 'random',
+        correct: sessionCorrectRef.current,
+        answered: sessionAnsweredRef.current,
+        score: profile.getScore(),
+      });
       summaryPendingRef.current = true;
       setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
     } else {
@@ -588,6 +646,11 @@ export default function QuizScreen() {
       name: social.isAnonymous ? 'مجهول/ة' : (social.displayName ?? 'مجهول').split(' ')[0],
       uid: profile.uid,
       country: profile.country || undefined,
+    });
+    trackEvent('daily_quiz_submit', {
+      score: finalScore,
+      correct: dailyScoreRef.current,
+      time_sec: Math.round(dailyTimeRef.current / 1000),
     });
     setDailyEndVisible(true);
   }

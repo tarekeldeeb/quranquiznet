@@ -7,7 +7,8 @@
   },
   "hosting": {
     "public": "www/dist",
-    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "_comment": "Do NOT ignore **/node_modules/** here: Expo's web export ships vendored icon fonts under assets/node_modules/@expo/vector-icons/, and ignoring them breaks all Ionicons on the deployed site.",
+    "ignore": ["firebase.json", "**/.*"],
     "rewrites": [
       {
         "source": "**",

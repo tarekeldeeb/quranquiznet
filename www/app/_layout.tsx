@@ -9,6 +9,8 @@ import { useFonts } from 'expo-font';
 import { initDb } from '../src/db/initDb';
 import { getFirebaseApp } from '../src/services/firebase';
 import { useProfileStore } from '../src/stores/profileStore';
+import { Analytics } from '../src/components/Analytics';
+import { ConsentBanner } from '../src/components/ConsentBanner';
 
 const appIcon = require('../assets/images/app-icon.png');
 
@@ -148,9 +150,11 @@ export default function RootLayout() {
   return (
     <SafeAreaProvider>
       <StatusBar style="light" />
+      <Analytics />
       <WebFrame>
         <Stack screenOptions={{ headerShown: false }} />
       </WebFrame>
+      <ConsentBanner />
     </SafeAreaProvider>
   );
 }

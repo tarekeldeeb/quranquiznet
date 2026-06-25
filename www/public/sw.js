@@ -11,7 +11,7 @@
  * Bump CACHE_VERSION on every release to bust old caches (the React/Expo
  * equivalent of the old www/worker.js `cacheName` bump).
  */
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `qqn-${CACHE_VERSION}`;
 
 // App-shell resources precached at install time.
@@ -65,6 +65,14 @@ function isImmutableAsset(url) {
   );
 }
 
+// True when a response is an HTML document. Used to make sure we never cache (or
+// keep serving) index.html under an asset URL — which is what Firefox/Chrome see
+// as "OTS parsing error / Failed to decode font" when a deploy momentarily 404s
+// an asset and the SPA rewrite returns index.html in its place.
+function isHtmlResponse(response) {
+  return (response.headers.get('content-type') || '').includes('text/html');
+}
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   if (request.method !== 'GET') return;
@@ -92,9 +100,13 @@ self.addEventListener('fetch', (event) => {
   if (isImmutableAsset(url)) {
     event.respondWith(
       caches.match(request).then((cached) => {
-        if (cached) return cached;
+        // Serve the cached copy only if it's a real asset. A poisoned entry (HTML
+        // stored under an asset URL by a momentarily-broken deploy) is ignored and
+        // re-fetched, so the asset self-heals once the server serves the real file.
+        if (cached && !isHtmlResponse(cached)) return cached;
         return fetch(request).then((response) => {
-          if (response && response.status === 200 && response.type === 'basic') {
+          // Never cache an HTML response under an asset URL — that's the poison.
+          if (response && response.status === 200 && response.type === 'basic' && !isHtmlResponse(response)) {
             const copy = response.clone();
             caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
           }

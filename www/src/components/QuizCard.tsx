@@ -7,7 +7,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, interpolate, Extrapolation,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
-import { QuestionObject } from '../models/questionnaire';
+import { QuestionObject, Q_TYPE } from '../models/questionnaire';
 import {
   removeAyaNum, SURA_NAME, SURA_AYAS, getSuraIdx,
   getSuraTanzil, getPageURLFromSuraAyah,
@@ -187,10 +187,14 @@ export default function QuizCard({
             <Ionicons name="book-outline" size={16} color="#1a5276" />
             <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> شاهد</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={handleShare}>
-            <Ionicons name="share-social-outline" size={16} color="#1a5276" />
-            <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> نافس</Text>
-          </TouchableOpacity>
+          {/* Share links to /quiz?start=<word>, which only reproduces normal
+              "complete the verse" questions — so hide it on special questions. */}
+          {card.qo.qType.id === Q_TYPE.NOTSPECIAL.id && (
+            <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={handleShare}>
+              <Ionicons name="share-social-outline" size={16} color="#1a5276" />
+              <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> نافس</Text>
+            </TouchableOpacity>
+          )}
           <TouchableOpacity style={s.reportBtn} onPress={() => onReport(card)}>
             <Ionicons name="flag-outline" size={17} color="#c0392b" />
           </TouchableOpacity>
