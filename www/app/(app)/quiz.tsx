@@ -54,6 +54,7 @@ interface SessionCache {
   score: number;
   cardCounter: number;
   sessionCorrect: number;
+  sessionAnswered: number;   // questions answered this run (correct + incorrect)
   dailyScore: number;
   dailyTime: number;
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
@@ -69,6 +70,7 @@ interface NormalSnapshot {
   active: ActiveCard | null;
   cardCounter: number;
   sessionCorrect: number;
+  sessionAnswered: number;
   customPart: number | null;
   qo: QuestionObject;   // the live question when the normal run was suspended
   seed: number;         // questionnaire seed at suspension (= active question idx)
@@ -76,7 +78,7 @@ interface NormalSnapshot {
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
-  cardCounter: 0, sessionCorrect: 0, dailyScore: 0, dailyTime: 0,
+  cardCounter: 0, sessionCorrect: 0, sessionAnswered: 0, dailyScore: 0, dailyTime: 0,
   lastNonce: undefined, customPart: null, normalSnapshot: null,
 };
 
@@ -111,6 +113,7 @@ export default function QuizScreen() {
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const cardCounterRef = useRef(sessionCache.cardCounter);
   const sessionCorrectRef = useRef(sessionCache.sessionCorrect);
+  const sessionAnsweredRef = useRef(sessionCache.sessionAnswered);
   const dailyScoreRef = useRef(sessionCache.dailyScore);
   const dailyTimeRef = useRef(sessionCache.dailyTime);
   const dailyTimeInterval = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -162,6 +165,7 @@ export default function QuizScreen() {
           active: sessionCache.activeCard,
           cardCounter: cardCounterRef.current,
           sessionCorrect: sessionCorrectRef.current,
+          sessionAnswered: sessionAnsweredRef.current,
           customPart: customPartRef.current,
           qo: deepCopy(QS.qo),
           seed: profile.lastSeed,
@@ -182,6 +186,7 @@ export default function QuizScreen() {
     sessionActiveRef.current = true;
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
+    sessionAnsweredRef.current = 0;
     dailyScoreRef.current = 0;
     dailyTimeRef.current = 0;
     dailyEndedRef.current = false;
@@ -264,6 +269,7 @@ export default function QuizScreen() {
     dailyEndedRef.current = false;
     cardCounterRef.current = snap.cardCounter;
     sessionCorrectRef.current = snap.sessionCorrect;
+    sessionAnsweredRef.current = snap.sessionAnswered;
     dailyScoreRef.current = 0;
     dailyTimeRef.current = 0;
 
@@ -290,6 +296,7 @@ export default function QuizScreen() {
     sessionCache.dailyEnded = dailyEndedRef.current;
     sessionCache.cardCounter = cardCounterRef.current;
     sessionCache.sessionCorrect = sessionCorrectRef.current;
+    sessionCache.sessionAnswered = sessionAnsweredRef.current;
     sessionCache.dailyScore = dailyScoreRef.current;
     sessionCache.dailyTime = dailyTimeRef.current;
     sessionCache.customPart = customPartRef.current;
@@ -485,6 +492,22 @@ export default function QuizScreen() {
     }
   }
 
+  // Shared tail for both answer handlers: bump the answered counter, then either
+  // break for the post-session summary (every Nth answered question) or schedule
+  // the auto-advance to the next card.
+  function afterAnswer() {
+    sessionAnsweredRef.current++;
+    syncCacheFlags();
+    if (shouldShowSummary(sessionAnsweredRef.current, dailyMode)) {
+      profile.updateScoreRecord();
+      summaryPendingRef.current = true;
+      setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
+    } else {
+      advancePendingRef.current = true;
+      setTimeout(tryAdvance, 600);
+    }
+  }
+
   function handleCorrect() {
     profile.addCorrect(QS.qo);
     setScore(profile.getScore());
@@ -499,14 +522,7 @@ export default function QuizScreen() {
       return next;
     });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true } : null);
-    if (shouldShowSummary(sessionCorrectRef.current, dailyMode)) {
-      profile.updateScoreRecord();
-      summaryPendingRef.current = true;
-      setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
-    } else {
-      advancePendingRef.current = true;
-      setTimeout(tryAdvance, 600);
-    }
+    afterAnswer();
   }
 
   function handleIncorrect() {
@@ -519,8 +535,7 @@ export default function QuizScreen() {
       return next;
     });
     setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false } : null);
-    advancePendingRef.current = true;
-    setTimeout(tryAdvance, 600);
+    afterAnswer();
   }
 
   function skipQ() { handleIncorrect(); }

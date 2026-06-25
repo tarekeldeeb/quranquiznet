@@ -89,11 +89,11 @@ export function shouldRestoreNormalRunAfterDaily(hasSuspendedNormalRun: boolean)
   return hasSuspendedNormalRun;
 }
 
-// The post-session summary interrupts a *normal* run every Nth correct answer.
-// Daily mode never shows it (it has its own end screen).
+// The post-session summary interrupts a *normal* run every Nth answered question
+// (correct or incorrect). Daily mode never shows it (it has its own end screen).
 export const SUMMARY_EVERY = 5;
-export function shouldShowSummary(sessionCorrect: number, inDailyMode: boolean): boolean {
-  return !inDailyMode && sessionCorrect > 0 && sessionCorrect % SUMMARY_EVERY === 0;
+export function shouldShowSummary(sessionAnswered: number, inDailyMode: boolean): boolean {
+  return !inDailyMode && sessionAnswered > 0 && sessionAnswered % SUMMARY_EVERY === 0;
 }
 
 // A question the user can actually act on has its round-0 options populated.
