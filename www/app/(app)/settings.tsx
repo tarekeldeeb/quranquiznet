@@ -18,7 +18,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView style={s.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={s.scroll}>
+      <ScrollView style={s.scrollView} contentContainerStyle={s.scroll}>
         {/* Level selector */}
         <View style={s.section}>
           <Text style={s.sectionHeader}>مستوى الاختبار: {profile.levels[profile.level]?.text}</Text>
@@ -67,7 +67,8 @@ export default function SettingsScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
-  scroll: { padding: 16, gap: 16 },
+  scrollView: { flex: 1 },
+  scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   section: {
     backgroundColor: '#fff', borderRadius: 12, overflow: 'hidden',
     boxShadow: '0px 0px 4px rgba(0,0,0,0.05)', elevation: 2,

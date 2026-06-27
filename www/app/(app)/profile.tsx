@@ -108,7 +108,7 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={p.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={p.scroll}>
+      <ScrollView style={p.scrollView} contentContainerStyle={p.scroll}>
         {/* Avatar + name */}
         <View style={p.header}>
           <Image source={photoURL} style={p.avatar} />
@@ -170,7 +170,8 @@ export default function ProfileScreen() {
 
 const p = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
-  scroll: { padding: 16, gap: 16 },
+  scrollView: { flex: 1 },
+  scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   header: { alignItems: 'center', gap: 8, paddingVertical: 16, position: 'relative' },
   avatar: { width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: '#0d2d4e' },
   name: { fontSize: 18, fontWeight: '700', color: '#0d2d4e' },

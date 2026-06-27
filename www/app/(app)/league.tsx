@@ -107,7 +107,7 @@ export default function LeagueScreen() {
 
   return (
     <SafeAreaView style={s.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView style={s.scrollView} contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Compact daily challenge strip */}
         {status === 'available' && (
@@ -180,7 +180,10 @@ export default function LeagueScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
-  scroll: { padding: 16, gap: 12 },
+  // flex:1 bounds the scroller to the viewport so the list scrolls when it
+  // overflows (e.g. all 10 rows on a short phone); paddingBottom clears the tab bar.
+  scrollView: { flex: 1 },
+  scroll: { padding: 16, gap: 12, paddingBottom: 32 },
 
   dailyStrip: {
     backgroundColor: '#fff',

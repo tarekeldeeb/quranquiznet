@@ -83,7 +83,7 @@ export default function DailyScreen() {
 
   return (
     <SafeAreaView style={s.container} edges={['bottom']}>
-      <ScrollView contentContainerStyle={s.scroll}>
+      <ScrollView style={s.scrollView} contentContainerStyle={s.scroll}>
 
         {/* Status card */}
         <View style={s.card}>
@@ -171,7 +171,8 @@ export default function DailyScreen() {
 
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
-  scroll: { padding: 16, gap: 16 },
+  scrollView: { flex: 1 },
+  scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   card: {
     backgroundColor: '#fff', borderRadius: 12, padding: 16,
     boxShadow: '0px 0px 4px rgba(0,0,0,0.05)', elevation: 2,
