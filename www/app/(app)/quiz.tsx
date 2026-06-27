@@ -217,7 +217,7 @@ export default function QuizScreen() {
     QS.initQuestionnaire(profile.lastSeed);
     setScore(profile.getScore());
     if (daily) {
-      dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+      startDailyTimeTracker();
     }
     loadNextQuestion();
   }
@@ -230,7 +230,7 @@ export default function QuizScreen() {
     setScore(profile.getScore());
     if (dailyModeRef.current && !dailyEndedRef.current) {
       // Daily is timed: re-arm the elapsed-time tracker and the question timer.
-      dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+      startDailyTimeTracker();
       startTimer(12);
     }
   }
@@ -245,7 +245,7 @@ export default function QuizScreen() {
       // Daily still in progress but lost its question → re-arm and generate.
       setLoading(true);
       if (dailyTimeInterval.current == null) {
-        dailyTimeInterval.current = setInterval(() => { dailyTimeRef.current += 1000; sessionCache.dailyTime = dailyTimeRef.current; }, 1000);
+        startDailyTimeTracker();
       }
       loadNextQuestion();
       return;
@@ -394,6 +394,20 @@ export default function QuizScreen() {
     if (dailyTimeInterval.current) clearInterval(dailyTimeInterval.current);
   }
 
+  // Daily elapsed-time tracker — accumulates the time the daily score is graded
+  // against. Paused while the user reviews a flipped card (between answering and
+  // pressing "حسناً"), so review time isn't counted; resumed on the next question.
+  function startDailyTimeTracker() {
+    if (dailyTimeInterval.current) clearInterval(dailyTimeInterval.current);
+    dailyTimeInterval.current = setInterval(() => {
+      dailyTimeRef.current += 1000;
+      sessionCache.dailyTime = dailyTimeRef.current;
+    }, 1000);
+  }
+  function stopDailyTimeTracker() {
+    if (dailyTimeInterval.current) { clearInterval(dailyTimeInterval.current); dailyTimeInterval.current = null; }
+  }
+
   // ── load next question ────────────────────────────────────────────────────
   // Source of truth is the refs (dailyModeRef / customPartRef), set before each
   // call — avoids stale-closure issues with state.
@@ -487,8 +501,9 @@ export default function QuizScreen() {
       if (!daily && (cc - DAILYQUIZ_CHECKAFTER) % DAILYQUIZ_CHECKEVERY === 0) {
         checkForDailyQuiz();
       }
-      // Start the per-question timer only after a question was successfully loaded
-      if (daily) startTimer(12);
+      // Start the per-question timer only after a question was successfully loaded,
+      // and resume the elapsed-time tracker (paused while reviewing the prior card).
+      if (daily) { startTimer(12); startDailyTimeTracker(); }
     } catch (e) {
       console.error('loadNextQuestion error:', e);
       // If the failure left the screen with nothing to answer, don't strand the
@@ -550,6 +565,11 @@ export default function QuizScreen() {
   function afterAnswer() {
     sessionAnsweredRef.current++;
     syncCacheFlags();
+    // The card is now flipped (answered). Stop the daily per-question timer so it
+    // can't fire skipQ() on the already-answered card while we wait for the user,
+    // and pause the elapsed-time tracker so card-review time isn't graded.
+    clearTimer();
+    if (dailyMode) stopDailyTimeTracker();
     if (shouldShowSummary(sessionAnsweredRef.current, dailyMode)) {
       profile.updateScoreRecord();
       trackEvent('quiz_complete', {
@@ -561,8 +581,11 @@ export default function QuizScreen() {
       summaryPendingRef.current = true;
       setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
     } else {
+      // Do NOT auto-create the next question. The next questionnaire is generated
+      // only once the user reviews the flipped card and presses "حسناً" (OK),
+      // which routes through onScrollDown → tryAdvance. Applies to both the normal
+      // quiz and the daily quiz.
       advancePendingRef.current = true;
-      setTimeout(tryAdvance, 600);
     }
   }
 
