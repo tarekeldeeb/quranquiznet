@@ -496,7 +496,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   getDailyQuizScore(correct: number, time: number) {
     let score = 10 * correct;
-    score -= 5 * (time - DAILYQUIZ_MINTIME) / (DAILYQUIZ_MAXTIME - DAILYQUIZ_MINTIME);
+    // Speed penalty: 0 (fast, at/under MINTIME) → 5 (slow, at/over MAXTIME).
+    // Floored at 0 so a sub-MINTIME run can't turn the penalty into a bonus,
+    // and capped at 1 so an over-MAXTIME run can't subtract more than 5.
+    const speedFactor = Math.min(
+      Math.max((time - DAILYQUIZ_MINTIME) / (DAILYQUIZ_MAXTIME - DAILYQUIZ_MINTIME), 0),
+      1,
+    );
+    score -= 5 * speedFactor;
     score -= 5 * (1 - get().getTotalStudyLength() / QURAN_WORDS);
     score = Math.min(Math.max(score, 0), 100);
     return parseFloat(score.toFixed(2));

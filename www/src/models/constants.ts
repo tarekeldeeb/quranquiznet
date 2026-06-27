@@ -11,7 +11,10 @@ export const DAILYQUIZ_QPERPART_DIST = [0.4, 0.2, 0.83, 0.73, 0.44, 0.98, 0.522,
 export const DAILYQUIZ_CHECKEVERY = 20;
 export const DAILYQUIZ_CHECKAFTER = 2;
 export const DAILYQUIZ_MAXTIME = 10 * (12 + 9 * 5);
-export const DAILYQUIZ_MINTIME = 10 * (3 + 1 * 5);
+// Fast floor (≈1s/question) below which no further speed credit is given. Kept
+// low so realistically-fast runs still get a non-zero, *differentiating* speed
+// penalty instead of all saturating to 0 and tying at the top of the leaderboard.
+export const DAILYQUIZ_MINTIME = 10 * 1;
 export const SURAS_SPECIAL_ELIGIBILITY_THRESHOLD = 7;
 
 // Word index where each sura ENDS (exclusive upper bound, 1-indexed)
