@@ -601,6 +601,9 @@ export default function QuizScreen() {
   // ── daily quiz ────────────────────────────────────────────────────────────
   async function checkForDailyQuiz() {
     try {
+      // Don't re-offer today's daily quiz to someone who already completed it.
+      const today = new Date().toISOString().split('T')[0];
+      if (profile.lastDailyCompletedDate === today) return;
       const head = await FB.getDailyHead();
       if (!head) return;
       const begin = () => {
