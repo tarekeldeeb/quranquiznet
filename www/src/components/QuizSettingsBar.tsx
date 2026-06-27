@@ -16,6 +16,10 @@ interface Props {
   specialEnabled: boolean;
   scopeNames: string[];    // in-scope part names (suras / juz)
   scopeMode: ScopeMode;
+  // Daily-mode progress: which question (1-based) out of how many total. Used to
+  // render the progress bar so the user sees how many questions remain.
+  dailyCurrent?: number;
+  dailyTotal?: number;
 }
 
 const CHIP_LINE = 16;       // chip text lineHeight
@@ -26,7 +30,7 @@ const ROW_HEIGHT = CHIP_LINE + CHIP_PAD_V * 2;   // height of a single chip row
 const COLLAPSE_THRESHOLD = 3;
 
 export default function QuizSettingsBar({
-  levelText, specialEnabled, scopeNames, scopeMode,
+  levelText, specialEnabled, scopeNames, scopeMode, dailyCurrent = 0, dailyTotal = 0,
 }: Props) {
   const [expanded, setExpanded] = useState(false);
 
@@ -46,7 +50,22 @@ export default function QuizSettingsBar({
       <Text style={s.summary}>{summary}</Text>
 
       {scopeMode === 'daily' ? (
-        <Text style={s.note}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
+        <>
+          {dailyTotal > 0 && (
+            <View style={s.progressWrap}>
+              <View style={s.progressTrack}>
+                <View
+                  style={[
+                    s.progressFill,
+                    { width: `${Math.min(dailyCurrent / dailyTotal, 1) * 100}%` },
+                  ]}
+                />
+              </View>
+              <Text style={s.progressLabel}>السؤال {dailyCurrent} من {dailyTotal}</Text>
+            </View>
+          )}
+          <Text style={s.note}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
+        </>
       ) : (
         <>
           <View style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
@@ -88,6 +107,25 @@ const s = StyleSheet.create({
     marginBottom: 8,
   },
   note: { fontSize: 13, color: '#5b7186', textAlign: 'center' },
+  progressWrap: { alignSelf: 'stretch', alignItems: 'center', marginBottom: 8 },
+  progressTrack: {
+    alignSelf: 'stretch',
+    height: 8,
+    backgroundColor: '#e3ebf3',
+    borderRadius: 4,
+    overflow: 'hidden',
+    // RTL: the fill grows from the right edge (app convention).
+    position: 'relative',
+  },
+  progressFill: {
+    position: 'absolute',
+    top: 0,
+    bottom: 0,
+    right: 0,
+    backgroundColor: '#1a5276',
+    borderRadius: 4,
+  },
+  progressLabel: { fontSize: 12, fontWeight: '700', color: '#1a5276', marginTop: 5 },
   chips: {
     flexDirection: 'row-reverse',   // RTL: first sura on the right (app convention)
     flexWrap: 'wrap',

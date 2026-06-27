@@ -15,7 +15,7 @@ import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
 import {
   randperm, shuffleByPerm, deepCopy,
-  DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER,
+  DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
 } from '../../src/models/constants';
 import { ayaNumberOf } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
@@ -755,6 +755,8 @@ export default function QuizScreen() {
           specialEnabled={profile.specialEnabled}
           scopeNames={scopeNames}
           scopeMode={scopeMode}
+          dailyCurrent={cards.length}
+          dailyTotal={DAILYQUIZ_QPERPART_COUNT}
         />
       )}
 
