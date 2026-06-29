@@ -1,105 +1,124 @@
+markdown
 # CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## What this is
 
-Quran Quiz Net — an Arabic multiple-choice quiz game testing Quran memorization. It's a PWA built with Ionic v1 (AngularJS), hosted on Firebase, and packaged as a Cordova Android app. The live app is at https://app.quranquiz.net.
+Quran Quiz Net — an Arabic multiple-choice quiz game testing Quran memorization. The
+app in `www/` is a React Native rewrite built with **Expo SDK 52 + Expo Router v4**,
+running on web, iOS, and Android from a single codebase. The live web app is at
+https://app.quranquiz.net (Firebase Hosting). Firebase project: `quranquiznet-3a54c`.
+
+> Note: the repo also contains the older AngularJS PWA and a Cordova Android wrapper
+> in other directories; `www/` is the current, actively-developed app.
+
+## Stack
+
+- Expo SDK 52, Expo Router v4 (file-based routing)
+- TypeScript (strict mode)
+- Zustand v4 for state (AsyncStorage-persisted profile)
+- Firebase JS SDK v10 (modular API) — Auth, Realtime Database
+- expo-sqlite v15 for the Quran word DB (native only); web uses an in-memory JSON store
+- React Native Reanimated v3 for animations
 
 ## Commands
 
 ```bash
-# Local development (serves www/ on localhost)
-firebase serve
+# Run from the www/ directory
+cd www
 
-# Deploy frontend + rules
-firebase deploy
+# Local dev server (web)
+npx expo start --web --port 8081      # served at http://localhost:8081
 
-# Deploy only hosting
+# Dev on a device/simulator
+npx expo start                        # then choose iOS / Android
+
+# Web production build (output to www/dist)
+npx expo export --clear               # ALWAYS pass --clear on a version bump,
+                                      # or the old version stays baked into the bundle
+
+# Type check
+npx tsc --noEmit
+
+# Tests (Jest)
+npm test
+
+# Deploy hosting (after expo export)
 firebase deploy --only hosting
 
 # Deploy Cloud Functions
 firebase deploy --only functions
 
-# Regenerate the Quran word database (downloads from tanzil.net, outputs www/q.json + www/q.json.zip)
-python db_maker.py
-
-# Cordova browser build
-ionic cordova build browser
+# Regenerate the Quran word database (root of repo)
+python db_maker.py                    # outputs q.json + q.json.zip
 ```
-
-There are no automated tests (`npm test` exits with error).
-
-When bumping the app version, update the `cacheName` string in `www/worker.js` (e.g. `v207:app` → `v208:app`). The service worker uses this to bust the PWA cache.
 
 ## Architecture
 
-### Frontend: `www/`
+### Routing: `www/app/` (Expo Router)
 
-Ionic v1 / AngularJS SPA. Firebase Hosting serves this directory directly.
+Route groups map to layouts:
+- `app/index.tsx` — entry redirect. Routes to onboarding (first run), auth (logged out),
+  or `(app)/me` (logged in), based on auth state + the `onboarding_done` AsyncStorage flag.
+- `app/_layout.tsx` — root layout: initializes Firebase, loads the profile + Quran DB
+  (with a progress splash), forces RTL, loads Amiri fonts, and wraps the app in a
+  phone-width column on web.
+- `app/(onboarding)/` — `slides`, `setup`, `level` (first-run tutorial).
+- `app/(auth)/` — `index` (welcome/sign-in screen), `privacy`.
+- `app/(app)/` — bottom-tab navigator (`_layout.tsx`) with the main screens:
+  `me` (home/dashboard), `quiz`, `league`, plus hidden legacy routes
+  (`home`, `daily`, `profile`, `study`, `settings`).
 
-**Angular module dependencies** (defined in `js/app.js`):
-- `quranquiznet.utils` — constants and helpers
-- `quranquiznet.profile` — localStorage-backed user profile
-- `quranquiznet.services` — database access layer
-- `quranquiznet.questionnaire` — quiz generation engine
-- `quranquiznet.controllers` — stub; each feature folder registers its own controller
+### Source: `www/src/`
 
-**Feature folders** each contain a controller (`*Ctrl.js`) and a view (`tab-*.html`):
-- `quiz/` — main quiz screen
-- `daily/` — daily challenge
-- `study/` — study/progress view
-- `profile/` — Firebase auth + profile sync
-- `settings/` — difficulty, study part selection
-- `one/` — single question mode
-- `templates/` — shared templates (welcome screen, side menu)
+- `services/firebase.ts` — Firebase wrapper: auth helpers (Google/Facebook/anonymous
+  via `signInWithPopup`), `onAuthChange`, profile sync (`/users/{uid}`), and daily-quiz
+  read/submit (`/daily/`). Config comes from `EXPO_PUBLIC_FIREBASE_*` env vars (`www/.env`).
+- `services/questionnaireService.ts` — quiz session driver (ported from the original
+  questionnaire engine; seedrandom, motashabeha logic, daily quiz).
+- `services/analytics.ts`, `components/Analytics.tsx`, `components/ConsentBanner.tsx` —
+  analytics + consent.
+- `stores/profileStore.ts` — Zustand store holding all user state (50 study parts,
+  level, scores, streak, social identity), persisted to AsyncStorage and synced to RTDB.
+- `db/` — platform-split Quran DB layer:
+  - `idb.ts` / `initDb.ts` — expo-sqlite (native).
+  - `idb.web.ts` / `initDb.web.ts` / `webStore.ts` — in-memory JSON store (web).
+    Metro auto-selects the `.web.ts` variant on web.
+- `models/` — `constants.ts` (`QURAN_WORDS = 77878`, sura metadata), `questionnaire.ts`,
+  `quizFlow.ts`.
+- `components/` — `QuizCard`, `QuizSettingsBar`, `Avatar`, etc.
 
-### Data layer: `www/_model_/`
+### Auth flow
 
-**`utils.js`** — Core constants:
-- `QuranWords = 77878` — total words indexed 1-based
-- `sura_idx[]`, `sura_name[]`, `sura_ayas[]` — Quran structure metadata
-- Helper functions: `modQWords`, `promiseWhile`, `randperm`, etc.
+- Sign-in happens on `(auth)/index.tsx` (Google, Facebook, or anonymous "guest").
+- `onAuthChange` listeners in `app/index.tsx`, `(auth)/index.tsx`, and `(app)/_layout.tsx`
+  drive redirects: a non-null user lands on `(app)/me`; a null user is sent to `(auth)`.
+- On non-anonymous sign-in, `(app)/_layout.tsx` syncs the social identity and merges the
+  remote RTDB profile, then pushes the merged profile back up.
+- Anonymous users see an upgrade prompt on the `me` screen; sign-out lives at the bottom
+  of `me` and clears the local profile.
 
-**`services.js`** — Two DB backends coexist:
-- `IDB` factory — uses **JsStore** (IndexedDB) via a Web Worker. This is the active backend for the PWA. Initialized from `q.json` on first run.
-- `Q` / `DBA` factories — legacy **Cordova SQLite** backend, used on Android via `$cordovaSQLite`. Both implement the same query API.
-- `FB` factory — Firebase Realtime Database access for daily quiz head/results.
+### Database: `q.json`
 
-**`profile.js`** — All state lives in `localStorage` under `prf_*` keys. The profile tracks 50 "study parts" (45 individual suras + 5 final juz), each with per-level correct/question counts. `Profile.getSparsePoint()` maps a flat random number onto the non-contiguous union of checked parts.
+Generated by `db_maker.py`. One row per Quran word (`_id`, `txt`, `txtsym`, `sim1/2/3`,
+`sim1not2p1`, `aya`). Shipped zipped and loaded on first run. `QURAN_WORDS = 77878` is the
+wrap-around boundary (start of sura 114).
 
-**`questionnaire.js`** — Quiz engine. Uses `seedrandom` for reproducible question sequences. Two question paths:
-- Normal questions: find a "motashabeha" (repeated word sequence) and offer similar wrong answers.
-- Special questions: sura name, aya count, or aya number — triggered ~5-20% of the time based on level.
+### Backend: `functions/index.js` (Firebase Cloud Functions)
 
-### Database: `www/q.json`
-
-Generated by `db_maker.py`. Each row represents one Quran word:
-
-| Column | Meaning |
-|--------|---------|
-| `_id` | 1-based word index |
-| `txt` | word without diacritics |
-| `txtsym` | word with full Uthmani diacritics |
-| `sim1` | count of identical words elsewhere |
-| `sim2` | count of identical 2-word sequences |
-| `sim3` | count of identical 3-word sequences |
-| `sim1not2p1` | JSON array of word indices that follow sim1 matches but differ at position+1 (used to generate wrong answers) |
-| `aya` | aya number if this word ends an aya, else null |
-
-The file is ~10 MB; the zip (`q.json.zip`) is shipped to clients and decompressed on first load.
-
-### Backend services
-
-**`functions/index.js`** — Firebase Cloud Functions:
-- `daily_sched` (every 24h): rotates daily quiz, saves yesterday's top-5, updates leaderboard.
+- `daily_sched` (every 24h): rotates the daily quiz, saves yesterday's top-5, updates the
+  leaderboard.
 - `weekly_sched` (every 168h): removes anonymous Firebase users.
-
-**`appengine/`** — Google App Engine app (Python 2 / webapp2) that publishes to Cloud Pub/Sub. Largely superseded by the Cloud Functions scheduler.
+- Note: scheduled functions require the Firebase Blaze plan; on the free plan `/daily/head`
+  may be empty.
 
 ### Firebase
 
-- **Hosting**: serves `www/`
-- **Realtime Database**: daily quiz head/submissions/reports at `/daily/`, user profiles at `/users/`
-- **Auth**: anonymous + social login via `profile/firebasecontrol.js`
-- **FCM**: push notifications for daily quiz reminders
+- **Hosting**: serves the exported web build (`www/dist`).
+- **Realtime Database**: daily quiz at `/daily/`, user profiles at `/users/`. RTDB rules
+  require `auth != null` for all reads, so users must be authenticated (even anonymously)
+  before any read.
+- **Auth**: anonymous + Google/Facebook social login. For local web testing, `localhost`
+  must be in the Firebase Auth authorized domains.
+```

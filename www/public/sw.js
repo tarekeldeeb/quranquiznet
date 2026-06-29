@@ -11,7 +11,7 @@
  * Bump CACHE_VERSION on every release to bust old caches (the React/Expo
  * equivalent of the old www/worker.js `cacheName` bump).
  */
-const CACHE_VERSION = 'v4';
+const CACHE_VERSION = 'v5';
 const CACHE_NAME = `qqn-${CACHE_VERSION}`;
 
 // App-shell resources precached at install time.

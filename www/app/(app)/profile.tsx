@@ -91,10 +91,10 @@ export default function ProfileScreen() {
             بالاختبارات اليومية. كما أنه يحفظ ملفك على الشبكة.
           </Text>
           <View style={p.btnRow}>
-            <TouchableOpacity style={[p.btn, p.btnFb]} onPress={() => signInFacebook()}>
+            <TouchableOpacity style={[p.btn, p.btnFb]} onPress={() => { signInFacebook().catch(console.error); }}>
               <Text style={p.btnTxt}>فيسبوك</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={[p.btn, p.btnGoogle]} onPress={() => signInGoogle()}>
+            <TouchableOpacity style={[p.btn, p.btnGoogle]} onPress={() => { signInGoogle().catch(console.error); }}>
               <Text style={p.btnTxt}>جوجل</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[p.btn, p.btnAnon]} onPress={() => signInAnon()}>
@@ -130,10 +130,10 @@ export default function ProfileScreen() {
         {user.isAnonymous && (
           <View style={p.anonBox}>
             <View style={p.btnRow}>
-              <TouchableOpacity style={[p.btn, p.btnFb]} onPress={() => signInFacebook()}>
+              <TouchableOpacity style={[p.btn, p.btnFb]} onPress={() => { signInFacebook().catch(console.error); }}>
                 <Text style={p.btnTxt}>فيسبوك</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[p.btn, p.btnGoogle]} onPress={() => signInGoogle()}>
+              <TouchableOpacity style={[p.btn, p.btnGoogle]} onPress={() => { signInGoogle().catch(console.error); }}>
                 <Text style={p.btnTxt}>جوجل</Text>
               </TouchableOpacity>
             </View>

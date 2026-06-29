@@ -13,11 +13,14 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockGetDailyHead = jest.fn();
+const mockSignOut = jest.fn(() => Promise.resolve());
+const mockSignInGoogle = jest.fn(() => Promise.resolve({ uid: 'g1' }));
+const mockSignInFacebook = jest.fn(() => Promise.resolve({ uid: 'f1' }));
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: (...a: unknown[]) => mockGetDailyHead(...a),
-  signOut: jest.fn(() => Promise.resolve()),
-  signInGoogle: jest.fn(),
-  signInFacebook: jest.fn(),
+  signOut: (...a: unknown[]) => mockSignOut(...a),
+  signInGoogle: (...a: unknown[]) => mockSignInGoogle(...a),
+  signInFacebook: (...a: unknown[]) => mockSignInFacebook(...a),
 }));
 
 const mockInitDailyQuiz = jest.fn();
@@ -26,7 +29,8 @@ jest.mock('../../../src/services/questionnaireService', () => ({
 }));
 
 import React from 'react';
-import { render, fireEvent, waitFor } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MeScreen from '../me';
 import { useProfileStore, StudyPart } from '../../../src/stores/profileStore';
@@ -43,6 +47,9 @@ const head = () => ({ daily_random: 42, start_time: Date.now(), submit_to_ref: '
 
 beforeEach(() => {
   mockPush.mockClear(); mockReplace.mockClear(); mockInitDailyQuiz.mockClear(); mockGetDailyHead.mockReset();
+  mockSignOut.mockReset(); mockSignOut.mockResolvedValue(undefined);
+  mockSignInGoogle.mockReset(); mockSignInGoogle.mockResolvedValue({ uid: 'g1' });
+  mockSignInFacebook.mockReset(); mockSignInFacebook.mockResolvedValue({ uid: 'f1' });
   // Full 50-part profile (45 suras + 5 juz), as in production — the daily-weights
   // computation indexes every part.
   const parts = Array.from({ length: 50 }, (_, i) => part(`جزء/سورة ${i}`, i < 3));
@@ -90,5 +97,64 @@ describe('Me dashboard — daily card states', () => {
     fireEvent.press(await findByText('ابدأ اختبار اليوم'));
     await waitFor(() => expect(mockInitDailyQuiz).toHaveBeenCalled());
     expect(mockPush).toHaveBeenCalledWith(expect.objectContaining({ pathname: '/(app)/quiz' }));
+  });
+});
+
+describe('Me dashboard — sign out [bug #2]', () => {
+  // Auto-confirm the "are you sure?" dialog by invoking the destructive button.
+  function autoConfirmAlert() {
+    return jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => {
+      (buttons as { style?: string; onPress?: () => void }[] | undefined)
+        ?.find((b) => b.style === 'destructive')?.onPress?.();
+    });
+  }
+
+  it('does NOT navigate to /(auth) until signOut() has resolved', async () => {
+    mockGetDailyHead.mockResolvedValue(null);
+    // Hold signOut open so we can observe that navigation waits for it.
+    let resolveSignOut!: () => void;
+    mockSignOut.mockReturnValue(new Promise<void>((r) => { resolveSignOut = r; }));
+    const alertSpy = autoConfirmAlert();
+
+    const { findByText } = renderMe();
+    fireEvent.press(await findByText('تسجيل الخروج'));
+
+    // signOut is still pending → the auth-screen redirect must not have fired,
+    // otherwise its auth listener would bounce back on the stale session.
+    await act(async () => { await Promise.resolve(); });
+    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)');
+
+    await act(async () => { resolveSignOut(); await Promise.resolve(); });
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(auth)'));
+    expect(mockSignOut).toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+  });
+});
+
+describe('Me dashboard — guest upgrade [bug #3]', () => {
+  beforeEach(() => {
+    // Render as an anonymous guest so the in-page upgrade card is shown.
+    useProfileStore.setState({ social: { uid: 'anon', displayName: 'مجهول(ة)', isAnonymous: true } });
+  });
+
+  it('shows the Google/Facebook upgrade buttons for a guest', async () => {
+    mockGetDailyHead.mockResolvedValue(null);
+    const { findByText } = renderMe();
+    expect(await findByText('جوجل')).toBeTruthy();
+    expect(await findByText('فيسبوك')).toBeTruthy();
+  });
+
+  it('surfaces an error (does not fail silently) when the upgrade is refused', async () => {
+    mockGetDailyHead.mockResolvedValue(null);
+    mockSignInGoogle.mockRejectedValueOnce(new Error('refused'));
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    const { findByText } = renderMe();
+    fireEvent.press(await findByText('جوجل'));
+
+    await waitFor(() => expect(mockSignInGoogle).toHaveBeenCalled());
+    await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('خطأ', expect.any(String)));
+    alertSpy.mockRestore();
   });
 });

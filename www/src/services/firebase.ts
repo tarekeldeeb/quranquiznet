@@ -4,7 +4,8 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import {
   getAuth, onAuthStateChanged, signInAnonymously,
-  signInWithPopup, GoogleAuthProvider, FacebookAuthProvider,
+  signInWithPopup, linkWithPopup, signInWithCredential,
+  GoogleAuthProvider, FacebookAuthProvider, AuthProvider, OAuthCredential,
   signOut as fbSignOut, User, Auth,
 } from 'firebase/auth';
 import { getDatabase, ref, set, push, get as dbGet, Database } from 'firebase/database';
@@ -60,34 +61,72 @@ export async function signInAnon(): Promise<User | null> {
   }
 }
 
-export async function signInGoogle(): Promise<User | null> {
+// Popup outcomes that mean "the user backed out" — not real failures, so we
+// stay silent (return null without surfacing an error to the caller's UI).
+const BENIGN_POPUP_CODES = new Set([
+  'auth/popup-closed-by-user',
+  'auth/cancelled-popup-request',
+  'auth/user-cancelled',
+]);
+
+function googleProvider(): GoogleAuthProvider {
+  const provider = new GoogleAuthProvider();
+  // Always show the Google account chooser instead of silently reusing the one
+  // already signed in to the browser.
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return provider;
+}
+
+function credentialFromError(provider: AuthProvider, err: unknown): OAuthCredential | null {
+  if (provider instanceof GoogleAuthProvider) return GoogleAuthProvider.credentialFromError(err as never);
+  if (provider instanceof FacebookAuthProvider) return FacebookAuthProvider.credentialFromError(err as never);
+  return null;
+}
+
+/**
+ * Sign in (or, for a guest, upgrade) with a social provider.
+ *
+ * If the current user is anonymous we link the provider so the guest's local
+ * progress is preserved. If that social account already exists we fall back to
+ * signing straight into it. Throws on real errors so the caller can show a
+ * message; returns null only when the user dismisses the popup.
+ */
+async function socialSignIn(provider: AuthProvider): Promise<User | null> {
+  const auth = getFirebaseAuth();
+  const current = auth.currentUser;
   try {
-    const provider = new GoogleAuthProvider();
-    const result = await signInWithPopup(getFirebaseAuth(), provider);
+    if (current?.isAnonymous) {
+      try {
+        const linked = await linkWithPopup(current, provider);
+        return linked.user;
+      } catch (e: unknown) {
+        const code = (e as { code?: string }).code;
+        // The social account is already registered — sign into it directly.
+        if (code === 'auth/credential-already-in-use') {
+          const cred = credentialFromError(provider, e);
+          if (cred) {
+            const result = await signInWithCredential(auth, cred);
+            return result.user;
+          }
+        }
+        throw e;
+      }
+    }
+    const result = await signInWithPopup(auth, provider);
     return result.user;
-  } catch (e) {
-    console.error('signInGoogle error:', e);
-    return null;
+  } catch (e: unknown) {
+    if (BENIGN_POPUP_CODES.has((e as { code?: string }).code ?? '')) return null;
+    console.error('socialSignIn error:', e);
+    throw e;
   }
 }
 
-export async function signInFacebook(): Promise<User | null> {
-  try {
-    const provider = new FacebookAuthProvider();
-    const result = await signInWithPopup(getFirebaseAuth(), provider);
-    return result.user;
-  } catch (e: unknown) {
-    const err = e as { code?: string; credential?: unknown };
-    if (err.code === 'auth/account-exists-with-different-credential') {
-      // Link: sign in with Google first, then link Facebook credential
-      const gProvider = new GoogleAuthProvider();
-      const gResult = await signInWithPopup(getFirebaseAuth(), gProvider);
-      // Linking is handled separately in the auth flow
-      return gResult.user;
-    }
-    console.error('signInFacebook error:', e);
-    return null;
-  }
+export function signInGoogle(): Promise<User | null> {
+  return socialSignIn(googleProvider());
+}
+
+export function signInFacebook(): Promise<User | null> {
+  return socialSignIn(new FacebookAuthProvider());
 }
 
 export async function signOut(): Promise<void> {

@@ -45,13 +45,19 @@ export default function AuthScreen() {
   }, []);
 
   async function handleGoogle() {
-    const user = await signInGoogle();
-    if (!user) notify('خطأ', 'تعذر تسجيل الدخول بجوجل');
+    try {
+      await signInGoogle();
+    } catch {
+      notify('خطأ', 'تعذر تسجيل الدخول بجوجل');
+    }
   }
 
   async function handleFacebook() {
-    const user = await signInFacebook();
-    if (!user) notify('خطأ', 'تعذر تسجيل الدخول بفيسبوك');
+    try {
+      await signInFacebook();
+    } catch {
+      notify('خطأ', 'تعذر تسجيل الدخول بفيسبوك');
+    }
   }
 
   async function handleAnonymous() {

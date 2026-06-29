@@ -32,6 +32,15 @@ const DOT_COLOR: Record<number, string> = {
 
 const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
 
+/** Cross-platform alert (RN Alert is a no-op on react-native-web). */
+function notify(title: string, msg: string) {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined') window.alert(`${title}\n\n${msg}`);
+    return;
+  }
+  Alert.alert(title, msg);
+}
+
 /** Arabic plural for a count + singular/dual/plural noun forms. */
 function arPlural(n: number, one: string, two: string, few: string, many: string): string {
   if (n === 1) return one;
@@ -212,11 +221,17 @@ export default function MeScreen() {
     launchDaily(dailyHead);
   }
 
-  function performSignOut() {
-    // Fire-and-forget — navigate immediately, clean up in background.
+  async function performSignOut() {
+    // Wait for Firebase to clear the session BEFORE navigating. Otherwise the
+    // (auth) screen's auth listener re-reads the still-signed-in user and bounces
+    // straight back here, leaving the screen with no account actions.
+    try {
+      await signOut();
+    } catch (e) {
+      console.error(e);
+    }
+    await profile.delete().catch(console.error);
     router.replace('/(auth)');
-    signOut().catch(console.error);
-    profile.delete().catch(console.error);
   }
 
   function handleSignOut() {
@@ -232,6 +247,14 @@ export default function MeScreen() {
       { text: 'لا', style: 'cancel' },
       { text: 'نعم', style: 'destructive', onPress: performSignOut },
     ]);
+  }
+
+  async function upgradeGuest(provider: 'google' | 'facebook') {
+    try {
+      await (provider === 'google' ? signInGoogle() : signInFacebook());
+    } catch {
+      notify('خطأ', 'تعذر تسجيل الدخول. حاول مرة أخرى.');
+    }
   }
 
   function togglePart(index: number) {
@@ -443,10 +466,10 @@ export default function MeScreen() {
           <View style={[s.bentoFull, s.anonCard]}>
             <Text style={s.anonTxt}>سجّل دخولك لحفظ تقدمك ومزامنة بياناتك</Text>
             <View style={s.anonBtns}>
-              <TouchableOpacity style={[s.socialBtn, s.btnGoogle]} onPress={() => signInGoogle()}>
+              <TouchableOpacity style={[s.socialBtn, s.btnGoogle]} onPress={() => upgradeGuest('google')}>
                 <Text style={s.socialBtnTxt}>جوجل</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={[s.socialBtn, s.btnFb]} onPress={() => signInFacebook()}>
+              <TouchableOpacity style={[s.socialBtn, s.btnFb]} onPress={() => upgradeGuest('facebook')}>
                 <Text style={s.socialBtnTxt}>فيسبوك</Text>
               </TouchableOpacity>
             </View>
