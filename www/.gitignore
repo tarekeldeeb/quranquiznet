@@ -11,6 +11,11 @@ dist/
 web-build/
 .expo/
 
+# Native projects — regenerated on demand by `npx expo prebuild`.
+# Managed (CNG) workflow, so the android/ and ios/ dirs are not tracked.
+/android
+/ios
+
 # Local environment files (Firebase / ipinfo config). Keep .env.example tracked.
 .env
 .env.local
