@@ -669,7 +669,7 @@ export default function QuizScreen() {
     const social = profile.social;
     await FB.submitDailyResult({
       score: finalScore,
-      name: social.isAnonymous ? 'مجهول/ة' : (social.displayName ?? 'مجهول').split(' ')[0],
+      name: social.isAnonymous ? 'زائر(ة)' : (social.displayName ?? 'زائر(ة)').split(' ')[0],
       uid: profile.uid,
       country: profile.country || undefined,
     });

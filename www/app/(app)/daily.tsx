@@ -141,7 +141,7 @@ export default function DailyScreen() {
               : yday.map((r, i) => (
                 <View key={i} style={s.row}>
                   <Text style={s.rank}>#{i + 1}</Text>
-                  <Text style={s.rowName}>{r.name ?? 'مجهول'}</Text>
+                  <Text style={s.rowName}>{r.name ?? 'زائر(ة)'}</Text>
                   <Text style={s.rowScore}>{r.score}</Text>
                 </View>
               ))}
@@ -157,7 +157,7 @@ export default function DailyScreen() {
               : allTop.map((r, i) => (
                 <View key={i} style={s.row}>
                   <Text style={s.rank}>#{i + 1}</Text>
-                  <Text style={s.rowName}>{r.name ?? 'مجهول'}</Text>
+                  <Text style={s.rowName}>{r.name ?? 'زائر(ة)'}</Text>
                   <Text style={s.rowScore}>{r.score}</Text>
                 </View>
               ))}

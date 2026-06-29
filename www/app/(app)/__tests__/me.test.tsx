@@ -13,9 +13,9 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockGetDailyHead = jest.fn();
-const mockSignOut = jest.fn(() => Promise.resolve());
-const mockSignInGoogle = jest.fn(() => Promise.resolve({ uid: 'g1' }));
-const mockSignInFacebook = jest.fn(() => Promise.resolve({ uid: 'f1' }));
+const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
+const mockSignInGoogle = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'g1' }));
+const mockSignInFacebook = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'f1' }));
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: (...a: unknown[]) => mockGetDailyHead(...a),
   signOut: (...a: unknown[]) => mockSignOut(...a),
@@ -135,7 +135,7 @@ describe('Me dashboard — sign out [bug #2]', () => {
 describe('Me dashboard — guest upgrade [bug #3]', () => {
   beforeEach(() => {
     // Render as an anonymous guest so the in-page upgrade card is shown.
-    useProfileStore.setState({ social: { uid: 'anon', displayName: 'مجهول(ة)', isAnonymous: true } });
+    useProfileStore.setState({ social: { uid: 'anon', displayName: 'زائر(ة)', isAnonymous: true } });
   });
 
   it('shows the Google/Facebook upgrade buttons for a guest', async () => {

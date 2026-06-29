@@ -52,7 +52,7 @@ export default function ProfileScreen() {
           parts: profile.parts,
         });
       } else if (u?.isAnonymous) {
-        profile.setSocial({ uid: u.uid, displayName: 'مجهول(ة)', isAnonymous: true });
+        profile.setSocial({ uid: u.uid, displayName: 'زائر(ة)', isAnonymous: true });
       }
     });
     return unsub;
@@ -98,7 +98,7 @@ export default function ProfileScreen() {
               <Text style={p.btnTxt}>جوجل</Text>
             </TouchableOpacity>
             <TouchableOpacity style={[p.btn, p.btnAnon]} onPress={() => signInAnon()}>
-              <Text style={[p.btnTxt, { color: '#555' }]}>مجهول</Text>
+              <Text style={[p.btnTxt, { color: '#555' }]}>زائر(ة)</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -112,7 +112,7 @@ export default function ProfileScreen() {
         {/* Avatar + name */}
         <View style={p.header}>
           <Image source={photoURL} style={p.avatar} />
-          <Text style={p.name}>{user.displayName ?? 'مجهول(ة)'}</Text>
+          <Text style={p.name}>{user.displayName ?? 'زائر(ة)'}</Text>
           {!user.isAnonymous && (
             <TouchableOpacity style={p.signOutBtn} onPress={handleSignOut}>
               <Ionicons name="log-out-outline" size={20} color="#c0392b" />

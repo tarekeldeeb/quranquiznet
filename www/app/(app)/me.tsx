@@ -363,7 +363,7 @@ export default function MeScreen() {
           <View style={s.topInfo}>
             <Text style={s.greeting}>{greeting}</Text>
             <Text style={s.topSub} numberOfLines={1}>
-              {social.isAnonymous ? 'زائر' : (social.email ?? social.displayName ?? '')}
+              {social.isAnonymous ? 'زائر(ة)' : (social.email ?? social.displayName ?? '')}
             </Text>
           </View>
           <View style={s.topRight}>

@@ -78,7 +78,7 @@ export default function AppLayout() {
           parts: s.parts,
         });
       } else {
-        profile.setSocial({ uid: user.uid, displayName: 'مجهول(ة)', isAnonymous: true });
+        profile.setSocial({ uid: user.uid, displayName: 'زائر(ة)', isAnonymous: true });
       }
     });
     return unsub;

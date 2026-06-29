@@ -99,7 +99,7 @@ export default function LeagueScreen() {
         {/* RTL: medal (right) → flag → name (flex) → score (left) */}
         <Text style={s.medal}>{index < 3 ? MEDAL[index] : `${index + 1}`}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'مجهول'}</Text>
+        <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
         <Text style={[s.rowScore, isMe && s.rowScoreMe]}>{item.score}</Text>
       </View>
     );
