@@ -12,6 +12,20 @@ import {
   removeAyaNum, SURA_NAME, SURA_AYAS, getSuraIdx,
   getSuraTanzil, getPageURLFromSuraAyah,
 } from '../models/constants';
+import QuranText from './QuranText';
+
+// Word count of an Arabic snippet, ignoring aya-end markers in either form
+// (raw ﴿123﴾ or the ۝ glyph removeAyaNum produces) — quran-madina-html does not
+// count those markers as words, so neither must we.
+function wordCount(text: string): number {
+  return text
+    .replace(/﴿[0-9]+﴾/g, ' ')
+    .replace(/۝/g, ' ')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .length;
+}
 
 const { width: SW } = Dimensions.get('window');
 // Cap card width so it's not absurdly wide on desktop/tablet
@@ -25,6 +39,7 @@ export interface CardData {
   index: number;
   qo: QuestionObject;
   answerAya: number;
+  wordOffset: number;     // 1-based position of startIdx within its aya (Madina renderer)
   socialURL: string;
   wasCorrect?: boolean;   // set when card is answered; undefined = still active
 }
@@ -64,6 +79,20 @@ export default function QuizCard({
   const suraName = SURA_NAME[sura];
   const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · ${SURA_AYAS[sura]} آية`;
   const pageURL  = getPageURLFromSuraAyah(sura, card.answerAya);
+
+  // Madina renderer (web only — see QuranText.web.tsx) applies to real Quran
+  // continuations; the special question types (sura name / aya count / number)
+  // are not Quran text, so they keep the plain Text rendering.
+  const useMadina  = card.qo.qType.id === Q_TYPE.NOTSPECIAL.id;
+  const suraNum    = sura + 1;   // 1-based for quran-madina-html
+  const questionTxt = removeAyaNum(card.qo.txt.question);
+  // quran-madina-html does not count the basmala as words, but quranquiz includes
+  // its 4 words in aya 1's range. Drop them for aya 1 of every sura except
+  // Al-Fatiha (whose basmala IS aya 1) and At-Tawba (which has no basmala).
+  const basmalaSkip = card.answerAya === 1 && suraNum !== 1 && suraNum !== 9 ? 4 : 0;
+  const madinaStart = Math.max(1, card.wordOffset - basmalaSkip);
+  const frontWords = `${madinaStart}-${madinaStart + wordCount(questionTxt) - 1}`;
+  const backWords  = `${madinaStart}-${madinaStart + wordCount(card.qo.txt.answer) - 1}`;
 
   useEffect(() => {
     if (flipTrigger > 0) {
@@ -115,7 +144,20 @@ export default function QuizCard({
         {/* Question text — render directly so the box grows with the text
             (a ScrollView here collapsed and cropped the diacritics). */}
         <View style={s.questionBox}>
-          <Text style={s.questionText}>{removeAyaNum(card.qo.txt.question)}</Text>
+          {/* Render directly (no ScrollView — it collapsed and cropped the
+              diacritics). useMadina picks the quran-madina-html renderer for real
+              Quran ayat; everything else stays plain Text. */}
+          {useMadina ? (
+            <QuranText
+              text={questionTxt}
+              sura={suraNum}
+              aya={card.answerAya}
+              words={frontWords}
+              style={s.questionText}
+            />
+          ) : (
+            <Text style={s.questionText}>{questionTxt}</Text>
+          )}
         </View>
 
         {/* Body: options + meta */}
@@ -174,7 +216,17 @@ export default function QuizCard({
 
         {/* Answer text */}
         <ScrollView style={s.answerScroll} contentContainerStyle={s.answerContent}>
-          <Text style={s.answerText}>{card.qo.txt.answer} …</Text>
+          {useMadina ? (
+            <QuranText
+              text={`${card.qo.txt.answer} …`}
+              sura={suraNum}
+              aya={card.answerAya}
+              words={backWords}
+              style={s.answerText}
+            />
+          ) : (
+            <Text style={s.answerText}>{card.qo.txt.answer} …</Text>
+          )}
         </ScrollView>
 
         {/* Action row */}

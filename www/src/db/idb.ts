@@ -126,6 +126,20 @@ export async function ayaNumberOf(idx: number): Promise<number> {
   return row?.aya ?? 0;
 }
 
+// 1-based position of word `idx` within its own aya. Used to drive the
+// quran-madina-html renderer, whose `words` attribute counts from the aya start.
+// `aya` is non-null only on aya-ending words, so the previous such row marks the
+// end of the prior aya; this aya starts right after it.
+export async function wordOffsetInAya(idx: number): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ _id: number }>(
+    'SELECT _id FROM q WHERE _id < ? AND aya IS NOT NULL ORDER BY _id DESC LIMIT 1',
+    [idx],
+  );
+  const ayaStart = (row?._id ?? 0) + 1;
+  return idx - ayaStart + 1;
+}
+
 export async function isAyaStart(idx: number): Promise<boolean> {
   const db = await getDb();
   const row = await db.getFirstAsync<{ _id: number }>(

@@ -16,7 +16,7 @@ function makeCard(): CardData {
   const qo = makeEmptyQO();
   qo.rounds = 1;
   qo.txt = { question: 'بِسْمِ اللَّهِ', answer: 'الرَّحْمَٰنِ الرَّحِيمِ', op: [['أ', 'ب', 'ج', 'د', 'هـ']] };
-  return { index: 0, qo, answerAya: 1, socialURL: 'https://quranquiz.net/#/ahlan/1' };
+  return { index: 0, qo, answerAya: 1, wordOffset: 1, socialURL: 'https://quranquiz.net/#/ahlan/1' };
 }
 
 function props(flipTrigger: number) {

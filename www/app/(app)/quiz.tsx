@@ -17,7 +17,7 @@ import {
   randperm, shuffleByPerm, deepCopy,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
 } from '../../src/models/constants';
-import { ayaNumberOf } from '../../src/db/idb';
+import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
 import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
@@ -486,10 +486,12 @@ export default function QuizScreen() {
       }
       profile.setLastSeed(QS.qo.startIdx);
       const aya = await ayaNumberOf(QS.qo.startIdx);
+      const wordOffset = await wordOffsetInAya(QS.qo.startIdx);
       const newCard: CardData = {
         index: cards.length,
         qo: deepCopy(QS.qo),
         answerAya: aya,
+        wordOffset,
         socialURL: `https://quranquiz.net/quiz?start=${QS.qo.startIdx}&lvl=${QS.qo.level}`,
       };
       setCards((prev) => [...prev, newCard]);

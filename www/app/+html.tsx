@@ -63,6 +63,22 @@ export default function Root({ children }: PropsWithChildren) {
 
         <ScrollViewStyleReset />
 
+        {/* Blend the Madina renderer (quran-madina-html, see QuranText.web.tsx)
+            into the quiz card: drop the library's beige tint, rounded corners,
+            the inset mushaf-page shadow, and any header. */}
+        <style
+          dangerouslySetInnerHTML={{
+            __html: `
+            quran-madina-html {
+              background: transparent !important;
+              border-radius: 0 !important;
+              box-shadow: none !important;
+            }
+            quran-madina-html-header { display: none !important; }
+          `,
+          }}
+        />
+
         {/* Google Analytics (gtag.js) */}
         <script async src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`} />
         <script dangerouslySetInnerHTML={{ __html: gaInit }} />

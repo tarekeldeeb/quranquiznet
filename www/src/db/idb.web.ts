@@ -74,6 +74,16 @@ export async function ayaNumberOf(idx: number): Promise<number> {
   return 0;
 }
 
+// 1-based position of word `idx` within its own aya (counts from the aya start).
+// Walks back to the previous aya-ending word; this aya starts right after it.
+export async function wordOffsetInAya(idx: number): Promise<number> {
+  let ayaStart = 1;
+  for (let id = idx - 1; id >= 1; id--) {
+    if (get(id)?.aya != null) { ayaStart = id + 1; break; }
+  }
+  return idx - ayaStart + 1;
+}
+
 export async function isAyaStart(idx: number): Promise<boolean> {
   // The word before idx (i.e. idx-1) ends an aya
   return get(idx - 1)?.aya != null;
