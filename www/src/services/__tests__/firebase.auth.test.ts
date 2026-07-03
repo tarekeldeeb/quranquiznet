@@ -5,6 +5,10 @@
 //      surface real errors instead of failing silently.
 // (#2 — the logout navigation race — is covered in app/(app)/__tests__/me.test.tsx.)
 
+// These tests cover the WEB popup flow, so pin the platform to web (firebase.ts
+// routes non-web platforms through the native expo-auth-session path instead).
+jest.mock('react-native', () => ({ Platform: { OS: 'web', select: (o: Record<string, unknown>) => o.web ?? o.default } }));
+
 jest.mock('firebase/app', () => ({
   initializeApp: jest.fn(() => ({})),
   getApps: jest.fn(() => [{}]), // pretend an app already exists
@@ -37,6 +41,7 @@ jest.mock('firebase/auth', () => {
     signInWithPopup: jest.fn(),
     linkWithPopup: jest.fn(),
     signInWithCredential: jest.fn(),
+    linkWithCredential: jest.fn(),
     GoogleAuthProvider,
     FacebookAuthProvider,
     signOut: jest.fn(),
@@ -53,6 +58,7 @@ const m = fbAuth as unknown as {
   signInWithPopup: jest.Mock;
   linkWithPopup: jest.Mock;
   signInWithCredential: jest.Mock;
+  linkWithCredential: jest.Mock;
   GoogleAuthProvider: { credentialFromError: jest.Mock };
   FacebookAuthProvider: { credentialFromError: jest.Mock };
 };
@@ -62,9 +68,11 @@ beforeEach(() => {
   m.signInWithPopup.mockReset();
   m.linkWithPopup.mockReset();
   m.signInWithCredential.mockReset();
+  m.linkWithCredential.mockReset();
   m.GoogleAuthProvider.credentialFromError.mockReset();
   m.FacebookAuthProvider.credentialFromError.mockReset();
   jest.spyOn(console, 'error').mockImplementation(() => {});
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
 });
 
 afterEach(() => {
@@ -132,5 +140,50 @@ describe('social sign-in — bug #3: errors are no longer swallowed', () => {
     m.linkWithPopup.mockResolvedValue({ user: { uid: 'anon', isAnonymous: false } });
     await signInFacebook();
     expect(m.linkWithPopup).toHaveBeenCalled();
+  });
+});
+
+describe('social sign-in — same-email collision (account-exists-with-different-credential)', () => {
+  it('signs into the existing (Google) provider and links the pending Facebook credential', async () => {
+    m.__authState.currentUser = null;
+    const pendingCred = { providerId: 'facebook.com' };
+    m.FacebookAuthProvider.credentialFromError.mockReturnValue(pendingCred);
+    m.signInWithPopup
+      // 1) Facebook attempt collides with an existing Google account on the same email
+      .mockRejectedValueOnce({ code: 'auth/account-exists-with-different-credential', customData: { email: 'u@x.com' } })
+      // 2) fallback: sign into the existing Google account
+      .mockResolvedValueOnce({ user: { uid: 'existing-google' } });
+    m.linkWithCredential.mockResolvedValue({ user: { uid: 'existing-google' } });
+
+    const user = await signInFacebook();
+
+    expect(m.signInWithPopup).toHaveBeenCalledTimes(2);
+    // the recovery popup uses Google (its provider carries the select_account param)
+    expect(m.signInWithPopup.mock.calls[1][1].customParameters).toEqual({ prompt: 'select_account' });
+    // the Facebook credential the user tried is linked onto the existing account
+    expect(m.linkWithCredential).toHaveBeenCalledWith({ uid: 'existing-google' }, pendingCred);
+    expect(user).toEqual({ uid: 'existing-google' });
+  });
+
+  it('still signs the user in even if linking the pending credential fails', async () => {
+    m.__authState.currentUser = null;
+    m.FacebookAuthProvider.credentialFromError.mockReturnValue({ providerId: 'facebook.com' });
+    m.signInWithPopup
+      .mockRejectedValueOnce({ code: 'auth/account-exists-with-different-credential', customData: { email: 'u@x.com' } })
+      .mockResolvedValueOnce({ user: { uid: 'existing-google' } });
+    m.linkWithCredential.mockRejectedValue({ code: 'auth/provider-already-linked' });
+
+    const user = await signInFacebook();
+    expect(user).toEqual({ uid: 'existing-google' });
+  });
+
+  it('returns null if the user dismisses the recovery popup', async () => {
+    m.__authState.currentUser = null;
+    m.FacebookAuthProvider.credentialFromError.mockReturnValue({ providerId: 'facebook.com' });
+    m.signInWithPopup
+      .mockRejectedValueOnce({ code: 'auth/account-exists-with-different-credential', customData: { email: 'u@x.com' } })
+      .mockRejectedValueOnce({ code: 'auth/popup-closed-by-user' });
+
+    await expect(signInFacebook()).resolves.toBeNull();
   });
 });

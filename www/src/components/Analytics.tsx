@@ -2,6 +2,7 @@
 // navigation is tracked (gtag.js auto page_view is disabled — see
 // src/services/analytics.ts). Renders nothing; no-op on native.
 import { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { usePathname, useGlobalSearchParams } from 'expo-router';
 import { trackPageView } from '../services/analytics';
 
@@ -12,7 +13,10 @@ export function Analytics(): null {
   const paramsKey = JSON.stringify(params);
 
   useEffect(() => {
-    const search = typeof window !== 'undefined' ? window.location.search : '';
+    // Web-only: GA + window.location exist only on web. On native `window` is
+    // defined but `window.location` is undefined, so guard on the platform —
+    // `trackPageView` is a no-op on native anyway.
+    const search = Platform.OS === 'web' ? window.location.search : '';
     trackPageView(pathname + search);
   }, [pathname, paramsKey]);
 

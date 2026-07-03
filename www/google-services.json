@@ -1,0 +1,55 @@
+{
+  "project_info": {
+    "project_number": "635224907527",
+    "firebase_url": "https://quranquiznet-3a54c.firebaseio.com",
+    "project_id": "quranquiznet-3a54c",
+    "storage_bucket": "quranquiznet-3a54c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:635224907527:android:a2c61483d8332eaa3a6fa2",
+        "android_client_info": {
+          "package_name": "net.quranquiz.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "635224907527-65a5t9ddg7dk1grglanf51jbiljvoq68.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.quranquiz.app",
+            "certificate_hash": "86303f71782642a20fd63cd58dbe1c277bf215ee"
+          }
+        },
+        {
+          "client_id": "635224907527-bdic77p58a8tjkeuj96csup7tnoe870s.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDGxZokB7QDGgcctirMGTmXlURAEriPX4w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "635224907527-bdic77p58a8tjkeuj96csup7tnoe870s.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "635224907527-a7odhljomvqdbq4k26l45st7jhej7mir.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "net.quranquiz.app"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
