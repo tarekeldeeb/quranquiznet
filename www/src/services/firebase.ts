@@ -15,7 +15,7 @@ import {
 // @ts-expect-error — RN-only export, absent from the resolved web types
 import { getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDatabase, ref, set, push, get as dbGet, Database } from 'firebase/database';
+import { getDatabase, ref, set, push, get as dbGet, onValue, Database } from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
@@ -339,6 +339,54 @@ export async function getAllTopReport(): Promise<unknown[]> {
   } catch {
     return [];
   }
+}
+
+export interface LeaderboardEntry { name?: string; score: number; uid?: string; country?: string }
+
+/**
+ * Live top-10-of-yesterday feed (was a one-time getYesterdayReport() read).
+ * Resolves the (rarely-changing) target path once via getDailyHead(), then
+ * wires an onValue listener to it. Returns an unsubscribe function.
+ */
+export async function subscribeYesterdayReport(
+  cb: (entries: LeaderboardEntry[]) => void,
+): Promise<() => void> {
+  const head = await getDailyHead();
+  const path = head?.yesterday ?? '/daily/reports/yday';
+  const fullPath = path.startsWith('/') ? path : `/daily/${path}`;
+  return onValue(
+    ref(getFirebaseDb(), fullPath),
+    (snap) => cb((snap.val() as LeaderboardEntry[]) ?? []),
+    () => cb([]),
+  );
+}
+
+/** Live all-time-top-10 feed (was a one-time getAllTopReport() read). */
+export function subscribeAllTopReport(cb: (entries: LeaderboardEntry[]) => void): () => void {
+  return onValue(
+    ref(getFirebaseDb(), '/daily/reports/all'),
+    (snap) => cb((snap.val() as LeaderboardEntry[]) ?? []),
+    () => cb([]),
+  );
+}
+
+/**
+ * Live feed of *today's* in-progress submissions (unbounded — every entry
+ * submitted so far today, not just a top-N slice), sorted best-first. This is
+ * the only endpoint with full participant coverage, so it's what powers the
+ * "your rank + neighbors" view even when the user is outside the top 10.
+ */
+export function subscribeTodayStandings(cb: (entries: LeaderboardEntry[]) => void): () => void {
+  return onValue(
+    ref(getFirebaseDb(), '/daily/head_submit'),
+    (snap) => {
+      const val = snap.val() as Record<string, LeaderboardEntry> | null;
+      const list = val ? Object.values(val) : [];
+      list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+      cb(list);
+    },
+    () => cb([]),
+  );
 }
 
 export async function reportQuestion(card: unknown): Promise<void> {
