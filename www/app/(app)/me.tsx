@@ -1,16 +1,18 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  Switch, Alert, ActivityIndicator, Modal, FlatList, Animated, Platform,
+  Switch, Alert, ActivityIndicator, Modal, FlatList, Animated, Platform, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   signInGoogle, signInFacebook, signOut, getDailyHead, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
+import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import Constants from 'expo-constants';
 import { Avatar } from '../../src/components/Avatar';
 
@@ -197,6 +199,8 @@ export default function MeScreen() {
   const [partsModalOpen, setPartsModalOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [avatarError, setAvatarError] = useState(false);
+  const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
+  const [nicknameInput, setNicknameInput] = useState('');
 
   useEffect(() => {
     getDailyHead()
@@ -209,6 +213,35 @@ export default function MeScreen() {
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
+
+  // Prompt a guest once to pick a nickname instead of the generic "زائر(ة)" on
+  // the leaderboard — auto-shown the first time they land here still on the
+  // default name. Always reachable afterward via the manual edit button.
+  useEffect(() => {
+    if (!social.isAnonymous || social.displayName !== DEFAULT_GUEST_NAME) return;
+    let cancelled = false;
+    AsyncStorage.getItem('guest_nickname_prompted').then((v) => {
+      if (cancelled || v) return;
+      setNicknameInput('');
+      setNicknameModalOpen(true);
+      AsyncStorage.setItem('guest_nickname_prompted', '1');
+    });
+    return () => { cancelled = true; };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [social.isAnonymous, social.displayName]);
+
+  async function saveNickname() {
+    const trimmed = nicknameInput.trim().slice(0, 20);
+    if (trimmed) {
+      await profile.setSocial({ ...social, displayName: trimmed });
+    }
+    setNicknameModalOpen(false);
+  }
+
+  function openNicknameEditor() {
+    setNicknameInput(social.displayName && social.displayName !== DEFAULT_GUEST_NAME ? social.displayName : '');
+    setNicknameModalOpen(true);
+  }
 
   function launchDaily(head: DailyHead) {
     const weights = profile.getDailyQuizStudyPartsWeights();
@@ -362,9 +395,14 @@ export default function MeScreen() {
           />
           <View style={s.topInfo}>
             <Text style={s.greeting}>{greeting}</Text>
-            <Text style={s.topSub} numberOfLines={1}>
-              {social.isAnonymous ? 'زائر(ة)' : (social.email ?? social.displayName ?? '')}
-            </Text>
+            {social.isAnonymous ? (
+              <TouchableOpacity style={s.topSubRow} onPress={openNicknameEditor} hitSlop={6}>
+                <Ionicons name="pencil" size={11} color="#8a97a5" />
+                <Text style={s.topSub} numberOfLines={1}>{social.displayName || DEFAULT_GUEST_NAME}</Text>
+              </TouchableOpacity>
+            ) : (
+              <Text style={s.topSub} numberOfLines={1}>{social.email ?? social.displayName ?? ''}</Text>
+            )}
           </View>
           <View style={s.topRight}>
             {profile.streak > 0 && (
@@ -625,6 +663,39 @@ export default function MeScreen() {
           </View>
         </View>
       </Modal>
+
+      {/* Guest nickname picker — auto-shown once for a fresh guest, always
+          reachable afterward via the ✎ next to the identity subtitle. */}
+      <Modal
+        visible={nicknameModalOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setNicknameModalOpen(false)}
+      >
+        <View style={s.nickOverlay}>
+          <View style={s.nickBox}>
+            <Text style={s.nickTitle}>اختر اسماً يظهر على لوحة الصدارة</Text>
+            <TextInput
+              style={s.nickInput}
+              value={nicknameInput}
+              onChangeText={setNicknameInput}
+              placeholder={DEFAULT_GUEST_NAME}
+              placeholderTextColor="#aaa"
+              maxLength={20}
+              textAlign="right"
+              autoFocus
+            />
+            <View style={s.nickRow}>
+              <TouchableOpacity style={s.nickSkip} onPress={() => setNicknameModalOpen(false)}>
+                <Text style={s.nickSkipTxt}>لاحقاً</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={s.nickSave} onPress={saveNickname}>
+                <Text style={s.nickSaveTxt}>حفظ</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -650,6 +721,7 @@ const s = StyleSheet.create({
   topInfo: { flex: 1, alignItems: 'flex-end' },
   greeting: { fontSize: 19, fontWeight: '800', color: NAVY, textAlign: 'right' },
   topSub: { fontSize: 12, color: '#8a97a5', textAlign: 'right', marginTop: 1 },
+  topSubRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, marginTop: 1 },
   topRight: { alignItems: 'flex-end', gap: 5 },
   topPoints: { fontSize: 13, textAlign: 'right' },
   topPointsLabel: { color: '#8a97a5', fontWeight: '700' },
@@ -900,4 +972,30 @@ const s = StyleSheet.create({
   },
   practiceTxt: { fontSize: 12, fontWeight: '700', color: NAVY },
   sep: { height: 1, backgroundColor: '#f3f5f7', marginHorizontal: 16 },
+
+  // Guest nickname modal
+  nickOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  nickBox: {
+    backgroundColor: '#fff',
+    borderRadius: 16,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    gap: 14,
+  },
+  nickTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
+  nickInput: {
+    borderWidth: 1,
+    borderColor: '#d8e0ea',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    fontSize: 15,
+    color: '#1a1a1a',
+  },
+  nickRow: { flexDirection: 'row-reverse', gap: 10 },
+  nickSkip: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f0f0f0' },
+  nickSkipTxt: { fontSize: 14, fontWeight: '700', color: '#666' },
+  nickSave: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: NAVY },
+  nickSaveTxt: { fontSize: 14, fontWeight: '700', color: '#fff' },
 });

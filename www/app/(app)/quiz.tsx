@@ -16,6 +16,7 @@ import { trackEvent } from '../../src/services/analytics';
 import {
   randperm, shuffleByPerm, deepCopy,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
+  DEFAULT_GUEST_NAME,
 } from '../../src/models/constants';
 import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
@@ -671,7 +672,10 @@ export default function QuizScreen() {
     const social = profile.social;
     await FB.submitDailyResult({
       score: finalScore,
-      name: social.isAnonymous ? 'زائر(ة)' : (social.displayName ?? 'زائر(ة)').split(' ')[0],
+      // A guest's own nickname (stored as displayName like a social user's)
+      // takes priority over the generic default — first word only, matching
+      // how a social display name is already truncated below.
+      name: (social.displayName || DEFAULT_GUEST_NAME).split(' ')[0],
       uid: profile.uid,
       country: profile.country || undefined,
     });

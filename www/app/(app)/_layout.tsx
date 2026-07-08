@@ -6,6 +6,7 @@ import {
   onAuthChange, fetchRemoteProfile, pushProfile,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
+import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Ionicons } from '@expo/vector-icons';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -78,7 +79,14 @@ export default function AppLayout() {
           parts: s.parts,
         });
       } else {
-        profile.setSocial({ uid: user.uid, displayName: 'زائر(ة)', isAnonymous: true });
+        // Preserve a guest's own custom nickname across re-auth events (e.g. app
+        // restart) instead of stomping it back to the default every time — only
+        // reset to the default if this is a different anonymous uid (fresh guest).
+        const current = useProfileStore.getState().social;
+        const displayName = current.uid === user.uid && current.displayName
+          ? current.displayName
+          : DEFAULT_GUEST_NAME;
+        profile.setSocial({ uid: user.uid, displayName, isAnonymous: true });
       }
     });
     return unsub;
