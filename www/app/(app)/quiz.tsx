@@ -23,6 +23,8 @@ import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
   shouldShowSummary, shouldRestoreNormalRunAfterDaily,
 } from '../../src/models/quizFlow';
+import { hapticCorrect, hapticIncorrect } from '../../src/services/haptics';
+import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
 
 interface ActiveCard {
   round: number;
@@ -56,6 +58,7 @@ interface SessionCache {
   cardCounter: number;
   sessionCorrect: number;
   sessionAnswered: number;   // questions answered this run (correct + incorrect)
+  combo: number;             // consecutive correct answers this run (resets on a miss)
   dailyScore: number;
   dailyTime: number;
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
@@ -80,7 +83,7 @@ interface NormalSnapshot {
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
-  cardCounter: 0, sessionCorrect: 0, sessionAnswered: 0, dailyScore: 0, dailyTime: 0,
+  cardCounter: 0, sessionCorrect: 0, sessionAnswered: 0, combo: 0, dailyScore: 0, dailyTime: 0,
   lastNonce: undefined, lastStart: undefined, customPart: null, normalSnapshot: null,
 };
 
@@ -92,6 +95,9 @@ export default function QuizScreen() {
   const [cards, setCards] = useState<CardData[]>(() => sessionCache.cards);
   const [active, setActive] = useState<ActiveCard | null>(() => sessionCache.activeCard);
   const [score, setScore] = useState(() => sessionCache.score);
+  // Consecutive-correct combo counter (resets on any miss) — pure feedback
+  // "juice", displayed as a small badge while a run is in progress.
+  const [combo, setCombo] = useState(() => sessionCache.combo);
   const [loading, setLoading] = useState(true);
   const [dailyMode, setDailyMode] = useState(() => params.dailyMode === '1' || sessionCache.dailyMode);
   const [timerValue, setTimerValue] = useState(0);
@@ -159,7 +165,8 @@ export default function QuizScreen() {
     sessionCache.activeCard = active;
     sessionCache.score = score;
     sessionCache.dailyMode = dailyMode;
-  }, [cards, active, score, dailyMode]);
+    sessionCache.combo = combo;
+  }, [cards, active, score, dailyMode, combo]);
 
   // Reset all per-session state, then start a fresh run.
   //   { daily: true }        → daily quiz
@@ -204,6 +211,7 @@ export default function QuizScreen() {
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
     sessionAnsweredRef.current = 0;
+    setCombo(0);
     dailyScoreRef.current = 0;
     dailyTimeRef.current = 0;
     dailyEndedRef.current = false;
@@ -263,6 +271,7 @@ export default function QuizScreen() {
     setActive(null);
     setDailyMode(false);
     dailyModeRef.current = false;
+    setCombo(0);
     customPartRef.current = null;
     setCustomPartIndex(null);
     sessionActiveRef.current = false;
@@ -300,12 +309,17 @@ export default function QuizScreen() {
     setCards(snap.cards);
     setActive(snap.active);
     setScore(profile.getScore());
+    // The combo streak isn't part of the snapshot (kept simple) — the daily
+    // quiz that just ran had its own combo anyway, so start the resumed run's
+    // combo fresh rather than pretending to reconstruct the pre-suspend value.
+    setCombo(0);
 
     // Write through to the cache so a remount (web tab unmount) restores it too.
     sessionCache.cards = snap.cards;
     sessionCache.activeCard = snap.active;
     sessionCache.score = profile.getScore();
     sessionCache.dailyMode = false;
+    sessionCache.combo = 0;
     syncCacheFlags();
     return true;
   }
@@ -596,7 +610,10 @@ export default function QuizScreen() {
     setScore(profile.getScore());
     if (dailyMode) dailyScoreRef.current++;
     sessionCorrectRef.current++;
+    setCombo((c) => c + 1);
     syncCacheFlags();
+    hapticCorrect();
+    playCorrectSound();
     // Store wasCorrect in the card so historical cards keep the right border color
     setCards((prev) => {
       if (prev.length === 0) return prev;
@@ -611,6 +628,9 @@ export default function QuizScreen() {
   function handleIncorrect() {
     profile.addIncorrect(QS.qo);
     setScore(profile.getScore());
+    setCombo(0);
+    hapticIncorrect();
+    playIncorrectSound();
     setCards((prev) => {
       if (prev.length === 0) return prev;
       const next = [...prev];
@@ -748,6 +768,14 @@ export default function QuizScreen() {
       {loading && cards.length === 0 && (
         <View style={s.loadingOverlay}>
           <ActivityIndicator size="large" color="#0d2d4e" />
+        </View>
+      )}
+
+      {/* Consecutive-correct combo badge — pure feedback "juice", shown once
+          there's an actual streak to brag about (2+); resets silently on a miss. */}
+      {combo >= 2 && (
+        <View style={s.comboBadge} pointerEvents="none">
+          <Text style={s.comboBadgeTxt}>🔥 {combo} متتالية</Text>
         </View>
       )}
 
@@ -896,6 +924,19 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
+  comboBadge: {
+    position: 'absolute',
+    top: 10,
+    right: 14,
+    zIndex: 15,
+    backgroundColor: '#e67e22',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 16,
+    boxShadow: '0px 2px 6px rgba(0,0,0,0.2)',
+    elevation: 4,
+  },
+  comboBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: 12 },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 432 },
   modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
