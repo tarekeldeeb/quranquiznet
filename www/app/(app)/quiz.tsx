@@ -2,19 +2,19 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, Alert, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView, Platform,
+  TouchableOpacity, Modal, TextInput, ScrollView, Platform, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
-import { useProfileStore } from '../../src/stores/profileStore';
+import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
 import {
-  randperm, shuffleByPerm, deepCopy,
+  randperm, shuffleByPerm, deepCopy, countedScore,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
 } from '../../src/models/constants';
 import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
@@ -23,6 +23,18 @@ import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
   shouldShowSummary, shouldRestoreNormalRunAfterDaily,
 } from '../../src/models/quizFlow';
+import { detectMilestones, MasteryTier } from '../../src/models/milestones';
+
+// Translate the store's numeric accuracy tier into the string tier
+// src/models/milestones.ts works with (keeps that file decoupled from stores/).
+function tierFromRange(range: number): MasteryTier {
+  switch (range) {
+    case CORRECT_RATIO_RANGE.HIGH: return 'HIGH';
+    case CORRECT_RATIO_RANGE.MID:  return 'MID';
+    case CORRECT_RATIO_RANGE.LOW:  return 'LOW';
+    default:                       return 'EMPTY';
+  }
+}
 
 interface ActiveCard {
   round: number;
@@ -101,6 +113,11 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
+  // Progress-milestone toast (e.g. "🏅 أتقنت سورة البقرة!") — fires at most one
+  // at a time; a fresh milestone replaces whatever's currently showing.
+  const [milestoneToast, setMilestoneToast] = useState<string | null>(null);
+  const milestoneOpacity = useRef(new Animated.Value(0)).current;
+  const milestoneTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   // Session chooser — shown when no mode or part is pre-set
   const [chooserVisible, setChooserVisible] = useState(
     params.dailyMode !== '1' && !params.customPart && !params.start,
@@ -160,6 +177,11 @@ export default function QuizScreen() {
     sessionCache.score = score;
     sessionCache.dailyMode = dailyMode;
   }, [cards, active, score, dailyMode]);
+
+  // Guard against a stray setState after the screen unmounts mid-fade.
+  useEffect(() => {
+    return () => { if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current); };
+  }, []);
 
   // Reset all per-session state, then start a fresh run.
   //   { daily: true }        → daily quiz
@@ -591,12 +613,46 @@ export default function QuizScreen() {
     }
   }
 
+  // Show a milestone toast for ~3s (quick fade in/out), replacing whatever's
+  // currently displayed. Cheap: no animation library needed beyond RN's own.
+  function showMilestoneToast(text: string) {
+    if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current);
+    setMilestoneToast(text);
+    milestoneOpacity.setValue(0);
+    Animated.timing(milestoneOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    milestoneTimerRef.current = setTimeout(() => {
+      Animated.timing(milestoneOpacity, { toValue: 0, duration: 300, useNativeDriver: true })
+        .start(() => setMilestoneToast(null));
+    }, 2800);
+  }
+
   function handleCorrect() {
+    // Snapshot this part's "counted" correct total + accuracy tier BEFORE the
+    // update, so we can detect a just-crossed milestone after it lands.
+    const partIdx = QS.qo.currentPart;
+    const partBefore = profile.parts[partIdx];
+    const beforeCorrect = partBefore ? countedScore(partBefore.numCorrect) : 0;
+    const beforeTier = tierFromRange(profile.getCorrectRatioRange(partIdx));
+
     profile.addCorrect(QS.qo);
     setScore(profile.getScore());
     if (dailyMode) dailyScoreRef.current++;
     sessionCorrectRef.current++;
     syncCacheFlags();
+
+    // profile.addCorrect() updates the Zustand store synchronously (its `set()`
+    // call runs before the function's first await), so the store already
+    // reflects the update here even though addCorrect's own promise is pending.
+    const partAfter = useProfileStore.getState().parts[partIdx];
+    if (partAfter) {
+      const afterCorrect = countedScore(partAfter.numCorrect);
+      const afterTier = tierFromRange(useProfileStore.getState().getCorrectRatioRange(partIdx));
+      const milestones = detectMilestones({
+        partName: partAfter.name, beforeCorrect, afterCorrect, beforeTier, afterTier,
+      });
+      if (milestones.length > 0) showMilestoneToast(milestones[0].text);
+    }
+
     // Store wasCorrect in the card so historical cards keep the right border color
     setCards((prev) => {
       if (prev.length === 0) return prev;
@@ -751,6 +807,17 @@ export default function QuizScreen() {
         </View>
       )}
 
+      {/* Progress-milestone celebration — a brief, non-blocking toast (fades
+          in/out on its own); never interrupts answering. */}
+      {milestoneToast && (
+        <Animated.View
+          pointerEvents="none"
+          style={[s.milestoneToast, { opacity: milestoneOpacity }]}
+        >
+          <Text style={s.milestoneToastTxt}>{milestoneToast}</Text>
+        </Animated.View>
+      )}
+
       {showSettingsBar && (
         <QuizSettingsBar
           levelText={levelText}
@@ -896,6 +963,19 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
+  milestoneToast: {
+    position: 'absolute',
+    top: 10,
+    alignSelf: 'center',
+    zIndex: 20,
+    backgroundColor: '#0d2d4e',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    boxShadow: '0px 3px 10px rgba(0,0,0,0.25)',
+    elevation: 6,
+  },
+  milestoneToastTxt: { color: '#fff', fontWeight: '800', fontSize: 13, textAlign: 'center' },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 432 },
   modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
