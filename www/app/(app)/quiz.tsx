@@ -7,12 +7,14 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
+import { requestPermission, scheduleStreakReminder } from '../../src/services/notifications';
 import {
   randperm, shuffleByPerm, deepCopy,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
@@ -41,6 +43,20 @@ function makeActive(qo: QuestionObject, round = 0): ActiveCard {
     flipTrigger: 0,
     isCorrect: false,
   };
+}
+
+// Ask for notification permission the first time the user finishes a quiz
+// session — a proven-engaged moment, not a jarring cold-launch prompt. Gated by
+// an AsyncStorage flag so it only ever runs once; no-op (false) on web.
+const NOTIF_PROMPT_KEY = 'notif_prompt_shown';
+async function maybeRequestNotificationPermission() {
+  try {
+    const shown = await AsyncStorage.getItem(NOTIF_PROMPT_KEY);
+    if (shown) return;
+    await AsyncStorage.setItem(NOTIF_PROMPT_KEY, '1');
+    const granted = await requestPermission();
+    if (granted) scheduleStreakReminder(useProfileStore.getState().streak);
+  } catch { /* permission prompt is best-effort */ }
 }
 
 // Module-level session cache. expo-router can unmount an inactive tab on web, so
@@ -214,6 +230,9 @@ export default function QuizScreen() {
       part: opts.partIndex ?? undefined,
     });
     profile.recordPlay();
+    // Re-arm the "don't lose your streak" reminder for tomorrow evening now that
+    // today's play is recorded (no-op without permission, cleared if streak is 0).
+    scheduleStreakReminder(useProfileStore.getState().streak);
     QS.initQuestionnaire(profile.lastSeed);
     setScore(profile.getScore());
     if (daily) {
@@ -580,6 +599,7 @@ export default function QuizScreen() {
         answered: sessionAnsweredRef.current,
         score: profile.getScore(),
       });
+      maybeRequestNotificationPermission();
       summaryPendingRef.current = true;
       setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
     } else {

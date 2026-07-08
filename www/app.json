@@ -37,7 +37,8 @@
             "./assets/fonts/AmiriQuranColored.woff2"
           ]
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

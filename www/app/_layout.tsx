@@ -8,6 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { initDb } from '../src/db/initDb';
 import { getFirebaseApp } from '../src/services/firebase';
+import { configureNotifications } from '../src/services/notifications';
 import { useProfileStore } from '../src/stores/profileStore';
 import { Analytics } from '../src/components/Analytics';
 import { ConsentBanner } from '../src/components/ConsentBanner';
@@ -38,6 +39,10 @@ if (Platform.OS === 'web') {
 
 // Initialize Firebase eagerly
 getFirebaseApp();
+
+// Wire the notification handler/channel eagerly (native only; no-op on web) so a
+// notification tapped at cold start behaves correctly.
+configureNotifications();
 
 // Animated Islamic geometric backdrop shown in the web gutters around the
 // phone column. Two seamlessly-tiling 8-point-star layers drift at different

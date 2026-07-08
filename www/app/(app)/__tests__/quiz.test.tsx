@@ -41,6 +41,16 @@ jest.mock('../../../src/services/firebase', () => ({
 
 jest.mock('../../../src/db/idb', () => ({ ayaNumberOf: jest.fn(() => Promise.resolve(1)) }));
 
+// expo-notifications reaches into native modules that aren't set up under jest —
+// stub the whole service so it's never actually required.
+jest.mock('../../../src/services/notifications', () => ({
+  configureNotifications: jest.fn(),
+  requestPermission: jest.fn(() => Promise.resolve(false)),
+  hasPermission: jest.fn(() => Promise.resolve(false)),
+  scheduleStreakReminder: jest.fn(() => Promise.resolve()),
+  scheduleDailyReminder: jest.fn(() => Promise.resolve()),
+}));
+
 import React from 'react';
 import { render, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
