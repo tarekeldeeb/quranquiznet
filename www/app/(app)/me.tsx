@@ -1,18 +1,19 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  Switch, Alert, ActivityIndicator, Modal, FlatList, Animated, Platform,
+  Switch, Alert, ActivityIndicator, Modal, FlatList, Animated, Platform, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  signInGoogle, signInFacebook, signOut, getDailyHead, type DailyHead,
+  signInGoogle, signInFacebook, signOut, getDailyHead, getComparisonReport, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import Constants from 'expo-constants';
 import { Avatar } from '../../src/components/Avatar';
+import { describeRankGap } from '../../src/models/dailyRank';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
 // Pulled from app.json (expo.version) at build/runtime — single source of truth.
@@ -197,6 +198,8 @@ export default function MeScreen() {
   const [partsModalOpen, setPartsModalOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [avatarError, setAvatarError] = useState(false);
+  // Post-win engagement: rank-comparison line for the "already done today" card.
+  const [dailyRankLine, setDailyRankLine] = useState<string | null>(null);
 
   useEffect(() => {
     getDailyHead()
@@ -210,6 +213,21 @@ export default function MeScreen() {
     return () => clearInterval(id);
   }, []);
 
+  // Once today's daily quiz is done, fetch a rank-comparison line against
+  // yesterday's/all-time leaderboard (best-effort; hidden if unavailable).
+  useEffect(() => {
+    const today = new Date().toISOString().split('T')[0];
+    if (profile.lastDailyCompletedDate !== today || !profile.lastDailyScore) {
+      setDailyRankLine(null);
+      return;
+    }
+    let cancelled = false;
+    getComparisonReport()
+      .then((entries) => { if (!cancelled) setDailyRankLine(describeRankGap(entries as never[], profile.lastDailyScore)); })
+      .catch(() => { if (!cancelled) setDailyRankLine(null); });
+    return () => { cancelled = true; };
+  }, [profile.lastDailyCompletedDate, profile.lastDailyScore]);
+
   function launchDaily(head: DailyHead) {
     const weights = profile.getDailyQuizStudyPartsWeights();
     QS.initDailyQuiz(head.daily_random, profile.parts, weights);
@@ -219,6 +237,21 @@ export default function MeScreen() {
   function startDaily() {
     if (!dailyHead || dailyHead === 'loading') return;
     launchDaily(dailyHead);
+  }
+
+  async function shareScore() {
+    try {
+      await Share.share({
+        message: `حصلت على ${profile.lastDailyScore} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
+        url: 'https://quranquiz.net',
+      });
+    } catch { /* ignore */ }
+  }
+
+  function practiceWeakestSura() {
+    const weak = profile.getWeakCheckedParts(1)[0];
+    if (!weak) return;
+    router.push({ pathname: '/(app)/quiz', params: { customPart: String(weak.index), nonce: String(Date.now()) } });
   }
 
   async function performSignOut() {
@@ -388,13 +421,28 @@ export default function MeScreen() {
             <ActivityIndicator color="#fff" size="large" />
           </View>
         ) : dailyCompleted ? (
-          <View style={[s.bentoFull, s.dailyHeroDone]}>
-            <Text style={s.dailyIcon}>✅</Text>
-            <View style={s.dailyHeroText}>
-              <Text style={s.dailyTitleDone}>أحسنت! أكملت اختبار اليوم</Text>
-              <Text style={s.dailyBodyDone}>
-                الاختبار الجديد بعد {formatRemaining(nextDailyMs)}
-              </Text>
+          <View style={[s.bentoFull, s.dailyHeroDoneCol]}>
+            <View style={s.dailyHeroRow}>
+              <Text style={s.dailyIcon}>✅</Text>
+              <View style={s.dailyHeroText}>
+                <Text style={s.dailyTitleDone}>أحسنت! أكملت اختبار اليوم</Text>
+                <Text style={s.dailyBodyDone}>
+                  الاختبار الجديد بعد {formatRemaining(nextDailyMs)}
+                </Text>
+              </View>
+            </View>
+            {dailyRankLine && <Text style={s.rankLine}>{dailyRankLine}</Text>}
+            <View style={s.postWinRow}>
+              <TouchableOpacity style={s.postWinBtn} onPress={shareScore}>
+                <Ionicons name="share-social-outline" size={15} color="#1a5276" />
+                <Text style={s.postWinBtnTxt}>شارك النتيجة</Text>
+              </TouchableOpacity>
+              {profile.getWeakCheckedParts(1).length > 0 && (
+                <TouchableOpacity style={s.postWinBtn} onPress={practiceWeakestSura}>
+                  <Ionicons name="book-outline" size={15} color="#1a5276" />
+                  <Text style={s.postWinBtnTxt}>تدرّب على أضعف سورة</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
         ) : dailyHead ? (
@@ -677,15 +725,27 @@ const s = StyleSheet.create({
   },
   dailyHeroRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
   dailyHeroText: { flex: 1, alignItems: 'flex-end' },
-  dailyHeroDone: {
+  dailyHeroDoneCol: {
     backgroundColor: '#eafaf1',
     padding: 20,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 14,
+    gap: 12,
     borderWidth: 1.5,
     borderColor: '#27ae60',
   },
+  rankLine: { fontSize: 12, fontWeight: '700', color: '#b7770d', textAlign: 'right' },
+  postWinRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
+  postWinBtn: {
+    flex: 1,
+    minWidth: '45%',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#fff',
+  },
+  postWinBtnTxt: { fontSize: 12, fontWeight: '700', color: '#1a5276', textAlign: 'center' },
   dailyHeroUnavail: {
     backgroundColor: '#fff',
     padding: 20,

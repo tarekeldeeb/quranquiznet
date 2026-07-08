@@ -138,6 +138,7 @@ interface ProfileState {
   streak: number;
   lastPlayDate: string;
   lastDailyCompletedDate: string;   // 'YYYY-MM-DD' of the last completed daily quiz
+  lastDailyScore: number;           // the graded score (0-100) from that completed daily quiz
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
 
   // Actions
@@ -152,7 +153,7 @@ interface ProfileState {
   addCorrect(qo: QORef): Promise<void>;
   addIncorrect(qo: QORef): Promise<void>;
   recordPlay(): void;
-  markDailyCompleted(): void;
+  markDailyCompleted(score?: number): void;
   setCountry(code: string): void;
 
   // Computed getters (call these as functions)
@@ -190,6 +191,7 @@ const KEYS = {
   streak: 'prf_streak',
   lastPlayDate: 'prf_lastPlayDate',
   lastDailyCompletedDate: 'prf_lastDailyDate',
+  lastDailyScore: 'prf_lastDailyScore',
 };
 
 async function saveKey(key: string, value: unknown) {
@@ -216,6 +218,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   streak: 0,
   lastPlayDate: '',
   lastDailyCompletedDate: '',
+  lastDailyScore: 0,
   country: '',
 
   levels: [
@@ -234,7 +237,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, lastDailyScore] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -248,8 +251,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<number>(KEYS.streak, 0),
         loadKey<string>(KEYS.lastPlayDate, ''),
         loadKey<string>(KEYS.lastDailyCompletedDate, ''),
+        loadKey<number>(KEYS.lastDailyScore, 0),
       ]);
-    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, loaded: true });
+    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, lastDailyScore, loaded: true });
     return true;
   },
 
@@ -269,6 +273,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.streak,                    JSON.stringify(s.streak)],
       [KEYS.lastPlayDate,              JSON.stringify(s.lastPlayDate)],
       [KEYS.lastDailyCompletedDate,     JSON.stringify(s.lastDailyCompletedDate)],
+      [KEYS.lastDailyScore,            JSON.stringify(s.lastDailyScore)],
     ]);
   },
 
@@ -301,6 +306,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       social: {},
       streak: 0, lastPlayDate: '',
       lastDailyCompletedDate: '',
+      lastDailyScore: 0,
       loaded: false,
     });
   },
@@ -326,10 +332,13 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveKey(KEYS.lastPlayDate, today);
   },
 
-  markDailyCompleted() {
+  markDailyCompleted(score?: number) {
     const today = new Date().toISOString().split('T')[0];
-    set({ lastDailyCompletedDate: today });
+    const patch: { lastDailyCompletedDate: string; lastDailyScore?: number } = { lastDailyCompletedDate: today };
+    if (score !== undefined) patch.lastDailyScore = score;
+    set(patch);
     saveKey(KEYS.lastDailyCompletedDate, today);
+    if (score !== undefined) saveKey(KEYS.lastDailyScore, score);
   },
 
   setCountry(code: string) {

@@ -341,6 +341,16 @@ export async function getAllTopReport(): Promise<unknown[]> {
   }
 }
 
+// A leaderboard cohort for the post-quiz rank comparison: prefer yesterday's
+// top scores (the most recent, most relevant cohort); fall back to the
+// all-time top when yesterday's report is empty (e.g. before the first
+// rotation, or on a fresh install of this feature).
+export async function getComparisonReport(): Promise<unknown[]> {
+  const yday = await getYesterdayReport();
+  if (Array.isArray(yday) && yday.length > 0) return yday;
+  return getAllTopReport();
+}
+
 export async function reportQuestion(card: unknown): Promise<void> {
   try {
     await push(ref(getFirebaseDb(), '/reports/'), { q: card });
