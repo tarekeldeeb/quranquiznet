@@ -6,6 +6,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
@@ -101,6 +102,9 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
+  // Non-blocking "today's quiz is ready" banner — set by checkForDailyQuiz(),
+  // shown above the cards, dismissed by the user tapping either action.
+  const [dailyBannerHead, setDailyBannerHead] = useState<FB.DailyHead | null>(null);
   // Session chooser — shown when no mode or part is pre-set
   const [chooserVisible, setChooserVisible] = useState(
     params.dailyMode !== '1' && !params.customPart && !params.start,
@@ -194,6 +198,7 @@ export default function QuizScreen() {
     setActive(null);
     setDailyMode(daily);
     dailyModeRef.current = daily;
+    setDailyBannerHead(null); // no point advertising "today's quiz is ready" once it's started (or a fresh run begins)
     customPartRef.current = opts.partIndex ?? null;
     setCustomPartIndex(opts.partIndex ?? null);
     // A shared question forces the first question's start word (and level);
@@ -263,6 +268,7 @@ export default function QuizScreen() {
     setActive(null);
     setDailyMode(false);
     dailyModeRef.current = false;
+    setDailyBannerHead(null);
     customPartRef.current = null;
     setCustomPartIndex(null);
     sessionActiveRef.current = false;
@@ -624,34 +630,40 @@ export default function QuizScreen() {
   function skipQ() { handleIncorrect(); }
 
   // ── daily quiz ────────────────────────────────────────────────────────────
+  // Was a blocking window.confirm/Alert.alert popping up mid-run every N
+  // questions — interrupted whatever the user was doing to force a yes/no
+  // decision. Now just surfaces a dismissible banner (dailyBannerHead) above
+  // the cards; the current question flow is completely undisturbed until (and
+  // unless) the user taps it.
   async function checkForDailyQuiz() {
     try {
-      // Don't re-offer today's daily quiz to someone who already completed it.
+      // Don't re-offer today's daily quiz to someone who already completed it,
+      // and don't bother if we're already inside the daily quiz itself.
       const today = new Date().toISOString().split('T')[0];
       if (profile.lastDailyCompletedDate === today) return;
+      if (dailyModeRef.current) return;
       const head = await FB.getDailyHead();
       if (!head) return;
-      const begin = () => {
-        const weights = profile.getDailyQuizStudyPartsWeights();
-        QS.initDailyQuiz(head.daily_random, profile.parts, weights);
-        // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
-        // already on this screen — handle directly:
-        QS.clearPendingDailyStart();
-        startSession({ daily: true });
-      };
-      const msg = 'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع';
-      // RN Alert is a no-op on react-native-web, so use the browser confirm there.
-      if (Platform.OS === 'web') {
-        if (typeof window === 'undefined' || window.confirm(`اختبار اليوم جاهز\n\n${msg}`)) begin();
-        return;
-      }
-      Alert.alert('اختبار اليوم جاهز', msg, [
-        { text: 'لا', style: 'cancel' },
-        { text: 'نعم', onPress: begin },
-      ]);
+      setDailyBannerHead(head);
     } catch (e) {
       console.error('checkForDailyQuiz error:', e);
     }
+  }
+
+  function startDailyFromBanner() {
+    if (!dailyBannerHead) return;
+    const head = dailyBannerHead;
+    setDailyBannerHead(null);
+    const weights = profile.getDailyQuizStudyPartsWeights();
+    QS.initDailyQuiz(head.daily_random, profile.parts, weights);
+    // pendingDailyStart is now set; useFocusEffect won't re-fire since we're
+    // already on this screen — handle directly:
+    QS.clearPendingDailyStart();
+    startSession({ daily: true });
+  }
+
+  function dismissDailyBanner() {
+    setDailyBannerHead(null);
   }
 
   async function endDailyQuiz() {
@@ -749,6 +761,19 @@ export default function QuizScreen() {
         <View style={s.loadingOverlay}>
           <ActivityIndicator size="large" color="#0d2d4e" />
         </View>
+      )}
+
+      {/* Non-blocking "today's quiz is ready" banner — tap to start, or dismiss
+          and keep answering the current run undisturbed. Replaces the old
+          window.confirm/Alert.alert that used to interrupt the run outright. */}
+      {dailyBannerHead && !dailyMode && (
+        <TouchableOpacity style={s.dailyBanner} onPress={startDailyFromBanner} activeOpacity={0.85}>
+          <Text style={s.dailyBannerIcon}>⭐</Text>
+          <Text style={s.dailyBannerTxt}>اختبار اليوم جاهز</Text>
+          <TouchableOpacity onPress={dismissDailyBanner} hitSlop={8} style={s.dailyBannerClose}>
+            <Ionicons name="close" size={16} color="#3a2a05" />
+          </TouchableOpacity>
+        </TouchableOpacity>
       )}
 
       {showSettingsBar && (
@@ -896,6 +921,17 @@ const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#edf1f5' },
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
+  dailyBanner: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: '#f39c12',
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+  dailyBannerIcon: { fontSize: 16 },
+  dailyBannerTxt: { flex: 1, color: '#3a2a05', fontWeight: '800', fontSize: 13, textAlign: 'right' },
+  dailyBannerClose: { padding: 2 },
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 432 },
   modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
