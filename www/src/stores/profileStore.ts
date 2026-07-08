@@ -42,6 +42,15 @@ export interface ProfileVersion {
   profile: number;
 }
 
+// PvP (1v1) record — deliberately separate from the main score/leaderboard so
+// client-authoritative match results can never inflate the surfaces people
+// already compete on.
+export interface PvpRecord {
+  wins: number;
+  losses: number;
+  draws: number;
+}
+
 export interface QORef {
   level: number;
   qType: { id: number; score: number };
@@ -139,6 +148,7 @@ interface ProfileState {
   lastPlayDate: string;
   lastDailyCompletedDate: string;   // 'YYYY-MM-DD' of the last completed daily quiz
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
+  pvp: PvpRecord;                   // 1v1 win/loss/draw record (trophies)
 
   // Actions
   load(): Promise<boolean>;
@@ -154,6 +164,7 @@ interface ProfileState {
   recordPlay(): void;
   markDailyCompleted(): void;
   setCountry(code: string): void;
+  addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -190,7 +201,10 @@ const KEYS = {
   streak: 'prf_streak',
   lastPlayDate: 'prf_lastPlayDate',
   lastDailyCompletedDate: 'prf_lastDailyDate',
+  pvp: 'prf_pvp',
 };
+
+const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
 
 async function saveKey(key: string, value: unknown) {
   await AsyncStorage.setItem(key, JSON.stringify(value));
@@ -217,6 +231,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   lastPlayDate: '',
   lastDailyCompletedDate: '',
   country: '',
+  pvp: EMPTY_PVP,
 
   levels: [
     { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
@@ -234,7 +249,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, pvp] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -248,8 +263,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<number>(KEYS.streak, 0),
         loadKey<string>(KEYS.lastPlayDate, ''),
         loadKey<string>(KEYS.lastDailyCompletedDate, ''),
+        loadKey<PvpRecord>(KEYS.pvp, EMPTY_PVP),
       ]);
-    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, loaded: true });
+    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, pvp, loaded: true });
     return true;
   },
 
@@ -269,6 +285,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.streak,                    JSON.stringify(s.streak)],
       [KEYS.lastPlayDate,              JSON.stringify(s.lastPlayDate)],
       [KEYS.lastDailyCompletedDate,     JSON.stringify(s.lastDailyCompletedDate)],
+      [KEYS.pvp,                       JSON.stringify(s.pvp)],
     ]);
   },
 
@@ -301,6 +318,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       social: {},
       streak: 0, lastPlayDate: '',
       lastDailyCompletedDate: '',
+      pvp: EMPTY_PVP,
       loaded: false,
     });
   },
@@ -334,6 +352,17 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   setCountry(code: string) {
     set({ country: code });
+  },
+
+  addPvpResult(outcome) {
+    const cur = get().pvp;
+    const pvp: PvpRecord = {
+      wins:   cur.wins   + (outcome === 'win'  ? 1 : 0),
+      losses: cur.losses + (outcome === 'loss' ? 1 : 0),
+      draws:  cur.draws  + (outcome === 'draw' ? 1 : 0),
+    };
+    set({ pvp });
+    saveKey(KEYS.pvp, pvp);
   },
 
   async addCorrect(qo: QORef) {

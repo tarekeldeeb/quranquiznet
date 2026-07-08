@@ -123,6 +123,8 @@ export default function AppLayout() {
           tabBarLabel: 'الرئيسية',
         }}
       />
+      {/* PvP match — reached from the Me screen, not the tab bar */}
+      <Tabs.Screen name="pvp"      options={{ href: null }} />
       {/* Legacy screens — hidden from tab bar */}
       <Tabs.Screen name="home"     options={{ href: null }} />
       <Tabs.Screen name="daily"    options={{ href: null }} />

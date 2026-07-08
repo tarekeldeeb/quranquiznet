@@ -24,14 +24,25 @@
 	    ".read":  "auth != null"
 	  }
     },
-	"one-on-one": {
-	  "waiting": {
-		".read": "auth != null",
-		".write": "auth != null"
+	"pvp": {
+	  "queue": {
+	    "$uid": {
+	      ".read": "auth != null",
+	      ".write": "auth != null && auth.uid === $uid",
+	      "matchId": {
+	        ".write": "auth != null && data.val() === null && newData.val() !== null"
+	      }
+	    }
 	  },
-	  "running": {
-		".read":  "auth != null",
-		".write": "auth != null"
+	  "matches": {
+	    "$matchId": {
+	      ".read": "auth != null",
+	      "meta":    { ".write": "auth != null && !data.exists()" },
+	      "players": {
+	        "$uid": { ".write": "auth != null && auth.uid === $uid" }
+	      },
+	      "result":  { ".write": "auth != null && !data.exists()" }
+	    }
       }
     }
   }

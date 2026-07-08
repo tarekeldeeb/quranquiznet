@@ -56,6 +56,10 @@ module.exports = ({ config }) => {
   const fromJson = googleClientIdsFromJson();
   const androidClientId = process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID || fromJson.android;
   const webClientId = process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID || fromJson.web;
+  // Facebook native login redirects to fb<APP_ID>://authorize (the only custom
+  // scheme Facebook accepts), so that scheme must be registered on both platforms.
+  const facebookAppId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
+  const facebookScheme = facebookAppId ? `fb${facebookAppId}` : null;
   // Reversed-client-id redirect schemes for the Google native OAuth flow (see
   // src/services/nativeOAuth.ts). iOS goes into CFBundleURLTypes; Android needs an
   // intent filter so the browser redirect returns to the app.
@@ -70,9 +74,14 @@ module.exports = ({ config }) => {
         ...(config.ios && config.ios.infoPlist),
         CFBundleURLTypes: [
           {
-            // App's own schemes (Facebook + Android redirect) plus the Google
+            // App's own schemes, the Facebook redirect scheme, and the Google
             // iOS reversed-client-id scheme.
-            CFBundleURLSchemes: ['quranquiz', 'net.quranquiz.app', ...googleIosScheme],
+            CFBundleURLSchemes: [
+              'quranquiz',
+              'net.quranquiz.app',
+              ...(facebookScheme ? [facebookScheme] : []),
+              ...googleIosScheme,
+            ],
           },
         ],
       },
@@ -88,6 +97,14 @@ module.exports = ({ config }) => {
               action: 'VIEW',
               category: ['DEFAULT', 'BROWSABLE'],
               data: [{ scheme: googleAndroidScheme }],
+            }]
+          : []),
+        // Facebook OAuth redirect (fb<APP_ID>://authorize).
+        ...(facebookScheme
+          ? [{
+              action: 'VIEW',
+              category: ['DEFAULT', 'BROWSABLE'],
+              data: [{ scheme: facebookScheme }],
             }]
           : []),
       ],

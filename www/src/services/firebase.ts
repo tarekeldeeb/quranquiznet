@@ -15,8 +15,12 @@ import {
 // @ts-expect-error — RN-only export, absent from the resolved web types
 import { getReactNativePersistence } from 'firebase/auth';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { getDatabase, ref, set, push, get as dbGet, Database } from 'firebase/database';
+import {
+  getDatabase, ref, set, push, get as dbGet, update, remove,
+  onValue, onDisconnect, runTransaction, serverTimestamp, Database,
+} from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
+import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult } from './pvpService';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
 // values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
@@ -347,4 +351,115 @@ export async function reportQuestion(card: unknown): Promise<void> {
   } catch (e) {
     console.error('reportQuestion error:', e);
   }
+}
+
+// ─── PvP live matchmaking ─────────────────────────────────────────────────────
+//
+// Client-driven matchmaking + live match sync over RTDB — see pvpService.ts for
+// the plain data shapes and compatibility/claim rules; this module only does the
+// reads/writes. Setup calls (join/claim/create/presence) intentionally let errors
+// propagate so pvp.tsx can react (e.g. fall back to the bot); only best-effort
+// cleanup/race paths swallow them.
+
+const pvpQueueRef = (uid: string) => ref(getFirebaseDb(), `/pvp/queue/${uid}`);
+const pvpMatchMetaRef = (matchId: string) => ref(getFirebaseDb(), `/pvp/matches/${matchId}/meta`);
+const pvpMatchPlayerRef = (matchId: string, uid: string) =>
+  ref(getFirebaseDb(), `/pvp/matches/${matchId}/players/${uid}`);
+const pvpMatchResultRef = (matchId: string) => ref(getFirebaseDb(), `/pvp/matches/${matchId}/result`);
+
+/** Join the matchmaking queue as `uid`, arming auto-cleanup if this client
+ *  disconnects mid-search (app kill, tab close, network loss). Returns the `ts`
+ *  written (plain client clock — the anti-race claim rule only needs rough
+ *  ordering, tolerant of a couple seconds of skew, so a round trip through
+ *  serverTimestamp() isn't worth the extra async step for callers). */
+export async function joinPvpQueue(
+  uid: string,
+  entry: Omit<PvpQueueEntry, 'ts' | 'matchId'>,
+): Promise<number> {
+  const r = pvpQueueRef(uid);
+  const ts = Date.now();
+  await onDisconnect(r).remove();
+  await set(r, { ...entry, ts, matchId: null });
+  return ts;
+}
+
+export async function leavePvpQueue(uid: string): Promise<void> {
+  try {
+    await onDisconnect(pvpQueueRef(uid)).cancel();
+    await remove(pvpQueueRef(uid));
+  } catch (e) {
+    console.error('leavePvpQueue error:', e);
+  }
+}
+
+/** Live view of the whole queue, keyed by uid. Returns an unsubscribe fn. */
+export function watchPvpQueue(cb: (entries: Record<string, PvpQueueEntry>) => void): () => void {
+  return onValue(ref(getFirebaseDb(), '/pvp/queue'), (snap) => {
+    cb((snap.val() as Record<string, PvpQueueEntry>) ?? {});
+  });
+}
+
+/** Watch my own queue entry, to notice when another client claims me
+ *  (writes a matchId onto it). */
+export function watchOwnQueueEntry(uid: string, cb: (entry: PvpQueueEntry | null) => void): () => void {
+  return onValue(pvpQueueRef(uid), (snap) => cb(snap.val() as PvpQueueEntry | null));
+}
+
+/** Anti-race claim: succeeds only if the candidate's matchId is still null.
+ *  Returns true if this client won the claim. */
+export async function claimMatch(candidateUid: string, matchId: string): Promise<boolean> {
+  const result = await runTransaction(
+    ref(getFirebaseDb(), `/pvp/queue/${candidateUid}/matchId`),
+    (current) => (current === null ? matchId : undefined),
+  );
+  return result.committed;
+}
+
+export async function createPvpMatch(matchId: string, meta: PvpMatchMeta): Promise<void> {
+  await set(pvpMatchMetaRef(matchId), meta);
+}
+
+export async function getPvpMatchMeta(matchId: string): Promise<PvpMatchMeta | null> {
+  const snap = await dbGet(pvpMatchMetaRef(matchId));
+  return (snap.val() as PvpMatchMeta | null) ?? null;
+}
+
+/** Arm match presence for `uid`: mark connected, and have the server flip it back
+ *  (with a timestamp) if this client drops without cleaning up. */
+export async function armPvpPresence(matchId: string, uid: string): Promise<void> {
+  const connectedRef = ref(getFirebaseDb(), `/pvp/matches/${matchId}/players/${uid}/connected`);
+  const lastSeenRef = ref(getFirebaseDb(), `/pvp/matches/${matchId}/players/${uid}/lastSeen`);
+  await onDisconnect(connectedRef).set(false);
+  await onDisconnect(lastSeenRef).set(serverTimestamp());
+  await set(connectedRef, true);
+}
+
+export function watchPvpPlayer(
+  matchId: string,
+  uid: string,
+  cb: (state: PvpPlayerState | null) => void,
+): () => void {
+  return onValue(pvpMatchPlayerRef(matchId, uid), (snap) => cb(snap.val() as PvpPlayerState | null));
+}
+
+export async function writeMyPvpState(
+  matchId: string,
+  uid: string,
+  patch: Partial<PvpPlayerState>,
+): Promise<void> {
+  await update(pvpMatchPlayerRef(matchId, uid), patch);
+}
+
+/** Best-effort, write-once: if the opponent's result already landed, the security
+ *  rule rejects this write and we silently accept theirs instead. */
+export async function writePvpResult(matchId: string, result: PvpMatchResult): Promise<void> {
+  try {
+    await set(pvpMatchResultRef(matchId), result);
+  } catch {
+    // Opponent's result already landed first — expected race outcome, not an error.
+  }
+}
+
+export function watchPvpResult(matchId: string, cb: (result: PvpMatchResult | null) => void): () => void {
+  return onValue(pvpMatchResultRef(matchId), (snap) => cb(snap.val() as PvpMatchResult | null));
 }

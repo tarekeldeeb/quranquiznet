@@ -9,7 +9,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import { QuestionObject, Q_TYPE } from '../models/questionnaire';
 import {
-  removeAyaNum, SURA_NAME, SURA_AYAS, getSuraIdx,
+  removeAyaNum, SURA_NAME, SURA_AYAS, SURA_IDX, getSuraIdx,
   getSuraTanzil, getPageURLFromSuraAyah,
 } from '../models/constants';
 import QuranText from './QuranText';
@@ -27,12 +27,28 @@ function wordCount(text: string): number {
     .length;
 }
 
+// True once an excerpt that crosses into a later sura (qq flat word indices, inclusive)
+// has covered at least one of THAT sura's real (post-basmala) words — not just its
+// basmala or a bare boundary. Only then is showing its name informative rather than a
+// label with nothing of that sura under it yet.
+function reachesNewSuraContent(qqStart: number, qqEnd: number): boolean {
+  const startSura = getSuraIdx(qqStart);
+  const endSura = getSuraIdx(qqEnd);
+  if (endSura === startSura) return false;
+  const suraFirstWord = endSura === 0 ? 1 : SURA_IDX[endSura - 1];
+  const hasBasmala = endSura !== 0 && endSura !== 8; // Al-Fatiha / At-Tawba have none
+  return qqEnd >= suraFirstWord + (hasBasmala ? 4 : 0);
+}
+
 const { width: SW } = Dimensions.get('window');
 // Cap card width so it's not absurdly wide on desktop/tablet
 const CARD_W = Math.min(SW - 32, 480);
 
-// Font families: Amiri works on web; native falls back to system Arabic
-const QURAN_FONT = Platform.OS === 'web' ? 'AmiriQuranColored' : undefined;
+// Font families: Amiri/Uthman work on web; native falls back to system Arabic.
+// QURAN_FONT is the same Uthman-script face quran-madina-html uses for the
+// question text — used for every plain-text Quran fallback (question, answer,
+// and the answer options) so they all visually match.
+const QURAN_FONT = Platform.OS === 'web' ? 'UthmanTN' : undefined;
 const AMIRI_FONT  = Platform.OS === 'web' ? 'Amiri-Regular'     : undefined;
 
 export interface CardData {
@@ -86,13 +102,15 @@ export default function QuizCard({
   const useMadina  = card.qo.qType.id === Q_TYPE.NOTSPECIAL.id;
   const suraNum    = sura + 1;   // 1-based for quran-madina-html
   const questionTxt = removeAyaNum(card.qo.txt.question);
-  // quran-madina-html does not count the basmala as words, but quranquiz includes
-  // its 4 words in aya 1's range. Drop them for aya 1 of every sura except
-  // Al-Fatiha (whose basmala IS aya 1) and At-Tawba (which has no basmala).
-  const basmalaSkip = card.answerAya === 1 && suraNum !== 1 && suraNum !== 9 ? 4 : 0;
-  const madinaStart = Math.max(1, card.wordOffset - basmalaSkip);
-  const frontWords = `${madinaStart}-${madinaStart + wordCount(questionTxt) - 1}`;
-  const backWords  = `${madinaStart}-${madinaStart + wordCount(card.qo.txt.answer) - 1}`;
+  // quran-madina-html >= 0.9.2 counts the basmala as 4 real words, same as quranquiz's
+  // own word DB, so card.wordOffset needs no adjustment before being used as-is.
+  const qqStart    = card.qo.startIdx;
+  const frontEnd   = qqStart + wordCount(questionTxt) - 1;
+  const backEnd    = qqStart + wordCount(card.qo.txt.answer) - 1;
+  const frontWords = `${card.wordOffset}-${card.wordOffset + wordCount(questionTxt) - 1}`;
+  const backWords  = `${card.wordOffset}-${card.wordOffset + wordCount(card.qo.txt.answer) - 1}`;
+  const frontHideTitle = !reachesNewSuraContent(qqStart, frontEnd);
+  const backHideTitle  = !reachesNewSuraContent(qqStart, backEnd);
 
   useEffect(() => {
     if (flipTrigger > 0) {
@@ -153,6 +171,7 @@ export default function QuizCard({
               sura={suraNum}
               aya={card.answerAya}
               words={frontWords}
+              hideTitle={frontHideTitle}
               style={s.questionText}
             />
           ) : (
@@ -222,6 +241,7 @@ export default function QuizCard({
               sura={suraNum}
               aya={card.answerAya}
               words={backWords}
+              hideTitle={backHideTitle}
               style={s.answerText}
             />
           ) : (
@@ -326,6 +346,10 @@ const s = StyleSheet.create({
     color: '#1a1a1a',
     textAlign: 'right',
     writingDirection: 'rtl',
+    // Overrides QuranText's default edge-hugging alignment (see QuranText.web.tsx)
+    // so the quran-madina-html block centers within questionBox instead of
+    // sitting flush right with blank space on the other side.
+    alignItems: 'center',
     // Generous line height so the Quran diacritics are not clipped.
     lineHeight: 46,
   },
@@ -420,6 +444,9 @@ const s = StyleSheet.create({
     lineHeight: 46,
     textAlign: 'right',
     writingDirection: 'rtl',
+    // Same QuranText edge-hugging override as questionText — centers the
+    // quran-madina-html block within the answer scroll area.
+    alignItems: 'center',
     color: '#1a1a1a',
   },
 

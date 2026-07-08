@@ -461,6 +461,24 @@ export default function MeScreen() {
           <Text style={s.quickBtnTxt}>ابدأ اختباراً الآن</Text>
         </TouchableOpacity>
 
+        {/* ── PvP: live 1v1 — real opponent first, falls back to the bot ── */}
+        <TouchableOpacity
+          style={[s.bentoFull, s.pvpCard]}
+          onPress={() => router.push('/(app)/pvp')}
+          activeOpacity={0.85}
+        >
+          <Ionicons name="chevron-back" size={18} color="#8a97a5" />
+          <View style={s.pvpBody}>
+            <Text style={s.pvpTitle}>منافسة مباشرة ⚔️</Text>
+            <Text style={s.pvpSub}>١٠ أسئلة وجهاً لوجه ضد لاعب حقيقي أو الحافظ 🤖 — الأدق والأسرع يفوز</Text>
+          </View>
+          {(profile.pvp.wins + profile.pvp.losses + profile.pvp.draws) > 0 && (
+            <View style={s.pvpRecordBadge}>
+              <Text style={s.pvpRecordTxt}>🏆 {profile.pvp.wins}</Text>
+            </View>
+          )}
+        </TouchableOpacity>
+
         {/* ── Sign-in prompt for guests ── */}
         {social.isAnonymous && (
           <View style={[s.bentoFull, s.anonCard]}>
@@ -756,6 +774,27 @@ const s = StyleSheet.create({
     gap: 8,
   },
   quickBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
+
+  // PvP challenge card
+  pvpCard: {
+    backgroundColor: '#fff',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    padding: 16,
+    gap: 10,
+    borderWidth: 1.5,
+    borderColor: '#d6eaf8',
+  },
+  pvpBody: { flex: 1, alignItems: 'flex-end' },
+  pvpTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
+  pvpSub: { fontSize: 12, color: '#8a97a5', textAlign: 'right', marginTop: 2 },
+  pvpRecordBadge: {
+    backgroundColor: '#fff7e6',
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+    borderRadius: 12,
+  },
+  pvpRecordTxt: { fontSize: 13, fontWeight: '800', color: '#b7770d' },
 
   // Anon / sign out
   anonCard: { backgroundColor: '#fff', padding: 16, gap: 12 },

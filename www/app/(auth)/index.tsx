@@ -92,21 +92,6 @@ export default function AuthScreen() {
           ))}
         </View>
 
-        {/* ── Why join (2×2 grid) ── */}
-        <View style={s.featuresGrid}>
-          {FEATURES.map((f) => (
-            <View key={f.title} style={s.featureTile}>
-              <View style={[s.featureIcon, { backgroundColor: `${f.tint}26` }]}>
-                <Ionicons name={f.icon} size={18} color={f.tint} />
-              </View>
-              <View style={s.featureText}>
-                <Text style={s.featureTitle}>{f.title}</Text>
-                <Text style={s.featureBody} numberOfLines={2}>{f.body}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
-
         {/* ── Sign-in card ── */}
         <View style={s.card}>
           <Text style={s.cardHeader}>ابدأ الآن</Text>
@@ -126,6 +111,21 @@ export default function AuthScreen() {
             <Ionicons name="person-outline" size={16} color="#7a8794" />
             <Text style={s.anonLinkTxt}>المتابعة كزائر</Text>
           </TouchableOpacity>
+        </View>
+
+        {/* ── Why join (2×2 grid) ── */}
+        <View style={s.featuresGrid}>
+          {FEATURES.map((f) => (
+            <View key={f.title} style={s.featureTile}>
+              <View style={[s.featureIcon, { backgroundColor: `${f.tint}26` }]}>
+                <Ionicons name={f.icon} size={18} color={f.tint} />
+              </View>
+              <View style={s.featureText}>
+                <Text style={s.featureTitle}>{f.title}</Text>
+                <Text style={s.featureBody} numberOfLines={2}>{f.body}</Text>
+              </View>
+            </View>
+          ))}
         </View>
 
         <Text style={s.footer}>

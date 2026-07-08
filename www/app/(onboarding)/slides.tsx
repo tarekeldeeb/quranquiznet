@@ -8,8 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 
 const { width: SW } = Dimensions.get('window');
 
-// Match QuizCard: Amiri renders on web, native falls back to the system Arabic.
-const QURAN_FONT = Platform.OS === 'web' ? 'AmiriQuranColored' : undefined;
+// Match QuizCard: Uthman/Amiri render on web, native falls back to the system Arabic.
+const QURAN_FONT = Platform.OS === 'web' ? 'UthmanTN' : undefined;
 const AMIRI_FONT = Platform.OS === 'web' ? 'Amiri-Regular' : undefined;
 
 // ─────────────────────────────────────────────────────────────────────────────

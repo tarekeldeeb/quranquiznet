@@ -11,6 +11,7 @@ import {
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
+import { flagEmoji } from '../../src/models/constants';
 
 type Tab = 'yesterday' | 'all';
 type Status = 'loading' | 'available' | 'empty' | 'error';
@@ -18,12 +19,6 @@ type Status = 'loading' | 'available' | 'empty' | 'error';
 interface ReportEntry { name: string; score: number; uid?: string; country?: string }
 
 const MEDAL = ['🥇', '🥈', '🥉'];
-
-function flagEmoji(code?: string): string {
-  if (!code || code.length < 2) return '';
-  const pts = [...code.toUpperCase().slice(0, 2)].map((c) => 0x1F1E6 - 65 + c.charCodeAt(0));
-  return String.fromCodePoint(...pts);
-}
 
 export default function LeagueScreen() {
   const router = useRouter();

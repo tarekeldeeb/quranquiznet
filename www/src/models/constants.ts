@@ -186,3 +186,10 @@ export function countedScore(arr: number[]): number {
 export function removeAyaNum(text: string): string {
   return text.replace(/﴿[0-9]+﴾/g, '۝');
 }
+
+/** 2-letter ISO country code → flag emoji, via regional indicator symbols. */
+export function flagEmoji(code?: string): string {
+  if (!code || code.length < 2) return '';
+  const pts = [...code.toUpperCase().slice(0, 2)].map((c) => 0x1F1E6 - 65 + c.charCodeAt(0));
+  return String.fromCodePoint(...pts);
+}

@@ -120,13 +120,21 @@ export async function acquireGoogleCredential(): Promise<OAuthCredential | null>
 /**
  * Run the Facebook OAuth flow in the system browser and return a Firebase
  * credential, or null if the user dismisses the browser.
+ *
+ * Facebook's "Valid OAuth Redirect URIs" field only accepts https:// URLs, so an
+ * arbitrary custom scheme (e.g. quranquiz://…) is rejected with "URL blocked".
+ * The one custom scheme Facebook always accepts for native apps is
+ * `fb<APP_ID>://authorize` — provided the iOS / Android platforms (bundle id,
+ * package name + key hashes) are configured in the Facebook app dashboard.
+ * The `fb<APP_ID>` scheme is registered in app.config.js (and the prebuilt
+ * native projects) so the browser can return to the app.
  */
 export async function acquireFacebookCredential(): Promise<OAuthCredential | null> {
   const appId = process.env.EXPO_PUBLIC_FACEBOOK_APP_ID;
   if (!appId) {
     throw new Error('Facebook sign-in is not configured: set EXPO_PUBLIC_FACEBOOK_APP_ID.');
   }
-  const redirectUri = AuthSession.makeRedirectUri({ scheme: 'quranquiz', path: 'oauthredirect' });
+  const redirectUri = AuthSession.makeRedirectUri({ native: `fb${appId}://authorize` });
   const request = new AuthSession.AuthRequest({
     clientId: appId,
     scopes: ['public_profile', 'email'],

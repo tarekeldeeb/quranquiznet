@@ -21,8 +21,8 @@ I18nManager.forceRTL(true);
 // Apply Amiri as the app-wide default font (web only — the Amiri woff2 face is
 // loaded via expo-font for web; native keeps the system Arabic font, as before).
 // We prepend it to each element's own style so RNW's built-in "System" default is
-// overridden, while any explicit fontFamily (e.g. the Quran face,
-// AmiriQuranColored) still wins because it comes after ours in the merged array.
+// overridden, while any explicit fontFamily (e.g. the Quran face, UthmanTN)
+// still wins because it comes after ours in the merged array.
 if (Platform.OS === 'web') {
   const DEFAULT_FONT = { fontFamily: 'Amiri-Regular' };
   const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __amiriPatched?: boolean }) => {
@@ -116,8 +116,12 @@ export default function RootLayout() {
   const loadProfile = useProfileStore((s) => s.load);
 
   const [fontsLoaded] = useFonts({
-    'AmiriQuranColored': require('../assets/fonts/AmiriQuranColored.woff2'),
     'Amiri-Regular': require('../assets/fonts/Amiri-Regular.woff2'),
+    // Same "Uthman" font quran-madina-html uses for its question rendering
+    // (UthmanTN_v2-0.woff2, pulled from the quran-madina-html package's own
+    // assets) — the app-wide Quran-text face, for both plain-text fallbacks
+    // and the answer options, so everything visually matches.
+    'UthmanTN': require('../assets/fonts/UthmanTN_v2-0.woff2'),
   });
 
   useEffect(() => {
