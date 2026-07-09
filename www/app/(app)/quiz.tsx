@@ -1,8 +1,8 @@
 // Main quiz screen — mirrors www/quiz/quizCtrl.js + www/one/oneCtrl.js
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
-  View, FlatList, ActivityIndicator, Alert, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView, Platform, Share, Animated,
+  View, FlatList, ActivityIndicator, StyleSheet, Text,
+  TouchableOpacity, Modal, TextInput, ScrollView, Share, Animated,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
