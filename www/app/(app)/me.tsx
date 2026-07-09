@@ -716,7 +716,14 @@ export default function MeScreen() {
                   <View style={s.partRow}>
                     <View style={[s.rangeDot, { backgroundColor: DOT_COLOR[range] }]} />
                     <View style={s.partRowInfo}>
-                      <Text style={s.partName} numberOfLines={1}>{part.name}</Text>
+                      <View style={s.partNameRow}>
+                        {range === CORRECT_RATIO_RANGE.HIGH && (
+                          <View style={s.masteryBadge}>
+                            <Text style={s.masteryBadgeTxt}>🏅 متمكن</Text>
+                          </View>
+                        )}
+                        <Text style={s.partName} numberOfLines={1}>{part.name}</Text>
+                      </View>
                       <Text style={s.partSub}>{correct} صحيحة من {questions}</Text>
                     </View>
                     <TouchableOpacity
@@ -1022,8 +1029,21 @@ const s = StyleSheet.create({
   // Shared bits
   partSwitch: { transform: [{ scale: 0.85 }] },
   rangeDot: { width: 12, height: 12, borderRadius: 6 },
+  partNameRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
   partName: { fontSize: 14, fontWeight: '700', color: '#1a1a1a', textAlign: 'right' },
   partSub: { fontSize: 11, color: '#8a97a5', textAlign: 'right', marginTop: 1 },
+  // Mastery badge — shown next to a sura's name once its accuracy tier
+  // reaches HIGH (see CORRECT_RATIO_RANGE.HIGH), the same milestone quiz.tsx
+  // celebrates with a toast the first time it's crossed.
+  masteryBadge: {
+    backgroundColor: '#eafaf1',
+    borderRadius: 8,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: '#a8e6bf',
+  },
+  masteryBadgeTxt: { fontSize: 10, fontWeight: '800', color: '#1e8449' },
   radio: {
     width: 20, height: 20, borderRadius: 10,
     borderWidth: 2, borderColor: '#bbb',
