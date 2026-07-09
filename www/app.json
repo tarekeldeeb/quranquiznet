@@ -37,7 +37,8 @@
             "./assets/fonts/UthmanTN_v2-0.woff2"
           ]
         }
-      ]
+      ],
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true

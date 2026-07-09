@@ -13,6 +13,7 @@ import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileSt
 import * as QS from '../../src/services/questionnaireService';
 import Constants from 'expo-constants';
 import { Avatar } from '../../src/components/Avatar';
+import { scheduleDailyReminder } from '../../src/services/notifications';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
 // Pulled from app.json (expo.version) at build/runtime — single source of truth.
@@ -209,6 +210,19 @@ export default function MeScreen() {
     const id = setInterval(() => setNow(Date.now()), 60_000);
     return () => clearInterval(id);
   }, []);
+
+  // Once today's daily is done, arm a local notification for the moment the next
+  // one rotates in (no-op without permission/native). Keyed off Date.now() at
+  // effect-run-time rather than the ticking `now` state, so it schedules once
+  // instead of on every minute tick.
+  useEffect(() => {
+    if (dailyHead === 'loading' || !dailyHead) return;
+    if (profile.lastDailyCompletedDate !== new Date().toISOString().split('T')[0]) return;
+    const nowMs = Date.now();
+    const nextAt = dailyHead.start_time
+      + (Math.floor((nowMs - dailyHead.start_time) / DAILY_PERIOD_MS) + 1) * DAILY_PERIOD_MS;
+    scheduleDailyReminder(nextAt);
+  }, [dailyHead, profile.lastDailyCompletedDate]);
 
   function launchDaily(head: DailyHead) {
     const weights = profile.getDailyQuizStudyPartsWeights();
