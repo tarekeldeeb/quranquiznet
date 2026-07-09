@@ -7,7 +7,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  getDailyHead, getYesterdayReport, getAllTopReport, type DailyHead,
+  getDailyHead, subscribeYesterdayReport, subscribeAllTopReport, subscribeTodayStandings,
+  type DailyHead, type LeaderboardEntry,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
@@ -16,9 +17,26 @@ import { flagEmoji } from '../../src/models/constants';
 type Tab = 'yesterday' | 'all';
 type Status = 'loading' | 'available' | 'empty' | 'error';
 
-interface ReportEntry { name: string; score: number; uid?: string; country?: string }
-
 const MEDAL = ['🥇', '🥈', '🥉'];
+
+interface RankedEntry extends LeaderboardEntry { rank: number }
+interface OwnRank { rank: number; entry: RankedEntry; above: RankedEntry[]; below: RankedEntry[] }
+
+// Find the signed-in user's position in a full, best-first-sorted standings
+// list, plus their 1-2 immediate neighbors above/below — so they see where
+// they stand even when far outside the visible top 10.
+function findOwnRank(sorted: LeaderboardEntry[], uid: string | undefined, neighborCount = 2): OwnRank | null {
+  if (!uid) return null;
+  const ranked: RankedEntry[] = sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+  const idx = ranked.findIndex((e) => e.uid === uid);
+  if (idx === -1) return null;
+  return {
+    rank: idx + 1,
+    entry: ranked[idx],
+    above: ranked.slice(Math.max(0, idx - neighborCount), idx),
+    below: ranked.slice(idx + 1, idx + 1 + neighborCount),
+  };
+}
 
 export default function LeagueScreen() {
   const router = useRouter();
@@ -27,9 +45,13 @@ export default function LeagueScreen() {
   const [tab, setTab] = useState<Tab>('yesterday');
   const [status, setStatus] = useState<Status>('loading');
   const [head, setHead] = useState<DailyHead | null>(null);
-  const [yday, setYday] = useState<ReportEntry[]>([]);
-  const [allTop, setAllTop] = useState<ReportEntry[]>([]);
-  const [reportsLoading, setReportsLoading] = useState(false);
+  const [yday, setYday] = useState<LeaderboardEntry[]>([]);
+  const [allTop, setAllTop] = useState<LeaderboardEntry[]>([]);
+  const [ydayLoaded, setYdayLoaded] = useState(false);
+  const [allLoaded, setAllLoaded] = useState(false);
+  // Today's live, unbounded standings (every submission so far today) — the
+  // only feed with full participant coverage, so it's what powers "your rank".
+  const [todayStandings, setTodayStandings] = useState<LeaderboardEntry[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
   const dailyDone = profile.lastDailyCompletedDate === today;
@@ -41,7 +63,6 @@ export default function LeagueScreen() {
       if (h && h.daily_random != null) {
         setHead(h);
         setStatus('available');
-        loadReports();
       } else {
         setStatus('empty');
       }
@@ -50,20 +71,30 @@ export default function LeagueScreen() {
     }
   }, []);
 
-  async function loadReports() {
-    setReportsLoading(true);
-    try {
-      const [y, a] = await Promise.all([getYesterdayReport(), getAllTopReport()]);
-      setYday((y as ReportEntry[]).slice(0, 10));
-      setAllTop((a as ReportEntry[]).slice(0, 10));
-    } catch (e) {
-      console.error('loadReports error:', e);
-    } finally {
-      setReportsLoading(false);
-    }
-  }
-
   useEffect(() => { checkDaily(); }, [checkDaily]);
+
+  // Live subscriptions — independent of daily-head status, so the leaderboard
+  // still shows even if today's quiz itself isn't published yet. Ranks update
+  // in place while the screen is open instead of needing a re-open to refresh.
+  useEffect(() => {
+    let cancelled = false;
+    let unsubYday: (() => void) | undefined;
+    subscribeYesterdayReport((entries) => {
+      setYday(entries.slice(0, 10));
+      setYdayLoaded(true);
+    }).then((unsub) => { if (cancelled) unsub(); else unsubYday = unsub; });
+    const unsubAll = subscribeAllTopReport((entries) => {
+      setAllTop(entries.slice(0, 10));
+      setAllLoaded(true);
+    });
+    const unsubToday = subscribeTodayStandings(setTodayStandings);
+    return () => {
+      cancelled = true;
+      unsubYday?.();
+      unsubAll();
+      unsubToday();
+    };
+  }, []);
 
   function startDaily() {
     if (!head) return;
@@ -85,14 +116,30 @@ export default function LeagueScreen() {
   }
 
   const listData = tab === 'yesterday' ? yday : allTop;
+  const reportsLoading = tab === 'yesterday' ? !ydayLoaded : !allLoaded;
+  const ownRank = findOwnRank(todayStandings, profile.uid);
 
-  function renderRow({ item, index }: { item: ReportEntry; index: number }) {
+  function renderRow({ item, index }: { item: LeaderboardEntry; index: number }) {
     const isMe = item.uid === profile.uid;
     const flag = flagEmoji(item.country);
     return (
       <View style={[s.row, isMe && s.rowMe]}>
         {/* RTL: medal (right) → flag → name (flex) → score (left) */}
         <Text style={s.medal}>{index < 3 ? MEDAL[index] : `${index + 1}`}</Text>
+        {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
+        <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        <Text style={[s.rowScore, isMe && s.rowScoreMe]}>{item.score}</Text>
+      </View>
+    );
+  }
+
+  // Compact neighbor row for the "your rank today" card — same shape as
+  // renderRow but takes an explicit rank number (not a list index).
+  function renderNeighborRow(item: RankedEntry, isMe: boolean) {
+    const flag = flagEmoji(item.country);
+    return (
+      <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, isMe && s.rowMe]}>
+        <Text style={s.medal}>{item.rank <= 3 ? MEDAL[item.rank - 1] : `${item.rank}`}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
         <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
         <Text style={[s.rowScore, isMe && s.rowScoreMe]}>{item.score}</Text>
@@ -132,6 +179,18 @@ export default function LeagueScreen() {
             <Ionicons name="refresh" size={16} color="#c0392b" />
             <Text style={[s.dailyStripTxt, { color: '#c0392b' }]}>تعذر الاتصال — إعادة المحاولة</Text>
           </TouchableOpacity>
+        )}
+
+        {/* Your rank today — live, and shown even far outside the top 10 (the
+            regular tabs below only ever carry a top-10 slice). Hidden until the
+            user has a submission in today's live standings. */}
+        {ownRank && (
+          <View style={s.card}>
+            <Text style={s.cardTitle}>ترتيبك اليوم: #{ownRank.rank}</Text>
+            {ownRank.above.map((e) => renderNeighborRow(e, false))}
+            {renderNeighborRow(ownRank.entry, true)}
+            {ownRank.below.map((e) => renderNeighborRow(e, false))}
+          </View>
         )}
 
         {/* Inner tab bar */}
