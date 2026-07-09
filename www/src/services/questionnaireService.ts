@@ -100,7 +100,11 @@ async function getValidStartNear(start: number): Promise<void> {
   let searching = true;
   while (searching) {
     shadow += dir;
-    if (shadow === 0 || shadow === QURAN_WORDS - 1) {
+    // Bounce when the walk leaves the table (word ids are 1..QURAN_WORDS). The legacy
+    // `shadow === QURAN_WORDS - 1` sentinel bounced one word early — the last two words
+    // could never start a question — and never triggered at all for a start beyond it
+    // (e.g. a shared ?start=77881 link), walking past the table forever.
+    if (shadow <= 0 || shadow > QURAN_WORDS) {
       shadow = start;
       dir = -dir;
       continue;
@@ -128,7 +132,8 @@ async function getValidStartNear(start: number): Promise<void> {
       }
     }
   }
-  qo.startIdx = shadow;
+  // extraQLength may have advanced the start past the last word — wrap it back in range.
+  qo.startIdx = modQWords(shadow);
 }
 
 function fillCorrectOptions() {
@@ -140,7 +145,9 @@ function fillCorrectOptions() {
 
 async function fillIncorrectOptions() {
   for (let i = 0; i < 10; i++) {
-    const lastCorrect = qo.op[i][0] - 1;
+    // Wrap-safe predecessor: when the correct option wrapped around to word 1 (a question
+    // at the very end of the Quran), the word before it is القرآن's last word, not id 0.
+    const lastCorrect = modQWords(qo.op[i][0] - 1 + QURAN_WORDS);
     const diffList = await idb.uniqueSim1Not2Plus1(lastCorrect);
     const uniq = diffList.length;
     if (uniq > 3) {

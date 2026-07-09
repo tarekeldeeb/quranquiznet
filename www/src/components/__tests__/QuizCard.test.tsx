@@ -9,8 +9,9 @@ jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock
 import React from 'react';
 import { StyleSheet } from 'react-native';
 import { render, act } from '@testing-library/react-native';
-import QuizCard, { CardData } from '../QuizCard';
+import QuizCard, { CardData, reachesNewSuraContent } from '../QuizCard';
 import { makeEmptyQO } from '../../models/questionnaire';
+import { SURA_IDX, QURAN_WORDS } from '../../models/constants';
 
 function makeCard(): CardData {
   const qo = makeEmptyQO();
@@ -45,6 +46,51 @@ const isAbsolute = (node: { props: { style: unknown } }) => {
   const flat = StyleSheet.flatten(node.props.style as object) as { position?: string };
   return flat?.position === 'absolute';
 };
+
+// Regression: the sura decoration line (title) must stay hidden until the excerpt
+// covers at least one REAL word of the new sura — i.e. one word past its basmala.
+// Bug: SURA_IDX had drifted from the shipped q.json tokenization by up to 3 words,
+// so the title was revealed while the basmala was still being shown word-by-word.
+describe('reachesNewSuraContent', () => {
+  // Al-Ma'un → Al-Kawthar boundary: Kawthar's basmala spans its first 4 words,
+  // so its first real word is head+4.
+  const head = SURA_IDX[106];      // first word of Al-Kawthar (its basmala start)
+  const firstReal = head + 4;      // «إنا», first post-basmala word
+  const tawbaHead = SURA_IDX[7];   // At-Tawba has no basmala
+
+  it('stays hidden while the excerpt is inside one sura', () => {
+    expect(reachesNewSuraContent(head - 8, head - 1)).toBe(false);
+  });
+
+  it('stays hidden while only basmala words of the new sura are shown', () => {
+    expect(reachesNewSuraContent(head - 8, head + 1)).toBe(false);      // mid-basmala
+    expect(reachesNewSuraContent(head - 8, firstReal - 1)).toBe(false); // basmala complete
+  });
+
+  it('is revealed with the first post-basmala word', () => {
+    expect(reachesNewSuraContent(head - 8, firstReal)).toBe(true);
+  });
+
+  it('applies equally to an excerpt starting exactly at the sura head', () => {
+    expect(reachesNewSuraContent(head, firstReal - 1)).toBe(false);
+    expect(reachesNewSuraContent(head, firstReal)).toBe(true);
+  });
+
+  it('stays hidden when the excerpt starts past the sura head (no line rendered)', () => {
+    expect(reachesNewSuraContent(head + 1, firstReal + 3)).toBe(false);
+  });
+
+  it('is revealed with the first word of a basmala-less sura (At-Tawba)', () => {
+    expect(reachesNewSuraContent(tawbaHead - 5, tawbaHead)).toBe(true);
+  });
+
+  it('is revealed when the excerpt wraps past An-Nas into Al-Fatiha', () => {
+    // End-of-Quran wrap (e.g. ?start=77880): the renderer continues into Al-Fatiha,
+    // whose basmala is its real aya 1 — one wrapped word already earns its name.
+    expect(reachesNewSuraContent(QURAN_WORDS - 1, QURAN_WORDS + 1)).toBe(true);
+    expect(reachesNewSuraContent(QURAN_WORDS - 1, QURAN_WORDS)).toBe(false); // no wrap yet
+  });
+});
 
 describe('QuizCard flip face', () => {
   it('an unanswered card (flipTrigger 0) shows the front in flow, back stacked', () => {

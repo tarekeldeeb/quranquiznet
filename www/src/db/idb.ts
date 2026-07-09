@@ -27,10 +27,9 @@ export async function txt(
 
   // Fetch up to `limit` words from `start`. If we reach the end of the table
   // before `limit` words, wrap around to the beginning of the Quran.
-  // The boundary MUST be data-driven: the table actually holds more rows than
-  // QURAN_WORDS (77878) — the final verse of An-Nas (114:6) lives at _id
-  // 77879-77881. Assuming the last _id equals QURAN_WORDS dropped that verse
-  // and wrapped to Al-Fatiha three words early.
+  // The boundary stays data-driven even though QURAN_WORDS now matches the
+  // shipped q.json (77881): when it was stale at 77878, assuming the last _id
+  // equaled it dropped An-Nas's final verse and wrapped to Al-Fatiha early.
   const part1 = await db.getAllAsync<QRow>(
     'SELECT * FROM q WHERE _id >= ? ORDER BY _id LIMIT ?',
     [start, limit],

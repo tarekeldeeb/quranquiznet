@@ -1,6 +1,9 @@
 // All Quran structural constants — ported from www/_model_/utils.js
 
-export const QURAN_WORDS = 77878;
+// Total word count of q.json (its last _id) and the modQWords wrap boundary.
+// An-Nas's final verse lives at _id 77879-77881 — see the data-driven read in
+// db/idb.ts, which predates this constant being synced to the shipped DB.
+export const QURAN_WORDS = 77881;
 export const JUZ2_AVG_WORDS = QURAN_WORDS / 30;
 export const ANSWER_LENGTH = 24;
 
@@ -17,20 +20,24 @@ export const DAILYQUIZ_MAXTIME = 10 * (12 + 9 * 5);
 export const DAILYQUIZ_MINTIME = 10 * 1;
 export const SURAS_SPECIAL_ELIGIBILITY_THRESHOLD = 7;
 
-// Word index where each sura ENDS (exclusive upper bound, 1-indexed)
+// Word index where each sura ENDS (exclusive upper bound, 1-indexed) — i.e. the
+// first word _id of the NEXT sura in q.json. Derived from the shipped q.json
+// (Tanzil uthmani-min tokenization); regenerate if db_maker.py output changes.
+// Stale values mis-attribute words near sura boundaries: wrong sura names on
+// answer cards and the Madina renderer's sura title revealed mid-basmala.
 export const SURA_IDX = [
-  30, 6150, 9635, 13386, 16194, 19248, 22572, 23809, 26307, 28144,
-  30065, 31846, 32703, 33537, 34196, 36044, 37604, 39187, 40152, 41491,
-  42664, 43942, 44996, 46316, 47213, 48535, 49690, 51124, 52104, 52925,
-  53475, 53851, 55142, 56029, 56808, 57537, 58402, 59139, 60315, 61538,
-  62336, 63200, 64034, 64384, 64876, 65523, 66066, 66630, 66981, 67358,
-  67722, 68038, 68402, 68748, 69103, 69486, 70064, 70540, 70989, 71341,
-  71566, 71745, 71929, 72174, 72465, 72718, 73055, 73359, 73621, 73842,
-  74072, 74361, 74564, 74823, 74991, 75238, 75423, 75600, 75783, 75920,
-  76028, 76112, 76285, 76396, 76509, 76574, 76650, 76746, 76887, 76973,
-  77031, 77106, 77150, 77181, 77219, 77295, 77329, 77427, 77467, 77511,
-  77551, 77583, 77601, 77638, 77665, 77686, 77715, 77729, 77759, 77782,
-  77809, 77828, 77855, 77878,
+  30, 6151, 9636, 13387, 16195, 19249, 22573, 23811, 26309, 28146,
+  30067, 31848, 32706, 33540, 34199, 36047, 37607, 39190, 40155, 41494,
+  42667, 43945, 44999, 46319, 47216, 48538, 49693, 51127, 52107, 52928,
+  53478, 53854, 55145, 56032, 56811, 57540, 58405, 59142, 60318, 61541,
+  62339, 63203, 64037, 64387, 64879, 65526, 66069, 66633, 66984, 67361,
+  67725, 68041, 68405, 68751, 69106, 69489, 70067, 70543, 70992, 71344,
+  71569, 71748, 71932, 72177, 72468, 72721, 73058, 73362, 73624, 73845,
+  74075, 74364, 74567, 74826, 74994, 75241, 75426, 75603, 75786, 75923,
+  76031, 76115, 76288, 76399, 76512, 76577, 76653, 76749, 76890, 76976,
+  77034, 77109, 77153, 77184, 77222, 77298, 77332, 77430, 77470, 77514,
+  77554, 77586, 77604, 77641, 77668, 77689, 77718, 77732, 77762, 77785,
+  77812, 77831, 77858, 77882,
 ];
 
 export const SURA_NAME = [
@@ -105,8 +112,10 @@ const PAGE_AYA_START = [
 ];
 
 export const LAST5_JUZ_NAME = ['الأحقاف', 'الذاريات', 'قد سمع', 'تبارك', 'عم'];
+// Exclusive upper bounds like SURA_IDX, so the final entry is SURA_IDX[113]
+// (one past the last word) — QURAN_WORDS here would drop the last word.
 export const LAST5_JUZ_IDX = [
-  SURA_IDX[44], SURA_IDX[49], SURA_IDX[56], SURA_IDX[65], SURA_IDX[76], QURAN_WORDS,
+  SURA_IDX[44], SURA_IDX[49], SURA_IDX[56], SURA_IDX[65], SURA_IDX[76], SURA_IDX[113],
 ];
 
 // Relative weight of each study part vs an average juz

@@ -55,7 +55,7 @@ describe('getDailyQuizScore — NEW-A', () => {
 
   it('coverage penalty drops the score for a single small part', () => {
     setCoverage(779);                      // ≈1% of the Quran
-    // 100 − 5*(20/560) − 5*(1 − 779/77878)
+    // 100 − 5*(20/560) − 5*(1 − 779/77881)
     expect(dailyScore(10, 30)).toBe(94.87);
   });
 

@@ -9,7 +9,7 @@ import Animated, {
 import { Ionicons } from '@expo/vector-icons';
 import { QuestionObject, Q_TYPE } from '../models/questionnaire';
 import {
-  removeAyaNum, SURA_NAME, SURA_AYAS, SURA_IDX, getSuraIdx,
+  removeAyaNum, SURA_NAME, SURA_AYAS, SURA_IDX, QURAN_WORDS, getSuraIdx,
   getSuraTanzil, getPageURLFromSuraAyah,
 } from '../models/constants';
 import QuranText from './QuranText';
@@ -27,15 +27,21 @@ function wordCount(text: string): number {
     .length;
 }
 
-// True once an excerpt that crosses into a later sura (qq flat word indices, inclusive)
-// has covered at least one of THAT sura's real (post-basmala) words — not just its
-// basmala or a bare boundary. Only then is showing its name informative rather than a
-// label with nothing of that sura under it yet.
-function reachesNewSuraContent(qqStart: number, qqEnd: number): boolean {
-  const startSura = getSuraIdx(qqStart);
+// True once an excerpt (qq flat word indices, inclusive) whose range contains a sura's
+// first word has also covered at least one of that sura's real (post-basmala) words —
+// not just its basmala or a bare boundary. Only then is showing its name informative
+// rather than a label with nothing of that sura under it yet. Applies both to excerpts
+// that cross into a later sura and to ones that start right at a sura's head.
+export function reachesNewSuraContent(qqStart: number, qqEnd: number): boolean {
+  // A range running past the last word wraps around into Al-Fatiha (the Madina renderer's
+  // words= walk wraps the same way). Its name is earned as soon as the wrap covers any of
+  // its words: Al-Fatiha's basmala IS its real aya 1, and a bare بسم reveals nothing (every
+  // basmala reads the same), so no post-basmala gating applies.
+  if (qqEnd > QURAN_WORDS) return true;
   const endSura = getSuraIdx(qqEnd);
-  if (endSura === startSura) return false;
   const suraFirstWord = endSura === 0 ? 1 : SURA_IDX[endSura - 1];
+  // Sura head not in range ⇒ the renderer draws no decoration line to gate.
+  if (qqStart > suraFirstWord) return false;
   const hasBasmala = endSura !== 0 && endSura !== 8; // Al-Fatiha / At-Tawba have none
   return qqEnd >= suraFirstWord + (hasBasmala ? 4 : 0);
 }
@@ -102,8 +108,11 @@ export default function QuizCard({
   const useMadina  = card.qo.qType.id === Q_TYPE.NOTSPECIAL.id;
   const suraNum    = sura + 1;   // 1-based for quran-madina-html
   const questionTxt = removeAyaNum(card.qo.txt.question);
-  // quran-madina-html >= 0.9.2 counts the basmala as 4 real words, same as quranquiz's
-  // own word DB, so card.wordOffset needs no adjustment before being used as-is.
+  // quran-madina-html >= 0.9.3 counts the basmala as 4 real words everywhere — including
+  // the anchor sura's own basmala when the excerpt starts inside its first aya — same as
+  // quranquiz's word DB, so card.wordOffset needs no adjustment before being used as-is.
+  // (0.9.0–0.9.2 only counted crossed-into basmalas: questions starting in the first aya
+  // of a basmala sura rendered 4 words late — common in the short suras near the end.)
   const qqStart    = card.qo.startIdx;
   const frontEnd   = qqStart + wordCount(questionTxt) - 1;
   const backEnd    = qqStart + wordCount(card.qo.txt.answer) - 1;
