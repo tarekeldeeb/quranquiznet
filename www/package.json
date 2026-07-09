@@ -1,6 +1,6 @@
 {
   "name": "quranquiznet",
-  "version": "2.1.5",
+  "version": "2.1.6",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start",
@@ -8,6 +8,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "build:web": "expo export --platform web --clear",
+    "sync:madina": "node scripts/sync-madina-assets.mjs",
     "test": "jest --watchAll",
     "test:ci": "jest --ci --runInBand",
     "lint": "eslint ."
@@ -16,6 +17,7 @@
     "@expo/vector-icons": "~14.0.4",
     "@react-native-async-storage/async-storage": "1.23.1",
     "@tarekeldeeb/quran-madina-react": "^0.9.2",
+    "quran-madina-html": "0.9.7",
     "expo": "~52.0.0",
     "expo-asset": "~11.0.5",
     "expo-auth-session": "~6.0.3",

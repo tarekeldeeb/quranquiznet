@@ -1,7 +1,8 @@
 // Web renderer using the official React wrapper around <quran-madina-html>.
-// The wrapper injects the library <script> at runtime and loads its CSS/DB from
-// unpkg by default (so it works on localhost without self-hosting). Font + size
-// are loader config honored on the first mounted instance.
+// The wrapper injects the library <script> at runtime and, left to its
+// defaults, loads its CSS/DB from unpkg (unversioned "latest" — see the
+// src/cdn override below for why we don't use that). Font + size are loader
+// config honored on the first mounted instance.
 //
 // The underlying custom element reads its attributes on creation, so we key the
 // element on its selection to force a remount when `words` changes (the question
@@ -10,6 +11,16 @@ import React from 'react';
 import { View, StyleProp, ViewStyle } from 'react-native';
 import QuranMadinaHtml from '@tarekeldeeb/quran-madina-react';
 import type { QuranTextProps } from './QuranText';
+
+// Self-hosted (same-origin) copy of the library instead of the wrapper's
+// unpkg default, so the quiz works fully offline after the first load (the
+// service worker cache-firsts same-origin static assets, but never touches
+// cross-origin unpkg requests) and so an upstream publish can't silently
+// change rendering underneath us. Assets are synced from the pinned
+// "quran-madina-html" version via `npm run sync:madina` — see
+// scripts/sync-madina-assets.mjs.
+const MADINA_BASE = '/quran-madina/';
+const MADINA_SRC = `${MADINA_BASE}dist/quran-madina-html.min.js`;
 
 // The custom element re-validates its {sura, aya} / {page} attributes on every
 // individual attribute write, so during the remount below there's a brief,
@@ -40,6 +51,8 @@ export default function QuranText({ sura, aya, words, hideTitle, style }: QuranT
         headless
         quotes="no"
         inline="no"
+        src={MADINA_SRC}
+        cdn={MADINA_BASE}
         // Suppresses the crossed-into sura's name while the excerpt hasn't reached any of
         // that sura's real (post-basmala) words yet — see QuizCard's reachesNewSuraContent,
         // which decides hideTitle per excerpt so the label only appears once it's earned.
