@@ -1,5 +1,10 @@
 // All Quran structural constants — ported from www/_model_/utils.js
 
+// Default display name for an anonymous/guest user who hasn't picked a
+// nickname yet. Shared so every surface that shows/compares a guest's name
+// (auth handler, me.tsx, the daily-quiz submission) agrees on the same string.
+export const DEFAULT_GUEST_NAME = 'زائر(ة)';
+
 // Total word count of q.json (its last _id) and the modQWords wrap boundary.
 // An-Nas's final verse lives at _id 77879-77881 — see the data-driven read in
 // db/idb.ts, which predates this constant being synced to the shipped DB.
