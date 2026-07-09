@@ -2,10 +2,11 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, Alert, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView, Platform,
+  TouchableOpacity, Modal, TextInput, ScrollView, Platform, Share,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
@@ -25,6 +26,7 @@ import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
   shouldShowSummary, shouldRestoreNormalRunAfterDaily,
 } from '../../src/models/quizFlow';
+import { describeRankGap } from '../../src/models/dailyRank';
 
 interface ActiveCard {
   round: number;
@@ -117,6 +119,9 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
+  // Post-win engagement: a rank-comparison line against yesterday's/all-time
+  // leaderboard, fetched once the daily quiz ends (null while loading/unavailable).
+  const [dailyRankLine, setDailyRankLine] = useState<string | null>(null);
   // Session chooser — shown when no mode or part is pre-set
   const [chooserVisible, setChooserVisible] = useState(
     params.dailyMode !== '1' && !params.customPart && !params.start,
@@ -681,13 +686,14 @@ export default function QuizScreen() {
     sessionActiveRef.current = false;
     dailyEndedRef.current = true;
     syncCacheFlags();
-    profile.markDailyCompleted();
-    profile.updateScoreRecord();
     const finalScore = profile.getDailyQuizScore(
       dailyScoreRef.current,
       dailyTimeRef.current / 1000,
     );
+    profile.markDailyCompleted(finalScore);
+    profile.updateScoreRecord();
     setDailyFinalScore(finalScore);
+    setDailyRankLine(null);
     const social = profile.social;
     await FB.submitDailyResult({
       score: finalScore,
@@ -701,6 +707,27 @@ export default function QuizScreen() {
       time_sec: Math.round(dailyTimeRef.current / 1000),
     });
     setDailyEndVisible(true);
+    // Best-effort rank comparison — submitted after the score post so the fresh
+    // result has a chance of being reflected; falls back gracefully if not.
+    FB.getComparisonReport()
+      .then((entries) => setDailyRankLine(describeRankGap(entries as never[], finalScore)))
+      .catch(() => setDailyRankLine(null));
+  }
+
+  async function shareScoreDaily() {
+    try {
+      await Share.share({
+        message: `حصلت على ${dailyFinalScore} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
+        url: 'https://quranquiz.net',
+      });
+    } catch { /* ignore */ }
+  }
+
+  function practiceWeakestSura() {
+    const weak = profile.getWeakCheckedParts(1)[0];
+    if (!weak) return;
+    setDailyEndVisible(false);
+    router.push({ pathname: '/(app)/quiz', params: { customPart: String(weak.index), nonce: String(Date.now()) } });
   }
 
   // ── timer ─────────────────────────────────────────────────────────────────
@@ -845,7 +872,20 @@ export default function QuizScreen() {
             <Text style={s.modalTitle}>شكراً لاشتراكك في اختبار اليوم</Text>
             <Text style={s.modalBody}>حصلت على:</Text>
             <Text style={s.bigScore}>{dailyFinalScore} نقطة</Text>
+            {dailyRankLine && <Text style={s.rankLine}>{dailyRankLine}</Text>}
             <Text style={s.modalBody}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
+            <View style={s.postWinRow}>
+              <TouchableOpacity style={s.postWinBtn} onPress={shareScoreDaily}>
+                <Ionicons name="share-social-outline" size={16} color="#1a5276" />
+                <Text style={s.postWinBtnTxt}>شارك النتيجة</Text>
+              </TouchableOpacity>
+              {profile.getWeakCheckedParts(1).length > 0 && (
+                <TouchableOpacity style={s.postWinBtn} onPress={practiceWeakestSura}>
+                  <Ionicons name="book-outline" size={16} color="#1a5276" />
+                  <Text style={s.postWinBtnTxt}>تدرّب على أضعف سورة</Text>
+                </TouchableOpacity>
+              )}
+            </View>
             <TouchableOpacity style={s.btnConfirm} onPress={() => {
               setDailyEndVisible(false);
               if (shouldRestoreNormalRunAfterDaily(!!sessionCache.normalSnapshot)) restoreNormalSession();
@@ -921,6 +961,20 @@ const s = StyleSheet.create({
   modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
   modalBody: { fontSize: 14, textAlign: 'right', color: '#444', marginBottom: 8 },
   bigScore: { fontSize: 36, fontWeight: 'bold', color: '#27ae60', textAlign: 'center', marginVertical: 12 },
+  rankLine: { fontSize: 13, fontWeight: '700', color: '#b7770d', textAlign: 'center', marginBottom: 10 },
+  postWinRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
+  postWinBtn: {
+    flex: 1,
+    minWidth: '45%',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 5,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#f5f7fa',
+  },
+  postWinBtnTxt: { fontSize: 12, fontWeight: '700', color: '#1a5276', textAlign: 'center' },
   reportInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
   modalRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
   btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#ecf0f1' },
