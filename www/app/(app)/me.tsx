@@ -147,7 +147,10 @@ function ActiveCountBadge({ value }: { value: number }) {
 
 /** Compact score-over-time sparkline tile (one bar per recorded day). */
 function ProgressChart({ scores }: { scores: { date: number; score: number }[] }) {
-  const data = scores; // full history
+  // Bars are min 2px wide with a 1.5px gap inside a ~165px tile, so anything
+  // beyond ~45 records overflows the row — render only the most recent days.
+  const MAX_BARS = 40;
+  const data = scores.slice(-MAX_BARS);
   const H = 46;
   const MIN_BAR = 3;
   const enough = data.length >= 2;
