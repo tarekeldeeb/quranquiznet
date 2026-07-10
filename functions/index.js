@@ -37,14 +37,22 @@ function dailyQuiz() {
       if (yesterday.length > 0) {
         await admin.database().ref('daily/reports/yday').set(yesterday);
 
-        // Merge with all best
-        var old = await admin.database().ref('daily/reports/all').once('value');
-        var arr_old = old.val() || [];
+        // Merge into this calendar month's leaderboard. Resets automatically
+        // on the first run of a new month: the stored month key won't match,
+        // so the old accumulated entries are dropped instead of carried over.
+        var monthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
+        var storedMonth = await admin.database().ref('daily/reports/month_key').once('value');
+        var arr_old = [];
+        if (storedMonth.val() === monthKey) {
+          var old = await admin.database().ref('daily/reports/month').once('value');
+          arr_old = old.val() || [];
+        }
         var oldPlusYesterday = arr_old.concat(yesterday);
         oldPlusYesterday.sort(function (a, b) {
           return (a.score > b.score) ? -1 : ((b.score > a.score) ? 1 : 0);
         });
-        await admin.database().ref('daily/reports/all').set(oldPlusYesterday.slice(0, 10));
+        await admin.database().ref('daily/reports/month').set(oldPlusYesterday.slice(0, 10));
+        await admin.database().ref('daily/reports/month_key').set(monthKey);
       }
 
       var newDaily = {

@@ -27,6 +27,11 @@ type BulkAction = 'all' | 'good' | 'weak';
 const NAVY = '#0d2d4e';
 const AMBER = '#f39c12';
 
+// react-native-web has no native animation driver (RCTAnimation is a native-only
+// module) — passing useNativeDriver: NATIVE_DRIVER there is a no-op that also spams the
+// console every frame, so only ask for it off-web.
+const NATIVE_DRIVER = Platform.OS !== 'web';
+
 const DOT_COLOR: Record<number, string> = {
   [CORRECT_RATIO_RANGE.HIGH]:  '#27ae60',
   [CORRECT_RATIO_RANGE.MID]:   AMBER,
@@ -116,10 +121,10 @@ function ActiveCountBadge({ value }: { value: number }) {
     if (to > prevRef.current) {
       shake.setValue(0);
       Animated.sequence([
-        Animated.timing(shake, { toValue: 1, duration: 80, useNativeDriver: true }),
-        Animated.timing(shake, { toValue: -1, duration: 80, useNativeDriver: true }),
-        Animated.timing(shake, { toValue: 0.5, duration: 70, useNativeDriver: true }),
-        Animated.timing(shake, { toValue: 0, duration: 70, useNativeDriver: true }),
+        Animated.timing(shake, { toValue: 1, duration: 80, useNativeDriver: NATIVE_DRIVER }),
+        Animated.timing(shake, { toValue: -1, duration: 80, useNativeDriver: NATIVE_DRIVER }),
+        Animated.timing(shake, { toValue: 0.5, duration: 70, useNativeDriver: NATIVE_DRIVER }),
+        Animated.timing(shake, { toValue: 0, duration: 70, useNativeDriver: NATIVE_DRIVER }),
       ]).start();
       playBell();
     }
@@ -232,7 +237,7 @@ export default function MeScreen() {
   }, [dailyHead, profile.lastDailyCompletedDate]);
 
   // Once today's daily quiz is done, fetch a rank-comparison line against
-  // yesterday's/all-time leaderboard (best-effort; hidden if unavailable).
+  // yesterday's/this-month's leaderboard (best-effort; hidden if unavailable).
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     if (profile.lastDailyCompletedDate !== today || !profile.lastDailyScore) {

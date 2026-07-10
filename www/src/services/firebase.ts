@@ -336,9 +336,11 @@ export async function getYesterdayReport(): Promise<unknown[]> {
   }
 }
 
-export async function getAllTopReport(): Promise<unknown[]> {
+// Top 10 for the current calendar month — the Cloud Function (functions/index.js)
+// resets this automatically on the first daily rotation of a new month.
+export async function getMonthlyTopReport(): Promise<unknown[]> {
   try {
-    const snap = await dbGet(ref(getFirebaseDb(), '/daily/reports/all'));
+    const snap = await dbGet(ref(getFirebaseDb(), '/daily/reports/month'));
     return (snap.val() as unknown[]) ?? [];
   } catch {
     return [];
@@ -346,13 +348,13 @@ export async function getAllTopReport(): Promise<unknown[]> {
 }
 
 // A leaderboard cohort for the post-quiz rank comparison: prefer yesterday's
-// top scores (the most recent, most relevant cohort); fall back to the
-// all-time top when yesterday's report is empty (e.g. before the first
+// top scores (the most recent, most relevant cohort); fall back to this
+// month's top when yesterday's report is empty (e.g. before the first
 // rotation, or on a fresh install of this feature).
 export async function getComparisonReport(): Promise<unknown[]> {
   const yday = await getYesterdayReport();
   if (Array.isArray(yday) && yday.length > 0) return yday;
-  return getAllTopReport();
+  return getMonthlyTopReport();
 }
 
 export interface LeaderboardEntry { name?: string; score: number; uid?: string; country?: string }
@@ -375,10 +377,10 @@ export async function subscribeYesterdayReport(
   );
 }
 
-/** Live all-time-top-10 feed (was a one-time getAllTopReport() read). */
-export function subscribeAllTopReport(cb: (entries: LeaderboardEntry[]) => void): () => void {
+/** Live top-10-of-this-month feed (was a one-time getMonthlyTopReport() read). */
+export function subscribeMonthlyTopReport(cb: (entries: LeaderboardEntry[]) => void): () => void {
   return onValue(
-    ref(getFirebaseDb(), '/daily/reports/all'),
+    ref(getFirebaseDb(), '/daily/reports/month'),
     (snap) => cb((snap.val() as LeaderboardEntry[]) ?? []),
     () => cb([]),
   );

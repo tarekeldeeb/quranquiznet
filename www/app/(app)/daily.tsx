@@ -7,7 +7,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  getDailyHead, getYesterdayReport, getAllTopReport, type DailyHead,
+  getDailyHead, getYesterdayReport, getMonthlyTopReport, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
@@ -24,7 +24,7 @@ export default function DailyScreen() {
   const [head, setHead] = useState<DailyHead | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [yday, setYday] = useState<ReportEntry[]>([]);
-  const [allTop, setAllTop] = useState<ReportEntry[]>([]);
+  const [monthTop, setMonthTop] = useState<ReportEntry[]>([]);
   const [reportsLoading, setReportsLoading] = useState(false);
 
   const checkDaily = useCallback(async () => {
@@ -50,9 +50,9 @@ export default function DailyScreen() {
   async function loadReports() {
     setReportsLoading(true);
     try {
-      const [y, a] = await Promise.all([getYesterdayReport(), getAllTopReport()]);
+      const [y, a] = await Promise.all([getYesterdayReport(), getMonthlyTopReport()]);
       setYday((y as ReportEntry[]).slice(0, 5));
-      setAllTop((a as ReportEntry[]).slice(0, 5));
+      setMonthTop((a as ReportEntry[]).slice(0, 5));
     } catch (e) {
       console.error('loadReports error:', e);
     } finally {
@@ -148,13 +148,13 @@ export default function DailyScreen() {
           </View>
         )}
 
-        {/* All-time top 10 */}
-        {allTop.length > 0 && (
+        {/* This month's top 10 */}
+        {monthTop.length > 0 && (
           <View style={s.card}>
-            <Text style={s.sectionTitle}>أعلى النتائج</Text>
+            <Text style={s.sectionTitle}>أفضل نتائج هذا الشهر</Text>
             {reportsLoading
               ? <ActivityIndicator color="#0d2d4e" />
-              : allTop.map((r, i) => (
+              : monthTop.map((r, i) => (
                 <View key={i} style={s.row}>
                   <Text style={s.rank}>#{i + 1}</Text>
                   <Text style={s.rowName}>{r.name ?? 'زائر(ة)'}</Text>

@@ -7,14 +7,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
-  getDailyHead, subscribeYesterdayReport, subscribeAllTopReport, subscribeTodayStandings,
+  getDailyHead, subscribeYesterdayReport, subscribeMonthlyTopReport, subscribeTodayStandings,
   type DailyHead, type LeaderboardEntry,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { flagEmoji } from '../../src/models/constants';
 
-type Tab = 'yesterday' | 'all';
+type Tab = 'yesterday' | 'month';
 type Status = 'loading' | 'available' | 'empty' | 'error';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
@@ -46,9 +46,9 @@ export default function LeagueScreen() {
   const [status, setStatus] = useState<Status>('loading');
   const [head, setHead] = useState<DailyHead | null>(null);
   const [yday, setYday] = useState<LeaderboardEntry[]>([]);
-  const [allTop, setAllTop] = useState<LeaderboardEntry[]>([]);
+  const [monthTop, setMonthTop] = useState<LeaderboardEntry[]>([]);
   const [ydayLoaded, setYdayLoaded] = useState(false);
-  const [allLoaded, setAllLoaded] = useState(false);
+  const [monthLoaded, setMonthLoaded] = useState(false);
   // Today's live, unbounded standings (every submission so far today) — the
   // only feed with full participant coverage, so it's what powers "your rank".
   const [todayStandings, setTodayStandings] = useState<LeaderboardEntry[]>([]);
@@ -83,15 +83,15 @@ export default function LeagueScreen() {
       setYday(entries.slice(0, 10));
       setYdayLoaded(true);
     }).then((unsub) => { if (cancelled) unsub(); else unsubYday = unsub; });
-    const unsubAll = subscribeAllTopReport((entries) => {
-      setAllTop(entries.slice(0, 10));
-      setAllLoaded(true);
+    const unsubMonth = subscribeMonthlyTopReport((entries) => {
+      setMonthTop(entries.slice(0, 10));
+      setMonthLoaded(true);
     });
     const unsubToday = subscribeTodayStandings(setTodayStandings);
     return () => {
       cancelled = true;
       unsubYday?.();
-      unsubAll();
+      unsubMonth();
       unsubToday();
     };
   }, []);
@@ -115,8 +115,8 @@ export default function LeagueScreen() {
     ]);
   }
 
-  const listData = tab === 'yesterday' ? yday : allTop;
-  const reportsLoading = tab === 'yesterday' ? !ydayLoaded : !allLoaded;
+  const listData = tab === 'yesterday' ? yday : monthTop;
+  const reportsLoading = tab === 'yesterday' ? !ydayLoaded : !monthLoaded;
   const ownRank = findOwnRank(todayStandings, profile.uid);
 
   function renderRow({ item, index }: { item: LeaderboardEntry; index: number }) {
@@ -195,7 +195,7 @@ export default function LeagueScreen() {
 
         {/* Inner tab bar */}
         <View style={s.tabBar}>
-          {([['yesterday', 'أمس'], ['all', 'الكل']] as [Tab, string][]).map(([key, label]) => (
+          {([['yesterday', 'أمس'], ['month', 'الشهر']] as [Tab, string][]).map(([key, label]) => (
             <TouchableOpacity
               key={key}
               style={[s.tabBtn, tab === key && s.tabBtnActive]}
@@ -206,10 +206,10 @@ export default function LeagueScreen() {
           ))}
         </View>
 
-        {(tab === 'yesterday' || tab === 'all') && (
+        {(tab === 'yesterday' || tab === 'month') && (
           <View style={s.card}>
             <Text style={s.cardTitle}>
-              {tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أعلى النتائج على الإطلاق'}
+              {tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أفضل نتائج هذا الشهر'}
             </Text>
             {reportsLoading ? (
               <ActivityIndicator color="#0d2d4e" style={{ marginVertical: 16 }} />

@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView, Share, Animated,
+  TouchableOpacity, Modal, TextInput, ScrollView, Share, Animated, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
@@ -61,6 +61,11 @@ function makeActive(qo: QuestionObject, round = 0): ActiveCard {
     isCorrect: false,
   };
 }
+
+// react-native-web has no native animation driver (RCTAnimation is a native-only
+// module) — passing useNativeDriver: true there is a no-op that also spams the
+// console every frame, so only ask for it off-web.
+const NATIVE_DRIVER = Platform.OS !== 'web';
 
 // Ask for notification permission the first time the user finishes a quiz
 // session — a proven-engaged moment, not a jarring cold-launch prompt. Gated by
@@ -138,7 +143,7 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
-  // Post-win engagement: a rank-comparison line against yesterday's/all-time
+  // Post-win engagement: a rank-comparison line against yesterday's/this-month's
   // leaderboard, fetched once the daily quiz ends (null while loading/unavailable).
   const [dailyRankLine, setDailyRankLine] = useState<string | null>(null);
   // Non-blocking "today's quiz is ready" banner — set by checkForDailyQuiz(),
@@ -664,9 +669,9 @@ export default function QuizScreen() {
     if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current);
     setMilestoneToast(text);
     milestoneOpacity.setValue(0);
-    Animated.timing(milestoneOpacity, { toValue: 1, duration: 200, useNativeDriver: true }).start();
+    Animated.timing(milestoneOpacity, { toValue: 1, duration: 200, useNativeDriver: NATIVE_DRIVER }).start();
     milestoneTimerRef.current = setTimeout(() => {
-      Animated.timing(milestoneOpacity, { toValue: 0, duration: 300, useNativeDriver: true })
+      Animated.timing(milestoneOpacity, { toValue: 0, duration: 300, useNativeDriver: NATIVE_DRIVER })
         .start(() => setMilestoneToast(null));
     }, 2800);
   }
