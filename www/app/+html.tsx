@@ -4,6 +4,10 @@
 import { ScrollViewStyleReset } from 'expo-router/html';
 import { type PropsWithChildren } from 'react';
 
+const SITE_URL = 'https://quranquiz.net';
+const SHARE_TITLE = 'اختبار القرآن';
+const SHARE_DESCRIPTION = 'اختبر حفظك للقرآن الكريم بأسئلة اختيار من متعدد، وتنافس مع آلاف الحفّاظ حول العالم.';
+
 const swRegistration = `
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function () {
@@ -44,6 +48,26 @@ export default function Root({ children }: PropsWithChildren) {
           name="viewport"
           content="width=device-width, initial-scale=1, shrink-to-fit=no, viewport-fit=cover"
         />
+
+        <meta name="description" content={SHARE_DESCRIPTION} />
+
+        {/* Open Graph + Twitter Card — the rich preview shown when a quiz/app link is
+            shared (WhatsApp, Twitter/X, Telegram, iMessage, Facebook, ...). og:image
+            must be an absolute URL; see www/public/og-image.png (1200x630) — source
+            and regeneration steps in www/scripts/og-image/og-image.html. */}
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content={SHARE_TITLE} />
+        <meta property="og:locale" content="ar_AR" />
+        <meta property="og:url" content={SITE_URL} />
+        <meta property="og:title" content={SHARE_TITLE} />
+        <meta property="og:description" content={SHARE_DESCRIPTION} />
+        <meta property="og:image" content={`${SITE_URL}/og-image.png?v=1`} />
+        <meta property="og:image:width" content="1200" />
+        <meta property="og:image:height" content="630" />
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={SHARE_TITLE} />
+        <meta name="twitter:description" content={SHARE_DESCRIPTION} />
+        <meta name="twitter:image" content={`${SITE_URL}/og-image.png?v=1`} />
 
         {/* Favicons — ?v= forces Chrome to drop its aggressively cached old icon.
             Bump the version whenever the icon art changes. */}

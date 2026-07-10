@@ -1,0 +1,255 @@
+<!--
+  Source for www/public/og-image.png (the Open Graph / Twitter share image, see
+  app/+html.tsx). Static navy/gold design + a real, self-hosted <quran-madina-html>
+  render for the question stem (sura 5 aya 12, words 12:14 — "وَقَالَ ٱللَّهُ إِنِّى"),
+  paired with the actual 5 options + correct answer ("مَعَكُم لَئِن") pulled live
+  from the real questionnaire engine (see src/services/questionnaireService.ts) —
+  not fabricated. If you swap the featured question, keep the same shape:
+  positive/warm tone, a `words` range that doesn't start mid-mushaf-line (the
+  widget mispositions the first word of a range if the render width is too
+  narrow for its internal line-break math — this card's ~700px inner width was
+  chosen to accommodate that).
+
+  To regenerate after editing:
+    1. cp og-image.html app-icon.png uthman.woff2 ../../public/
+       (i.e. copy these 3 files into www/public/, alongside the existing quran-madina/ dir)
+    2. cd ../../public && python3 -m http.server 8123
+    3. "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome" \
+         --headless --disable-gpu --hide-scrollbars --window-size=1200,630 \
+         --screenshot=/tmp/og-image.png --virtual-time-budget=6000 \
+         http://localhost:8123/og-image.html
+    4. cp /tmp/og-image.png ../../public/og-image.png; rm the 3 copied files from www/public/
+-->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+<script src="/quran-madina/dist/quran-madina-html.min.js" data-cdn="/quran-madina/" data-font="Hafs" data-font-size="24"></script>
+<style>
+  @font-face{ font-family:'UthmanTN'; src:url('uthman.woff2') format('woff2'); }
+  :root{
+    --bg-deep:#0a1f38;
+    --bg-navy:#0d2d4e;
+    --bg-teal:#164866;
+    --gold:#f5b942;
+    --gold-deep:#c8850f;
+    --parchment:#f7ecd9;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html,body{width:1200px;height:630px;overflow:hidden;}
+  body{
+    position:relative;
+    background:
+      radial-gradient(46% 70% at 94% -6%, rgba(245,185,66,0.5), rgba(245,185,66,0) 62%),
+      radial-gradient(50% 60% at -4% 106%, rgba(59,154,217,0.32), rgba(59,154,217,0) 62%),
+      linear-gradient(150deg, var(--bg-deep) 0%, var(--bg-navy) 46%, var(--bg-teal) 100%);
+    font-family:'Tajawal',sans-serif;
+  }
+  .vignette{
+    position:absolute; inset:0;
+    background:radial-gradient(80% 75% at 50% 46%, rgba(0,0,0,0) 55%, rgba(0,0,0,0.36) 100%);
+  }
+  .blob{ position:absolute; border-radius:50%; filter:blur(64px); }
+  .blob-gold{ width:320px; height:320px; top:-150px; right:-90px; background:var(--gold); opacity:0.32; }
+  .blob-blue{ width:260px; height:260px; bottom:-130px; left:-80px; background:#3b9ad9; opacity:0.24; }
+  .pattern{
+    position:absolute; inset:0;
+    background-image:url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20241.42%20241.42%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%220.14%22%20stroke-width%3D%221.6%22%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C241.42%2070.71%2C241.42%200.0%2C170.71%20-0.0%2C70.71%2070.71%2C-0.0%20170.71%2C0.0%20241.42%2C70.71%22%2F%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C170.71%20170.71%2C241.42%20120.71%2C191.42%2070.71%2C241.42%2070.71%2C170.71%200.0%2C170.71%2050.0%2C120.71%20-0.0%2C70.71%2070.71%2C70.71%2070.71%2C-0.0%20120.71%2C50.0%20170.71%2C0.0%20170.71%2C70.71%20241.42%2C70.71%20191.42%2C120.71%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C-50.0%2050.0%2C-50.0%2050.0%2C50.0%20-50.0%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C-50.0%20291.42%2C-50.0%20291.42%2C50.0%20191.42%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C191.42%2050.0%2C191.42%2050.0%2C291.42%20-50.0%2C291.42%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C191.42%20291.42%2C191.42%20291.42%2C291.42%20191.42%2C291.42%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
+    background-size:186px 186px;
+    opacity:0.9;
+  }
+  .ghost-ayah{
+    position:absolute;
+    right:-100px; top:-10px;
+    width:1400px;
+    font-family:'Amiri',serif;
+    font-weight:700;
+    font-size:110px;
+    line-height:1.25;
+    color:transparent;
+    background:linear-gradient(120deg, rgba(245,185,66,0.14), rgba(247,236,217,0.09));
+    -webkit-background-clip:text;
+    background-clip:text;
+    transform:rotate(-6deg);
+    white-space:nowrap;
+    letter-spacing:1px;
+    user-select:none;
+  }
+
+  /* ── top brand strip ── */
+  .topbar{
+    position:absolute; top:28px; left:60px; right:60px;
+    display:flex; flex-direction:row-reverse; align-items:center; justify-content:space-between;
+  }
+  .brand{ display:flex; flex-direction:row-reverse; align-items:center; gap:14px; min-width:0; }
+  .crescent-badge{
+    width:58px; height:58px;
+    border-radius:16px;
+    background:linear-gradient(160deg, rgba(255,255,255,0.16), rgba(255,255,255,0.04));
+    border:1.5px solid rgba(245,185,66,0.55);
+    box-shadow:0 10px 24px rgba(0,0,0,0.4), 0 0 0 6px rgba(245,185,66,0.08);
+    display:flex; align-items:center; justify-content:center;
+    flex-shrink:0;
+  }
+  .crescent-badge img{ width:38px; height:38px; border-radius:9px; }
+  .brand-text{ text-align:right; width:280px; flex-shrink:0; }
+  .brand-name{
+    font-family:'Amiri',serif; font-weight:700; font-size:32px; color:var(--parchment);
+    text-shadow:0 3px 14px rgba(0,0,0,0.4);
+  }
+  .brand-tagline{
+    font-family:'Tajawal',sans-serif; font-weight:500; font-size:14.5px;
+    color:rgba(247,236,217,0.78); margin-top:2px;
+  }
+  .pill-row{ display:flex; flex-direction:row-reverse; gap:10px; }
+  .pill{
+    font-family:'Tajawal',sans-serif; font-weight:700; font-size:14px; color:var(--parchment);
+    background:rgba(255,255,255,0.10); border:1px solid rgba(245,185,66,0.35);
+    border-radius:999px; padding:8px 16px; white-space:nowrap;
+  }
+  .pill b{ color:var(--gold); }
+
+  /* ── huge quiz-card hero ── */
+  .card-wrap{
+    position:absolute;
+    left:50%; top:100px;
+    transform:translateX(-50%) rotate(-1.4deg);
+    width:760px;
+  }
+  .card{
+    background:rgba(255,255,255,0.985);
+    border-radius:24px;
+    padding:22px 32px 20px;
+    box-shadow:0 34px 80px rgba(0,0,0,0.5), 0 2px 0 rgba(255,255,255,0.6) inset;
+  }
+  .card-topline{
+    display:flex; flex-direction:row-reverse; align-items:center; justify-content:space-between;
+    margin-bottom:10px;
+  }
+  .card-label{
+    font-family:'Tajawal',sans-serif; font-weight:700; font-size:17px; color:#8a97a5; letter-spacing:0.5px;
+  }
+  .timer{
+    display:flex; align-items:center; gap:6px;
+    background:#fdeee0; border-radius:999px; padding:5px 13px;
+    font-family:'Tajawal',sans-serif; font-weight:800; font-size:16px; color:#c8850f;
+  }
+  .timer::before{ content:'⏱'; font-size:15px; }
+  .card-q{
+    background:#fdfaf5;
+    border:1px solid #e8e0d0;
+    border-radius:12px;
+    padding:8px 20px;
+    margin-bottom:12px;
+    min-height:56px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  quran-madina-html{ background:transparent !important; border-radius:0 !important; box-shadow:none !important; }
+  quran-madina-html-header{ display:none !important; }
+  .options{ display:grid; grid-template-columns:1fr 1fr; gap:8px; }
+  .opt{
+    display:flex;
+    flex-direction:row-reverse;
+    align-items:center;
+    justify-content:space-between;
+    background:#eef2f6;
+    border-radius:11px;
+    padding:11px 16px;
+    font-family:'UthmanTN';
+    font-size:22px;
+    color:#2c3e50;
+  }
+  .opt.correct{ background:#d7f2df; color:#1e8449; font-weight:700; }
+  .opt.wide{ grid-column:1 / -1; }
+  .opt.idk{
+    grid-column:1 / -1;
+    background:transparent; color:#a2a9b3;
+    font-family:'Tajawal',sans-serif; font-size:14px; font-weight:600;
+    padding:2px 18px 0; justify-content:flex-end; gap:8px;
+  }
+  .idk-dash{ width:17px; height:17px; border-radius:50%; border:1.5px solid #c2c9d1; display:flex; align-items:center; justify-content:center; font-size:12px; color:#c2c9d1; }
+  .check{
+    width:24px;height:24px;border-radius:50%;
+    background:#27ae60;
+    display:flex;align-items:center;justify-content:center;
+    color:#fff;font-size:14px;font-weight:900;
+    flex-shrink:0;
+  }
+  .card-chips{ display:flex; flex-direction:row-reverse; align-items:center; gap:8px; }
+  .streak-badge{
+    background:linear-gradient(135deg,#f5b942,#e67e22);
+    border-radius:999px;
+    padding:5px 13px;
+    display:flex; align-items:center; gap:5px;
+    box-shadow:0 6px 16px rgba(230,126,34,0.4);
+  }
+  .streak-badge span{ font-family:'Tajawal',sans-serif; font-weight:800; font-size:16px; color:#fff; }
+
+  /* ── footer ── */
+  .footer{
+    position:absolute;
+    left:0; right:0; bottom:22px;
+    display:flex; align-items:center; justify-content:center; gap:14px;
+  }
+  .footer .dot{ width:11px; height:11px; border-radius:50%; background:var(--gold); box-shadow:0 0 12px rgba(245,185,66,0.7); }
+  .footer .url{
+    font-family:'Tajawal',sans-serif;
+    font-size:36px; font-weight:800; letter-spacing:0.5px;
+    color:var(--parchment);
+    text-shadow:0 3px 14px rgba(0,0,0,0.4);
+    direction:ltr;
+  }
+</style>
+</head>
+<body>
+  <div class="blob blob-gold"></div>
+  <div class="blob blob-blue"></div>
+  <div class="pattern"></div>
+  <div class="ghost-ayah">بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ ٱلْحَمْدُ لِلَّهِ رَبِّ ٱلْعَٰلَمِينَ</div>
+  <div class="vignette"></div>
+
+  <div class="topbar">
+    <div class="brand">
+      <div class="crescent-badge"><img src="app-icon.png" /></div>
+      <div class="brand-text">
+        <div class="brand-name">اختبار القرآن</div>
+        <div class="brand-tagline">اختبر حفظك، ونافس الحفّاظ</div>
+      </div>
+    </div>
+    <div class="pill-row">
+      <div class="pill"><b>١١٤</b> سورة</div>
+      <div class="pill"><b>يومي</b> تحدٍّ</div>
+    </div>
+  </div>
+
+  <div class="card-wrap">
+    <div class="card">
+      <div class="card-topline">
+        <div class="card-label">اختر التكملة الصحيحة</div>
+        <div class="card-chips">
+          <div class="timer">٨</div>
+          <div class="streak-badge">🔥<span>٤ متتالية</span></div>
+        </div>
+      </div>
+      <div class="card-q">
+        <quran-madina-html sura="5" aya="12" words="12:14" headless quotes="no" style="font-size:30px"></quran-madina-html>
+      </div>
+      <div class="options">
+        <div class="opt correct"><span class="check">✓</span><span>مَعَكُم لَئِن</span></div>
+        <div class="opt"><span style="width:24px"></span><span>أُشهِدُ اللَّهَ</span></div>
+        <div class="opt"><span style="width:24px"></span><span>وَضَعتُها أُنثىٰ</span></div>
+        <div class="opt"><span style="width:24px"></span><span>وَجَّهتُ وَجهِى</span></div>
+        <div class="opt wide"><span style="width:24px"></span><span>دَعَوتُ قَومى</span></div>
+        <div class="opt idk"><span class="idk-dash">−</span><span>لا أعلم</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer"><span class="dot"></span><span class="url">quranquiz.net</span></div>
+</body>
+</html>
