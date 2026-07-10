@@ -8,9 +8,10 @@
 // element on its selection to force a remount when `words` changes (the question
 // grows each round). The DB is fetched once and cached, so remounts are cheap.
 import React from 'react';
-import { View, StyleProp, ViewStyle } from 'react-native';
+import { View, StyleProp, ViewStyle, Dimensions } from 'react-native';
 import QuranMadinaHtml from '@tarekeldeeb/quran-madina-react';
 import type { QuranTextProps } from './QuranText';
+import { madinaFontSizeForWidth } from '../models/madinaWidth';
 
 // Self-hosted (same-origin) copy of the library instead of the wrapper's
 // unpkg default, so the quiz works fully offline after the first load (the
@@ -21,6 +22,19 @@ import type { QuranTextProps } from './QuranText';
 // scripts/sync-madina-assets.mjs.
 const MADINA_BASE = '/quran-madina/';
 const MADINA_SRC = `${MADINA_BASE}dist/quran-madina-html.min.js`;
+
+// The wrapper's loader config (including fontSize) is only honored on the
+// first <QuranMadinaHtml> mounted per page session — see the "Global config
+// caveat" in @tarekeldeeb/quran-madina-react's README — so this can't be a
+// per-render/per-question value on web the way it is on native (a fresh
+// WebView document per question there). Computed once instead, the same way
+// QuizCard.tsx computes its own CARD_W once from Dimensions at module load.
+// Mirrors CARD_W's own math (window width, capped at 480, minus the 32px
+// outer margin) minus the more conservative of the two paddings the front
+// (questionBox, 12px) and back (answerContent, 14px) faces wrap this in.
+const { width: SW } = Dimensions.get('window');
+const CARD_W = Math.min(SW - 32, 480);
+const MADINA_FONT_SIZE = madinaFontSizeForWidth(CARD_W - 14 * 2);
 
 // The custom element re-validates its {sura, aya} / {page} attributes on every
 // individual attribute write, so during the remount below there's a brief,
@@ -58,7 +72,7 @@ export default function QuranText({ sura, aya, words, hideTitle, style }: QuranT
         // which decides hideTitle per excerpt so the label only appears once it's earned.
         notitle={hideTitle}
         font="Hafs"
-        fontSize={24}
+        fontSize={MADINA_FONT_SIZE}
         style={{ background: 'transparent' }}
       />
     </View>

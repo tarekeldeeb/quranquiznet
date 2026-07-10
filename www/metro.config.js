@@ -2,8 +2,9 @@ const { getDefaultConfig } = require('expo/metro-config');
 
 const config = getDefaultConfig(__dirname);
 
-// Allow font and DB assets
-config.resolver.assetExts.push('woff2', 'woff', 'ttf', 'otf', 'db');
+// Allow font, DB, and zip (bundled quran-madina assets for native — see
+// src/services/madinaAssets.ts) assets
+config.resolver.assetExts.push('woff2', 'woff', 'ttf', 'otf', 'db', 'zip');
 config.resolver.sourceExts.push('cjs');
 
 // NB: do NOT enable resolver.unstable_enablePackageExports — it flips other

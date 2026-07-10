@@ -156,7 +156,16 @@ export default function QuizCard({
   return (
     <View style={s.wrapper}>
       {/* ── FRONT ─────────────────────────────────────────────────────────── */}
-      <Animated.View testID="quiz-card-front" style={[s.card, frontStyle, flipped && s.faceAbsolute]}>
+      {/* pointerEvents: backfaceVisibility only hides the flipped-away face
+          visually — on iOS/Android it still receives touches, so the stacked
+          (absolute) face silently swallowed taps meant for the face underneath
+          (e.g. most option buttons while the shorter back face sat on top).
+          Explicitly disabling events on whichever face isn't in flow fixes it. */}
+      <Animated.View
+        testID="quiz-card-front"
+        style={[s.card, frontStyle, flipped && s.faceAbsolute]}
+        pointerEvents={flipped ? 'none' : 'auto'}
+      >
 
         {/* Instruction + progress dots */}
         <View style={s.topBar}>
@@ -232,7 +241,11 @@ export default function QuizCard({
       </Animated.View>
 
       {/* ── BACK ──────────────────────────────────────────────────────────── */}
-      <Animated.View testID="quiz-card-back" style={[s.card, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}>
+      <Animated.View
+        testID="quiz-card-back"
+        style={[s.card, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}
+        pointerEvents={flipped ? 'auto' : 'none'}
+      >
 
         {/* Sura / aya header */}
         <View style={[s.backHeader, { borderBottomColor: borderColor, borderBottomWidth: 2 }]}>

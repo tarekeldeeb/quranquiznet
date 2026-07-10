@@ -7,6 +7,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { initDb } from '../src/db/initDb';
+import { initMadinaAssets } from '../src/services/madinaAssets';
 import { getFirebaseApp } from '../src/services/firebase';
 import { configureNotifications } from '../src/services/notifications';
 import { useProfileStore } from '../src/stores/profileStore';
@@ -118,6 +119,9 @@ const webStyles = StyleSheet.create({
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
   const [dbProgress, setDbProgress] = useState(0);
+  // Native only — extracts the bundled quran-madina-html assets QuranText.native.tsx's
+  // WebView needs (see src/services/madinaAssets.ts); a no-op resolved promise on web.
+  const [madinaReady, setMadinaReady] = useState(Platform.OS === 'web');
   const loadProfile = useProfileStore((s) => s.load);
 
   const [fontsLoaded] = useFonts({
@@ -132,13 +136,18 @@ export default function RootLayout() {
   useEffect(() => {
     (async () => {
       await loadProfile();
-      await initDb((pct) => setDbProgress(pct));
+      // initDb and initMadinaAssets are independent (different storage, no
+      // shared state), so run them together instead of stacking their latency.
+      await Promise.all([
+        initDb((pct) => setDbProgress(pct)),
+        initMadinaAssets().then(() => setMadinaReady(true)),
+      ]);
       setDbReady(true);
     })();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  if (!dbReady || !fontsLoaded) {
+  if (!dbReady || !madinaReady || !fontsLoaded) {
     return (
       <SafeAreaProvider>
         <WebFrame>

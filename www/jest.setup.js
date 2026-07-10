@@ -7,3 +7,12 @@
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock')
 );
+
+// react-native-webview's native module isn't available in the Jest environment
+// either (QuranText.native.tsx uses it to render the Quran text) — the package
+// ships no official jest mock, so stand in a bare View (extra props like
+// `source`/`onMessage` are simply ignored, same as any other unknown prop).
+jest.mock('react-native-webview', () => {
+  const { View } = require('react-native');
+  return { WebView: View };
+});
