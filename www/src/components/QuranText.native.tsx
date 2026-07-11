@@ -28,7 +28,19 @@ const MIN_HEIGHT = 60; // matches QuizCard's questionBox minHeight
 function buildHtml(sura: number, aya: number, words: string, hideTitle: boolean, fontSize: number): string {
   return `<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
-<style>html,body{margin:0;padding:0;background:transparent;}</style>
+<style>
+html,body{margin:0;padding:0;background:transparent;}
+/* Blend the Madina renderer into the quiz card, same as app/+html.tsx (web) and
+   scripts/og-image/og-image.html: drop the library's beige tint, rounded corners,
+   the inset mushaf-page gutter shadow (set inline by the library, so this needs
+   !important to win — see app/+html.tsx), and any header. */
+quran-madina-html {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+}
+quran-madina-html-header { display: none !important; }
+</style>
 <script>
 (function () {
   // WKWebView reports XHR status 0 for local file:// requests even when they
