@@ -16,9 +16,13 @@ import { ConsentBanner } from '../src/components/ConsentBanner';
 
 const appIcon = require('../assets/images/app-icon.png');
 
-// Force RTL layout for Arabic
-I18nManager.allowRTL(true);
-I18nManager.forceRTL(true);
+// RTL is hand-built everywhere via `flexDirection: 'row-reverse'`/textAlign,
+// same as on web (where RNW's I18nManager is a no-op, isRTL always false).
+// Forcing native RTL here made Yoga auto-mirror those rows a second time —
+// keep layout direction LTR so native matches web. (Needs one full native
+// restart on a device that previously had RTL forced, not just Fast Refresh.)
+I18nManager.allowRTL(false);
+I18nManager.forceRTL(false);
 
 // Apply Amiri as the app-wide default font (web only — the Amiri woff2 face is
 // loaded via expo-font for web; native keeps the system Arabic font, as before).
