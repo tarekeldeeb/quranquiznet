@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "635224907527-j1ol65029be0o8vmmpf3ti6qctgifgrb.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "net.quranquiz",
+            "certificate_hash": "5e8f16062ea3cd2c4a0d547876baa6f38cabf625"
+          }
+        },
+        {
           "client_id": "635224907527-bdic77p58a8tjkeuj96csup7tnoe870s.apps.googleusercontent.com",
           "client_type": 3
         }
