@@ -8,18 +8,18 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:635224907527:android:a2c61483d8332eaa3a6fa2",
+        "mobilesdk_app_id": "1:635224907527:android:b30131b4f6b991fd3a6fa2",
         "android_client_info": {
-          "package_name": "net.quranquiz.app"
+          "package_name": "net.quranquiz"
         }
       },
       "oauth_client": [
         {
-          "client_id": "635224907527-65a5t9ddg7dk1grglanf51jbiljvoq68.apps.googleusercontent.com",
+          "client_id": "635224907527-bqg6h4e8cpel7l9q14n2b084f71hch24.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
-            "package_name": "net.quranquiz.app",
-            "certificate_hash": "86303f71782642a20fd63cd58dbe1c277bf215ee"
+            "package_name": "net.quranquiz",
+            "certificate_hash": "2a78f67e22a445d32a6ceb20cfda6db8e6d93981"
           }
         },
         {
