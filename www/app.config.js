@@ -78,7 +78,7 @@ module.exports = ({ config }) => {
             // iOS reversed-client-id scheme.
             CFBundleURLSchemes: [
               'quranquiz',
-              'net.quranquiz.app',
+              'net.quranquiz',
               ...(facebookScheme ? [facebookScheme] : []),
               ...googleIosScheme,
             ],

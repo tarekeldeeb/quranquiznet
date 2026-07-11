@@ -62,7 +62,7 @@ function googleClientId(): string | undefined {
 
 /**
  * The native Google flow redirects to the app's own package/bundle-id scheme
- * (e.g. `net.quranquiz.app:/oauthredirect`). Google binds the iOS/Android OAuth
+ * (e.g. `net.quranquiz:/oauthredirect`). Google binds the iOS/Android OAuth
  * client to that identifier, so it accepts this redirect and rejects any other
  * (including the reversed client-id scheme) with `invalid_request`. The scheme is
  * registered by default from the applicationId, so no extra config is needed.
@@ -72,7 +72,7 @@ function googleRedirectUri(): string {
   const cfg = Constants.expoConfig;
   const appId =
     (Platform.OS === 'ios' ? cfg?.ios?.bundleIdentifier : cfg?.android?.package) ??
-    'net.quranquiz.app';
+    'net.quranquiz';
   return AuthSession.makeRedirectUri({ native: `${appId}:/oauthredirect` });
 }
 

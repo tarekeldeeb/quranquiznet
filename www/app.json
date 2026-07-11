@@ -14,14 +14,15 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "net.quranquiz.app"
+      "bundleIdentifier": "net.quranquiz"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
         "backgroundColor": "#1a5276"
       },
-      "package": "net.quranquiz.app"
+      "package": "net.quranquiz",
+      "versionCode": 10
     },
     "web": {
       "bundler": "metro",
@@ -38,7 +39,15 @@
           ]
         }
       ],
-      "expo-notifications"
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "targetSdkVersion": 35
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
