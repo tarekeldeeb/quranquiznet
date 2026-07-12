@@ -9,8 +9,8 @@ export interface RankInfo {
   progress: number;    // 0..1 through the current band
 }
 
-const RANK_TITLES = ['مبتدئ', 'مجتهد', 'حافظ', 'متقن'] as const;
-const RANK_THRESHOLDS = [0, 300, 1200, 3500] as const;
+export const RANK_TITLES = ['مبتدئ', 'مجتهد', 'حافظ', 'متقن'] as const;
+export const RANK_THRESHOLDS = [0, 300, 1200, 3500] as const;
 
 export function getRankInfo(score: number): RankInfo {
   let index = 0;
@@ -28,4 +28,23 @@ export function getRankInfo(score: number): RankInfo {
     remaining: isTop ? 0 : Math.max(0, bandEnd - score),
     progress,
   };
+}
+
+export interface RankLadderEntry {
+  title: string;
+  threshold: number;
+  reached: boolean;   // score already clears this rank's threshold
+  current: boolean;   // the rank the player is in right now
+}
+
+/** The full ladder (all 4 ranks) for a "how to reach each rank" view — see
+ * getRankInfo() for the single-rank summary used on the Home hero. */
+export function getRankLadder(score: number): RankLadderEntry[] {
+  const { index: currentIndex } = getRankInfo(score);
+  return RANK_TITLES.map((title, i) => ({
+    title,
+    threshold: RANK_THRESHOLDS[i],
+    reached: score >= RANK_THRESHOLDS[i],
+    current: i === currentIndex,
+  }));
 }

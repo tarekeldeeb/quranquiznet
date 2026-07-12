@@ -16,7 +16,7 @@ import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeRankGap } from '../../src/models/dailyRank';
-import { getRankInfo } from '../../src/models/rank';
+import { getRankInfo, getRankLadder } from '../../src/models/rank';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
@@ -186,6 +186,69 @@ function StreakSheet({
   );
 }
 
+// A distinct badge per rank — a growing sense of accomplishment on the way
+// up, not four identical dots with different labels.
+const RANK_ICONS: React.ComponentProps<typeof Ionicons>['name'][] = ['leaf-outline', 'flame', 'book', 'trophy'];
+
+/** Rank ladder sheet — tapping the rank progress bar opens the whole path
+ * instead of leaving "متقن" a mystery: every rank, the points needed to
+ * reach it, and a badge for reached / current / locked. */
+function RankSheet({
+  visible, onClose, colors, score,
+}: {
+  visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors']; score: number;
+}) {
+  const ladder = getRankLadder(score);
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={s.sheetBg}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          <View style={s.sheetHeader}>
+            <PressScale onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.inkSoft} />
+            </PressScale>
+            <Text style={[s.sheetTitle, { color: colors.ink }]}>درجات الحفظ</Text>
+            <View style={{ width: 22 }} />
+          </View>
+
+          <View style={s.rankList}>
+            {ladder.map((r, i) => (
+              <View
+                key={r.title}
+                style={[s.rankLadderRow, { borderColor: colors.line }, r.current && { backgroundColor: colors.goldPale }]}
+              >
+                <View style={[
+                  s.rankBadge,
+                  { backgroundColor: r.reached ? colors.gold : colors.goldPale },
+                  r.current && { borderWidth: 2, borderColor: colors.goldDeep },
+                ]}
+                >
+                  <Ionicons name={RANK_ICONS[i]} size={19} color={r.reached ? colors.navy : colors.inkSoft} />
+                </View>
+                <View style={s.rankLadderInfo}>
+                  <Text style={[s.rankLadderTitle, { color: colors.ink }]}>{r.title}</Text>
+                  <Text style={[s.rankLadderSub, { color: colors.inkSoft }]}>
+                    {i === 0 ? 'من البداية' : `من ${arNum(r.threshold)} نقطة`}
+                  </Text>
+                </View>
+                {r.current ? (
+                  <View style={[s.rankNowBadge, { backgroundColor: colors.gold }]}>
+                    <Text style={[s.rankNowTxt, { color: colors.navy }]}>مستواك الآن</Text>
+                  </View>
+                ) : r.reached ? (
+                  <Ionicons name="checkmark-circle" size={20} color={colors.correct} />
+                ) : (
+                  <Ionicons name="lock-closed-outline" size={16} color={colors.inkSoft} />
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function MeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
@@ -201,6 +264,7 @@ export default function MeScreen() {
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
   const [streakSheetOpen, setStreakSheetOpen] = useState(false);
+  const [rankSheetOpen, setRankSheetOpen] = useState(false);
 
   useEffect(() => {
     getDailyHead()
@@ -436,10 +500,14 @@ export default function MeScreen() {
           </PressScale>
         </View>
 
-        {/* ── Give the score a destination: rank title + progress to next rank ── */}
-        <View style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]}>
+        {/* ── Give the score a destination: rank title + progress to next rank —
+            tap opens the full ladder (all ranks + how to reach each one) ── */}
+        <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => setRankSheetOpen(true)}>
           <View style={s.rankRow}>
-            <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
+            <View style={s.rankTitleRow}>
+              <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
+              <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+            </View>
             {rank.nextTitle && (
               <Text style={[s.rankNext, { color: colors.inkSoft }]}>
                 {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
@@ -449,7 +517,7 @@ export default function MeScreen() {
           <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
             <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold }]} />
           </View>
-        </View>
+        </PressScale>
 
         {/* ── One hero at a time: the daily card until completed ── */}
         {dailyHead === 'loading' ? (
@@ -557,6 +625,13 @@ export default function MeScreen() {
         playedToday={playedToday}
       />
 
+      <RankSheet
+        visible={rankSheetOpen}
+        onClose={() => setRankSheetOpen(false)}
+        colors={colors}
+        score={score}
+      />
+
       {/* Guest nickname picker — auto-shown once for a fresh guest, always
           reachable afterward via the ✎ next to the identity subtitle. */}
       <Modal
@@ -636,10 +711,24 @@ const s = StyleSheet.create({
   // Rank card
   rankCard: { padding: 14, gap: 8 },
   rankRow: { flexDirection: 'row-reverse', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  rankTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
   rankTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
   rankNext: { fontSize: 12, flexShrink: 1, textAlign: 'left' },
   rankTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
   rankFill: { height: 6, borderRadius: 3 },
+
+  // Rank ladder sheet
+  rankList: { gap: 8, marginTop: 12 },
+  rankLadderRow: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 12,
+    padding: 10, borderRadius: radii.md, borderWidth: 1,
+  },
+  rankBadge: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  rankLadderInfo: { flex: 1, alignItems: 'flex-end' },
+  rankLadderTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
+  rankLadderSub: { fontSize: 12, textAlign: 'right', marginTop: 1 },
+  rankNowBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radii.pill },
+  rankNowTxt: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
 
   // Daily hero
   dailyHeroDark: { padding: 20, gap: 14 },
