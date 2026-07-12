@@ -24,23 +24,28 @@ const appIcon = require('../assets/images/app-icon.png');
 I18nManager.allowRTL(false);
 I18nManager.forceRTL(false);
 
-// Apply Amiri as the app-wide default font (web only — the Amiri woff2 face is
-// loaded via expo-font for web; native keeps the system Arabic font, as before).
-// We prepend it to each element's own style so RNW's built-in "System" default is
-// overridden, while any explicit fontFamily (e.g. the Quran face, UthmanTN)
-// still wins because it comes after ours in the merged array.
-if (Platform.OS === 'web') {
-  const DEFAULT_FONT = { fontFamily: 'Amiri-Regular' };
-  const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __amiriPatched?: boolean }) => {
-    if (typeof Comp.render !== 'function' || Comp.__amiriPatched) return;
-    const origRender = Comp.render;
-    Comp.render = (props: any, ref: any) =>
-      origRender({ ...props, style: [DEFAULT_FONT, props.style] }, ref);
-    Comp.__amiriPatched = true;
-  };
-  patchDefaultFont(Text as unknown as { render?: (props: any, ref: any) => unknown });
-  patchDefaultFont(TextInput as unknown as { render?: (props: any, ref: any) => unknown });
-}
+// Apply the UI Arabic sans (Plex Arabic) as the app-wide default font, on every
+// platform — replaces the old web-only Amiri patch, which meant native never
+// saw a brand face at all (it silently fell back to the system font). Amiri is
+// now reserved for the "ceremony" moments that ask for it explicitly (sura
+// names, milestone toasts, daily-complete headlines) and UthmanTN stays
+// exclusive to Quran text — both still win over this default because they're
+// set explicitly and come after it in the merged style array.
+// The patch itself only takes effect where the platform's Text/TextInput is a
+// forwardRef component exposing `.render` (true for react-native-web); if a
+// given native implementation doesn't expose it, this silently no-ops there
+// and per-component explicit fontFamily props (unaffected by this patch)
+// continue to work exactly as before.
+const DEFAULT_FONT = { fontFamily: 'PlexArabic-Regular' };
+const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __fontPatched?: boolean }) => {
+  if (typeof Comp.render !== 'function' || Comp.__fontPatched) return;
+  const origRender = Comp.render;
+  Comp.render = (props: any, ref: any) =>
+    origRender({ ...props, style: [DEFAULT_FONT, props.style] }, ref);
+  Comp.__fontPatched = true;
+};
+patchDefaultFont(Text as unknown as { render?: (props: any, ref: any) => unknown });
+patchDefaultFont(TextInput as unknown as { render?: (props: any, ref: any) => unknown });
 
 // Initialize Firebase eagerly
 getFirebaseApp();
@@ -129,6 +134,14 @@ export default function RootLayout() {
   const loadProfile = useProfileStore((s) => s.load);
 
   const [fontsLoaded] = useFonts({
+    // UI face — buttons, tabs, labels, body text; legible at 11-13px where
+    // Amiri (a book face) isn't. The app-wide default (see the Text/TextInput
+    // patch above).
+    'PlexArabic-Regular':  require('../assets/fonts/PlexArabic-Regular.woff2'),
+    'PlexArabic-SemiBold': require('../assets/fonts/PlexArabic-SemiBold.woff2'),
+    'PlexArabic-Bold':     require('../assets/fonts/PlexArabic-Bold.woff2'),
+    // Ceremony face — reserved for sura names, milestone toasts, and other
+    // moments that deserve a bookish voice. Used sparingly, by design.
     'Amiri-Regular': require('../assets/fonts/Amiri-Regular.woff2'),
     // Same "Uthman" font quran-madina-html uses for its question rendering
     // (UthmanTN_v2-0.woff2, pulled from the quran-madina-html package's own

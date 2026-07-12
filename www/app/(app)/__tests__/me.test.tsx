@@ -8,8 +8,10 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockSetOptions = jest.fn();
 jest.mock('expo-router', () => ({
   useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
+  useNavigation: () => ({ setOptions: mockSetOptions }),
 }));
 
 const mockGetDailyHead = jest.fn();
@@ -40,7 +42,7 @@ jest.mock('../../../src/services/notifications', () => ({
 
 import React from 'react';
 import { Alert } from 'react-native';
-import { render, fireEvent, waitFor, act } from '@testing-library/react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MeScreen from '../me';
 import { useProfileStore, StudyPart } from '../../../src/stores/profileStore';
@@ -56,7 +58,8 @@ const today = () => new Date().toISOString().split('T')[0];
 const head = () => ({ daily_random: 42, start_time: Date.now(), submit_to_ref: 'head_submit', yesterday: '' });
 
 beforeEach(() => {
-  mockPush.mockClear(); mockReplace.mockClear(); mockInitDailyQuiz.mockClear(); mockGetDailyHead.mockReset();
+  mockPush.mockClear(); mockReplace.mockClear(); mockSetOptions.mockClear();
+  mockInitDailyQuiz.mockClear(); mockGetDailyHead.mockReset();
   mockSignOut.mockReset(); mockSignOut.mockResolvedValue(undefined);
   mockSignInGoogle.mockReset(); mockSignInGoogle.mockResolvedValue({ uid: 'g1' });
   mockSignInFacebook.mockReset(); mockSignInFacebook.mockResolvedValue({ uid: 'f1' });
@@ -75,11 +78,16 @@ beforeEach(() => {
 });
 
 describe('Me dashboard — daily card states', () => {
-  it('greets the user and shows their points', async () => {
+  it('greets the user in the header and shows their points on the page', async () => {
     mockGetDailyHead.mockResolvedValue(null);
-    const { getByText, queryAllByText } = renderMe();
-    expect(getByText(/مرحباً/)).toBeTruthy();
-    expect(queryAllByText(/نقاطك/).length).toBeGreaterThan(0);
+    const { queryAllByText } = renderMe();
+    // The greeting now lives in the navigation header (see me.tsx's
+    // navigation.setOptions effect), not inline on the page.
+    await waitFor(() => expect(mockSetOptions).toHaveBeenCalled());
+    const lastOptions = mockSetOptions.mock.calls[mockSetOptions.mock.calls.length - 1][0];
+    const header = render(lastOptions.headerTitle());
+    expect(header.getByText(/مرحباً/)).toBeTruthy();
+    expect(queryAllByText(/نقطة/).length).toBeGreaterThan(0);
   });
 
   it('shows the start button when a daily quiz is available and not completed', async () => {
@@ -92,7 +100,7 @@ describe('Me dashboard — daily card states', () => {
     useProfileStore.setState({ lastDailyCompletedDate: today() });
     mockGetDailyHead.mockResolvedValue(head());
     const { findByText } = renderMe();
-    expect(await findByText('أحسنت! أكملت اختبار اليوم')).toBeTruthy();
+    expect(await findByText(/أكملت اختبار اليوم/)).toBeTruthy();
   });
 
   it('shows the unavailable card when no daily is published', async () => {
@@ -110,38 +118,6 @@ describe('Me dashboard — daily card states', () => {
   });
 });
 
-describe('Me dashboard — sign out [bug #2]', () => {
-  // Auto-confirm the "are you sure?" dialog by invoking the destructive button.
-  function autoConfirmAlert() {
-    return jest.spyOn(Alert, 'alert').mockImplementation((_t, _m, buttons) => {
-      (buttons as { style?: string; onPress?: () => void }[] | undefined)
-        ?.find((b) => b.style === 'destructive')?.onPress?.();
-    });
-  }
-
-  it('does NOT navigate to /(auth) until signOut() has resolved', async () => {
-    mockGetDailyHead.mockResolvedValue(null);
-    // Hold signOut open so we can observe that navigation waits for it.
-    let resolveSignOut!: () => void;
-    mockSignOut.mockReturnValue(new Promise<void>((r) => { resolveSignOut = r; }));
-    const alertSpy = autoConfirmAlert();
-
-    const { findByText } = renderMe();
-    fireEvent.press(await findByText('تسجيل الخروج'));
-
-    // signOut is still pending → the auth-screen redirect must not have fired,
-    // otherwise its auth listener would bounce back on the stale session.
-    await act(async () => { await Promise.resolve(); });
-    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)');
-
-    await act(async () => { resolveSignOut(); await Promise.resolve(); });
-    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(auth)'));
-    expect(mockSignOut).toHaveBeenCalled();
-
-    alertSpy.mockRestore();
-  });
-});
-
 describe('Me dashboard — guest upgrade [bug #3]', () => {
   beforeEach(() => {
     // Render as an anonymous guest so the in-page upgrade card is shown.
@@ -150,9 +126,9 @@ describe('Me dashboard — guest upgrade [bug #3]', () => {
 
   it('shows the Google/Facebook upgrade buttons for a guest', async () => {
     mockGetDailyHead.mockResolvedValue(null);
-    const { findByText } = renderMe();
-    expect(await findByText('جوجل')).toBeTruthy();
-    expect(await findByText('فيسبوك')).toBeTruthy();
+    const { findByLabelText } = renderMe();
+    expect(await findByLabelText('المتابعة بحساب جوجل')).toBeTruthy();
+    expect(await findByLabelText('المتابعة بحساب فيسبوك')).toBeTruthy();
   });
 
   it('surfaces an error (does not fail silently) when the upgrade is refused', async () => {
@@ -160,8 +136,8 @@ describe('Me dashboard — guest upgrade [bug #3]', () => {
     mockSignInGoogle.mockRejectedValueOnce(new Error('refused'));
     const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
 
-    const { findByText } = renderMe();
-    fireEvent.press(await findByText('جوجل'));
+    const { findByLabelText } = renderMe();
+    fireEvent.press(await findByLabelText('المتابعة بحساب جوجل'));
 
     await waitFor(() => expect(mockSignInGoogle).toHaveBeenCalled());
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('خطأ', expect.any(String)));

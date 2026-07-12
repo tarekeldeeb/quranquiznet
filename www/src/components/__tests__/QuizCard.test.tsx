@@ -102,7 +102,9 @@ describe('QuizCard flip face', () => {
   it('resets to the front when a flipped instance is reused for a new question', () => {
     jest.useFakeTimers();
     const view = render(<QuizCard {...props(2)} />); // answered ⇒ will flip to back
-    act(() => { jest.advanceTimersByTime(500); });   // let the flip settle
+    // The reveal (correct/picked-wrong markers + score fly) holds the front
+    // face for REVEAL_DELAY before the 420ms flip itself starts.
+    act(() => { jest.advanceTimersByTime(1200); });   // let the reveal + flip settle
     // After flipping, the FRONT is the stacked (absolute) face.
     expect(isAbsolute(view.getByTestId('quiz-card-front'))).toBe(true);
 

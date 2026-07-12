@@ -18,3 +18,9 @@ export function hapticIncorrect(): void {
   if (!isNative) return;
   Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning).catch(() => { /* non-critical */ });
 }
+
+/** Subtle tick for the daily-quiz timer's last 3 seconds (3-2-1). */
+export function hapticTick(): void {
+  if (!isNative) return;
+  Haptics.selectionAsync().catch(() => { /* non-critical */ });
+}

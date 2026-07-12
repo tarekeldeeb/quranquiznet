@@ -13,6 +13,7 @@ jest.mock('expo-router', () => {
   return {
     useRouter: () => ({ push: mockPush, replace: mockReplace, back: jest.fn() }),
     useLocalSearchParams: () => ({}),
+    useNavigation: () => ({ setOptions: jest.fn() }),
     // Run the focus callback once on mount, like a real screen gaining focus.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     useFocusEffect: (cb: () => void) => { React.useEffect(() => cb(), []); },

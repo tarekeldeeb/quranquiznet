@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, Dimensions,
   ScrollView, Modal, Image, Share, Platform,
@@ -13,6 +13,9 @@ import {
   getSuraTanzil, getPageURLFromSuraAyah,
 } from '../models/constants';
 import QuranText from './QuranText';
+import PressScale from './PressScale';
+import { useTheme, arNum, radii } from '../theme/tokens';
+import { hapticTick } from '../services/haptics';
 
 // Word count of an Arabic snippet, ignoring aya-end markers in either form
 // (raw ﴿123﴾ or the ۝ glyph removeAyaNum produces) — quran-madina-html does not
@@ -53,9 +56,18 @@ const CARD_W = Math.min(SW - 32, 480);
 // Font families: Amiri/Uthman work on web; native falls back to system Arabic.
 // QURAN_FONT is the same Uthman-script face quran-madina-html uses for the
 // question text — used for every plain-text Quran fallback (question, answer,
-// and the answer options) so they all visually match.
+// and the answer options) so they all visually match. (Native intentionally
+// keeps falling back to the system Arabic font here — UthmanTN's diacritic
+// mark positioning depends on OpenType shaping that native text engines don't
+// apply the same way a WebView does; this is a tested workaround, not a gap.)
 const QURAN_FONT = Platform.OS === 'web' ? 'UthmanTN' : undefined;
-const AMIRI_FONT  = Platform.OS === 'web' ? 'Amiri-Regular'     : undefined;
+// Amiri is the "ceremony" face — reserved for the sura-name reveal on the
+// back of the card. Loads on every platform now (see app/_layout.tsx).
+const AMIRI_FONT = 'Amiri-Regular';
+
+// How long the post-answer reveal (correct/picked-wrong markers + score fly)
+// stays on the front face before the card flips to show the full ayah.
+const REVEAL_DELAY = 700;
 
 export interface CardData {
   index: number;
@@ -83,13 +95,19 @@ interface Props {
   shuffledOptions: string[];
   flipTrigger: number;
   isCorrect: boolean;
+  // Which shuffled-option index is the correct answer / which one the player
+  // picked — drives the post-answer reveal. Only meaningful for the live
+  // (isActive) card; historical cards fall back to the plain flip.
+  correctIndex?: number;
+  pickedIndex?: number | null;
 }
 
 export default function QuizCard({
   card, isActive, score, scoreUp, isDailyMode, timerValue, timerMax,
   onSelectOption, onSkip, onScrollDown, onReport, round, totalRounds,
-  shuffledOptions, flipTrigger, isCorrect,
+  shuffledOptions, flipTrigger, isCorrect, correctIndex, pickedIndex,
 }: Props) {
+  const { colors } = useTheme();
   const flip = useSharedValue(0);
   const [imgVisible, setImgVisible] = React.useState(false);
   // Once the flip completes we swap which face is in normal flow, so the
@@ -123,9 +141,11 @@ export default function QuizCard({
 
   useEffect(() => {
     if (flipTrigger > 0) {
-      flip.value = withTiming(1, { duration: 420 });
-      const t = setTimeout(() => setFlipped(true), 430);
-      return () => clearTimeout(t);
+      // Let the reveal (correct/picked-wrong markers + score fly) play on the
+      // front face before flipping to the full-ayah back.
+      const t0 = setTimeout(() => { flip.value = withTiming(1, { duration: 420 }); }, REVEAL_DELAY);
+      const t1 = setTimeout(() => setFlipped(true), REVEAL_DELAY + 430);
+      return () => { clearTimeout(t0); clearTimeout(t1); };
     }
     // Unanswered/active card (incl. a component instance reused for a new
     // question): always reset to the front face. Without this a leftover
@@ -144,8 +164,60 @@ export default function QuizCard({
     transform: [{ rotateY: `${interpolate(flip.value, [0, 1], [180, 360], Extrapolation.CLAMP)}deg` }],
   }));
 
-  const timerPct    = timerMax > 0 ? timerValue / timerMax : 0;
-  const borderColor = isCorrect ? '#27ae60' : '#e74c3c';
+  // ── Timer bar (peripheral top bar, not a side column) ──────────────────────
+  const timerPct = timerMax > 0 ? timerValue / timerMax : 0;
+  const timerShared = useSharedValue(timerPct);
+  useEffect(() => {
+    timerShared.value = withTiming(timerPct, { duration: 950 });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerPct]);
+  const timerUrgent = isDailyMode && timerValue > 0 && timerValue <= 3;
+  const timerBarStyle = useAnimatedStyle(() => ({
+    width: `${Math.max(0, Math.min(1, timerShared.value)) * 100}%`,
+  }));
+  useEffect(() => {
+    if (timerUrgent && isActive) hapticTick();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timerValue, timerUrgent, isActive]);
+
+  // ── Post-answer reveal + score fly/count-up (live card only) ───────────────
+  const showReveal = isActive && flipTrigger > 0 && correctIndex != null && correctIndex >= 0;
+  const [displayScore, setDisplayScore] = useState(score);
+  const flyOpacity = useSharedValue(0);
+  const flyTranslateY = useSharedValue(0);
+  const flyStyle = useAnimatedStyle(() => ({
+    opacity: flyOpacity.value,
+    transform: [{ translateY: flyTranslateY.value }],
+  }));
+
+  useEffect(() => {
+    if (isActive && flipTrigger > 0 && isCorrect) {
+      const from = Math.max(0, score - scoreUp);
+      const to = score;
+      const duration = 500;
+      const start = Date.now();
+      let raf: ReturnType<typeof requestAnimationFrame> | undefined;
+      const tick = () => {
+        const t = Math.min(1, (Date.now() - start) / duration);
+        const eased = 1 - (1 - t) ** 3;
+        setDisplayScore(Math.round(from + (to - from) * eased));
+        if (t < 1) raf = requestAnimationFrame(tick);
+      };
+      raf = requestAnimationFrame(tick);
+      flyOpacity.value = 1;
+      flyTranslateY.value = 0;
+      flyOpacity.value = withTiming(0, { duration: 650 });
+      flyTranslateY.value = withTiming(-26, { duration: 650 });
+      return () => { if (raf) cancelAnimationFrame(raf); };
+    }
+    setDisplayScore(score);
+    return undefined;
+  // Deliberately keyed on flipTrigger alone: the count-up should replay only
+  // when a new answer lands, not on every incidental `score`/`isCorrect` churn.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [flipTrigger]);
+
+  const borderColor = isCorrect ? colors.correct : colors.wrong;
 
   async function handleShare() {
     try {
@@ -163,23 +235,39 @@ export default function QuizCard({
           Explicitly disabling events on whichever face isn't in flow fixes it. */}
       <Animated.View
         testID="quiz-card-front"
-        style={[s.card, frontStyle, flipped && s.faceAbsolute]}
+        style={[s.card, { backgroundColor: colors.card }, frontStyle, flipped && s.faceAbsolute]}
         pointerEvents={flipped ? 'none' : 'auto'}
       >
 
         {/* Instruction + progress dots */}
-        <View style={s.topBar}>
-          <Text style={s.instruction}>{card.qo.qType.txt}</Text>
+        <View style={[s.topBar, { backgroundColor: colors.paper, borderColor: colors.line }]}>
+          <Text style={[s.instruction, { color: colors.inkSoft }]}>{card.qo.qType.txt}</Text>
           <View style={s.dotsRow}>
             {Array.from({ length: totalRounds }, (_, i) => (
-              <View key={i} style={[s.dot, i < round ? s.dotDone : i === round ? s.dotCurrent : s.dotPending]} />
+              <View
+                key={i}
+                style={[
+                  s.dot,
+                  i < round ? { backgroundColor: colors.correct }
+                    : i === round ? { backgroundColor: colors.navySoft }
+                    : { backgroundColor: colors.line },
+                ]}
+              />
             ))}
           </View>
         </View>
 
+        {/* Depleting timer bar — peripheral, not a side column. Gold → red in
+            the last 3 seconds, the color shift itself is the urgency cue. */}
+        {isDailyMode && (
+          <View style={[s.timerTrack, { backgroundColor: colors.goldPale }]}>
+            <Animated.View style={[s.timerFill, timerBarStyle, { backgroundColor: timerUrgent ? colors.wrong : colors.gold }]} />
+          </View>
+        )}
+
         {/* Question text — render directly so the box grows with the text
             (a ScrollView here collapsed and cropped the diacritics). */}
-        <View style={s.questionBox}>
+        <View style={[s.questionBox, { backgroundColor: colors.paper, borderColor: colors.line }]}>
           {/* Render directly (no ScrollView — it collapsed and cropped the
               diacritics). useMadina picks the quran-madina-html renderer for real
               Quran ayat; everything else stays plain Text. */}
@@ -190,10 +278,10 @@ export default function QuizCard({
               aya={card.answerAya}
               words={frontWords}
               hideTitle={frontHideTitle}
-              style={s.questionText}
+              style={[s.questionText, { color: colors.ink }]}
             />
           ) : (
-            <Text style={s.questionText}>{questionTxt}</Text>
+            <Text style={[s.questionText, { color: colors.ink }]}>{questionTxt}</Text>
           )}
         </View>
 
@@ -201,41 +289,51 @@ export default function QuizCard({
         <View style={s.body}>
           {/* Options */}
           <View style={s.optionsCol}>
-            {[0, 1, 2, 3, 4].map((i) => (
-              <TouchableOpacity
-                key={i}
-                style={[s.optionBtn, !isActive && s.optionBtnInactive]}
-                onPress={() => isActive && onSelectOption(i)}
-                activeOpacity={isActive ? 0.65 : 1}
-              >
-                <Text style={[s.optionText, !isActive && s.optionTextInactive]}>
-                  {shuffledOptions[i] ?? ''}
-                </Text>
-              </TouchableOpacity>
-            ))}
+            {[0, 1, 2, 3, 4].map((i) => {
+              const isCorrectOpt = showReveal && i === correctIndex;
+              const isPickedWrong = showReveal && pickedIndex != null && i === pickedIndex && i !== correctIndex;
+              return (
+                <PressScale
+                  key={i}
+                  style={[
+                    s.optionBtn,
+                    { backgroundColor: colors.paper, borderColor: colors.line },
+                    !isActive && { opacity: 0.7 },
+                    isCorrectOpt && { backgroundColor: colors.correctPale, borderColor: colors.correct },
+                    isPickedWrong && { backgroundColor: colors.wrongPale, borderColor: colors.wrong },
+                  ]}
+                  onPress={() => isActive && onSelectOption(i)}
+                  disabled={!isActive}
+                  accessibilityRole="button"
+                >
+                  <Text style={[s.optionText, { color: colors.ink }, !isActive && { color: colors.inkSoft }]}>
+                    {shuffledOptions[i] ?? ''}
+                  </Text>
+                  {isCorrectOpt && <Text style={[s.optionMark, { color: colors.correct }]}>✓ الصحيحة</Text>}
+                  {isPickedWrong && <Text style={[s.optionMark, { color: colors.wrong }]}>اخترت ✗</Text>}
+                </PressScale>
+              );
+            })}
           </View>
 
-          {/* Meta */}
+          {/* Meta: score (always) + the live fly/count-up badge */}
           <View style={s.metaCol}>
-            {isDailyMode ? (
-              <View style={s.timerBox}>
-                <Text style={s.timerText}>{timerValue}</Text>
-                <Text style={s.timerUnit}>ث</Text>
-                <View style={s.timerTrack}>
-                  <View style={[s.timerFill, { height: `${timerPct * 100}%` as unknown as number }]} />
-                </View>
+            <View style={[s.scoreBox, { borderColor: colors.line }]}>
+              <Text style={[s.scoreMain, { color: colors.navy }]}>{arNum(displayScore)}</Text>
+              <View style={s.scoreUpWrap}>
+                <Text style={[s.scoreUp, { color: colors.correct }]}>+{arNum(scoreUp)}</Text>
+                {showReveal && isCorrect && (
+                  <Animated.Text style={[s.scoreFly, { color: colors.correct }, flyStyle]}>
+                    +{arNum(scoreUp)} ↗
+                  </Animated.Text>
+                )}
               </View>
-            ) : (
-              <View style={s.scoreBox}>
-                <Text style={s.scoreMain}>{score}</Text>
-                <Text style={s.scoreUp}>+{scoreUp}</Text>
-              </View>
-            )}
+            </View>
 
-            <TouchableOpacity style={s.skipBtn} onPress={() => isActive && onSkip()} activeOpacity={isActive ? 0.7 : 1}>
-              <Ionicons name="remove-circle-outline" size={18} color={isActive ? '#c0392b' : '#ccc'} />
-              <Text style={[s.skipText, !isActive && { color: '#ccc' }]}>لا أعلم</Text>
-            </TouchableOpacity>
+            <PressScale style={s.skipBtn} onPress={() => isActive && onSkip()} disabled={!isActive}>
+              <Ionicons name="remove-circle-outline" size={18} color={isActive ? colors.wrong : colors.line} />
+              <Text style={[s.skipText, { color: isActive ? colors.wrong : colors.line }]}>لا أعلم</Text>
+            </PressScale>
           </View>
         </View>
       </Animated.View>
@@ -243,16 +341,16 @@ export default function QuizCard({
       {/* ── BACK ──────────────────────────────────────────────────────────── */}
       <Animated.View
         testID="quiz-card-back"
-        style={[s.card, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}
+        style={[s.card, { backgroundColor: colors.card }, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}
         pointerEvents={flipped ? 'auto' : 'none'}
       >
 
         {/* Sura / aya header */}
-        <View style={[s.backHeader, { borderBottomColor: borderColor, borderBottomWidth: 2 }]}>
+        <View style={[s.backHeader, { backgroundColor: colors.paper, borderBottomColor: borderColor, borderBottomWidth: 2 }]}>
           <View style={s.backHeaderLeft}>
-            <Text style={s.backSuraInfo}>{suraInfo}</Text>
+            <Text style={[s.backSuraInfo, { color: colors.inkSoft }]}>{suraInfo}</Text>
           </View>
-          <Text style={s.backSuraName}>سورة {suraName} · آية {card.answerAya}</Text>
+          <Text style={[s.backSuraName, { color: colors.navy, fontFamily: AMIRI_FONT }]}>سورة {suraName} · آية {arNum(card.answerAya)}</Text>
         </View>
 
         {/* Answer text */}
@@ -264,34 +362,34 @@ export default function QuizCard({
               aya={card.answerAya}
               words={backWords}
               hideTitle={backHideTitle}
-              style={s.answerText}
+              style={[s.answerText, { color: colors.ink }]}
             />
           ) : (
-            <Text style={s.answerText}>{card.qo.txt.answer} …</Text>
+            <Text style={[s.answerText, { color: colors.ink }]}>{card.qo.txt.answer} …</Text>
           )}
         </ScrollView>
 
         {/* Action row */}
-        <View style={s.actionRow}>
-          <TouchableOpacity style={[s.actionBtn, s.btnOk]} onPress={onScrollDown}>
+        <View style={[s.actionRow, { borderColor: colors.line }]}>
+          <PressScale style={[s.actionBtn, { backgroundColor: colors.navy }]} onPress={onScrollDown}>
             <Ionicons name="chevron-down" size={16} color="#fff" />
             <Text style={s.actionBtnTxt}> حسناً</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={() => setImgVisible(true)}>
-            <Ionicons name="book-outline" size={16} color="#1a5276" />
-            <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> شاهد</Text>
-          </TouchableOpacity>
+          </PressScale>
+          <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={() => setImgVisible(true)}>
+            <Ionicons name="book-outline" size={16} color={colors.navy} />
+            <Text style={[s.actionBtnTxt, { color: colors.navy }]}> شاهد</Text>
+          </PressScale>
           {/* Share links to /quiz?start=<word>, which only reproduces normal
               "complete the verse" questions — so hide it on special questions. */}
           {card.qo.qType.id === Q_TYPE.NOTSPECIAL.id && (
-            <TouchableOpacity style={[s.actionBtn, s.btnSecondary]} onPress={handleShare}>
-              <Ionicons name="share-social-outline" size={16} color="#1a5276" />
-              <Text style={[s.actionBtnTxt, { color: '#1a5276' }]}> نافس</Text>
-            </TouchableOpacity>
+            <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={handleShare}>
+              <Ionicons name="share-social-outline" size={16} color={colors.navy} />
+              <Text style={[s.actionBtnTxt, { color: colors.navy }]}> نافس</Text>
+            </PressScale>
           )}
-          <TouchableOpacity style={s.reportBtn} onPress={() => onReport(card)}>
-            <Ionicons name="flag-outline" size={17} color="#c0392b" />
-          </TouchableOpacity>
+          <PressScale style={[s.reportBtn, { backgroundColor: colors.wrongPale }]} onPress={() => onReport(card)}>
+            <Ionicons name="flag-outline" size={17} color={colors.wrong} />
+          </PressScale>
         </View>
       </Animated.View>
 
@@ -314,8 +412,7 @@ const s = StyleSheet.create({
   },
   card: {
     width: CARD_W,
-    backgroundColor: '#fff',
-    borderRadius: 14,
+    borderRadius: radii.lg,
     boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
     elevation: 3,
     overflow: 'hidden',
@@ -331,14 +428,10 @@ const s = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 7,
-    backgroundColor: '#f0f4f8',
     borderBottomWidth: 1,
-    borderColor: '#e0e6ed',
   },
   instruction: {
     fontSize: 11,
-    color: '#7f8c8d',
-    fontFamily: AMIRI_FONT,
     textAlign: 'right',
     flexShrink: 1,
   },
@@ -350,14 +443,12 @@ const s = StyleSheet.create({
     maxWidth: '55%',
   },
   dot: { width: 8, height: 8, borderRadius: 4 },
-  dotDone:    { backgroundColor: '#27ae60' },
-  dotCurrent: { backgroundColor: '#1a5276' },
-  dotPending: { backgroundColor: '#d5dce5' },
+
+  timerTrack: { height: 4, width: '100%', overflow: 'hidden' },
+  timerFill: { height: 4, borderRadius: 2 },
 
   questionBox: {
-    backgroundColor: '#fdfaf5',
     borderBottomWidth: 1,
-    borderColor: '#e8e0d0',
     paddingVertical: 14,
     paddingHorizontal: 12,
     minHeight: 60,
@@ -365,7 +456,6 @@ const s = StyleSheet.create({
   questionText: {
     fontSize: 22,
     fontFamily: QURAN_FONT,
-    color: '#1a1a1a',
     textAlign: 'right',
     writingDirection: 'rtl',
     // Overrides QuranText's default edge-hugging alignment (see QuranText.web.tsx)
@@ -380,28 +470,27 @@ const s = StyleSheet.create({
   // flip flexbox on react-native-web, so reverse it explicitly).
   body: { flexDirection: 'row-reverse', padding: 10, gap: 8 },
 
-  optionsCol: { flex: 2, gap: 5 },
+  optionsCol: { flex: 2, gap: 6 },
   optionBtn: {
-    backgroundColor: '#eef2f7',
-    borderRadius: 8,
-    paddingVertical: 9,
+    borderRadius: radii.sm,
+    // Bigger touch targets — 9px was below the 44pt floor on small phones.
+    paddingVertical: 13,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: '#dde4ed',
-  },
-  optionBtnInactive: {
-    backgroundColor: '#f7f9fb',
-    borderColor: '#eaecef',
   },
   optionText: {
     fontSize: 17,
     fontFamily: QURAN_FONT,
     textAlign: 'center',
     writingDirection: 'rtl',
-    color: '#2c3e50',
     lineHeight: 28,
   },
-  optionTextInactive: { color: '#95a5a6' },
+  optionMark: {
+    fontSize: 10,
+    fontFamily: 'PlexArabic-SemiBold',
+    textAlign: 'center',
+    marginTop: 2,
+  },
 
   metaCol: {
     width: 68,
@@ -412,27 +501,24 @@ const s = StyleSheet.create({
   scoreBox: {
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#d5dce5',
-    borderRadius: 8,
+    borderRadius: radii.sm,
     paddingVertical: 8,
     paddingHorizontal: 6,
     width: '100%',
     gap: 2,
   },
-  scoreMain: { fontSize: 20, fontWeight: '700', color: '#1a5276' },
-  scoreUp:   { color: '#27ae60', fontSize: 12, fontWeight: '600' },
-
-  timerBox: { alignItems: 'center', gap: 2 },
-  timerText: { fontSize: 22, fontWeight: '700', color: '#e74c3c' },
-  timerUnit: { fontSize: 12, color: '#e74c3c' },
-  timerTrack: {
-    width: 8, height: 56,
-    backgroundColor: '#fadbd8', borderRadius: 4, overflow: 'hidden', justifyContent: 'flex-end',
+  scoreMain: { fontSize: 20, fontFamily: 'PlexArabic-Bold' },
+  scoreUpWrap: { alignItems: 'center' },
+  scoreUp:   { fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
+  scoreFly: {
+    position: 'absolute',
+    top: -2,
+    fontSize: 12,
+    fontFamily: 'PlexArabic-Bold',
   },
-  timerFill: { backgroundColor: '#e74c3c', borderRadius: 4 },
 
   skipBtn: { alignItems: 'center', gap: 3, paddingVertical: 4 },
-  skipText: { fontSize: 11, color: '#c0392b', fontFamily: AMIRI_FONT },
+  skipText: { fontSize: 11 },
 
   // ── BACK ─────────────────────────────────────────────────────────────────
   backHeader: {
@@ -441,21 +527,16 @@ const s = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#fafafa',
   },
   backHeaderLeft: { alignItems: 'flex-start' },
   backSuraName: {
     fontSize: 16,
-    fontFamily: AMIRI_FONT,
     fontWeight: '700',
-    color: '#1a5276',
     textAlign: 'right',
     flexShrink: 1,
   },
   backSuraInfo: {
     fontSize: 12,
-    fontFamily: AMIRI_FONT,
-    color: '#7f8c8d',
   },
 
   answerScroll: { maxHeight: 260 },
@@ -469,27 +550,23 @@ const s = StyleSheet.create({
     // Same QuranText edge-hugging override as questionText — centers the
     // quran-madina-html block within the answer scroll area.
     alignItems: 'center',
-    color: '#1a1a1a',
   },
 
   actionRow: {
     flexDirection: 'row-reverse',
     borderTopWidth: 1,
-    borderColor: '#eee',
   },
   actionBtn: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: 11,
+    paddingVertical: 13,
     gap: 2,
   },
-  btnOk:        { backgroundColor: '#1a5276' },
-  btnSecondary: { backgroundColor: '#f5f7fa' },
-  actionBtnTxt: { color: '#fff', fontWeight: '600', fontSize: 13, fontFamily: AMIRI_FONT },
+  actionBtnTxt: { color: '#fff', fontFamily: 'PlexArabic-SemiBold', fontSize: 13 },
   reportBtn: {
-    width: 44, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fdf0f0',
+    width: 44, alignItems: 'center', justifyContent: 'center',
   },
 
   // ── Modal ─────────────────────────────────────────────────────────────────
