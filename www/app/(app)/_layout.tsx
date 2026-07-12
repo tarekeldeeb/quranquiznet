@@ -38,9 +38,9 @@ function HeaderLogo() {
   );
 }
 
-// Raised gold "العب" button — the one place in the app the gold accent is
+// Raised gold "ابدأ" button — the one place in the app the gold accent is
 // spent at full strength. Sits centered and elevated above the bar instead of
-// sitting flush with its siblings, so Play reads as the game's architecture
+// sitting flush with its siblings, so Start reads as the game's architecture
 // rather than a third menu item.
 function PlayTabButton({
   onPress, accessibilityState, colors,
@@ -51,13 +51,13 @@ function PlayTabButton({
       style={s.playSlot}
       scaleTo={0.93}
       accessibilityRole="button"
-      accessibilityLabel="العب"
+      accessibilityLabel="ابدأ"
       accessibilityState={accessibilityState}
     >
       <View style={[s.playCircle, { backgroundColor: colors.gold, borderColor: colors.card, shadowColor: colors.goldDeep }]}>
         <Ionicons name="play" size={24} color={colors.navy} style={{ marginRight: -2 }} />
       </View>
-      <Text style={[s.playLabel, { color: colors.gold }]}>العب</Text>
+      <Text style={[s.playLabel, { color: colors.gold }]}>ابدأ</Text>
     </PressScale>
   );
 }
@@ -140,7 +140,7 @@ export default function AppLayout() {
     >
       {/* Declared right-to-left for RTL: the tab bar renders in declaration
           order (LTR), so listing league → play → me puts ملفي (Me / home)
-          on the right as the landing tab, البطولة on the left, and العب
+          on the right as the landing tab, البطولة on the left, and ابدأ
           raised in the center. */}
       <Tabs.Screen
         name="league"
@@ -152,7 +152,7 @@ export default function AppLayout() {
       <Tabs.Screen
         name="quiz"
         options={{
-          tabBarLabel: 'العب',
+          tabBarLabel: 'ابدأ',
           tabBarButton: (props) => (
             <PlayTabButton
               onPress={props.onPress as (() => void) | undefined}

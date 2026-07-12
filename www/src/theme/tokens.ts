@@ -28,7 +28,13 @@ export interface ThemeColors {
 const LIGHT: ThemeColors = {
   navy: '#0d2d4e',
   navyDeep: '#081e35',
-  navySoft: '#35567a',
+  // Almost every use of navySoft is muted text/icons sitting directly on a
+  // colors.navy panel (auth hero, daily hero, map card, onboarding slides) —
+  // and navy itself never flips (DARK doesn't override it), so navySoft can't
+  // flip either or it goes near-invisible against navy in light mode. Uses
+  // DARK's value in the DARK palette below too — deliberately the same
+  // constant, not a themed pair.
+  navySoft: '#8fb0cf',
   gold: '#c8973a',
   goldDeep: '#8a6410',
   goldPale: '#f3e8d2',
@@ -48,7 +54,6 @@ const LIGHT: ThemeColors = {
 // optional. Warm ink on a deep-navy ground, gold brightened one step.
 const DARK: ThemeColors = {
   ...LIGHT,
-  navySoft: '#8fb0cf',
   gold: '#d9ad55',
   goldDeep: '#e3bd6f',
   goldPale: '#2c3f52',
