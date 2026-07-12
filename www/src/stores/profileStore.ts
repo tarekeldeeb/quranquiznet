@@ -11,6 +11,7 @@ import {
   countedScore,
 } from '../models/constants';
 import { MasteryTier } from '../models/milestones';
+import type { ThemeMode } from '../theme/tokens';
 
 export interface StudyPart {
   start: number;
@@ -164,6 +165,10 @@ interface ProfileState {
   lastDailyScore: number;           // the graded score (0-100) from that completed daily quiz
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
   pvp: PvpRecord;                   // 1v1 win/loss/draw record (trophies)
+  // Device/UI preference, not user data — stored under its own key (see
+  // THEME_KEY) so it survives sign-out/delete instead of resetting with the
+  // rest of the profile. Defaults to dark (وضع الليل is the app's default look).
+  themeMode: ThemeMode;
 
   // Actions
   load(): Promise<boolean>;
@@ -180,6 +185,7 @@ interface ProfileState {
   markDailyCompleted(score?: number): void;
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
+  setThemeMode(mode: ThemeMode): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -221,6 +227,10 @@ const KEYS = {
   lastDailyScore: 'prf_lastDailyScore',
 };
 
+// Deliberately outside KEYS: delete() wipes every KEYS entry on sign-out, but
+// the theme is a device preference, not profile data — it should survive that.
+const THEME_KEY = 'prf_themeMode';
+
 const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
 
 async function saveKey(key: string, value: unknown) {
@@ -251,6 +261,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   lastDailyScore: 0,
   country: '',
   pvp: EMPTY_PVP,
+  themeMode: 'dark',
 
   levels: [
     { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
@@ -260,11 +271,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   ],
 
   async load() {
+    // Independent of the uid branch below — a device preference, present (or
+    // not) regardless of whether a profile has ever been signed into.
+    const themeMode = await loadKey<ThemeMode>(THEME_KEY, 'dark');
     const uid = await loadKey<string>(KEYS.uid, '-1');
     if (uid === '-1') {
       const parts = makeDefaultParts();
       const seed = Math.floor(Math.random() * (QURAN_WORDS - 1));
-      set({ parts, lastSeed: seed, loaded: true });
+      set({ parts, lastSeed: seed, loaded: true, themeMode });
       await get().saveAll();
       return false;
     }
@@ -288,7 +302,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       ]);
     set({
       uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
-      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, loaded: true,
+      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, loaded: true, themeMode,
     });
     return true;
   },
@@ -384,6 +398,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   setCountry(code: string) {
     set({ country: code });
+  },
+
+  setThemeMode(mode: ThemeMode) {
+    set({ themeMode: mode });
+    saveKey(THEME_KEY, mode);
   },
 
   addPvpResult(outcome) {

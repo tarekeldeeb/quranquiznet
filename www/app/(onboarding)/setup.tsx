@@ -6,9 +6,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfileStore } from '../../src/stores/profileStore';
+import { useTheme } from '../../src/theme/tokens';
 
 export default function SetupScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const profile = useProfileStore();
   const [parts, setParts] = useState(() => profile.parts.map((p) => ({ ...p })));
 
@@ -45,21 +47,21 @@ export default function SetupScreen() {
   }
 
   return (
-    <SafeAreaView style={s.container}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]}>
       <View style={s.header}>
-        <Text style={s.title}>ماذا حفظت؟</Text>
-        <Text style={s.subtitle}>اختر السور والأجزاء التي حفظتها</Text>
+        <Text style={[s.title, { color: colors.ink }]}>ماذا حفظت؟</Text>
+        <Text style={[s.subtitle, { color: colors.inkSoft }]}>اختر السور والأجزاء التي حفظتها</Text>
       </View>
 
       <View style={s.actionRow}>
-        <TouchableOpacity style={s.actionBtn} onPress={selectAll}>
-          <Text style={s.actionTxt}>الكل</Text>
+        <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectAll}>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>الكل</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={s.actionBtn} onPress={selectNone}>
-          <Text style={s.actionTxt}>لا شيء</Text>
+        <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectNone}>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>لا شيء</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={s.actionBtn} onPress={selectLast}>
-          <Text style={s.actionTxt}>الأخيرة</Text>
+        <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectLast}>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>الأخيرة</Text>
         </TouchableOpacity>
       </View>
 
@@ -67,25 +69,25 @@ export default function SetupScreen() {
         data={parts}
         keyExtractor={(_, i) => String(i)}
         renderItem={({ item, index }) => (
-          <View style={s.row}>
+          <View style={[s.row, { backgroundColor: colors.card }]}>
             <Switch
               value={item.checked}
               onValueChange={() => toggle(index)}
               disabled={index === 0}
-              trackColor={{ false: '#ccc', true: '#0d2d4e' }}
-              thumbColor={item.checked ? '#fff' : '#f4f3f4'}
+              trackColor={{ false: colors.line, true: colors.gold }}
+              thumbColor="#fff"
             />
-            <Text style={[s.partName, index === 0 && s.partNameFixed]}>
+            <Text style={[s.partName, { color: colors.ink }, index === 0 && { color: colors.goldDeep, fontWeight: '600' }]}>
               {item.name}
             </Text>
           </View>
         )}
-        ItemSeparatorComponent={() => <View style={s.sep} />}
+        ItemSeparatorComponent={() => <View style={[s.sep, { backgroundColor: colors.line }]} />}
         contentContainerStyle={s.list}
         style={s.flatList}
       />
 
-      <TouchableOpacity style={s.confirmBtn} onPress={confirm}>
+      <TouchableOpacity style={[s.confirmBtn, { backgroundColor: colors.navy }]} onPress={confirm}>
         <Text style={s.confirmTxt}>تأكيد واستمر</Text>
       </TouchableOpacity>
     </SafeAreaView>
@@ -93,10 +95,10 @@ export default function SetupScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#faf6ec' },
+  container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 },
-  title: { fontSize: 24, fontWeight: '700', color: '#0d2d4e', textAlign: 'right' },
-  subtitle: { fontSize: 14, color: '#666', textAlign: 'right', marginTop: 4 },
+  title: { fontSize: 24, fontWeight: '700', textAlign: 'right' },
+  subtitle: { fontSize: 14, textAlign: 'right', marginTop: 4 },
   actionRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -105,29 +107,24 @@ const s = StyleSheet.create({
   },
   actionBtn: {
     flex: 1,
-    backgroundColor: '#fff',
     borderRadius: 8,
     paddingVertical: 10,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#d6eaf8',
   },
-  actionTxt: { fontSize: 13, fontWeight: '600', color: '#0d2d4e' },
+  actionTxt: { fontSize: 13, fontWeight: '600' },
   flatList: { flex: 1 },
   list: { paddingBottom: 8 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
     paddingHorizontal: 16,
     paddingVertical: 12,
     gap: 12,
   },
-  partName: { flex: 1, fontSize: 15, color: '#1a1a1a', textAlign: 'right' },
-  partNameFixed: { color: '#0d2d4e', fontWeight: '600' },
-  sep: { height: 1, backgroundColor: '#f0f0f0' },
+  partName: { flex: 1, fontSize: 15, textAlign: 'right' },
+  sep: { height: 1 },
   confirmBtn: {
-    backgroundColor: '#0d2d4e',
     margin: 16,
     paddingVertical: 16,
     borderRadius: 12,

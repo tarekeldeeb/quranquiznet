@@ -4,8 +4,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-
-const NAVY = '#0d2d4e';
+import { useTheme } from '../../src/theme/tokens';
 
 const SECTIONS: { title: string; body: string }[] = [
   {
@@ -44,11 +43,12 @@ const SECTIONS: { title: string; body: string }[] = [
 
 export default function PrivacyScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
 
   return (
-    <SafeAreaView style={s.container} edges={['top', 'bottom']}>
-      {/* Header */}
-      <View style={s.header}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['top', 'bottom']}>
+      {/* Header — a fixed navy panel like the auth/onboarding heroes, correct in both modes */}
+      <View style={[s.header, { backgroundColor: colors.navy }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} hitSlop={8}>
           <Ionicons name="chevron-forward" size={24} color="#fff" />
         </TouchableOpacity>
@@ -58,40 +58,38 @@ export default function PrivacyScreen() {
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
         {SECTIONS.map((sec) => (
-          <View key={sec.title} style={s.card}>
-            <Text style={s.cardTitle}>{sec.title}</Text>
-            <Text style={s.cardBody}>{sec.body}</Text>
+          <View key={sec.title} style={[s.card, { backgroundColor: colors.card }]}>
+            <Text style={[s.cardTitle, { color: colors.ink }]}>{sec.title}</Text>
+            <Text style={[s.cardBody, { color: colors.ink }]}>{sec.body}</Text>
           </View>
         ))}
-        <Text style={s.updated}>آخر تحديث: يونيو 2026</Text>
+        <Text style={[s.updated, { color: colors.inkSoft }]}>آخر تحديث: يونيو 2026</Text>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#faf6ec' },
+  container: { flex: 1 },
   header: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
     paddingVertical: 12,
-    backgroundColor: NAVY,
   },
   backBtn: { width: 32, alignItems: 'center' },
   headerTitle: { color: '#fff', fontSize: 17, fontWeight: '800' },
 
   scroll: { padding: 16, gap: 12, paddingBottom: 32 },
   card: {
-    backgroundColor: '#fff',
     borderRadius: 14,
     padding: 16,
     gap: 6,
     boxShadow: '0px 2px 8px rgba(13,45,78,0.06)',
     elevation: 2,
   },
-  cardTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
-  cardBody: { fontSize: 14, color: '#444', textAlign: 'right', lineHeight: 24 },
-  updated: { fontSize: 12, color: '#9aa6b2', textAlign: 'center', marginTop: 4 },
+  cardTitle: { fontSize: 15, fontWeight: '800', textAlign: 'right' },
+  cardBody: { fontSize: 14, textAlign: 'right', lineHeight: 24 },
+  updated: { fontSize: 12, textAlign: 'center', marginTop: 4 },
 });

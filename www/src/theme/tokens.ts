@@ -2,7 +2,7 @@
 // replaces the ~12 ad-hoc greys and two competing blues (#0d2d4e / #1a5276)
 // that used to be re-declared per screen. Palette drawn from the muṣḥaf:
 // gilded gold instead of 2013 Flat-UI orange, warm paper instead of blue-grey.
-import { useColorScheme } from 'react-native';
+import { useProfileStore } from '../stores/profileStore';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -74,10 +74,11 @@ export function getTheme(mode: ThemeMode): ThemeColors {
   return mode === 'dark' ? DARK : LIGHT;
 }
 
-/** Live theme + tokens, following the OS color scheme (وضع الليل). */
+/** Live theme + tokens, following the user's manual light/dark choice (a
+ * device preference in profileStore, defaulting to dark — وضع الليل) rather
+ * than the OS color scheme. See Settings for the toggle. */
 export function useTheme() {
-  const scheme = useColorScheme();
-  const mode: ThemeMode = scheme === 'dark' ? 'dark' : 'light';
+  const mode = useProfileStore((s) => s.themeMode);
   return { mode, colors: getTheme(mode), radii, type };
 }
 

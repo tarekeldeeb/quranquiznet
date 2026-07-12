@@ -11,6 +11,7 @@ import { useProfileStore } from '../../src/stores/profileStore';
 import { signOut } from '../../src/services/firebase';
 import { useTheme, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
+import ThemeToggle from '../../src/components/ThemeToggle';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '';
 
@@ -71,6 +72,18 @@ export default function SettingsScreen() {
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
       <ScrollView style={s.scrollView} contentContainerStyle={s.scroll}>
+        {/* Appearance */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>المظهر</Text>
+          <View style={s.toggleRow}>
+            <View style={s.toggleInfo}>
+              <Text style={[s.toggleLabel, { color: colors.ink }]}>مظهر التطبيق</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft }]}>الوضع الداكن هو الافتراضي</Text>
+            </View>
+            <ThemeToggle value={profile.themeMode} onChange={profile.setThemeMode} />
+          </View>
+        </View>
+
         {/* Level selector */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
           <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>
@@ -110,7 +123,7 @@ export default function SettingsScreen() {
               value={specialEditable && profile.specialEnabled}
               onValueChange={toggleSpecial}
               disabled={!specialEditable}
-              trackColor={{ false: colors.line, true: colors.navy }}
+              trackColor={{ false: colors.line, true: colors.gold }}
               thumbColor="#fff"
             />
           </View>
