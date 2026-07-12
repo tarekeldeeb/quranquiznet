@@ -810,9 +810,15 @@ const s = StyleSheet.create({
   anonBtns: { flexDirection: 'row-reverse', gap: 6 },
   iconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
 
-  // Streak sheet
+  // Bottom sheets (streak, rank ladder) — Modal renders outside the web
+  // column wrapper (see WebFrame in app/_layout.tsx), so the sheet itself
+  // needs the same width cap or it stretches full-browser-width on desktop.
   sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  sheet: { borderTopLeftRadius: radii.lg + 4, borderTopRightRadius: radii.lg + 4, padding: 20, paddingBottom: 32 },
+  sheet: {
+    borderTopLeftRadius: radii.lg + 4, borderTopRightRadius: radii.lg + 4,
+    padding: 20, paddingBottom: 32,
+    width: '100%', maxWidth: 512, alignSelf: 'center',
+  },
   sheetHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
   sheetTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
   streakHero: { alignItems: 'center', gap: 4, paddingVertical: 16 },
