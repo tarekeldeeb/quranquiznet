@@ -88,7 +88,7 @@ function ProgressChart({ scores, colors }: { scores: { date: number; score: numb
       <View style={[s.sparkRow, { height: H }]}>
         {enough ? bars : <Text style={[s.sparkEmpty, { color: colors.line }]}>—</Text>}
       </View>
-      <Text style={[s.statLabel, { color: colors.navy }]}>تقدّمك</Text>
+      <Text style={[s.statLabel, { color: colors.ink }]}>تقدّمك</Text>
       <Text style={[s.statSub, { color: colors.inkSoft }]}>{enough ? `${arNum(data.length)} يوم` : 'ابدأ اللعب'}</Text>
     </View>
   );
@@ -121,13 +121,13 @@ function StreakSheet({
             <PressScale onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color={colors.inkSoft} />
             </PressScale>
-            <Text style={[s.sheetTitle, { color: colors.navy }]}>سلسلتك</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink }]}>سلسلتك</Text>
             <View style={{ width: 22 }} />
           </View>
 
           <View style={s.streakHero}>
             <Ionicons name="flame" size={36} color={colors.gold} />
-            <Text style={[s.streakBig, { color: colors.navy }]}>{arNum(streak)}</Text>
+            <Text style={[s.streakBig, { color: colors.ink }]}>{arNum(streak)}</Text>
             <Text style={[s.streakUnit, { color: colors.inkSoft }]}>يوماً متتالياً</Text>
           </View>
 
@@ -137,7 +137,7 @@ function StreakSheet({
                 <View style={[
                   s.weekDot,
                   { backgroundColor: d.played ? colors.gold : colors.goldPale },
-                  d.isToday && { borderWidth: 2, borderColor: colors.navy },
+                  d.isToday && { borderWidth: 2, borderColor: colors.ink },
                 ]}
                 >
                   {d.played && <Ionicons name="checkmark" size={14} color={colors.navy} />}
@@ -351,7 +351,7 @@ export default function MeScreen() {
           onPress={() => router.push('/(app)/pvp')}
         >
           <Ionicons name="flash" size={22} color={colors.goldDeep} />
-          <Text style={[s.wayTileTxt, { color: colors.navy }]}>منافسة مباشرة</Text>
+          <Text style={[s.wayTileTxt, { color: colors.goldDeep }]}>منافسة مباشرة</Text>
           {pvpTotal > 0 && (
             <View style={[s.wayBadge, { backgroundColor: colors.goldPale }]}>
               <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{arNum(profile.pvp.wins)} فوز</Text>
@@ -397,7 +397,7 @@ export default function MeScreen() {
               {trend !== 0 && (
                 <Text style={trend > 0 ? { color: colors.correct } : { color: colors.wrong }}>{trend > 0 ? '▲' : '▼'} </Text>
               )}
-              <Text style={[s.topPointsVal, { color: colors.navy }]}>{arNum(score)}</Text>
+              <Text style={[s.topPointsVal, { color: colors.ink }]}>{arNum(score)}</Text>
               <Text style={[s.topPointsLabel, { color: colors.inkSoft }]}> نقطة</Text>
             </Text>
           </View>
@@ -413,7 +413,7 @@ export default function MeScreen() {
         {/* ── Give the score a destination: rank title + progress to next rank ── */}
         <View style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]}>
           <View style={s.rankRow}>
-            <Text style={[s.rankTitle, { color: colors.navy }]}>{rank.title}</Text>
+            <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
             {rank.nextTitle && (
               <Text style={[s.rankNext, { color: colors.inkSoft }]}>
                 {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
@@ -470,13 +470,13 @@ export default function MeScreen() {
         {/* ── BENTO: 2× progress ring tiles + sparkline ── */}
         <View style={s.bentoRow}>
           <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
-            <Ring pct={studyPct} color={colors.navy} trackColor={colors.goldPale} innerColor={colors.card} />
-            <Text style={[s.statLabel, { color: colors.navy }]}>كم الحفظ</Text>
+            <Ring pct={studyPct} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} />
+            <Text style={[s.statLabel, { color: colors.ink }]}>كم الحفظ</Text>
             <Text style={[s.statSub, { color: colors.inkSoft }]}>من القرآن</Text>
           </View>
           <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
             <Ring pct={ratioPct} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} />
-            <Text style={[s.statLabel, { color: colors.navy }]}>صحة الحفظ</Text>
+            <Text style={[s.statLabel, { color: colors.ink }]}>صحة الحفظ</Text>
             <Text style={[s.statSub, { color: colors.inkSoft }]}>دقة الإجابات</Text>
           </View>
           <ProgressChart scores={profile.scores} colors={colors} />
@@ -541,7 +541,7 @@ export default function MeScreen() {
       >
         <View style={s.nickOverlay}>
           <View style={[s.nickBox, { backgroundColor: colors.card }]}>
-            <Text style={[s.nickTitle, { color: colors.navy }]}>اختر اسماً يظهر على لوحة الصدارة</Text>
+            <Text style={[s.nickTitle, { color: colors.ink }]}>اختر اسماً يظهر على لوحة الصدارة</Text>
             <TextInput
               style={[s.nickInput, { borderColor: colors.line, color: colors.ink }]}
               value={nicknameInput}

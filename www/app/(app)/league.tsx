@@ -168,13 +168,13 @@ export default function LeagueScreen() {
       <View style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
         <Text style={[s.rank, { color: colors.inkSoft }]}>{arNum(rank)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.navy }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
         {delta != null && delta !== 0 && (
           <Text style={[s.delta, delta > 0 ? { color: colors.correct } : { color: colors.wrong }]}>
             {delta > 0 ? `▲${arNum(delta)}` : `▼${arNum(Math.abs(delta))}`}
           </Text>
         )}
-        <Text style={[s.rowScore, { color: colors.navy }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
+        <Text style={[s.rowScore, { color: colors.ink }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
       </View>
     );
   }
@@ -187,8 +187,8 @@ export default function LeagueScreen() {
       <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
         <Text style={[s.rank, { color: colors.inkSoft }]}>{item.rank <= 3 ? MEDAL[item.rank - 1] : arNum(item.rank)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.navy }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
-        <Text style={[s.rowScore, { color: colors.navy }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
+        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        <Text style={[s.rowScore, { color: colors.ink }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
       </View>
     );
   }
@@ -207,7 +207,7 @@ export default function LeagueScreen() {
           ) : (
             <PressScale style={[s.dailyStrip, { backgroundColor: colors.card }]} onPress={startDaily}>
               <Ionicons name="star" size={18} color={colors.gold} />
-              <Text style={[s.dailyStripTxt, { color: colors.navy }]}>اختبار اليوم جاهز</Text>
+              <Text style={[s.dailyStripTxt, { color: colors.ink }]}>اختبار اليوم جاهز</Text>
               <View style={[s.dailyStripBtn, { backgroundColor: colors.navy }]}>
                 <Text style={s.dailyStripBtnTxt}>ابدأ</Text>
               </View>
@@ -216,8 +216,8 @@ export default function LeagueScreen() {
         )}
         {status === 'loading' && (
           <View style={[s.dailyStrip, { backgroundColor: colors.card }]}>
-            <ActivityIndicator size="small" color={colors.navy} />
-            <Text style={[s.dailyStripTxt, { color: colors.navy }]}>جارٍ التحقق...</Text>
+            <ActivityIndicator size="small" color={colors.ink} />
+            <Text style={[s.dailyStripTxt, { color: colors.ink }]}>جارٍ التحقق...</Text>
           </View>
         )}
         {status === 'error' && (
@@ -232,7 +232,7 @@ export default function LeagueScreen() {
             user has a submission in today's live standings. */}
         {ownRank && (
           <View style={[s.card, { backgroundColor: colors.card }]}>
-            <Text style={[s.cardTitle, { color: colors.navy, borderColor: colors.line }]}>ترتيبك اليوم: #{arNum(ownRank.rank)}</Text>
+            <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line }]}>ترتيبك اليوم: #{arNum(ownRank.rank)}</Text>
             {ownRank.above.map((e) => renderNeighborRow(e, false))}
             {renderNeighborRow(ownRank.entry, true)}
             {ownRank.below.map((e) => renderNeighborRow(e, false))}
@@ -247,21 +247,21 @@ export default function LeagueScreen() {
               style={[s.tabBtn, tab === key && { backgroundColor: colors.navy }]}
               onPress={() => setTab(key)}
             >
-              <Text style={[s.tabBtnTxt, { color: colors.navy }, tab === key && { color: '#fff' }]}>{label}</Text>
+              <Text style={[s.tabBtnTxt, { color: colors.ink }, tab === key && { color: '#fff' }]}>{label}</Text>
             </PressScale>
           ))}
         </View>
 
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Text style={[s.cardTitle, { color: colors.navy, borderColor: colors.line }]}>
+          <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line }]}>
             {tab === 'today' ? 'المتصدّرون اليوم' : tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أفضل نتائج هذا الشهر'}
           </Text>
           {reportsLoading ? (
-            <ActivityIndicator color={colors.navy} style={{ marginVertical: 16 }} />
+            <ActivityIndicator color={colors.ink} style={{ marginVertical: 16 }} />
           ) : listData.length === 0 ? (
             <View style={s.emptyWrap}>
               <Ionicons name="trophy-outline" size={30} color={colors.inkSoft} />
-              <Text style={[s.emptyTitle, { color: colors.navy }]}>كن أول المتصدرين {tab === 'month' ? 'هذا الشهر' : 'اليوم'}</Text>
+              <Text style={[s.emptyTitle, { color: colors.ink }]}>كن أول المتصدرين {tab === 'month' ? 'هذا الشهر' : 'اليوم'}</Text>
               <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}>
                 <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
               </PressScale>

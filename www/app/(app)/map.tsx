@@ -130,9 +130,9 @@ export default function MapScreen() {
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
       <View style={[s.header, { borderColor: colors.line }]}>
         <PressScale onPress={() => router.back()} hitSlop={10} style={s.backBtn}>
-          <Ionicons name="chevron-forward" size={22} color={colors.navy} />
+          <Ionicons name="chevron-forward" size={22} color={colors.ink} />
         </PressScale>
-        <Text style={[s.title, { color: colors.navy, fontFamily: 'Amiri-Regular' }]}>خريطة الحفظ</Text>
+        <Text style={[s.title, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>خريطة الحفظ</Text>
         <ActiveCountBadge value={activeParts} color={colors.goldDeep} bg={colors.goldPale} />
       </View>
 
@@ -143,7 +143,7 @@ export default function MapScreen() {
             style={[s.filterBtn, { backgroundColor: colors.card, borderColor: colors.line }]}
             onPress={() => applyBulk(action)}
           >
-            <Text style={[s.filterBtnTxt, { color: colors.navy }]}>{label}</Text>
+            <Text style={[s.filterBtnTxt, { color: colors.ink }]}>{label}</Text>
           </PressScale>
         ))}
       </View>
@@ -174,7 +174,7 @@ export default function MapScreen() {
                 value={part.checked}
                 onValueChange={() => togglePart(index)}
                 disabled={index === 0}
-                trackColor={{ false: colors.line, true: colors.navy }}
+                trackColor={{ false: colors.line, true: colors.gold }}
                 thumbColor="#fff"
               />
             </PressScale>

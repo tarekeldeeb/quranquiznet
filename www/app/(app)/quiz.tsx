@@ -911,7 +911,7 @@ export default function QuizScreen() {
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
       {loading && cards.length === 0 && !chooserVisible && (
         <View style={[s.loadingOverlay, { backgroundColor: colors.paper }]}>
-          <ActivityIndicator size="large" color={colors.navy} />
+          <ActivityIndicator size="large" color={colors.ink} />
         </View>
       )}
 
@@ -963,7 +963,7 @@ export default function QuizScreen() {
           first thing a player sees on this tab when nothing is running. */}
       {chooserVisible ? (
         <ScrollView contentContainerStyle={s.chooserScreen} showsVerticalScrollIndicator={false}>
-          <Text style={[s.chooserTitle, { color: colors.navy }]}>ابدأ اختباراً</Text>
+          <Text style={[s.chooserTitle, { color: colors.ink }]}>ابدأ اختباراً</Text>
           <PressScale
             style={[s.chooserPrimary, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]}
             onPress={() => startSession({})}
@@ -982,7 +982,7 @@ export default function QuizScreen() {
                     onPress={() => startSession({ partIndex: index })}
                   >
                     <Ionicons name="chevron-back" size={16} color={colors.inkSoft} />
-                    <Text style={[s.chooserOptionTxt, { color: colors.navy }]}>{name}</Text>
+                    <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{name}</Text>
                   </PressScale>
                 ))}
               </View>
@@ -1029,7 +1029,7 @@ export default function QuizScreen() {
       <Modal visible={reportVisible} transparent animationType="slide" onRequestClose={() => setReportVisible(false)}>
         <View style={s.modalBg}>
           <View style={[s.modalBox, { backgroundColor: colors.card }]}>
-            <Text style={[s.modalTitle, { color: colors.navy }]}>الإبلاغ عن خطأ</Text>
+            <Text style={[s.modalTitle, { color: colors.ink }]}>الإبلاغ عن خطأ</Text>
             <TextInput
               style={[s.reportInput, { borderColor: colors.line, color: colors.ink }]}
               placeholder="برجاء توضيح الخطأ ..."
@@ -1056,7 +1056,7 @@ export default function QuizScreen() {
         <View style={s.sheetBg}>
           <Confetti active={dailyEndVisible && dailyFinalScore >= 80} />
           <View style={[s.sheet, { backgroundColor: colors.card }]}>
-            <Text style={[s.sheetTitle, { color: colors.navy, fontFamily: 'Amiri-Regular' }]}>شكراً لاشتراكك في اختبار اليوم</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>شكراً لاشتراكك في اختبار اليوم</Text>
             <View style={s.sheetRingWrap}>
               <Ring pct={dailyFinalScore} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} size={128} label={`${arNum(Math.round(dailyFinalScore))}`} />
             </View>
@@ -1064,13 +1064,13 @@ export default function QuizScreen() {
             <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
             <View style={s.postWinRow}>
               <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={shareScoreDaily}>
-                <Ionicons name="share-social-outline" size={16} color={colors.navy} />
-                <Text style={[s.postWinBtnTxt, { color: colors.navy }]}>شارك النتيجة</Text>
+                <Ionicons name="share-social-outline" size={16} color={colors.goldDeep} />
+                <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>شارك النتيجة</Text>
               </PressScale>
               {profile.getWeakCheckedParts(1).length > 0 && (
                 <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={practiceWeakestSura}>
-                  <Ionicons name="book-outline" size={16} color={colors.navy} />
-                  <Text style={[s.postWinBtnTxt, { color: colors.navy }]}>تدرّب على أضعف سورة</Text>
+                  <Ionicons name="book-outline" size={16} color={colors.goldDeep} />
+                  <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>تدرّب على أضعف سورة</Text>
                 </PressScale>
               )}
             </View>
@@ -1092,14 +1092,14 @@ export default function QuizScreen() {
         <View style={s.sheetBg}>
           <Confetti active={summaryVisible && sessionAccuracy >= 80} />
           <View style={[s.sheet, { backgroundColor: colors.card }]}>
-            <Text style={[s.sheetTitle, { color: colors.navy, fontFamily: 'Amiri-Regular' }]}>ممتاز!</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>ممتاز!</Text>
             <View style={s.sheetRingWrap}>
               <Ring pct={sessionAccuracy} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} size={128} />
             </View>
             <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>
               أجبت على {arNum(sessionCorrectRef.current)} من {arNum(sessionAnsweredRef.current)} سؤال بشكل صحيح
             </Text>
-            <Text style={[s.bigScore, { color: colors.navy }]}>{arNum(score)}</Text>
+            <Text style={[s.bigScore, { color: colors.ink }]}>{arNum(score)}</Text>
             <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center', marginBottom: 16 }]}>نقطة إجمالية</Text>
             {weakestPart !== '-' && (
               <Text style={[s.modalBody, { color: colors.goldDeep, textAlign: 'center' }]}>

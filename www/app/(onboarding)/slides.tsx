@@ -73,7 +73,7 @@ function QuizPreview() {
         </View>
         <View style={p.metaCol}>
           <View style={[p.scoreBox, { borderColor: colors.line }]}>
-            <Text style={[p.scoreMain, { color: colors.navy }]}>{arNum(picked == null ? 140 : isCorrect ? 160 : 140)}</Text>
+            <Text style={[p.scoreMain, { color: colors.ink }]}>{arNum(picked == null ? 140 : isCorrect ? 160 : 140)}</Text>
             <Text style={[p.scoreUp, { color: colors.correct }]}>+٢٠</Text>
           </View>
           <View style={p.skipBtn}>
@@ -102,7 +102,7 @@ function DailyPreview() {
         <Text style={[p.dailyTimerUnit, { color: colors.wrong }]}>ث</Text>
       </View>
       <Ionicons name="star" size={34} color={colors.gold} />
-      <Text style={[p.dailyTitle, { color: colors.navy }]}>اختبار اليوم جاهز!</Text>
+      <Text style={[p.dailyTitle, { color: colors.ink }]}>اختبار اليوم جاهز!</Text>
       <Text style={[p.dailyBody, { color: colors.inkSoft }]}>١٠ أسئلة بمؤقّت — أجب بسرعة ودقّة</Text>
       <View style={[p.dailyStartBtn, { backgroundColor: colors.navy }]}>
         <Ionicons name="play" size={16} color="#fff" />
@@ -123,13 +123,13 @@ function LeaguePreview() {
   ];
   return (
     <View style={[p.boardCard, { backgroundColor: colors.card }]}>
-      <Text style={[p.boardTitle, { color: colors.navy, borderColor: colors.line }]}>المتصدّرون اليوم</Text>
+      <Text style={[p.boardTitle, { color: colors.ink, borderColor: colors.line }]}>المتصدّرون اليوم</Text>
       {rows.map((r, i) => (
         <View key={i} style={[p.boardRow, { borderColor: colors.line }, r.me && { backgroundColor: colors.goldPale }]}>
           <Text style={p.boardMedal}>{r.medal}</Text>
           <Text style={p.boardFlag}>{r.flag}</Text>
-          <Text style={[p.boardName, { color: colors.ink }, r.me && { color: colors.navy, fontFamily: 'PlexArabic-Bold' }]} numberOfLines={1}>{r.name}</Text>
-          <Text style={[p.boardScore, { color: colors.navy }, r.me && { color: colors.goldDeep }]}>{arNum(r.score)}</Text>
+          <Text style={[p.boardName, { color: colors.ink }, r.me && { color: colors.goldDeep, fontFamily: 'PlexArabic-Bold' }]} numberOfLines={1}>{r.name}</Text>
+          <Text style={[p.boardScore, { color: colors.ink }, r.me && { color: colors.goldDeep }]}>{arNum(r.score)}</Text>
         </View>
       ))}
     </View>

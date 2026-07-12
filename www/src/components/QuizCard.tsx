@@ -319,7 +319,7 @@ export default function QuizCard({
           {/* Meta: score (always) + the live fly/count-up badge */}
           <View style={s.metaCol}>
             <View style={[s.scoreBox, { borderColor: colors.line }]}>
-              <Text style={[s.scoreMain, { color: colors.navy }]}>{arNum(displayScore)}</Text>
+              <Text style={[s.scoreMain, { color: colors.ink }]}>{arNum(displayScore)}</Text>
               <View style={s.scoreUpWrap}>
                 <Text style={[s.scoreUp, { color: colors.correct }]}>+{arNum(scoreUp)}</Text>
                 {showReveal && isCorrect && (
@@ -350,7 +350,7 @@ export default function QuizCard({
           <View style={s.backHeaderLeft}>
             <Text style={[s.backSuraInfo, { color: colors.inkSoft }]}>{suraInfo}</Text>
           </View>
-          <Text style={[s.backSuraName, { color: colors.navy, fontFamily: AMIRI_FONT }]}>سورة {suraName} · آية {arNum(card.answerAya)}</Text>
+          <Text style={[s.backSuraName, { color: colors.ink, fontFamily: AMIRI_FONT }]}>سورة {suraName} · آية {arNum(card.answerAya)}</Text>
         </View>
 
         {/* Answer text */}
@@ -376,15 +376,15 @@ export default function QuizCard({
             <Text style={s.actionBtnTxt}> حسناً</Text>
           </PressScale>
           <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={() => setImgVisible(true)}>
-            <Ionicons name="book-outline" size={16} color={colors.navy} />
-            <Text style={[s.actionBtnTxt, { color: colors.navy }]}> شاهد</Text>
+            <Ionicons name="book-outline" size={16} color={colors.ink} />
+            <Text style={[s.actionBtnTxt, { color: colors.ink }]}> شاهد</Text>
           </PressScale>
           {/* Share links to /quiz?start=<word>, which only reproduces normal
               "complete the verse" questions — so hide it on special questions. */}
           {card.qo.qType.id === Q_TYPE.NOTSPECIAL.id && (
             <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={handleShare}>
-              <Ionicons name="share-social-outline" size={16} color={colors.navy} />
-              <Text style={[s.actionBtnTxt, { color: colors.navy }]}> نافس</Text>
+              <Ionicons name="share-social-outline" size={16} color={colors.ink} />
+              <Text style={[s.actionBtnTxt, { color: colors.ink }]}> نافس</Text>
             </PressScale>
           )}
           <PressScale style={[s.reportBtn, { backgroundColor: colors.wrongPale }]} onPress={() => onReport(card)}>

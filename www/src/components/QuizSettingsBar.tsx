@@ -50,7 +50,7 @@ export default function QuizSettingsBar({
 
   return (
     <View style={[s.wrapper, { backgroundColor: colors.card, borderColor: colors.line }]}>
-      <Text style={[s.summary, { color: colors.navy }]}>{summary}</Text>
+      <Text style={[s.summary, { color: colors.ink }]}>{summary}</Text>
 
       {scopeMode === 'daily' ? (
         <>
@@ -73,7 +73,7 @@ export default function QuizSettingsBar({
         <>
           <View style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
             {scopeNames.map((name, i) => (
-              <Text key={i} style={[s.chip, { color: colors.navy, backgroundColor: colors.paper }]}>{name}</Text>
+              <Text key={i} style={[s.chip, { color: colors.ink, backgroundColor: colors.paper }]}>{name}</Text>
             ))}
           </View>
           {collapsible && (

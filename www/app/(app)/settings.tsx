@@ -73,7 +73,7 @@ export default function SettingsScreen() {
       <ScrollView style={s.scrollView} contentContainerStyle={s.scroll}>
         {/* Level selector */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionHeader, { color: colors.navy, backgroundColor: colors.paper, borderColor: colors.line }]}>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>
             مستوى الاختبار: {profile.levels[profile.level]?.text}
           </Text>
           {profile.levels.map((lvl) => (
@@ -84,8 +84,8 @@ export default function SettingsScreen() {
               disabled={lvl.disabled}
             >
               <View style={s.levelLeft}>
-                <View style={[s.radio, { borderColor: colors.navy }]}>
-                  {profile.level === lvl.value && <View style={[s.radioDot, { backgroundColor: colors.navy }]} />}
+                <View style={[s.radio, { borderColor: colors.ink }]}>
+                  {profile.level === lvl.value && <View style={[s.radioDot, { backgroundColor: colors.gold }]} />}
                 </View>
               </View>
               <View style={s.levelRight}>
@@ -98,7 +98,7 @@ export default function SettingsScreen() {
 
         {/* Special questions toggle */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionHeader, { color: colors.navy, backgroundColor: colors.paper, borderColor: colors.line }]}>الأسئلة الخاصة</Text>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>الأسئلة الخاصة</Text>
           <View style={s.toggleRow}>
             <View style={s.toggleInfo}>
               <Text style={[s.toggleLabel, { color: colors.ink }]}>تفعيل الأسئلة عن اسم السورة ورقم الآية</Text>
@@ -154,7 +154,7 @@ const s = StyleSheet.create({
   levelRight: { flex: 1, alignItems: 'flex-end' },
   levelName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
   levelComment: { fontSize: 12, textAlign: 'right', marginTop: 2 },
-  toggleRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  toggleRow: { flexDirection: 'row-reverse', alignItems: 'center', padding: 14, gap: 12 },
   toggleInfo: { flex: 1, alignItems: 'flex-end' },
   toggleLabel: { fontSize: 14, textAlign: 'right' },
   toggleHint: { fontSize: 11, textAlign: 'right', marginTop: 2 },
