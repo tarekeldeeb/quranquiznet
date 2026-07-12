@@ -500,22 +500,31 @@ export default function MeScreen() {
           </PressScale>
         </View>
 
-        {/* ── Give the score a destination: rank title + progress to next rank —
-            tap opens the full ladder (all ranks + how to reach each one) ── */}
+        {/* ── Give the score a destination: badge + rank title + progress to
+            next rank — tap opens the full ladder (all ranks + how to reach
+            each one). Same badge icon set as the ladder sheet, so the current
+            rank reads as one continuous idea between the two. ── */}
         <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => setRankSheetOpen(true)}>
-          <View style={s.rankRow}>
-            <View style={s.rankTitleRow}>
-              <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
-              <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+          <View style={s.rankHeaderRow}>
+            <View style={[s.rankBadgeSmall, { backgroundColor: colors.gold }]}>
+              <Ionicons name={RANK_ICONS[rank.index]} size={18} color={colors.navy} />
             </View>
-            {rank.nextTitle && (
-              <Text style={[s.rankNext, { color: colors.inkSoft }]}>
-                {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
-              </Text>
-            )}
-          </View>
-          <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
-            <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold }]} />
+            <View style={s.rankColumn}>
+              <View style={s.rankRow}>
+                <View style={s.rankTitleRow}>
+                  <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
+                  <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+                </View>
+                {rank.nextTitle && (
+                  <Text style={[s.rankNext, { color: colors.inkSoft }]}>
+                    {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
+                  </Text>
+                )}
+              </View>
+              <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
+                <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold }]} />
+              </View>
+            </View>
           </View>
         </PressScale>
 
@@ -709,7 +718,10 @@ const s = StyleSheet.create({
   bentoHalf: { flex: 1, borderRadius: radii.lg, ...CARD_SHADOW },
 
   // Rank card
-  rankCard: { padding: 14, gap: 8 },
+  rankCard: { padding: 14 },
+  rankHeaderRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10 },
+  rankBadgeSmall: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  rankColumn: { flex: 1, gap: 8 },
   rankRow: { flexDirection: 'row-reverse', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
   rankTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
   rankTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
