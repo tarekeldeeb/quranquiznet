@@ -2,16 +2,20 @@
  *
  * Strategy (full offline after first load):
  *  - Navigations (HTML): network-first, fall back to cached app shell when offline.
- *  - Hashed/immutable assets (/_expo/, /assets/, /icons/, js/css/fonts/images):
- *    cache-first. These names are content-hashed by the Expo export, so once
- *    cached they never go stale — this is what makes the bundled q.json (and the
- *    whole quiz) work fully offline after the first visit.
- *  - Everything else same-origin: network-first with cache fallback.
+ *  - Hashed/immutable assets (/_expo/, /assets/, /icons/): cache-first. These
+ *    paths are content-hashed by the Expo export, so once cached they never go
+ *    stale — this is what makes the bundled q.json (and the whole quiz) work
+ *    fully offline after the first visit.
+ *  - Everything else same-origin (including /quran-madina/, whose filenames are
+ *    NOT content-hashed): network-first with cache fallback, so a content
+ *    update at the same URL (e.g. a quran-madina-html bump) reaches returning
+ *    visitors instead of sticking behind a stale cache-first entry forever.
+ *    Offline still works via the cache fallback.
  *
  * Bump CACHE_VERSION on every release to bust old caches (the React/Expo
  * equivalent of the old www/worker.js `cacheName` bump).
  */
-const CACHE_VERSION = 'v6';
+const CACHE_VERSION = 'v7';
 const CACHE_NAME = `qqn-${CACHE_VERSION}`;
 
 // App-shell resources precached at install time.
@@ -56,12 +60,16 @@ self.addEventListener('message', (event) => {
   if (event.data === 'SKIP_WAITING') self.skipWaiting();
 });
 
+// Path-prefix allowlist, not a file-extension match: only paths the Expo export
+// actually content-hashes belong here. A blanket extension match (e.g. any
+// same-origin .js/.css/.json) would also catch non-hashed static files like
+// /quran-madina/** and cache them first forever, so a content update at that
+// same URL would never reach a returning visitor short of a CACHE_VERSION bump.
 function isImmutableAsset(url) {
   return (
     url.pathname.startsWith('/_expo/') ||
     url.pathname.startsWith('/assets/') ||
-    url.pathname.startsWith('/icons/') ||
-    /\.(js|css|woff2?|ttf|otf|png|jpe?g|gif|svg|webp|ico|json)$/i.test(url.pathname)
+    url.pathname.startsWith('/icons/')
   );
 }
 
