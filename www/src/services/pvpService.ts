@@ -156,13 +156,16 @@ export function botProgressAt(timeline: BotTimeline, elapsedMs: number): BotProg
   return { qIndex, correct, roundsDone, finished: qIndex >= PVP_QUESTIONS, results };
 }
 
-/** Compare two finished sides: more correct wins; tie breaks on speed. */
+/** Compare two finished sides: more correct wins; equal correct is a draw.
+ *  `timeMs` isn't used as a tiebreaker — it's a real wall-clock timestamp, so
+ *  it's essentially never exactly equal between two independent finishes,
+ *  which made a tied score resolve to a win/loss on a coin-flip-ish
+ *  millisecond difference instead of the draw a tied score should be. */
 export function decideOutcome(
   me: { correct: number; timeMs: number },
   opp: { correct: number; timeMs: number },
 ): PvpOutcome {
   if (me.correct !== opp.correct) return me.correct > opp.correct ? 'win' : 'loss';
-  if (me.timeMs !== opp.timeMs) return me.timeMs < opp.timeMs ? 'win' : 'loss';
   return 'draw';
 }
 

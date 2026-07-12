@@ -29,16 +29,10 @@ import {
 } from '../../src/services/pvpService';
 import { Avatar } from '../../src/components/Avatar';
 import { flagEmoji } from '../../src/models/constants';
+import { useTheme, ThemeColors } from '../../src/theme/tokens';
+import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
-
-// Static light-palette values from src/theme/tokens.ts. This screen still
-// renders one fixed theme (a live match is a short, focused surface); moving
-// it onto useTheme for night mode is part of the night-mode follow-up.
-const NAVY = '#0d2d4e';
-const GREEN = '#2f7d5d';
-const RED = '#b3473d';
-const AMBER = '#c8973a';
 
 type Phase = 'idle' | 'searching' | 'countdown' | 'playing' | 'done';
 type OpponentIdentity = { name: string; photoURL?: string; country?: string };
@@ -68,7 +62,7 @@ const EMPTY_BOT_VIEW: BotProgress = {
 };
 
 /** Ten-segment progress strip; green = correct, red = wrong, grey = pending. */
-function ProgressStrip({ results, current }: { results: (boolean | null)[]; current: number }) {
+function ProgressStrip({ results, current, colors }: { results: (boolean | null)[]; current: number; colors: ThemeColors }) {
   return (
     <View style={s.strip}>
       {Array.from({ length: PVP_QUESTIONS }, (_, i) => (
@@ -76,9 +70,10 @@ function ProgressStrip({ results, current }: { results: (boolean | null)[]; curr
           key={i}
           style={[
             s.stripSeg,
-            results[i] === true && s.segCorrect,
-            results[i] === false && s.segWrong,
-            results[i] === null && i === current && s.segCurrent,
+            { backgroundColor: colors.line },
+            results[i] === true && { backgroundColor: colors.correct },
+            results[i] === false && { backgroundColor: colors.wrong },
+            results[i] === null && i === current && { backgroundColor: colors.gold },
           ]}
         />
       ))}
@@ -89,6 +84,7 @@ function ProgressStrip({ results, current }: { results: (boolean | null)[]; curr
 export default function PvpScreen() {
   const profile = useProfileStore();
   const router = useRouter();
+  const { colors } = useTheme();
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [countdown, setCountdown] = useState(3);
@@ -614,6 +610,7 @@ export default function PvpScreen() {
 
     const q = qIndexRef.current;
     if (correct) playerCorrectRef.current++;
+    if (correct) playCorrectSound(); else playIncorrectSound();
     const nextResults = [...playerResultsRef.current];
     nextResults[q] = correct;
     playerResultsRef.current = nextResults;
@@ -727,34 +724,34 @@ export default function PvpScreen() {
     : 'مباراة متكافئة! جولة أخرى تحسم النتيجة.';
 
   return (
-    <SafeAreaView style={s.container} edges={['bottom']}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
 
       {/* ── Idle: intro — real opponent first, bot fallback if none found ── */}
       {phase === 'idle' && (
         <View style={s.idleWrap}>
-          <View style={s.idleIconRing}>
-            <Ionicons name="flash" size={40} color={AMBER} />
+          <View style={[s.idleIconRing, { backgroundColor: colors.goldPale }]}>
+            <Ionicons name="flash" size={40} color={colors.gold} />
           </View>
-          <Text style={s.idleTitle}>منافسة مباشرة</Text>
-          <Text style={s.idleSub}>
+          <Text style={[s.idleTitle, { color: colors.ink }]}>منافسة مباشرة</Text>
+          <Text style={[s.idleSub, { color: colors.inkSoft }]}>
             {PVP_QUESTIONS} أسئلة من سور حفظك — سنبحث عن منافس حقيقي أولاً، وإن لم نجد
             سيتولى {BOT_NAME} {BOT_EMOJI} التحدي
           </Text>
           <View style={s.recordRow}>
             <View style={s.recordCell}>
-              <Text style={[s.recordNum, { color: GREEN }]}>{profile.pvp.wins}</Text>
-              <Text style={s.recordLbl}>فوز</Text>
+              <Text style={[s.recordNum, { color: colors.correct }]}>{profile.pvp.wins}</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>فوز</Text>
             </View>
             <View style={s.recordCell}>
-              <Text style={[s.recordNum, { color: '#8a97a5' }]}>{profile.pvp.draws}</Text>
-              <Text style={s.recordLbl}>تعادل</Text>
+              <Text style={[s.recordNum, { color: colors.inkSoft }]}>{profile.pvp.draws}</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>تعادل</Text>
             </View>
             <View style={s.recordCell}>
-              <Text style={[s.recordNum, { color: RED }]}>{profile.pvp.losses}</Text>
-              <Text style={s.recordLbl}>خسارة</Text>
+              <Text style={[s.recordNum, { color: colors.wrong }]}>{profile.pvp.losses}</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>خسارة</Text>
             </View>
           </View>
-          <TouchableOpacity style={s.startBtn} onPress={startMatch} activeOpacity={0.85}>
+          <TouchableOpacity style={[s.startBtn, { backgroundColor: colors.navy }]} onPress={startMatch} activeOpacity={0.85}>
             <Ionicons name="flash" size={20} color="#fff" />
             <Text style={s.startBtnTxt}>ابدأ المنافسة</Text>
           </TouchableOpacity>
@@ -764,11 +761,11 @@ export default function PvpScreen() {
       {/* ── Searching for a live opponent ── */}
       {phase === 'searching' && (
         <View style={s.countWrap}>
-          <ActivityIndicator size="large" color={NAVY} />
-          <Text style={s.countBotLine}>جارٍ البحث عن منافس...</Text>
-          <Text style={s.searchSeconds}>{searchSecondsLeft}</Text>
+          <ActivityIndicator size="large" color={colors.ink} />
+          <Text style={[s.countBotLine, { color: colors.ink }]}>جارٍ البحث عن منافس...</Text>
+          <Text style={[s.searchSeconds, { color: colors.ink }]}>{searchSecondsLeft}</Text>
           <TouchableOpacity style={s.homeBtn} onPress={cancelSearch}>
-            <Text style={s.homeTxt}>إلغاء</Text>
+            <Text style={[s.homeTxt, { color: colors.inkSoft }]}>إلغاء</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -776,51 +773,51 @@ export default function PvpScreen() {
       {/* ── Countdown overlay ── */}
       {phase === 'countdown' && (
         <View style={s.countWrap}>
-          <Text style={s.countBotLine}>
+          <Text style={[s.countBotLine, { color: colors.ink }]}>
             {opponentKind === 'bot'
               ? `${BOT_NAME}: هل أنت مستعد؟`
               : `${humanOpponent?.name ?? 'المنافس'}: هل أنت مستعد؟`}
           </Text>
-          <Text style={s.countNum}>{countdown}</Text>
+          <Text style={[s.countNum, { color: colors.gold }]}>{countdown}</Text>
         </View>
       )}
 
       {/* ── Versus header ── */}
       {playing && (
-        <View style={s.vsBar}>
+        <View style={[s.vsBar, { backgroundColor: colors.card }]}>
           {/* RTL: player on the right, opponent on the left */}
           <View style={s.vsSide}>
             <View style={s.vsIdent}>
-              <Avatar uri={avatarUri} fallback={APP_ICON} style={s.vsAvatar} />
-              <Text style={s.vsName} numberOfLines={1}>{playerName}</Text>
+              <Avatar uri={avatarUri} fallback={APP_ICON} style={[s.vsAvatar, { backgroundColor: colors.goldPale }]} />
+              <Text style={[s.vsName, { color: colors.ink }]} numberOfLines={1}>{playerName}</Text>
             </View>
-            <Text style={s.vsScore}>{playerCorrectRef.current}</Text>
-            <ProgressStrip results={playerResults} current={qIndexRef.current} />
+            <Text style={[s.vsScore, { color: colors.ink }]}>{playerCorrectRef.current}</Text>
+            <ProgressStrip results={playerResults} current={qIndexRef.current} colors={colors} />
           </View>
-          <Text style={s.vsMid}>ضد</Text>
+          <Text style={[s.vsMid, { color: colors.inkSoft }]}>ضد</Text>
           <View style={s.vsSide}>
             <View style={s.vsIdent}>
               {opponentKind === 'bot' ? (
-                <View style={s.botAvatar}><Ionicons name="hardware-chip-outline" size={18} color={NAVY} /></View>
+                <View style={[s.botAvatar, { backgroundColor: colors.goldPale }]}><Ionicons name="hardware-chip-outline" size={18} color={colors.goldDeep} /></View>
               ) : (
-                <Avatar uri={humanOpponent?.photoURL} fallback={APP_ICON} style={s.vsAvatar} />
+                <Avatar uri={humanOpponent?.photoURL} fallback={APP_ICON} style={[s.vsAvatar, { backgroundColor: colors.goldPale }]} />
               )}
-              <Text style={s.vsName} numberOfLines={1}>
+              <Text style={[s.vsName, { color: colors.ink }]} numberOfLines={1}>
                 {opponentKind === 'human' && humanOpponent?.country ? `${flagEmoji(humanOpponent.country)} ` : ''}
                 {opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? 'منافس')}
               </Text>
             </View>
-            <Text style={s.vsScore}>{botView.correct}</Text>
-            <ProgressStrip results={botView.results} current={botView.qIndex} />
+            <Text style={[s.vsScore, { color: colors.ink }]}>{botView.correct}</Text>
+            <ProgressStrip results={botView.results} current={botView.qIndex} colors={colors} />
           </View>
         </View>
       )}
 
       {/* ── Opponent disconnected — grace period banner ── */}
       {oppDisconnected && playing && !outcome && (
-        <View style={s.disconnectBanner}>
-          <Ionicons name="warning-outline" size={15} color="#8a6410" />
-          <Text style={s.disconnectTxt}>انقطع الاتصال بالمنافس… في انتظار عودته</Text>
+        <View style={[s.disconnectBanner, { backgroundColor: colors.wrongPale }]}>
+          <Ionicons name="warning-outline" size={15} color={colors.wrong} />
+          <Text style={[s.disconnectTxt, { color: colors.wrong }]}>انقطع الاتصال بالمنافس… في انتظار عودته</Text>
         </View>
       )}
 
@@ -828,7 +825,7 @@ export default function PvpScreen() {
       {phase === 'playing' && (
         <View style={s.cardArea}>
           {loadingQ || !card || !active ? (
-            <ActivityIndicator size="large" color={NAVY} />
+            <ActivityIndicator size="large" color={colors.ink} />
           ) : (
             <QuizCard
               card={card}
@@ -854,9 +851,9 @@ export default function PvpScreen() {
 
       {phase === 'done' && (
         <View style={s.cardArea}>
-          <ActivityIndicator size="large" color={NAVY} />
+          <ActivityIndicator size="large" color={colors.ink} />
           {opponentKind === 'human' && !outcome && (
-            <Text style={s.waitingTxt}>بانتظار انتهاء المنافس...</Text>
+            <Text style={[s.waitingTxt, { color: colors.inkSoft }]}>بانتظار انتهاء المنافس...</Text>
           )}
         </View>
       )}
@@ -864,32 +861,32 @@ export default function PvpScreen() {
       {/* ── Result modal ── */}
       <Modal visible={outcome !== null} transparent animationType="fade" onRequestClose={exitToHome}>
         <View style={s.modalBg}>
-          <View style={s.modalBox}>
-            <Text style={s.resultTitle}>{outcomeTitle}</Text>
+          <View style={[s.modalBox, { backgroundColor: colors.card }]}>
+            <Text style={[s.resultTitle, { color: colors.ink }]}>{outcomeTitle}</Text>
             <View style={s.resultScores}>
               <View style={s.resultCell}>
-                <Text style={s.resultName}>{playerName}</Text>
-                <Text style={[s.resultNum, outcome === 'win' && { color: GREEN }]}>
+                <Text style={[s.resultName, { color: colors.inkSoft }]}>{playerName}</Text>
+                <Text style={[s.resultNum, { color: colors.ink }, outcome === 'win' && { color: colors.correct }]}>
                   {playerCorrectRef.current}
                 </Text>
               </View>
-              <Text style={s.resultDash}>—</Text>
+              <Text style={[s.resultDash, { color: colors.inkSoft }]}>—</Text>
               <View style={s.resultCell}>
-                <Text style={s.resultName}>
+                <Text style={[s.resultName, { color: colors.inkSoft }]}>
                   {opponentKind === 'bot' ? BOT_NAME : opponentLabel}
                 </Text>
-                <Text style={[s.resultNum, outcome === 'loss' && { color: GREEN }]}>
+                <Text style={[s.resultNum, { color: colors.ink }, outcome === 'loss' && { color: colors.correct }]}>
                   {opponentKind === 'bot' ? (botRef.current?.final.correct ?? 0) : botView.correct}
                 </Text>
               </View>
             </View>
-            <Text style={s.resultSub}>{outcomeSub}</Text>
-            <TouchableOpacity style={s.rematchBtn} onPress={() => { setOutcome(null); startMatch(); }}>
+            <Text style={[s.resultSub, { color: colors.inkSoft }]}>{outcomeSub}</Text>
+            <TouchableOpacity style={[s.rematchBtn, { backgroundColor: colors.navy }]} onPress={() => { setOutcome(null); startMatch(); }}>
               <Ionicons name="refresh" size={18} color="#fff" />
               <Text style={s.rematchTxt}>جولة جديدة</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.homeBtn} onPress={exitToHome}>
-              <Text style={s.homeTxt}>الرئيسية</Text>
+              <Text style={[s.homeTxt, { color: colors.inkSoft }]}>الرئيسية</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -898,20 +895,21 @@ export default function PvpScreen() {
       {/* ── Report modal (same as quiz) ── */}
       <Modal visible={reportVisible} transparent animationType="slide" onRequestClose={() => setReportVisible(false)}>
         <View style={s.modalBg}>
-          <View style={s.modalBox}>
-            <Text style={s.reportTitle}>الإبلاغ عن خطأ</Text>
+          <View style={[s.modalBox, { backgroundColor: colors.card }]}>
+            <Text style={[s.reportTitle, { color: colors.ink }]}>الإبلاغ عن خطأ</Text>
             <TextInput
-              style={s.reportInput}
+              style={[s.reportInput, { borderColor: colors.line, color: colors.ink }]}
               placeholder="برجاء توضيح الخطأ ..."
+              placeholderTextColor={colors.inkSoft}
               value={reportMsg}
               onChangeText={setReportMsg}
               textAlign="right"
             />
             <View style={s.reportRow}>
-              <TouchableOpacity style={s.btnCancel} onPress={() => setReportVisible(false)}>
-                <Text style={s.btnCancelTxt}>لا</Text>
+              <TouchableOpacity style={[s.btnCancel, { backgroundColor: colors.line }]} onPress={() => setReportVisible(false)}>
+                <Text style={[s.btnCancelTxt, { color: colors.ink }]}>لا</Text>
               </TouchableOpacity>
-              <TouchableOpacity style={s.btnConfirm} onPress={submitReport}>
+              <TouchableOpacity style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={submitReport}>
                 <Text style={s.btnConfirmTxt}>نعم</Text>
               </TouchableOpacity>
             </View>
@@ -923,47 +921,45 @@ export default function PvpScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#faf6ec' },
+  container: { flex: 1 },
 
   // Idle
   idleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 },
   idleIconRing: {
     width: 88, height: 88, borderRadius: 44,
-    backgroundColor: '#f3e8d2',
     alignItems: 'center', justifyContent: 'center',
   },
-  idleTitle: { fontSize: 24, fontWeight: '800', color: NAVY },
-  idleSub: { fontSize: 14, color: '#7a8794', textAlign: 'center' },
+  idleTitle: { fontSize: 24, fontWeight: '800' },
+  idleSub: { fontSize: 14, textAlign: 'center' },
   recordRow: { flexDirection: 'row-reverse', gap: 24, marginVertical: 14 },
   recordCell: { alignItems: 'center', gap: 2 },
   recordNum: { fontSize: 22, fontWeight: '800' },
-  recordLbl: { fontSize: 12, color: '#8a97a5' },
+  recordLbl: { fontSize: 12 },
   startBtn: {
     flexDirection: 'row-reverse', alignItems: 'center', gap: 8,
-    backgroundColor: NAVY, paddingVertical: 14, paddingHorizontal: 36, borderRadius: 14,
+    paddingVertical: 14, paddingHorizontal: 36, borderRadius: 14,
   },
   startBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
 
   // Countdown / searching
   countWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 18 },
-  countBotLine: { fontSize: 17, fontWeight: '700', color: NAVY },
-  countNum: { fontSize: 84, fontWeight: '800', color: AMBER },
-  searchSeconds: { fontSize: 40, fontWeight: '800', color: NAVY },
+  countBotLine: { fontSize: 17, fontWeight: '700' },
+  countNum: { fontSize: 84, fontWeight: '800' },
+  searchSeconds: { fontSize: 40, fontWeight: '800' },
 
   // Disconnect banner
   disconnectBanner: {
     flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 6,
-    backgroundColor: '#fdecea', marginHorizontal: 12, marginTop: 8,
+    marginHorizontal: 12, marginTop: 8,
     borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12,
   },
-  disconnectTxt: { color: RED, fontSize: 13, fontWeight: '700', textAlign: 'center' },
-  waitingTxt: { color: '#7a8794', fontSize: 14, fontWeight: '600', textAlign: 'center', marginTop: 10 },
+  disconnectTxt: { fontSize: 13, fontWeight: '700', textAlign: 'center' },
+  waitingTxt: { fontSize: 14, fontWeight: '600', textAlign: 'center', marginTop: 10 },
 
   // Versus header
   vsBar: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
-    backgroundColor: '#fff',
     marginHorizontal: 12,
     marginTop: 10,
     borderRadius: 14,
@@ -974,48 +970,45 @@ const s = StyleSheet.create({
   },
   vsSide: { flex: 1, alignItems: 'center', gap: 4 },
   vsIdent: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, maxWidth: '100%' },
-  vsAvatar: { width: 26, height: 26, borderRadius: 13, backgroundColor: '#e8eef4' },
+  vsAvatar: { width: 26, height: 26, borderRadius: 13 },
   botAvatar: {
-    width: 26, height: 26, borderRadius: 13, backgroundColor: '#eef3f8',
+    width: 26, height: 26, borderRadius: 13,
     alignItems: 'center', justifyContent: 'center',
   },
-  vsName: { fontSize: 12, fontWeight: '700', color: NAVY, flexShrink: 1 },
-  vsScore: { fontSize: 20, fontWeight: '800', color: NAVY },
-  vsMid: { fontSize: 12, fontWeight: '800', color: '#a7b3bf' },
+  vsName: { fontSize: 12, fontWeight: '700', flexShrink: 1 },
+  vsScore: { fontSize: 20, fontWeight: '800' },
+  vsMid: { fontSize: 12, fontWeight: '800' },
 
   strip: { flexDirection: 'row-reverse', gap: 2 },
-  stripSeg: { width: 9, height: 6, borderRadius: 2, backgroundColor: '#dbe3ea' },
-  segCorrect: { backgroundColor: GREEN },
-  segWrong: { backgroundColor: RED },
-  segCurrent: { backgroundColor: AMBER },
+  stripSeg: { width: 9, height: 6, borderRadius: 2 },
 
   // Card area
   cardArea: { flex: 1, justifyContent: 'center', paddingVertical: 10 },
 
   // Modals
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalBox: { backgroundColor: '#fff', borderRadius: 14, padding: 22, width: '100%', maxWidth: 400 },
+  modalBox: { borderRadius: 14, padding: 22, width: '100%', maxWidth: 400 },
 
-  resultTitle: { fontSize: 22, fontWeight: '800', color: NAVY, textAlign: 'center', marginBottom: 14 },
+  resultTitle: { fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 14 },
   resultScores: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 12 },
   resultCell: { alignItems: 'center', gap: 4 },
-  resultName: { fontSize: 13, fontWeight: '700', color: '#556' },
-  resultNum: { fontSize: 34, fontWeight: '800', color: NAVY },
-  resultDash: { fontSize: 20, color: '#a7b3bf' },
-  resultSub: { fontSize: 13, color: '#7a8794', textAlign: 'center', marginBottom: 16 },
+  resultName: { fontSize: 13, fontWeight: '700' },
+  resultNum: { fontSize: 34, fontWeight: '800' },
+  resultDash: { fontSize: 20 },
+  resultSub: { fontSize: 13, textAlign: 'center', marginBottom: 16 },
   rematchBtn: {
     flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8,
-    backgroundColor: NAVY, paddingVertical: 13, borderRadius: 12,
+    paddingVertical: 13, borderRadius: 12,
   },
   rematchTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
   homeBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 4 },
-  homeTxt: { color: '#7a8794', fontSize: 14, fontWeight: '700' },
+  homeTxt: { fontSize: 14, fontWeight: '700' },
 
-  reportTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: NAVY },
-  reportInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
+  reportTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12 },
+  reportInput: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
   reportRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
-  btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#ecf0f1' },
-  btnCancelTxt: { color: '#555', fontWeight: '600' },
-  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: NAVY },
+  btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
+  btnCancelTxt: { fontWeight: '600' },
+  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   btnConfirmTxt: { color: '#fff', fontWeight: '700', textAlign: 'center' },
 });
