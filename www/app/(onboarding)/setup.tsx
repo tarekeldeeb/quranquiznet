@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useProfileStore } from '../../src/stores/profileStore';
 
 export default function SetupScreen() {
@@ -33,10 +34,14 @@ export default function SetupScreen() {
     })));
   }
 
+  // The level-select screen is skipped — new users start at the default
+  // level (1) silently; it's still changeable later from Settings.
   async function confirm() {
     useProfileStore.setState({ parts });
     await profile.saveParts();
-    router.replace('/(onboarding)/level');
+    await profile.saveSettings();
+    await AsyncStorage.setItem('onboarding_done', 'true');
+    router.replace('/(auth)');
   }
 
   return (

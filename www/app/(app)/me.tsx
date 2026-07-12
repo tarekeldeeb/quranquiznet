@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView,
+  View, Text, Image, StyleSheet, ScrollView,
   Alert, ActivityIndicator, Modal, Animated, Platform, Share, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -30,6 +30,28 @@ const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
 // Matches notifications.ts's STREAK_REMINDER_HOUR — "tonight" starts at the
 // same evening hour the streak-loss reminder itself fires.
 const EVENING_HOUR = 19;
+
+const APP_ICON = require('../../assets/images/app-icon.png');
+
+/** Small brand mark for the header's right slot — icon + app name, sitting
+ * beside the personalized greeting (headerTitle, centered) rather than
+ * replacing it the way the tab navigator's default HeaderLogo does on
+ * screens with no situational title. A thin gold ring gives it a seal-like
+ * finish instead of a plain square icon. */
+function HeaderBrand() {
+  return (
+    <View style={hb.wrap}>
+      <Image source={APP_ICON} style={hb.icon} />
+      <Text style={hb.name}>اختبار القرآن</Text>
+    </View>
+  );
+}
+
+const hb = StyleSheet.create({
+  wrap: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6 },
+  icon: { width: 24, height: 24, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(217,173,85,0.6)' },
+  name: { color: '#fff', fontSize: 12, fontFamily: 'PlexArabic-Bold' },
+});
 
 /** Cross-platform alert (RN Alert is a no-op on react-native-web). */
 function notify(title: string, msg: string) {
@@ -243,9 +265,13 @@ export default function MeScreen() {
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{greeting}</Text>,
-      headerRight: () => (
-        <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={10} style={{ paddingHorizontal: 4 }}>
-          <Ionicons name="settings-outline" size={22} color="#fff" />
+      // RTL: brand mark at the right (reading-start), greeting centered, and
+      // the gear — a secondary, trailing action — at the left, matching the
+      // app's row-reverse convention (primary content right, controls left).
+      headerRight: () => <HeaderBrand />,
+      headerLeft: () => (
+        <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={8} style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
+          <Ionicons name="settings-outline" size={24} color="#fff" />
         </PressScale>
       ),
     });
