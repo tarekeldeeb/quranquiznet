@@ -10,7 +10,7 @@
     "splash": {
       "image": "./assets/images/app-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#1a5276"
+      "backgroundColor": "#0d2d4e"
     },
     "ios": {
       "supportsTablet": true,
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/app-icon.png",
-        "backgroundColor": "#1a5276"
+        "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
       "versionCode": 11

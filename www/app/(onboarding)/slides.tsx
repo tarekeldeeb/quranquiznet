@@ -1,78 +1,110 @@
 import { useRef, useState, ReactNode } from 'react';
 import {
-  View, Text, FlatList, TouchableOpacity, StyleSheet, Dimensions, Platform,
+  View, Text, FlatList, StyleSheet, Dimensions, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import PressScale from '../../src/components/PressScale';
 
 const { width: SW } = Dimensions.get('window');
 
-// Match QuizCard: Uthman/Amiri render on web, native falls back to the system Arabic.
+// Same native caveat as QuizCard: UthmanTN's diacritic shaping depends on a
+// browser's OpenType support, so native intentionally falls back to the
+// system Arabic font here rather than showing malformed marks.
 const QURAN_FONT = Platform.OS === 'web' ? 'UthmanTN' : undefined;
-const AMIRI_FONT = Platform.OS === 'web' ? 'Amiri-Regular' : undefined;
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Preview components — faithful mini-versions of the real app screens, used to
-// illustrate each onboarding slide. They are display-only (no interaction).
+// illustrate each onboarding slide. QuizPreview is genuinely answerable — the
+// strongest hook a quiz game can offer during onboarding is a real answer.
 // ─────────────────────────────────────────────────────────────────────────────
 
-// Mini quiz card — mirrors src/components/QuizCard.tsx (front face).
+// Mini quiz card — mirrors src/components/QuizCard.tsx (front face), and is
+// actually answerable: tap an option, see the same green/red reveal the real
+// quiz card uses, then continue.
 function QuizPreview() {
+  const { colors } = useTheme();
   const options = ['ٱلْعَٰلَمِينَ', 'ٱلنَّاسِ', 'ٱلْمَلِكِ', 'ٱلرَّحِيمِ', 'ٱلْكَرِيمِ'];
+  const correctIndex = 0;
+  const [picked, setPicked] = useState<number | null>(null);
+  const isCorrect = picked === correctIndex;
+
   return (
-    <View style={p.card}>
-      <View style={p.topBar}>
-        <Text style={p.instruction}>اختر الكلمة التالية</Text>
+    <View style={[p.card, { backgroundColor: colors.card }]}>
+      <View style={[p.topBar, { backgroundColor: colors.paper, borderColor: colors.line }]}>
+        <Text style={[p.instruction, { color: colors.inkSoft }]}>اختر الكلمة التالية</Text>
         <View style={p.dotsRow}>
           {[0, 1, 2, 3, 4].map((i) => (
             <View
               key={i}
-              style={[p.qDot, i < 1 ? p.qDotDone : i === 1 ? p.qDotCurrent : p.qDotPending]}
+              style={[p.qDot, { backgroundColor: i < 1 ? colors.correct : i === 1 ? colors.navySoft : colors.line }]}
             />
           ))}
         </View>
       </View>
 
-      <View style={p.questionBox}>
-        <Text style={p.questionText}>ٱلْحَمْدُ لِلَّهِ رَبِّ …</Text>
+      <View style={[p.questionBox, { backgroundColor: colors.paper, borderColor: colors.line }]}>
+        <Text style={[p.questionText, { color: colors.ink }]}>ٱلْحَمْدُ لِلَّهِ رَبِّ …</Text>
       </View>
 
       <View style={p.body}>
         <View style={p.optionsCol}>
-          {options.map((o, i) => (
-            <View key={i} style={[p.optionBtn, i === 0 && p.optionBtnRight]}>
-              <Text style={p.optionText}>{o}</Text>
-            </View>
-          ))}
+          {options.map((o, i) => {
+            const showCorrect = picked != null && i === correctIndex;
+            const showWrong = picked != null && i === picked && i !== correctIndex;
+            return (
+              <PressScale
+                key={i}
+                style={[
+                  p.optionBtn,
+                  { backgroundColor: colors.paper, borderColor: colors.line },
+                  showCorrect && { backgroundColor: colors.correctPale, borderColor: colors.correct },
+                  showWrong && { backgroundColor: colors.wrongPale, borderColor: colors.wrong },
+                ]}
+                onPress={() => picked == null && setPicked(i)}
+                disabled={picked != null}
+              >
+                <Text style={[p.optionText, { color: colors.ink }]}>{o}</Text>
+              </PressScale>
+            );
+          })}
         </View>
         <View style={p.metaCol}>
-          <View style={p.scoreBox}>
-            <Text style={p.scoreMain}>140</Text>
-            <Text style={p.scoreUp}>+20</Text>
+          <View style={[p.scoreBox, { borderColor: colors.line }]}>
+            <Text style={[p.scoreMain, { color: colors.navy }]}>{arNum(picked == null ? 140 : isCorrect ? 160 : 140)}</Text>
+            <Text style={[p.scoreUp, { color: colors.correct }]}>+٢٠</Text>
           </View>
           <View style={p.skipBtn}>
-            <Ionicons name="remove-circle-outline" size={16} color="#c0392b" />
-            <Text style={p.skipText}>لا أعلم</Text>
+            <Ionicons name="remove-circle-outline" size={16} color={colors.wrong} />
+            <Text style={[p.skipText, { color: colors.wrong }]}>لا أعلم</Text>
           </View>
         </View>
       </View>
+
+      {picked != null && (
+        <Text style={[p.feedbackTxt, { color: isCorrect ? colors.correct : colors.goldDeep, borderColor: colors.line }]}>
+          {isCorrect ? 'أحسنت! هكذا تبدو الأسئلة 🎉' : 'قريب — الصحيحة: ٱلْعَٰلَمِينَ'}
+        </Text>
+      )}
     </View>
   );
 }
 
 // Mini daily-challenge card — mirrors app/(app)/daily.tsx "available" state.
 function DailyPreview() {
+  const { colors } = useTheme();
   return (
-    <View style={p.dailyCard}>
+    <View style={[p.dailyCard, { backgroundColor: colors.card }]}>
       <View style={p.dailyTimer}>
-        <Text style={p.dailyTimerNum}>8</Text>
-        <Text style={p.dailyTimerUnit}>ث</Text>
+        <Text style={[p.dailyTimerNum, { color: colors.wrong }]}>٨</Text>
+        <Text style={[p.dailyTimerUnit, { color: colors.wrong }]}>ث</Text>
       </View>
-      <Ionicons name="star" size={34} color="#f39c12" />
-      <Text style={p.dailyTitle}>اختبار اليوم جاهز!</Text>
-      <Text style={p.dailyBody}>١٠ أسئلة بمؤقّت — أجب بسرعة ودقّة</Text>
-      <View style={p.dailyStartBtn}>
+      <Ionicons name="star" size={34} color={colors.gold} />
+      <Text style={[p.dailyTitle, { color: colors.navy }]}>اختبار اليوم جاهز!</Text>
+      <Text style={[p.dailyBody, { color: colors.inkSoft }]}>١٠ أسئلة بمؤقّت — أجب بسرعة ودقّة</Text>
+      <View style={[p.dailyStartBtn, { backgroundColor: colors.navy }]}>
         <Ionicons name="play" size={16} color="#fff" />
         <Text style={p.dailyStartTxt}> ابدأ الاختبار</Text>
       </View>
@@ -82,21 +114,22 @@ function DailyPreview() {
 
 // Mini leaderboard — mirrors app/(app)/league.tsx rows.
 function LeaguePreview() {
+  const { colors } = useTheme();
   const rows = [
     { medal: '🥇', flag: '🇸🇦', name: 'أبو محمد', score: 980, me: false },
     { medal: '🥈', flag: '🇪🇬', name: 'حفصة', score: 940, me: false },
     { medal: '🥉', flag: '🇲🇦', name: 'يوسف', score: 910, me: false },
-    { medal: '4', flag: '🇩🇿', name: 'أنت', score: 870, me: true },
+    { medal: '٤', flag: '🇩🇿', name: 'أنت', score: 870, me: true },
   ];
   return (
-    <View style={p.boardCard}>
-      <Text style={p.boardTitle}>المتصدّرون اليوم</Text>
+    <View style={[p.boardCard, { backgroundColor: colors.card }]}>
+      <Text style={[p.boardTitle, { color: colors.navy, borderColor: colors.line }]}>المتصدّرون اليوم</Text>
       {rows.map((r, i) => (
-        <View key={i} style={[p.boardRow, r.me && p.boardRowMe]}>
+        <View key={i} style={[p.boardRow, { borderColor: colors.line }, r.me && { backgroundColor: colors.goldPale }]}>
           <Text style={p.boardMedal}>{r.medal}</Text>
           <Text style={p.boardFlag}>{r.flag}</Text>
-          <Text style={[p.boardName, r.me && p.boardNameMe]} numberOfLines={1}>{r.name}</Text>
-          <Text style={[p.boardScore, r.me && p.boardScoreMe]}>{r.score}</Text>
+          <Text style={[p.boardName, { color: colors.ink }, r.me && { color: colors.navy, fontFamily: 'PlexArabic-Bold' }]} numberOfLines={1}>{r.name}</Text>
+          <Text style={[p.boardScore, { color: colors.navy }, r.me && { color: colors.goldDeep }]}>{arNum(r.score)}</Text>
         </View>
       ))}
     </View>
@@ -138,6 +171,7 @@ const SLIDES: Slide[] = [
 
 // Small feature row for the welcome slide.
 function FeatureBadges() {
+  const { colors } = useTheme();
   const items = [
     { icon: 'help-circle' as const, label: 'اختبار' },
     { icon: 'star' as const, label: 'تحدٍّ يومي' },
@@ -146,8 +180,8 @@ function FeatureBadges() {
   return (
     <View style={p.badgesRow}>
       {items.map((it, i) => (
-        <View key={i} style={p.badge}>
-          <Ionicons name={it.icon} size={26} color="#f39c12" />
+        <View key={i} style={[p.badge, { borderColor: `${colors.gold}59` }]}>
+          <Ionicons name={it.icon} size={26} color={colors.gold} />
           <Text style={p.badgeLabel}>{it.label}</Text>
         </View>
       ))}
@@ -157,6 +191,7 @@ function FeatureBadges() {
 
 export default function SlidesScreen() {
   const router = useRouter();
+  const { colors } = useTheme();
   const [current, setCurrent] = useState(0);
   // Width of the actual rendered column (the web frame caps it at ~512px),
   // NOT the full browser window. Measured via onLayout so each slide and the
@@ -186,7 +221,7 @@ export default function SlidesScreen() {
 
   return (
     <SafeAreaView
-      style={s.container}
+      style={[s.container, { backgroundColor: colors.navy }]}
       onLayout={(e) => {
         const w = e.nativeEvent.layout.width;
         if (w > 0 && w !== frameW) setFrameW(w);
@@ -194,13 +229,13 @@ export default function SlidesScreen() {
     >
       <View style={s.header}>
         {current > 0 ? (
-          <TouchableOpacity style={s.backBtn} onPress={goBack}>
-            <Ionicons name="chevron-forward" size={22} color="#9bbdd4" />
-          </TouchableOpacity>
+          <PressScale style={s.backBtn} onPress={goBack}>
+            <Ionicons name="chevron-forward" size={22} color={colors.navySoft} />
+          </PressScale>
         ) : <View style={s.backBtn} />}
-        <TouchableOpacity style={s.skipBtn} onPress={skip}>
-          <Text style={s.skipTxt}>تخطي</Text>
-        </TouchableOpacity>
+        <PressScale style={s.skipBtn} onPress={skip}>
+          <Text style={[s.skipTxt, { color: colors.navySoft }]}>تخطي</Text>
+        </PressScale>
       </View>
 
       <FlatList
@@ -218,13 +253,13 @@ export default function SlidesScreen() {
         renderItem={({ item }) => (
           <View style={[s.slide, { width: frameW }]}>
             <Text style={s.title}>{item.title}</Text>
-            <Text style={s.body}>{item.body}</Text>
+            <Text style={[s.body, { color: colors.navySoft }]}>{item.body}</Text>
             {item.points && (
               <View style={s.points}>
                 {item.points.map((pt: string, i: number) => (
                   <View key={i} style={s.pointRow}>
                     <Text style={s.pointText}>{pt}</Text>
-                    <Ionicons name="checkmark-circle" size={18} color="#f39c12" />
+                    <Ionicons name="checkmark-circle" size={18} color={colors.gold} />
                   </View>
                 ))}
               </View>
@@ -236,21 +271,21 @@ export default function SlidesScreen() {
 
       <View style={s.dots}>
         {SLIDES.map((_, i) => (
-          <View key={i} style={[s.dot, i === current && s.dotActive]} />
+          <View key={i} style={[s.dot, i === current && { backgroundColor: colors.gold, width: 24 }]} />
         ))}
       </View>
 
-      <TouchableOpacity style={s.nextBtn} onPress={goNext}>
-        <Text style={s.nextTxt}>
+      <PressScale style={[s.nextBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={goNext}>
+        <Text style={[s.nextTxt, { color: colors.navy }]}>
           {current < SLIDES.length - 1 ? 'التالي' : 'ابدأ'}
         </Text>
-      </TouchableOpacity>
+      </PressScale>
     </SafeAreaView>
   );
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0d2d4e', alignItems: 'center' },
+  container: { flex: 1, alignItems: 'center' },
   header: {
     width: '100%',
     flexDirection: 'row-reverse',
@@ -260,7 +295,7 @@ const s = StyleSheet.create({
   },
   backBtn: { padding: 16, width: 54 },
   skipBtn: { padding: 16 },
-  skipTxt: { color: '#9bbdd4', fontSize: 14 },
+  skipTxt: { fontSize: 14 },
   list: { flex: 1, width: '100%' },
   slide: {
     flex: 1,
@@ -269,10 +304,9 @@ const s = StyleSheet.create({
     paddingHorizontal: 28,
     gap: 16,
   },
-  title: { fontSize: 26, fontWeight: '700', color: '#fff', textAlign: 'center' },
+  title: { fontSize: 26, fontFamily: 'PlexArabic-Bold', color: '#fff', textAlign: 'center' },
   body: {
     fontSize: 15,
-    color: '#c4d8e8',
     textAlign: 'center',
     lineHeight: 26,
     writingDirection: 'rtl',
@@ -287,15 +321,17 @@ const s = StyleSheet.create({
   visualWrap: { marginTop: 8, alignItems: 'center' },
   dots: { flexDirection: 'row-reverse', gap: 8, marginBottom: 24 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
-  dotActive: { backgroundColor: '#f39c12', width: 24 },
   nextBtn: {
-    backgroundColor: '#f39c12',
     paddingHorizontal: 48,
     paddingVertical: 16,
-    borderRadius: 30,
+    borderRadius: radii.pill,
     marginBottom: 32,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  nextTxt: { fontSize: 18, fontWeight: '700', color: '#0d2d4e' },
+  nextTxt: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
 });
 
 // Preview styles — kept close to the real screens but scaled down.
@@ -321,11 +357,11 @@ const p = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e0e6ed',
   },
-  instruction: { fontSize: 10, color: '#7f8c8d', fontFamily: AMIRI_FONT, textAlign: 'right' },
+  instruction: { fontSize: 10, color: '#7f8c8d', textAlign: 'right' },
   dotsRow: { flexDirection: 'row-reverse', gap: 3 },
   qDot: { width: 6, height: 6, borderRadius: 3 },
-  qDotDone: { backgroundColor: '#27ae60' },
-  qDotCurrent: { backgroundColor: '#1a5276' },
+  qDotDone: { backgroundColor: '#2f7d5d' },
+  qDotCurrent: { backgroundColor: '#0d2d4e' },
   qDotPending: { backgroundColor: '#d5dce5' },
   questionBox: {
     backgroundColor: '#fdfaf5',
@@ -352,7 +388,6 @@ const p = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#dde4ed',
   },
-  optionBtnRight: { backgroundColor: '#eafaf1', borderColor: '#27ae60' },
   optionText: {
     fontSize: 14,
     fontFamily: QURAN_FONT,
@@ -372,10 +407,11 @@ const p = StyleSheet.create({
     width: '100%',
     gap: 1,
   },
-  scoreMain: { fontSize: 16, fontWeight: '700', color: '#1a5276' },
-  scoreUp: { color: '#27ae60', fontSize: 11, fontWeight: '600' },
+  scoreMain: { fontSize: 16, fontWeight: '700', color: '#0d2d4e' },
+  scoreUp: { color: '#2f7d5d', fontSize: 11, fontWeight: '600' },
   skipBtn: { alignItems: 'center', gap: 2, paddingVertical: 2 },
-  skipText: { fontSize: 10, color: '#c0392b', fontFamily: AMIRI_FONT },
+  skipText: { fontSize: 10, color: '#c0392b' },
+  feedbackTxt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center', padding: 8, borderTopWidth: 1 },
 
   // ── Daily card ─────────────────────────────────────────────────────────────
   dailyCard: {
@@ -397,8 +433,8 @@ const p = StyleSheet.create({
     alignItems: 'baseline',
     gap: 1,
   },
-  dailyTimerNum: { fontSize: 18, fontWeight: '700', color: '#e74c3c' },
-  dailyTimerUnit: { fontSize: 10, color: '#e74c3c' },
+  dailyTimerNum: { fontSize: 18, fontWeight: '700', color: '#b3473d' },
+  dailyTimerUnit: { fontSize: 10, color: '#b3473d' },
   dailyTitle: { fontSize: 17, fontWeight: '700', color: '#0d2d4e', textAlign: 'center' },
   dailyBody: { fontSize: 12, color: '#666', textAlign: 'center' },
   dailyStartBtn: {
@@ -446,7 +482,7 @@ const p = StyleSheet.create({
   boardName: { flex: 1, fontSize: 13, color: '#333', textAlign: 'right' },
   boardNameMe: { fontWeight: '700', color: '#0d2d4e' },
   boardScore: { fontSize: 14, fontWeight: '700', color: '#0d2d4e', minWidth: 38, textAlign: 'left' },
-  boardScoreMe: { color: '#f39c12' },
+  boardScoreMe: { color: '#c8973a' },
 
   // ── Welcome feature badges ───────────────────────────────────────────────────
   badgesRow: { flexDirection: 'row-reverse', gap: 14, marginTop: 4 },

@@ -1,10 +1,10 @@
 import { useEffect, useState, useCallback } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView,
+  View, Text, StyleSheet, ScrollView,
   ActivityIndicator, Alert, FlatList, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
   getDailyHead, subscribeYesterdayReport, subscribeMonthlyTopReport, subscribeTodayStandings,
@@ -13,11 +13,14 @@ import {
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { flagEmoji } from '../../src/models/constants';
+import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import PressScale from '../../src/components/PressScale';
 
-type Tab = 'yesterday' | 'month';
+type Tab = 'today' | 'yesterday' | 'month';
 type Status = 'loading' | 'available' | 'empty' | 'error';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
+const PODIUM_TINTS = ['#c8973a', '#8a99a8', '#b06a3a']; // gold / silver / bronze accents
 
 interface RankedEntry extends LeaderboardEntry { rank: number }
 interface OwnRank { rank: number; entry: RankedEntry; above: RankedEntry[]; below: RankedEntry[] }
@@ -38,11 +41,23 @@ function findOwnRank(sorted: LeaderboardEntry[], uid: string | undefined, neighb
   };
 }
 
+/** First-letter circle avatar — leaderboard entries carry no photo. */
+function InitialAvatar({ name, size, tint, colors }: { name: string; size: number; tint?: string; colors: ReturnType<typeof useTheme>['colors'] }) {
+  const letter = (name || '؟').trim().charAt(0);
+  return (
+    <View style={[s.initAvatar, { width: size, height: size, borderRadius: size / 2, backgroundColor: tint ?? colors.goldPale }]}>
+      <Text style={[s.initAvatarTxt, { fontSize: size * 0.42, color: tint ? '#fff' : colors.goldDeep }]}>{letter}</Text>
+    </View>
+  );
+}
+
 export default function LeagueScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const { colors } = useTheme();
   const profile = useProfileStore();
 
-  const [tab, setTab] = useState<Tab>('yesterday');
+  const [tab, setTab] = useState<Tab>('today');
   const [status, setStatus] = useState<Status>('loading');
   const [head, setHead] = useState<DailyHead | null>(null);
   const [yday, setYday] = useState<LeaderboardEntry[]>([]);
@@ -50,7 +65,8 @@ export default function LeagueScreen() {
   const [ydayLoaded, setYdayLoaded] = useState(false);
   const [monthLoaded, setMonthLoaded] = useState(false);
   // Today's live, unbounded standings (every submission so far today) — the
-  // only feed with full participant coverage, so it's what powers "your rank".
+  // only feed with full participant coverage, so it's what powers "your rank"
+  // and the اليوم tab.
   const [todayStandings, setTodayStandings] = useState<LeaderboardEntry[]>([]);
 
   const today = new Date().toISOString().split('T')[0];
@@ -80,7 +96,7 @@ export default function LeagueScreen() {
     let cancelled = false;
     let unsubYday: (() => void) | undefined;
     subscribeYesterdayReport((entries) => {
-      setYday(entries.slice(0, 10));
+      setYday(entries);
       setYdayLoaded(true);
     }).then((unsub) => { if (cancelled) unsub(); else unsubYday = unsub; });
     const unsubMonth = subscribeMonthlyTopReport((entries) => {
@@ -95,6 +111,14 @@ export default function LeagueScreen() {
       unsubToday();
     };
   }, []);
+
+  // Reclaim the header: the month name instead of the app's repeated name.
+  useEffect(() => {
+    const monthName = new Date().toLocaleDateString('ar-EG', { month: 'long' });
+    navigation.setOptions({
+      headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>البطولة · {monthName}</Text>,
+    });
+  }, [navigation]);
 
   function startDaily() {
     if (!head) return;
@@ -115,20 +139,42 @@ export default function LeagueScreen() {
     ]);
   }
 
-  const listData = tab === 'yesterday' ? yday : monthTop;
-  const reportsLoading = tab === 'yesterday' ? !ydayLoaded : !monthLoaded;
+  const listData = tab === 'today' ? todayStandings : tab === 'yesterday' ? yday : monthTop;
+  const reportsLoading = tab === 'today' ? false : tab === 'yesterday' ? !ydayLoaded : !monthLoaded;
   const ownRank = findOwnRank(todayStandings, profile.uid);
 
+  // Movement vs yesterday — only computable where we have real data: the
+  // اليوم tab, cross-referenced against yesterday's own top-N report. Rows
+  // absent from yesterday's report get no delta (they may be new, or just
+  // outside that top-N — the backend doesn't retain full historical ranks).
+  const yesterdayRankOf = new Map<string, number>();
+  yday.forEach((e, i) => { if (e.uid) yesterdayRankOf.set(e.uid, i + 1); });
+  function movementFor(entry: LeaderboardEntry, todayRank: number): number | null {
+    if (tab !== 'today' || !entry.uid) return null;
+    const yRank = yesterdayRankOf.get(entry.uid);
+    if (yRank == null) return null;
+    return yRank - todayRank; // positive ⇒ moved up
+  }
+
+  const podium = listData.slice(0, 3);
+  const rest = listData.slice(3);
+
   function renderRow({ item, index }: { item: LeaderboardEntry; index: number }) {
+    const rank = index + 4; // podium already covers 1-3
     const isMe = item.uid === profile.uid;
     const flag = flagEmoji(item.country);
+    const delta = movementFor(item, rank);
     return (
-      <View style={[s.row, isMe && s.rowMe]}>
-        {/* RTL: medal (right) → flag → name (flex) → score (left) */}
-        <Text style={s.medal}>{index < 3 ? MEDAL[index] : `${index + 1}`}</Text>
+      <View style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
+        <Text style={[s.rank, { color: colors.inkSoft }]}>{arNum(rank)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
-        <Text style={[s.rowScore, isMe && s.rowScoreMe]}>{item.score}</Text>
+        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.navy }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        {delta != null && delta !== 0 && (
+          <Text style={[s.delta, delta > 0 ? { color: colors.correct } : { color: colors.wrong }]}>
+            {delta > 0 ? `▲${arNum(delta)}` : `▼${arNum(Math.abs(delta))}`}
+          </Text>
+        )}
+        <Text style={[s.rowScore, { color: colors.navy }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
       </View>
     );
   }
@@ -138,55 +184,55 @@ export default function LeagueScreen() {
   function renderNeighborRow(item: RankedEntry, isMe: boolean) {
     const flag = flagEmoji(item.country);
     return (
-      <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, isMe && s.rowMe]}>
-        <Text style={s.medal}>{item.rank <= 3 ? MEDAL[item.rank - 1] : `${item.rank}`}</Text>
+      <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
+        <Text style={[s.rank, { color: colors.inkSoft }]}>{item.rank <= 3 ? MEDAL[item.rank - 1] : arNum(item.rank)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, isMe && s.rowNameMe]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
-        <Text style={[s.rowScore, isMe && s.rowScoreMe]}>{item.score}</Text>
+        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.navy }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        <Text style={[s.rowScore, { color: colors.navy }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
       </View>
     );
   }
 
   return (
-    <SafeAreaView style={s.container} edges={['bottom']}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
       <ScrollView style={s.scrollView} contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* Compact daily challenge strip */}
         {status === 'available' && (
           dailyDone ? (
-            <View style={[s.dailyStrip, s.dailyStripDone]}>
-              <Ionicons name="checkmark-circle" size={18} color="#27ae60" />
-              <Text style={[s.dailyStripTxt, { color: '#1e8449' }]}>أكملت اختبار اليوم ✓</Text>
+            <View style={[s.dailyStrip, { backgroundColor: colors.correctPale, borderWidth: 1.5, borderColor: colors.correct }]}>
+              <Ionicons name="checkmark-circle" size={18} color={colors.correct} />
+              <Text style={[s.dailyStripTxt, { color: colors.correct }]}>أكملت اختبار اليوم ✓</Text>
             </View>
           ) : (
-            <TouchableOpacity style={s.dailyStrip} onPress={startDaily} activeOpacity={0.85}>
-              <Ionicons name="star" size={18} color="#f39c12" />
-              <Text style={s.dailyStripTxt}>اختبار اليوم جاهز</Text>
-              <View style={s.dailyStripBtn}>
+            <PressScale style={[s.dailyStrip, { backgroundColor: colors.card }]} onPress={startDaily}>
+              <Ionicons name="star" size={18} color={colors.gold} />
+              <Text style={[s.dailyStripTxt, { color: colors.navy }]}>اختبار اليوم جاهز</Text>
+              <View style={[s.dailyStripBtn, { backgroundColor: colors.navy }]}>
                 <Text style={s.dailyStripBtnTxt}>ابدأ</Text>
               </View>
-            </TouchableOpacity>
+            </PressScale>
           )
         )}
         {status === 'loading' && (
-          <View style={s.dailyStrip}>
-            <ActivityIndicator size="small" color="#0d2d4e" />
-            <Text style={s.dailyStripTxt}>جارٍ التحقق...</Text>
+          <View style={[s.dailyStrip, { backgroundColor: colors.card }]}>
+            <ActivityIndicator size="small" color={colors.navy} />
+            <Text style={[s.dailyStripTxt, { color: colors.navy }]}>جارٍ التحقق...</Text>
           </View>
         )}
         {status === 'error' && (
-          <TouchableOpacity style={[s.dailyStrip, s.dailyStripError]} onPress={checkDaily}>
-            <Ionicons name="refresh" size={16} color="#c0392b" />
-            <Text style={[s.dailyStripTxt, { color: '#c0392b' }]}>تعذر الاتصال — إعادة المحاولة</Text>
-          </TouchableOpacity>
+          <PressScale style={[s.dailyStrip, { backgroundColor: colors.wrongPale }]} onPress={checkDaily}>
+            <Ionicons name="refresh" size={16} color={colors.wrong} />
+            <Text style={[s.dailyStripTxt, { color: colors.wrong }]}>تعذر الاتصال — إعادة المحاولة</Text>
+          </PressScale>
         )}
 
         {/* Your rank today — live, and shown even far outside the top 10 (the
             regular tabs below only ever carry a top-10 slice). Hidden until the
             user has a submission in today's live standings. */}
         {ownRank && (
-          <View style={s.card}>
-            <Text style={s.cardTitle}>ترتيبك اليوم: #{ownRank.rank}</Text>
+          <View style={[s.card, { backgroundColor: colors.card }]}>
+            <Text style={[s.cardTitle, { color: colors.navy, borderColor: colors.line }]}>ترتيبك اليوم: #{arNum(ownRank.rank)}</Text>
             {ownRank.above.map((e) => renderNeighborRow(e, false))}
             {renderNeighborRow(ownRank.entry, true)}
             {ownRank.below.map((e) => renderNeighborRow(e, false))}
@@ -194,38 +240,63 @@ export default function LeagueScreen() {
         )}
 
         {/* Inner tab bar */}
-        <View style={s.tabBar}>
-          {([['yesterday', 'أمس'], ['month', 'الشهر']] as [Tab, string][]).map(([key, label]) => (
-            <TouchableOpacity
+        <View style={[s.tabBar, { backgroundColor: colors.goldPale }]}>
+          {([['today', 'اليوم'], ['yesterday', 'أمس'], ['month', 'الشهر']] as [Tab, string][]).map(([key, label]) => (
+            <PressScale
               key={key}
-              style={[s.tabBtn, tab === key && s.tabBtnActive]}
+              style={[s.tabBtn, tab === key && { backgroundColor: colors.navy }]}
               onPress={() => setTab(key)}
             >
-              <Text style={[s.tabBtnTxt, tab === key && s.tabBtnTxtActive]}>{label}</Text>
-            </TouchableOpacity>
+              <Text style={[s.tabBtnTxt, { color: colors.navy }, tab === key && { color: '#fff' }]}>{label}</Text>
+            </PressScale>
           ))}
         </View>
 
-        {(tab === 'yesterday' || tab === 'month') && (
-          <View style={s.card}>
-            <Text style={s.cardTitle}>
-              {tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أفضل نتائج هذا الشهر'}
-            </Text>
-            {reportsLoading ? (
-              <ActivityIndicator color="#0d2d4e" style={{ marginVertical: 16 }} />
-            ) : listData.length === 0 ? (
-              <Text style={[s.emptyTxt, { padding: 16 }]}>لا توجد نتائج بعد</Text>
-            ) : (
+        <View style={[s.card, { backgroundColor: colors.card }]}>
+          <Text style={[s.cardTitle, { color: colors.navy, borderColor: colors.line }]}>
+            {tab === 'today' ? 'المتصدّرون اليوم' : tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أفضل نتائج هذا الشهر'}
+          </Text>
+          {reportsLoading ? (
+            <ActivityIndicator color={colors.navy} style={{ marginVertical: 16 }} />
+          ) : listData.length === 0 ? (
+            <View style={s.emptyWrap}>
+              <Ionicons name="trophy-outline" size={30} color={colors.inkSoft} />
+              <Text style={[s.emptyTitle, { color: colors.navy }]}>كن أول المتصدرين {tab === 'month' ? 'هذا الشهر' : 'اليوم'}</Text>
+              <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}>
+                <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
+              </PressScale>
+            </View>
+          ) : (
+            <>
+              {/* Top-3 podium — above the list */}
+              {podium.length === 3 && (
+                <View style={s.podium}>
+                  {[1, 0, 2].map((i) => {
+                    const e = podium[i];
+                    const heights = [64, 84, 52]; // second, first, third
+                    return (
+                      <View key={i} style={s.podCol}>
+                        <InitialAvatar name={e.name ?? '؟'} size={i === 0 ? 52 : 44} tint={PODIUM_TINTS[i]} colors={colors} />
+                        <Text style={[s.podName, { color: colors.ink }]} numberOfLines={1}>{e.name ?? 'زائر(ة)'}</Text>
+                        <Text style={[s.podScore, { color: colors.goldDeep }]}>{arNum(e.score)}</Text>
+                        <View style={[s.podBase, { height: heights[i], backgroundColor: PODIUM_TINTS[i] }]}>
+                          <Text style={s.podBaseTxt}>{MEDAL[i]}</Text>
+                        </View>
+                      </View>
+                    );
+                  })}
+                </View>
+              )}
               <FlatList
-                data={listData}
+                data={rest}
                 keyExtractor={(_, i) => String(i)}
                 renderItem={renderRow}
                 scrollEnabled={false}
-                ItemSeparatorComponent={() => <View style={s.sep} />}
+                ItemSeparatorComponent={() => <View style={[s.sep, { backgroundColor: colors.line }]} />}
               />
-            )}
-          </View>
-        )}
+            </>
+          )}
+        </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -233,15 +304,14 @@ export default function LeagueScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1 },
   // flex:1 bounds the scroller to the viewport so the list scrolls when it
   // overflows (e.g. all 10 rows on a short phone); paddingBottom clears the tab bar.
   scrollView: { flex: 1 },
   scroll: { padding: 16, gap: 12, paddingBottom: 32 },
 
   dailyStrip: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: radii.md,
     flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 16,
@@ -250,52 +320,44 @@ const s = StyleSheet.create({
     boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
-  dailyStripError: { borderWidth: 1, borderColor: '#f5b7b1' },
-  dailyStripDone: { borderWidth: 1.5, borderColor: '#27ae60', backgroundColor: '#eafaf1' },
-  dailyStripTxt: { flex: 1, fontSize: 14, fontWeight: '600', color: '#0d2d4e', textAlign: 'right' },
-  dailyStripBtn: {
-    backgroundColor: '#0d2d4e',
-    paddingHorizontal: 16,
-    paddingVertical: 7,
-    borderRadius: 8,
-  },
-  dailyStripBtnTxt: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  dailyStripTxt: { flex: 1, fontSize: 14, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  dailyStripBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: radii.sm },
+  dailyStripBtnTxt: { color: '#fff', fontFamily: 'PlexArabic-Bold', fontSize: 13 },
 
-  tabBar: {
-    flexDirection: 'row-reverse',
-    backgroundColor: '#dce8f2',
-    borderRadius: 10,
-    padding: 3,
-    gap: 3,
-  },
-  tabBtn: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  tabBtnActive: { backgroundColor: '#0d2d4e' },
-  tabBtnTxt: { fontSize: 13, fontWeight: '600', color: '#666' },
-  tabBtnTxtActive: { color: '#fff' },
+  tabBar: { flexDirection: 'row-reverse', borderRadius: radii.md, padding: 3, gap: 3 },
+  tabBtn: { flex: 1, paddingVertical: 9, borderRadius: radii.sm, alignItems: 'center' },
+  tabBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
 
   card: {
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    borderRadius: radii.md,
     overflow: 'hidden',
     boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
   cardTitle: {
     fontSize: 13,
-    fontWeight: '700',
-    color: '#0d2d4e',
+    fontFamily: 'PlexArabic-Bold',
     textAlign: 'right',
     padding: 14,
     borderBottomWidth: 1,
-    borderColor: '#f0f0f0',
   },
+  emptyWrap: { alignItems: 'center', gap: 10, padding: 28 },
+  emptyTitle: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center' },
+  emptyBtn: { paddingHorizontal: 24, paddingVertical: 10, borderRadius: radii.pill, marginTop: 4 },
+  emptyBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-Bold' },
+
+  // Podium
+  podium: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'center', gap: 10, paddingTop: 18, paddingHorizontal: 12 },
+  podCol: { alignItems: 'center', width: 84 },
+  podName: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', marginTop: 4, maxWidth: 80 },
+  podScore: { fontSize: 12, fontFamily: 'PlexArabic-Bold', marginBottom: 6 },
+  podBase: { width: 72, borderTopLeftRadius: radii.sm, borderTopRightRadius: radii.sm, alignItems: 'center', paddingTop: 4 },
+  podBaseTxt: { fontSize: 16 },
+
+  initAvatar: { alignItems: 'center', justifyContent: 'center' },
+  initAvatarTxt: { fontFamily: 'PlexArabic-Bold' },
+
   center: { padding: 24, alignItems: 'center' },
-  emptyTxt: { fontSize: 14, color: '#888', textAlign: 'center' },
   row: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
@@ -303,13 +365,11 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 10,
   },
-  rowMe: { backgroundColor: '#d8e8f2' },
-  medal: { width: 30, fontSize: 15, textAlign: 'center' },
+  rank: { width: 26, fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center' },
   rowFlag: { fontSize: 18, width: 28, textAlign: 'center' },
   rowFlagPlaceholder: { width: 28 },
-  rowName: { flex: 1, fontSize: 14, color: '#333', textAlign: 'right' },
-  rowNameMe: { fontWeight: '700', color: '#0d2d4e' },
-  rowScore: { fontSize: 15, fontWeight: '700', color: '#0d2d4e', minWidth: 42, textAlign: 'left' },
-  rowScoreMe: { color: '#f39c12' },
-  sep: { height: 1, backgroundColor: '#f5f5f5', marginHorizontal: 14 },
+  rowName: { flex: 1, fontSize: 14, textAlign: 'right' },
+  delta: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
+  rowScore: { fontSize: 15, fontFamily: 'PlexArabic-Bold', minWidth: 42, textAlign: 'left' },
+  sep: { height: 1, marginHorizontal: 14 },
 });

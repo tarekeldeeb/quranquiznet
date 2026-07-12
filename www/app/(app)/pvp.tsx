@@ -32,10 +32,13 @@ import { flagEmoji } from '../../src/models/constants';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
 
+// Static light-palette values from src/theme/tokens.ts. This screen still
+// renders one fixed theme (a live match is a short, focused surface); moving
+// it onto useTheme for night mode is part of the night-mode follow-up.
 const NAVY = '#0d2d4e';
-const GREEN = '#27ae60';
-const RED = '#e74c3c';
-const AMBER = '#f39c12';
+const GREEN = '#2f7d5d';
+const RED = '#b3473d';
+const AMBER = '#c8973a';
 
 type Phase = 'idle' | 'searching' | 'countdown' | 'playing' | 'done';
 type OpponentIdentity = { name: string; photoURL?: string; country?: string };
@@ -729,7 +732,9 @@ export default function PvpScreen() {
       {/* ── Idle: intro — real opponent first, bot fallback if none found ── */}
       {phase === 'idle' && (
         <View style={s.idleWrap}>
-          <Text style={s.idleEmoji}>⚔️</Text>
+          <View style={s.idleIconRing}>
+            <Ionicons name="flash" size={40} color={AMBER} />
+          </View>
           <Text style={s.idleTitle}>منافسة مباشرة</Text>
           <Text style={s.idleSub}>
             {PVP_QUESTIONS} أسئلة من سور حفظك — سنبحث عن منافس حقيقي أولاً، وإن لم نجد
@@ -760,7 +765,7 @@ export default function PvpScreen() {
       {phase === 'searching' && (
         <View style={s.countWrap}>
           <ActivityIndicator size="large" color={NAVY} />
-          <Text style={s.countBotLine}>🔎 جارٍ البحث عن منافس...</Text>
+          <Text style={s.countBotLine}>جارٍ البحث عن منافس...</Text>
           <Text style={s.searchSeconds}>{searchSecondsLeft}</Text>
           <TouchableOpacity style={s.homeBtn} onPress={cancelSearch}>
             <Text style={s.homeTxt}>إلغاء</Text>
@@ -773,8 +778,8 @@ export default function PvpScreen() {
         <View style={s.countWrap}>
           <Text style={s.countBotLine}>
             {opponentKind === 'bot'
-              ? `${BOT_EMOJI} ${BOT_NAME}: هل أنت مستعد؟`
-              : `⚔️ ${humanOpponent?.name ?? 'المنافس'}: هل أنت مستعد؟`}
+              ? `${BOT_NAME}: هل أنت مستعد؟`
+              : `${humanOpponent?.name ?? 'المنافس'}: هل أنت مستعد؟`}
           </Text>
           <Text style={s.countNum}>{countdown}</Text>
         </View>
@@ -796,7 +801,7 @@ export default function PvpScreen() {
           <View style={s.vsSide}>
             <View style={s.vsIdent}>
               {opponentKind === 'bot' ? (
-                <View style={s.botAvatar}><Text style={s.botAvatarTxt}>{BOT_EMOJI}</Text></View>
+                <View style={s.botAvatar}><Ionicons name="hardware-chip-outline" size={18} color={NAVY} /></View>
               ) : (
                 <Avatar uri={humanOpponent?.photoURL} fallback={APP_ICON} style={s.vsAvatar} />
               )}
@@ -814,7 +819,8 @@ export default function PvpScreen() {
       {/* ── Opponent disconnected — grace period banner ── */}
       {oppDisconnected && playing && !outcome && (
         <View style={s.disconnectBanner}>
-          <Text style={s.disconnectTxt}>⚠️ انقطع الاتصال بالمنافس… في انتظار عودته</Text>
+          <Ionicons name="warning-outline" size={15} color="#8a6410" />
+          <Text style={s.disconnectTxt}>انقطع الاتصال بالمنافس… في انتظار عودته</Text>
         </View>
       )}
 
@@ -870,7 +876,7 @@ export default function PvpScreen() {
               <Text style={s.resultDash}>—</Text>
               <View style={s.resultCell}>
                 <Text style={s.resultName}>
-                  {opponentKind === 'bot' ? `${BOT_NAME} ${BOT_EMOJI}` : opponentLabel}
+                  {opponentKind === 'bot' ? BOT_NAME : opponentLabel}
                 </Text>
                 <Text style={[s.resultNum, outcome === 'loss' && { color: GREEN }]}>
                   {opponentKind === 'bot' ? (botRef.current?.final.correct ?? 0) : botView.correct}
@@ -917,11 +923,15 @@ export default function PvpScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1, backgroundColor: '#faf6ec' },
 
   // Idle
   idleWrap: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24, gap: 10 },
-  idleEmoji: { fontSize: 64 },
+  idleIconRing: {
+    width: 88, height: 88, borderRadius: 44,
+    backgroundColor: '#f3e8d2',
+    alignItems: 'center', justifyContent: 'center',
+  },
   idleTitle: { fontSize: 24, fontWeight: '800', color: NAVY },
   idleSub: { fontSize: 14, color: '#7a8794', textAlign: 'center' },
   recordRow: { flexDirection: 'row-reverse', gap: 24, marginVertical: 14 },
@@ -942,6 +952,7 @@ const s = StyleSheet.create({
 
   // Disconnect banner
   disconnectBanner: {
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 6,
     backgroundColor: '#fdecea', marginHorizontal: 12, marginTop: 8,
     borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12,
   },
@@ -968,7 +979,6 @@ const s = StyleSheet.create({
     width: 26, height: 26, borderRadius: 13, backgroundColor: '#eef3f8',
     alignItems: 'center', justifyContent: 'center',
   },
-  botAvatarTxt: { fontSize: 15 },
   vsName: { fontSize: 12, fontWeight: '700', color: NAVY, flexShrink: 1 },
   vsScore: { fontSize: 20, fontWeight: '800', color: NAVY },
   vsMid: { fontSize: 12, fontWeight: '800', color: '#a7b3bf' },

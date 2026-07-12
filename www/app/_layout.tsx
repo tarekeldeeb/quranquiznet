@@ -61,9 +61,9 @@ configureNotifications();
 const WEB_BG_CSS = `
 #qqn-web-bg {
   position: relative;
-  background-color: #c8d0da;
+  background-color: #ded5c2;
   background-image:
-    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20241.42%20241.42%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23a9b4c0%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.6%22%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C241.42%2070.71%2C241.42%200.0%2C170.71%20-0.0%2C70.71%2070.71%2C-0.0%20170.71%2C0.0%20241.42%2C70.71%22%2F%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C170.71%20170.71%2C241.42%20120.71%2C191.42%2070.71%2C241.42%2070.71%2C170.71%200.0%2C170.71%2050.0%2C120.71%20-0.0%2C70.71%2070.71%2C70.71%2070.71%2C-0.0%20120.71%2C50.0%20170.71%2C0.0%20170.71%2C70.71%20241.42%2C70.71%20191.42%2C120.71%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C-50.0%2050.0%2C-50.0%2050.0%2C50.0%20-50.0%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C-50.0%20291.42%2C-50.0%20291.42%2C50.0%20191.42%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C191.42%2050.0%2C191.42%2050.0%2C291.42%20-50.0%2C291.42%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C191.42%20291.42%2C191.42%20291.42%2C291.42%20191.42%2C291.42%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
+    url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20241.42%20241.42%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23c3b590%22%20stroke-opacity%3D%220.5%22%20stroke-width%3D%221.6%22%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C241.42%2070.71%2C241.42%200.0%2C170.71%20-0.0%2C70.71%2070.71%2C-0.0%20170.71%2C0.0%20241.42%2C70.71%22%2F%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C170.71%20170.71%2C241.42%20120.71%2C191.42%2070.71%2C241.42%2070.71%2C170.71%200.0%2C170.71%2050.0%2C120.71%20-0.0%2C70.71%2070.71%2C70.71%2070.71%2C-0.0%20120.71%2C50.0%20170.71%2C0.0%20170.71%2C70.71%20241.42%2C70.71%20191.42%2C120.71%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C-50.0%2050.0%2C-50.0%2050.0%2C50.0%20-50.0%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C-50.0%20291.42%2C-50.0%20291.42%2C50.0%20191.42%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C191.42%2050.0%2C191.42%2050.0%2C291.42%20-50.0%2C291.42%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C191.42%20291.42%2C191.42%20291.42%2C291.42%20191.42%2C291.42%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E"),
     url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20241.42%20241.42%22%3E%3Cg%20fill%3D%22none%22%20stroke%3D%22%23ffffff%22%20stroke-opacity%3D%220.2%22%20stroke-width%3D%221.6%22%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C241.42%2070.71%2C241.42%200.0%2C170.71%20-0.0%2C70.71%2070.71%2C-0.0%20170.71%2C0.0%20241.42%2C70.71%22%2F%3E%3Cpolygon%20points%3D%22241.42%2C170.71%20170.71%2C170.71%20170.71%2C241.42%20120.71%2C191.42%2070.71%2C241.42%2070.71%2C170.71%200.0%2C170.71%2050.0%2C120.71%20-0.0%2C70.71%2070.71%2C70.71%2070.71%2C-0.0%20120.71%2C50.0%20170.71%2C0.0%20170.71%2C70.71%20241.42%2C70.71%20191.42%2C120.71%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C-50.0%2050.0%2C-50.0%2050.0%2C50.0%20-50.0%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C-50.0%20291.42%2C-50.0%20291.42%2C50.0%20191.42%2C50.0%22%2F%3E%3Cpolygon%20points%3D%22-50.0%2C191.42%2050.0%2C191.42%2050.0%2C291.42%20-50.0%2C291.42%22%2F%3E%3Cpolygon%20points%3D%22191.42%2C191.42%20291.42%2C191.42%20291.42%2C291.42%20191.42%2C291.42%22%2F%3E%3C%2Fg%3E%3C%2Fsvg%3E");
   background-size: 240px 240px, 372px 372px;
   background-position: 0px 0px, 0px 0px;
@@ -114,13 +114,13 @@ function WebFrame({ children }: { children: React.ReactNode }) {
 
 const webStyles = StyleSheet.create({
   // Fallback color; the animated pattern is layered on via #qqn-web-bg CSS.
-  outer: { flex: 1, alignItems: 'center', backgroundColor: '#c8d0da' },
+  outer: { flex: 1, alignItems: 'center', backgroundColor: '#ded5c2' },
   inner: {
     flex: 1,
     width: '100%',
     // 480 (max card width) + 16px breathing room on each side.
     maxWidth: 512,
-    backgroundColor: '#edf1f5',
+    backgroundColor: '#faf6ec',
     boxShadow: '0px 0px 24px rgba(0,0,0,0.18)',
   },
 });
@@ -170,7 +170,7 @@ export default function RootLayout() {
         <WebFrame>
           <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0d2d4e', gap: 20 }}>
             <Image source={appIcon} style={{ width: 96, height: 96, borderRadius: 20 }} />
-            <ActivityIndicator size="large" color="#f39c12" />
+            <ActivityIndicator size="large" color="#c8973a" />
             {dbProgress > 0 && dbProgress < 1 && (
               <Text style={{ color: '#9bbdd4', fontSize: 13 }}>
                 تحميل البيانات {Math.round(dbProgress * 100)}٪

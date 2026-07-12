@@ -53,7 +53,7 @@ export default function LevelScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1, backgroundColor: '#faf6ec' },
   scroll: { padding: 20, gap: 12 },
   title: { fontSize: 24, fontWeight: '700', color: '#0d2d4e', textAlign: 'right' },
   subtitle: { fontSize: 14, color: '#666', textAlign: 'right', marginBottom: 8 },

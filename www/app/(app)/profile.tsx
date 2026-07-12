@@ -169,7 +169,7 @@ export default function ProfileScreen() {
 }
 
 const p = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1, backgroundColor: '#faf6ec' },
   scrollView: { flex: 1 },
   scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   header: { alignItems: 'center', gap: 8, paddingVertical: 16, position: 'relative' },
