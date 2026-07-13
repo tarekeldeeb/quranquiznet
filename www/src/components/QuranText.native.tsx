@@ -16,6 +16,7 @@ import * as FileSystem from 'expo-file-system';
 import { getMadinaBaseUri } from '../services/madinaAssets';
 import { madinaFontSizeForWidth } from '../models/madinaWidth';
 import type { QuranTextProps } from './QuranText';
+import { useTheme } from '../theme/tokens';
 
 // Same font QuranText.web.tsx configures the loader with. Font *size* isn't
 // fixed here — see madinaFontSizeForWidth — since each question gets a fresh
@@ -25,19 +26,36 @@ import type { QuranTextProps } from './QuranText';
 const FONT = 'Hafs';
 const MIN_HEIGHT = 60; // matches QuizCard's questionBox minHeight
 
-function buildHtml(sura: number, aya: number, words: string, hideTitle: boolean, fontSize: number): string {
+function buildHtml(
+  sura: number,
+  aya: number,
+  words: string,
+  hideTitle: boolean,
+  fontSize: number,
+  ink: string,
+  paper: string,
+): string {
   return `<!DOCTYPE html><html dir="rtl"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
 <style>
-html,body{margin:0;padding:0;background:transparent;}
+html,body{margin:0;padding:0;background:transparent;color:${ink};}
 /* Blend the Madina renderer into the quiz card, same as app/+html.tsx (web) and
    scripts/og-image/og-image.html: drop the library's beige tint, rounded corners,
    the inset mushaf-page gutter shadow (set inline by the library, so this needs
-   !important to win — see app/+html.tsx), and any header. */
+   !important to win — see app/+html.tsx), and any header.
+   Word text has no color of its own in the library CSS — it's just inherited
+   currentColor (see QuranText.web.tsx's hover-fix comment) — so unlike web,
+   where an ancestor DOM node's color naturally cascades in, this WebView's
+   document has no such ancestor and needs its own theme-aware color set
+   directly, or it falls back to the browser default (black), unreadable
+   against a dark-mode card. --qmh-background mirrors web's own-background
+   override for the same reason (the library's muted/header colors are a
+   color-mix off of it). */
 quran-madina-html {
   background: transparent !important;
   border-radius: 0 !important;
   box-shadow: none !important;
+  --qmh-background: ${paper};
 }
 quran-madina-html-header { display: none !important; }
 </style>
@@ -105,6 +123,7 @@ quran-madina-html-header { display: none !important; }
 let instanceCounter = 0;
 
 export default function QuranText({ sura, aya, words, hideTitle, style }: QuranTextProps) {
+  const { colors } = useTheme();
   const [height, setHeight] = useState(MIN_HEIGHT);
   // The `style` prop QuizCard passes in (questionText/answerText) sets
   // `alignItems: 'center'` on this wrapper (a web-only fix to center the
@@ -151,7 +170,7 @@ export default function QuranText({ sura, aya, words, hideTitle, style }: QuranT
     // file:// loading path here.
     let cancelled = false;
     const fontSize = madinaFontSizeForWidth(width);
-    const html = buildHtml(sura, aya, words, hideTitle, fontSize);
+    const html = buildHtml(sura, aya, words, hideTitle, fontSize, colors.ink, colors.paper);
     const uri = `${getMadinaBaseUri()}_render_${instanceId}.html`;
     FileSystem.writeAsStringAsync(uri, html).then(() => {
       if (cancelled) return;
@@ -161,7 +180,7 @@ export default function QuranText({ sura, aya, words, hideTitle, style }: QuranT
     return () => {
       cancelled = true;
     };
-  }, [sura, aya, words, hideTitle, instanceId, width]);
+  }, [sura, aya, words, hideTitle, instanceId, width, colors.ink, colors.paper]);
 
   function onMessage(e: WebViewMessageEvent) {
     const h = Number(e.nativeEvent.data);
