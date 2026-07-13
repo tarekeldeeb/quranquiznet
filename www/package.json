@@ -59,6 +59,25 @@
     "jest-expo": "~52.0.0",
     "typescript": "^5.3.0"
   },
+  "overrides": {
+    "tar": "^7.5.16",
+    "undici": "^6.27.0",
+    "@xmldom/xmldom": ">=0.8.13",
+    "postcss": "^8.5.10",
+    "uuid": "^11.1.1",
+    "@expo/cli": {
+      "form-data": "^3.0.5"
+    },
+    "jsdom": {
+      "form-data": "^4.0.6"
+    },
+    "cosmiconfig": {
+      "js-yaml": "^3.15.0"
+    },
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^3.15.0"
+    }
+  },
   "jest": {
     "preset": "jest-expo",
     "setupFiles": [
