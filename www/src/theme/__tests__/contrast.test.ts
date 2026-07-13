@@ -43,6 +43,15 @@ function contrastRatio(hex1: string, hex2: string): number {
   return (lighter + 0.05) / (darker + 0.05);
 }
 
+/** Flattens a translucent color over an opaque one (standard alpha-over
+ * compositing), returning the resulting opaque hex. */
+function compositeOver(fgHex: string, alpha: number, bgHex: string): string {
+  const fg = hexToRgb(fgHex);
+  const bg = hexToRgb(bgHex);
+  const mixed = fg.map((c, i) => Math.round(c * alpha + bg[i] * (1 - alpha)));
+  return `#${mixed.map((c) => c.toString(16).padStart(2, '0')).join('')}`;
+}
+
 describe('contrastRatio()', () => {
   it('is 21 for pure black on white and 1 for identical colors', () => {
     expect(contrastRatio('#000000', '#ffffff')).toBeCloseTo(21, 0);
@@ -108,4 +117,28 @@ describe('fixed (non-themed) UI color pairs', () => {
   it('white text/icons on the fixed navy header bar', () => {
     expect(contrastRatio('#ffffff', '#0d2d4e')).toBeGreaterThanOrEqual(AA_NORMAL);
   });
+});
+
+// quran-madina-html (the third-party Quran-text renderer, src/components/
+// QuranText.web.tsx) fires a raw mouseover that sets a hardcoded inline
+// background-color on hover; our fix overrides it via an injected !important
+// rule to a translucent light-grey wash instead of the library's opaque
+// default, so it only ever partially tints whatever's underneath rather than
+// replacing it outright. Word text separately inherits its color from us via
+// currentColor (colors.ink), so the wash needs to hold up against ink on top
+// of every real background it could land on, composited in both palettes —
+// this caught the exact regression reported and fixed twice in one session
+// (an opaque override resolving to the wrong color, then a too-strong wash).
+describe('Quran-text hover wash (quran-madina-html override)', () => {
+  const HOVER_WASH = { hex: '#d3d3d3', alpha: 0.3 }; // rgba(211,211,211,0.3), see QuranText.web.tsx
+
+  for (const mode of (['light', 'dark'] as ThemeMode[])) {
+    const colors = getTheme(mode);
+    for (const bgToken of ['paper', 'card'] as const) {
+      it(`${mode}: ink text over the wash on ${bgToken}`, () => {
+        const composited = compositeOver(HOVER_WASH.hex, HOVER_WASH.alpha, colors[bgToken]);
+        expect(contrastRatio(colors.ink, composited)).toBeGreaterThanOrEqual(AA_NORMAL);
+      });
+    }
+  }
 });

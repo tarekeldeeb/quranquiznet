@@ -76,14 +76,16 @@ if (!patchedConsole.__qmhFiltered) {
 // the literal "lightgrey" substring instead only ever catches the actual
 // hover moment.
 //
-// A flat black wash at low alpha darkens whatever's underneath by a fixed,
-// small amount rather than replacing it outright — visible as a hover cue in
-// both palettes without depending on the custom-property channel a previous
-// version of this fix already proved unreliable, and without going back to
-// plain transparent (no hover feedback at all).
+// A translucent light-grey wash — the library's own hover color, just no
+// longer opaque — mixes only partway toward whatever's underneath rather
+// than replacing it outright. Checked against both palettes' actual text/
+// background pairs (see src/theme/__tests__/contrast.test.ts's approach):
+// worst case is dark mode's card background at ~5.5:1, still comfortably
+// past WCAG AA's 4.5:1. Doesn't depend on the custom-property channel a
+// previous version of this fix already proved unreliable.
 const QMH_HOVER_FIX_CSS = `
 quran-madina-html [style*="lightgrey"] {
-  background-color: rgba(0, 0, 0, 0.2) !important;
+  background-color: rgba(211, 211, 211, 0.3) !important;
 }
 `;
 function injectHoverFix() {
