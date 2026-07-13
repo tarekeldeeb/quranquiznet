@@ -132,8 +132,12 @@ export default function AppLayout() {
         headerTitle: () => <HeaderLogo />,
         tabBarActiveTintColor: colors.gold,
         tabBarInactiveTintColor: colors.inkSoft,
-        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line, height: 60, paddingBottom: 6, paddingTop: 6 },
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        // height/labelStyle tuned generously: the custom Arabic font's line
+        // metrics run taller than a system font at the same size, and the
+        // previous 60/11px combo was clipping the bottom of "الرئيسية" and
+        // "البطولة" against the bar's fixed height.
+        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.line, height: 66, paddingBottom: 8, paddingTop: 6 },
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700', lineHeight: 14 },
         tabBarShowLabel: true,
         headerTitleAlign: 'center',
       }}
