@@ -156,11 +156,15 @@ export default function LeagueScreen() {
     return yRank - todayRank; // positive ⇒ moved up
   }
 
-  const podium = listData.slice(0, 3);
-  const rest = listData.slice(3);
+  // Podium only makes sense with a full top-3 — with 1-2 entries (e.g. a
+  // quiet يوم/أمس), splitting into a 3-slot podium + "everyone from rank 4"
+  // list dropped every real entry: podium.length === 3 was never true, and
+  // listData.slice(3) is empty whenever there are fewer than 3 total rows.
+  const podium = listData.length >= 3 ? listData.slice(0, 3) : [];
+  const rest = listData.length >= 3 ? listData.slice(3) : listData;
 
   function renderRow({ item, index }: { item: LeaderboardEntry; index: number }) {
-    const rank = index + 4; // podium already covers 1-3
+    const rank = index + podium.length + 1; // podium (if any) covers 1..podium.length
     const isMe = item.uid === profile.uid;
     const flag = flagEmoji(item.country);
     const delta = movementFor(item, rank);
