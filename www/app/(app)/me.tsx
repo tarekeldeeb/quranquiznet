@@ -335,7 +335,7 @@ export default function MeScreen() {
       headerRight: () => <HeaderBrand />,
       headerLeft: () => (
         <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={8} style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
-          <Ionicons name="settings-outline" size={24} color="#fff" />
+          <Ionicons name="settings-outline" size={24} color={colors.navySoft} />
         </PressScale>
       ),
     });

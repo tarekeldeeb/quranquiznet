@@ -2,13 +2,13 @@
 // Home via the gear icon in the header (see (app)/me.tsx) instead of living
 // inline on Home, which used to do five jobs at once.
 import { useState } from 'react';
-import { View, Text, Switch, Alert, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, Switch, Alert, Modal, ActivityIndicator, StyleSheet, ScrollView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useProfileStore } from '../../src/stores/profileStore';
-import { signOut } from '../../src/services/firebase';
+import { signOut, deleteAccount } from '../../src/services/firebase';
 import { useTheme, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
 import ThemeToggle from '../../src/components/ThemeToggle';
@@ -23,12 +23,51 @@ function notify(title: string, msg: string) {
   Alert.alert(title, msg);
 }
 
+/** Delete-account confirmation — a full sheet, not a one-line Alert, since
+ * this is the one truly irreversible action in the app. */
+function DeleteAccountSheet({
+  visible, onClose, onConfirm, deleting, colors,
+}: {
+  visible: boolean; onClose: () => void; onConfirm: () => void; deleting: boolean;
+  colors: ReturnType<typeof useTheme>['colors'];
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={s.sheetBg}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          <View style={[s.sheetIconRing, { backgroundColor: colors.wrongPale }]}>
+            <Ionicons name="warning" size={28} color={colors.wrong} />
+          </View>
+          <Text style={[s.sheetTitle, { color: colors.ink }]}>حذف الحساب نهائياً؟</Text>
+          <Text style={[s.sheetBody, { color: colors.inkSoft }]}>
+            سيُحذف تقدّمك ونتائجك وكل بياناتك من خوادمنا ومن هذا الجهاز. هذا الإجراء لا يمكن التراجع عنه.
+          </Text>
+          <PressScale
+            style={[s.deleteConfirmBtn, { backgroundColor: colors.wrong }, deleting && { opacity: 0.6 }]}
+            onPress={onConfirm}
+            disabled={deleting}
+          >
+            {deleting
+              ? <ActivityIndicator color="#fff" size="small" />
+              : <Text style={s.deleteConfirmTxt}>حذف الحساب نهائياً</Text>}
+          </PressScale>
+          <PressScale style={s.deleteCancelBtn} onPress={onClose} disabled={deleting}>
+            <Text style={[s.deleteCancelTxt, { color: colors.inkSoft }]}>إلغاء</Text>
+          </PressScale>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
 export default function SettingsScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const profile = useProfileStore();
   const social = profile.social;
   const [signingOut, setSigningOut] = useState(false);
+  const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
+  const [deletingAccount, setDeletingAccount] = useState(false);
 
   const SPECIAL_MIN_LEVEL = 2;
   const specialEditable = profile.level >= SPECIAL_MIN_LEVEL;
@@ -67,6 +106,26 @@ export default function SettingsScreen() {
       { text: 'لا', style: 'cancel' },
       { text: 'نعم', style: 'destructive', onPress: performSignOut },
     ]);
+  }
+
+  async function performDeleteAccount() {
+    setDeletingAccount(true);
+    try {
+      await deleteAccount();
+      await profile.delete().catch(console.error);
+      setDeleteSheetOpen(false);
+      router.replace('/(auth)');
+    } catch (e) {
+      setDeletingAccount(false);
+      setDeleteSheetOpen(false);
+      const code = (e as { code?: string })?.code;
+      if (code === 'auth/requires-recent-login') {
+        notify('يلزم تسجيل الدخول مجدداً', 'لأسباب أمنية، سجّل الخروج ثم ادخل مرة أخرى قبل حذف الحساب.');
+      } else {
+        console.error(e);
+        notify('خطأ', 'تعذر حذف الحساب. حاول مرة أخرى لاحقاً.');
+      }
+    }
   }
 
   return (
@@ -141,8 +200,27 @@ export default function SettingsScreen() {
           </PressScale>
         )}
 
+        {/* Deliberately small and unboxed — a quiet, deniable-by-accident
+            link rather than a card matching sign-out's prominence. */}
+        <PressScale
+          style={s.deleteLink}
+          onPress={() => setDeleteSheetOpen(true)}
+          disabled={signingOut || deletingAccount}
+        >
+          <Ionicons name="trash-outline" size={13} color={colors.wrong} />
+          <Text style={[s.deleteLinkTxt, { color: colors.wrong }]}>حذف الحساب</Text>
+        </PressScale>
+
         <Text style={[s.version, { color: colors.inkSoft }]}>الإصدار {APP_VERSION}</Text>
       </ScrollView>
+
+      <DeleteAccountSheet
+        visible={deleteSheetOpen}
+        onClose={() => setDeleteSheetOpen(false)}
+        onConfirm={performDeleteAccount}
+        deleting={deletingAccount}
+        colors={colors}
+      />
     </SafeAreaView>
   );
 }
@@ -173,5 +251,31 @@ const s = StyleSheet.create({
   toggleHint: { fontSize: 11, textAlign: 'right', marginTop: 2 },
   signOutRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14 },
   signOutTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
+  deleteLink: {
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center',
+    gap: 4, paddingVertical: 6, alignSelf: 'center',
+  },
+  deleteLinkTxt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
   version: { textAlign: 'center', fontSize: 12, paddingBottom: 16 },
+
+  // Delete-account confirmation sheet
+  sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: {
+    borderTopLeftRadius: radii.lg + 4, borderTopRightRadius: radii.lg + 4,
+    padding: 24, paddingBottom: 36, alignItems: 'center', gap: 6,
+    width: '100%', maxWidth: 512, alignSelf: 'center',
+  },
+  sheetIconRing: {
+    width: 60, height: 60, borderRadius: 30,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  },
+  sheetTitle: { fontSize: 17, fontFamily: 'PlexArabic-Bold', textAlign: 'center' },
+  sheetBody: { fontSize: 13, textAlign: 'center', lineHeight: 20, marginBottom: 14 },
+  deleteConfirmBtn: {
+    width: '100%', paddingVertical: 14, borderRadius: radii.md,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  deleteConfirmTxt: { color: '#fff', fontSize: 15, fontFamily: 'PlexArabic-Bold' },
+  deleteCancelBtn: { paddingVertical: 12, marginTop: 2 },
+  deleteCancelTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
 });
