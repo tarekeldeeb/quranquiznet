@@ -50,6 +50,12 @@
             "targetSdkVersion": 35
           }
         }
+      ],
+      [
+        "expo-av",
+        {
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {
