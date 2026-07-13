@@ -74,12 +74,16 @@ if (!patchedConsole.__qmhFiltered) {
 // the library's own #F5F5DC default rather than our override, painting every
 // line pale yellow at all times (reported: "now it's horrible"). Matching
 // the literal "lightgrey" substring instead only ever catches the actual
-// hover moment, and resolving to plain transparent — not the custom
-// property — means this doesn't depend on custom-property inheritance
-// working in a way that couldn't be verified without live browser testing.
+// hover moment.
+//
+// A flat black wash at low alpha darkens whatever's underneath by a fixed,
+// small amount rather than replacing it outright — visible as a hover cue in
+// both palettes without depending on the custom-property channel a previous
+// version of this fix already proved unreliable, and without going back to
+// plain transparent (no hover feedback at all).
 const QMH_HOVER_FIX_CSS = `
 quran-madina-html [style*="lightgrey"] {
-  background-color: transparent !important;
+  background-color: rgba(0, 0, 0, 0.2) !important;
 }
 `;
 function injectHoverFix() {
