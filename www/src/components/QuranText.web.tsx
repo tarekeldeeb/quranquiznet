@@ -58,20 +58,28 @@ if (!patchedConsole.__qmhFiltered) {
 // The library wires a raw mouseover/mouseout pair on its word-group elements
 // that sets element.style.backgroundColor = "lightgrey" directly (hardcoded
 // in the minified bundle — not a CSS rule, not a themeable prop, the only
-// place in the whole library that sets an inline background-color). Word
-// text separately inherits its color from us via currentColor, which is
-// correctly theme-aware — so in dark mode that left our light (dark-mode)
-// text sitting on a literal "lightgrey" box: light-on-light, reported as
-// "the hover highlight is too shiny, losing all text contrast." An inline
-// style only loses to a stylesheet rule that's !important, so this can't be
-// fixed via the component's own `style` prop (already used for
-// --qmh-background) — it needs a real, injected stylesheet rule. Reusing
-// --qmh-background (already set to our current colors.paper, see below)
-// instead of picking a separate hover color keeps the hover state exactly as
-// legible as resting text, since that pairing is already contrast-tested.
+// place in the whole library that sets an inline background-color; mouseout
+// resets it to "transparent", also inline). Word text separately inherits
+// its color from us via currentColor, which is correctly theme-aware — so in
+// dark mode that left our light (dark-mode) text sitting on a literal
+// "lightgrey" box: light-on-light, reported as "the hover highlight is too
+// shiny, losing all text contrast."
+//
+// An inline style only loses to a stylesheet rule that's !important, so this
+// needs a real injected rule — but [style*="background-color"] (an earlier,
+// broken version of this fix) matched BOTH states, since "background-color"
+// appears in the attribute text of the resting `background-color:transparent`
+// just as much as the hover `background-color:lightgrey` — forcing every
+// word permanently to var(--qmh-background), which turned out to resolve to
+// the library's own #F5F5DC default rather than our override, painting every
+// line pale yellow at all times (reported: "now it's horrible"). Matching
+// the literal "lightgrey" substring instead only ever catches the actual
+// hover moment, and resolving to plain transparent — not the custom
+// property — means this doesn't depend on custom-property inheritance
+// working in a way that couldn't be verified without live browser testing.
 const QMH_HOVER_FIX_CSS = `
-quran-madina-html [style*="background-color"] {
-  background-color: var(--qmh-background, transparent) !important;
+quran-madina-html [style*="lightgrey"] {
+  background-color: transparent !important;
 }
 `;
 function injectHoverFix() {
