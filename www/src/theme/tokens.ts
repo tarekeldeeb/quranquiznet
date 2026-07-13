@@ -36,16 +36,21 @@ const LIGHT: ThemeColors = {
   // constant, not a themed pair.
   navySoft: '#8fb0cf',
   gold: '#c8973a',
-  goldDeep: '#8a6410',
+  // goldDeep/correct/wrong are ~5% darker than they were: each is used as
+  // small text/icon color on top of its own *Pale background (badges, the
+  // quiz reveal's ✓/✗ marks, risk/disconnect banners), and at that exact
+  // pairing the previous values fell just under WCAG AA 4.5:1 for normal-size
+  // text (4.42/4.26/4.40) — see src/theme/__tests__/contrast.test.ts.
+  goldDeep: '#835f0f',
   goldPale: '#f3e8d2',
   paper: '#faf6ec',
   card: '#ffffff',
   ink: '#22303c',
   inkSoft: '#5c6b7a',
   line: '#e4dcc9',
-  correct: '#2f7d5d',
+  correct: '#2c7658',
   correctPale: '#e4f0ea',
-  wrong: '#b3473d',
+  wrong: '#aa4339',
   wrongPale: '#f5e4e2',
   shadow: 'rgba(13,45,78,0.09)',
 };

@@ -106,9 +106,13 @@ export default function AuthScreen() {
             <View style={[s.dividerLine, { backgroundColor: colors.line }]} />
           </View>
 
-          <PressScale style={[s.socialBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line }]} onPress={handleGoogle}>
+          {/* Google's own button spec: fixed white surface + #3c4043 text
+              regardless of app theme (brand requirement, not themeable) — was
+              using colors.ink, which flips to a light color in dark mode and
+              washed out against the always-white background. */}
+          <PressScale style={[s.socialBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#dadce0' }]} onPress={handleGoogle}>
             <Ionicons name="logo-google" size={18} color="#4285F4" />
-            <Text style={[s.socialBtnTxt, { color: colors.ink }]}>المتابعة بحساب جوجل</Text>
+            <Text style={[s.socialBtnTxt, { color: '#3c4043' }]}>المتابعة بحساب جوجل</Text>
           </PressScale>
 
           <PressScale style={[s.socialBtn, { backgroundColor: '#1877F2' }]} onPress={handleFacebook}>

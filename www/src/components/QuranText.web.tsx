@@ -12,6 +12,7 @@ import { View, StyleProp, ViewStyle, Dimensions } from 'react-native';
 import QuranMadinaHtml from '@tarekeldeeb/quran-madina-react';
 import type { QuranTextProps } from './QuranText';
 import { madinaFontSizeForWidth } from '../models/madinaWidth';
+import { useTheme } from '../theme/tokens';
 
 // Self-hosted (same-origin) copy of the library instead of the wrapper's
 // unpkg default, so the quiz works fully offline after the first load (the
@@ -54,7 +55,36 @@ if (!patchedConsole.__qmhFiltered) {
   patchedConsole.__qmhFiltered = true;
 }
 
+// The library wires a raw mouseover/mouseout pair on its word-group elements
+// that sets element.style.backgroundColor = "lightgrey" directly (hardcoded
+// in the minified bundle — not a CSS rule, not a themeable prop, the only
+// place in the whole library that sets an inline background-color). Word
+// text separately inherits its color from us via currentColor, which is
+// correctly theme-aware — so in dark mode that left our light (dark-mode)
+// text sitting on a literal "lightgrey" box: light-on-light, reported as
+// "the hover highlight is too shiny, losing all text contrast." An inline
+// style only loses to a stylesheet rule that's !important, so this can't be
+// fixed via the component's own `style` prop (already used for
+// --qmh-background) — it needs a real, injected stylesheet rule. Reusing
+// --qmh-background (already set to our current colors.paper, see below)
+// instead of picking a separate hover color keeps the hover state exactly as
+// legible as resting text, since that pairing is already contrast-tested.
+const QMH_HOVER_FIX_CSS = `
+quran-madina-html [style*="background-color"] {
+  background-color: var(--qmh-background, transparent) !important;
+}
+`;
+function injectHoverFix() {
+  if (typeof document === 'undefined' || document.getElementById('qmh-hover-fix')) return;
+  const el = document.createElement('style');
+  el.id = 'qmh-hover-fix';
+  el.textContent = QMH_HOVER_FIX_CSS;
+  document.head.appendChild(el);
+}
+injectHoverFix();
+
 export default function QuranText({ sura, aya, words, hideTitle, style }: QuranTextProps) {
+  const { colors } = useTheme();
   return (
     <View style={[wrap, style as StyleProp<ViewStyle>]}>
       <QuranMadinaHtml
@@ -73,7 +103,16 @@ export default function QuranText({ sura, aya, words, hideTitle, style }: QuranT
         notitle={hideTitle}
         font="Hafs"
         fontSize={MADINA_FONT_SIZE}
-        style={{ background: 'transparent' }}
+        // The element's own background is a 10%-strength color-mix wash of
+        // --qmh-background (a fixed light cream, #F5F5DC by default,
+        // unrelated to our theme) over transparent. Word text separately
+        // inherits its color from the wrapping element via currentColor (see
+        // caller's `color: colors.ink`), which DOES flip with theme — so in
+        // dark mode that left light text sitting on this library's own
+        // still-light wash: light-on-light, the reported contrast loss.
+        // Overriding the custom property to our own paper tone makes the
+        // wash blend into the surrounding card instead of fighting it.
+        style={{ background: 'transparent', '--qmh-background': colors.paper } as React.CSSProperties}
       />
     </View>
   );
