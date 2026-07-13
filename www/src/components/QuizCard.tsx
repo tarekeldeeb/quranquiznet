@@ -108,6 +108,20 @@ export default function QuizCard({
   shuffledOptions, flipTrigger, isCorrect, correctIndex, pickedIndex,
 }: Props) {
   const { colors } = useTheme();
+  // paper and card sit close together by design in both palettes (a warm
+  // cream-vs-white step in light, a subtle navy-vs-navy step in dark) — the
+  // card was relying entirely on a fixed, light-mode-tuned shadow
+  // (rgba(0,0,0,0.08)) for edge definition, which reads as basically nothing
+  // against an already-dark background. A themed border (colors.line, tuned
+  // per palette) plus colors.shadow (9% in light, a much stronger 40% in
+  // dark to compensate for shadows barely registering there) gives the card
+  // a visible edge in both modes instead of blending into the screen.
+  const cardSurface = {
+    backgroundColor: colors.card,
+    borderWidth: 1,
+    borderColor: colors.line,
+    boxShadow: `0px 2px 8px ${colors.shadow}`,
+  };
   const flip = useSharedValue(0);
   const [imgVisible, setImgVisible] = React.useState(false);
   // Once the flip completes we swap which face is in normal flow, so the
@@ -235,12 +249,14 @@ export default function QuizCard({
           Explicitly disabling events on whichever face isn't in flow fixes it. */}
       <Animated.View
         testID="quiz-card-front"
-        style={[s.card, { backgroundColor: colors.card }, frontStyle, flipped && s.faceAbsolute]}
+        style={[s.card, cardSurface, frontStyle, flipped && s.faceAbsolute]}
         pointerEvents={flipped ? 'none' : 'auto'}
       >
 
-        {/* Instruction + progress dots */}
-        <View style={[s.topBar, { backgroundColor: colors.paper, borderColor: colors.line }]}>
+        {/* Instruction + progress dots — colors.card (not paper) so this
+            reads as the card's own header, not a strip that blends into the
+            page background sitting behind the card. */}
+        <View style={[s.topBar, { backgroundColor: colors.card, borderColor: colors.line }]}>
           <Text style={[s.instruction, { color: colors.inkSoft }]}>{card.qo.qType.txt}</Text>
           <View style={s.dotsRow}>
             {Array.from({ length: totalRounds }, (_, i) => (
@@ -341,7 +357,7 @@ export default function QuizCard({
       {/* ── BACK ──────────────────────────────────────────────────────────── */}
       <Animated.View
         testID="quiz-card-back"
-        style={[s.card, { backgroundColor: colors.card }, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}
+        style={[s.card, cardSurface, backStyle, !flipped && s.faceAbsolute, { borderColor, borderWidth: 2 }]}
         pointerEvents={flipped ? 'auto' : 'none'}
       >
 
@@ -413,7 +429,6 @@ const s = StyleSheet.create({
   card: {
     width: CARD_W,
     borderRadius: radii.lg,
-    boxShadow: '0px 2px 8px rgba(0,0,0,0.08)',
     elevation: 3,
     overflow: 'hidden',
   },

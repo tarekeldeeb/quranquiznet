@@ -12,8 +12,10 @@ jest.mock('expo-router', () => ({
 }));
 
 const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
+const mockDeleteAccount = jest.fn((..._a: unknown[]) => Promise.resolve());
 jest.mock('../../../src/services/firebase', () => ({
   signOut: (...a: unknown[]) => mockSignOut(...a),
+  deleteAccount: (...a: unknown[]) => mockDeleteAccount(...a),
 }));
 
 import React from 'react';
@@ -29,6 +31,7 @@ const renderSettings = () => render(<SafeAreaProvider initialMetrics={metrics}><
 beforeEach(() => {
   mockPush.mockClear(); mockReplace.mockClear();
   mockSignOut.mockReset(); mockSignOut.mockResolvedValue(undefined);
+  mockDeleteAccount.mockReset(); mockDeleteAccount.mockResolvedValue(undefined);
   useProfileStore.setState({
     social: { uid: 'u1', displayName: 'طارق الديب', isAnonymous: false },
     level: 1,
@@ -63,6 +66,67 @@ describe('Settings — sign out [bug #2]', () => {
     await act(async () => { resolveSignOut(); await Promise.resolve(); });
     await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(auth)'));
     expect(mockSignOut).toHaveBeenCalled();
+
+    alertSpy.mockRestore();
+  });
+});
+
+describe('Settings — delete account', () => {
+  it('does not call deleteAccount just from opening the confirmation sheet', async () => {
+    const { findByText } = renderSettings();
+    fireEvent.press(await findByText('حذف الحساب'));
+    await findByText('حذف الحساب نهائياً؟'); // the sheet's own title, proves it opened
+    expect(mockDeleteAccount).not.toHaveBeenCalled();
+  });
+
+  it('cancel closes the sheet without deleting anything', async () => {
+    const { findByText, queryByText } = renderSettings();
+    fireEvent.press(await findByText('حذف الحساب'));
+    await findByText('حذف الحساب نهائياً؟');
+
+    fireEvent.press(await findByText('إلغاء'));
+
+    expect(mockDeleteAccount).not.toHaveBeenCalled();
+    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)');
+    await waitFor(() => expect(queryByText('حذف الحساب نهائياً؟')).toBeNull());
+  });
+
+  it('confirm deletes the account, clears local data, and redirects — waiting for deleteAccount to resolve first', async () => {
+    let resolveDelete!: () => void;
+    mockDeleteAccount.mockReturnValue(new Promise<void>((r) => { resolveDelete = r; }));
+
+    const { findByText } = renderSettings();
+    fireEvent.press(await findByText('حذف الحساب'));
+    await findByText('حذف الحساب نهائياً؟');
+    fireEvent.press(await findByText('حذف الحساب نهائياً')); // confirm button (no "؟" — distinct from the title)
+
+    // deleteAccount is still pending → must not have navigated on a stale session.
+    await act(async () => { await Promise.resolve(); });
+    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)');
+
+    await act(async () => { resolveDelete(); await Promise.resolve(); });
+    await waitFor(() => expect(mockReplace).toHaveBeenCalledWith('/(auth)'));
+    expect(mockDeleteAccount).toHaveBeenCalled();
+  });
+
+  it('shows a re-login message and does not navigate when the session is too old', async () => {
+    const err = Object.assign(new Error('stale session'), { code: 'auth/requires-recent-login' });
+    mockDeleteAccount.mockRejectedValue(err);
+    const alertSpy = jest.spyOn(Alert, 'alert').mockImplementation(() => {});
+
+    const { findByText } = renderSettings();
+    fireEvent.press(await findByText('حذف الحساب'));
+    await findByText('حذف الحساب نهائياً؟');
+    fireEvent.press(await findByText('حذف الحساب نهائياً'));
+
+    await waitFor(() => expect(mockDeleteAccount).toHaveBeenCalled());
+    await act(async () => { await Promise.resolve(); });
+
+    expect(mockReplace).not.toHaveBeenCalledWith('/(auth)');
+    expect(alertSpy).toHaveBeenCalledWith(
+      'يلزم تسجيل الدخول مجدداً',
+      expect.stringContaining('سجّل الخروج'),
+    );
 
     alertSpy.mockRestore();
   });

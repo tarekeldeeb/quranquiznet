@@ -7,7 +7,7 @@ import {
   getAuth, initializeAuth, onAuthStateChanged, signInAnonymously,
   signInWithPopup, linkWithPopup, signInWithCredential, linkWithCredential,
   GoogleAuthProvider, FacebookAuthProvider, AuthProvider, AuthCredential, OAuthCredential,
-  signOut as fbSignOut, User, Auth,
+  signOut as fbSignOut, deleteUser, User, Auth,
 } from 'firebase/auth';
 // getReactNativePersistence is only exported from Firebase's React Native build;
 // the app's tsconfig resolves the web/node types, so the type isn't visible here.
@@ -264,6 +264,23 @@ export function signInFacebook(): Promise<User | null> {
 
 export async function signOut(): Promise<void> {
   await fbSignOut(getFirebaseAuth());
+}
+
+/**
+ * Permanently deletes the signed-in user: their RTDB profile, then the
+ * Firebase Auth account itself. RTDB removal must happen first — its rule is
+ * `auth.uid === $user_id`, which stops being true the instant the Auth user
+ * is gone. Firebase Auth requires a "recent" sign-in for account deletion
+ * (throws auth/requires-recent-login on a stale session); the caller should
+ * catch that specifically and ask the user to sign in again first. If that
+ * happens here, the RTDB data is already gone but the Auth account survives
+ * — an accepted asymmetry rather than building a full re-auth flow for it.
+ */
+export async function deleteAccount(): Promise<void> {
+  const current = getFirebaseAuth().currentUser;
+  if (!current) return;
+  await remove(ref(getFirebaseDb(), `/users/${current.uid}`));
+  await deleteUser(current);
 }
 
 export function onAuthChange(callback: (user: User | null) => void): () => void {
