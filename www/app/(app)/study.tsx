@@ -6,8 +6,8 @@ import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileSt
 
 function getPartIcon(range: number): { name: React.ComponentProps<typeof Ionicons>['name']; color: string } {
   switch (range) {
-    case CORRECT_RATIO_RANGE.HIGH: return { name: 'heart',        color: '#27ae60' };
-    case CORRECT_RATIO_RANGE.MID:  return { name: 'heart-outline', color: '#f39c12' };
+    case CORRECT_RATIO_RANGE.HIGH: return { name: 'heart',        color: '#2f7d5d' };
+    case CORRECT_RATIO_RANGE.MID:  return { name: 'heart-outline', color: '#c8973a' };
     case CORRECT_RATIO_RANGE.LOW:  return { name: 'flag',          color: '#c0392b' };
     default:                       return { name: 'help-circle-outline', color: '#bdc3c7' };
   }
@@ -58,7 +58,7 @@ export default function StudyScreen() {
           <Text style={s.actionTxt}> الكل</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.actionBtn} onPress={selectGood}>
-          <Ionicons name="heart" size={18} color="#27ae60" />
+          <Ionicons name="heart" size={18} color="#2f7d5d" />
           <Text style={s.actionTxt}> الجيد</Text>
         </TouchableOpacity>
         <TouchableOpacity style={s.actionBtn} onPress={selectWeak}>
@@ -100,7 +100,7 @@ export default function StudyScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1, backgroundColor: '#faf6ec' },
   actionBar: { flexDirection: 'row', backgroundColor: '#fff', paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderColor: '#ddd', gap: 16 },
   actionBtn: { flexDirection: 'row', alignItems: 'center' },
   actionTxt: { fontSize: 14, color: '#555' },

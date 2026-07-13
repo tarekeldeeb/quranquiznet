@@ -2,16 +2,20 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, StyleSheet, Text,
-  TouchableOpacity, Modal, TextInput, ScrollView, Share, Animated, Platform,
+  Modal, TextInput, ScrollView, Share, Animated, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useFocusEffect, useRouter } from 'expo-router';
+import { useLocalSearchParams, useFocusEffect, useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
-import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
+import PressScale from '../../src/components/PressScale';
+import Ring from '../../src/components/Ring';
+import Confetti from '../../src/components/Confetti';
+import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
@@ -28,20 +32,9 @@ import {
   shouldShowSummary, shouldRestoreNormalRunAfterDaily,
 } from '../../src/models/quizFlow';
 import { describeRankGap } from '../../src/models/dailyRank';
-import { detectMilestones, MasteryTier } from '../../src/models/milestones';
+import { detectMilestones } from '../../src/models/milestones';
 import { hapticCorrect, hapticIncorrect } from '../../src/services/haptics';
 import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
-
-// Translate the store's numeric accuracy tier into the string tier
-// src/models/milestones.ts works with (keeps that file decoupled from stores/).
-function tierFromRange(range: number): MasteryTier {
-  switch (range) {
-    case CORRECT_RATIO_RANGE.HIGH: return 'HIGH';
-    case CORRECT_RATIO_RANGE.MID:  return 'MID';
-    case CORRECT_RATIO_RANGE.LOW:  return 'LOW';
-    default:                       return 'EMPTY';
-  }
-}
 
 interface ActiveCard {
   round: number;
@@ -49,6 +42,9 @@ interface ActiveCard {
   shuffledOptions: string[];
   flipTrigger: number;
   isCorrect: boolean;
+  // Which shuffled-option index the player picked at the final round (null
+  // when skipped/timed out) — drives QuizCard's post-answer reveal.
+  pickedIndex: number | null;
 }
 
 function makeActive(qo: QuestionObject, round = 0): ActiveCard {
@@ -59,6 +55,7 @@ function makeActive(qo: QuestionObject, round = 0): ActiveCard {
     shuffledOptions: shuffleByPerm(qo.txt.op[round] ?? ['', '', '', '', ''], shuffle),
     flipTrigger: 0,
     isCorrect: false,
+    pickedIndex: null,
   };
 }
 
@@ -127,6 +124,8 @@ export default function QuizScreen() {
   const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string; chooser?: string; start?: string; lvl?: string }>();
   const profile = useProfileStore();
   const router = useRouter();
+  const navigation = useNavigation();
+  const { colors } = useTheme();
 
   const [cards, setCards] = useState<CardData[]>(() => sessionCache.cards);
   const [active, setActive] = useState<ActiveCard | null>(() => sessionCache.activeCard);
@@ -219,6 +218,20 @@ export default function QuizScreen() {
   useEffect(() => {
     return () => { if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current); };
   }, []);
+
+  // Reclaim the header: show the live score while a run is in progress instead
+  // of repeating the app's name on every tab (see (app)/_layout.tsx's default).
+  const inRun = !chooserVisible && cards.length > 0;
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => (
+        <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>
+          {inRun ? `${arNum(score)} نقطة` : 'ابدأ اختباراً'}
+        </Text>
+      ),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inRun, score]);
 
   // Reset all per-session state, then start a fresh run.
   //   { daily: true }        → daily quiz
@@ -600,9 +613,9 @@ export default function QuizScreen() {
     const isLastRound = active.round + 1 === QS.qo.rounds;
 
     if (isWrong) {
-      handleIncorrect();
+      handleIncorrect(optionIndex);
     } else if (isLastRound) {
-      handleCorrect();
+      handleCorrect(optionIndex);
     } else {
       // advance round
       const newRound = active.round + 1;
@@ -625,6 +638,7 @@ export default function QuizScreen() {
         shuffledOptions: shuffleByPerm(QS.qo.txt.op[newRound] ?? [], newShuffle),
         flipTrigger: 0,
         isCorrect: false,
+        pickedIndex: null,
       });
       // The question grew a line — scroll so the options stay in view.
       setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 100);
@@ -676,13 +690,13 @@ export default function QuizScreen() {
     }, 2800);
   }
 
-  function handleCorrect() {
+  function handleCorrect(pickedIndex?: number) {
     // Snapshot this part's "counted" correct total + accuracy tier BEFORE the
     // update, so we can detect a just-crossed milestone after it lands.
     const partIdx = QS.qo.currentPart;
     const partBefore = profile.parts[partIdx];
     const beforeCorrect = partBefore ? countedScore(partBefore.numCorrect) : 0;
-    const beforeTier = tierFromRange(profile.getCorrectRatioRange(partIdx));
+    const beforeTier = tierFromRatioRange(profile.getCorrectRatioRange(partIdx));
 
     profile.addCorrect(QS.qo);
     setScore(profile.getScore());
@@ -697,7 +711,7 @@ export default function QuizScreen() {
     const partAfter = useProfileStore.getState().parts[partIdx];
     if (partAfter) {
       const afterCorrect = countedScore(partAfter.numCorrect);
-      const afterTier = tierFromRange(useProfileStore.getState().getCorrectRatioRange(partIdx));
+      const afterTier = tierFromRatioRange(useProfileStore.getState().getCorrectRatioRange(partIdx));
       const milestones = detectMilestones({
         partName: partAfter.name, beforeCorrect, afterCorrect, beforeTier, afterTier,
       });
@@ -713,11 +727,11 @@ export default function QuizScreen() {
       next[next.length - 1] = { ...next[next.length - 1], wasCorrect: true };
       return next;
     });
-    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true } : null);
+    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: true, pickedIndex: pickedIndex ?? a.shuffle.indexOf(0) } : null);
     afterAnswer();
   }
 
-  function handleIncorrect() {
+  function handleIncorrect(pickedIndex?: number) {
     profile.addIncorrect(QS.qo);
     setScore(profile.getScore());
     setCombo(0);
@@ -729,10 +743,12 @@ export default function QuizScreen() {
       next[next.length - 1] = { ...next[next.length - 1], wasCorrect: false };
       return next;
     });
-    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false } : null);
+    setActive((a) => a ? { ...a, flipTrigger: a.flipTrigger + 1, isCorrect: false, pickedIndex: pickedIndex ?? null } : null);
     afterAnswer();
   }
 
+  // Timeout or explicit "لا أعلم" — no option was picked, so only the correct
+  // one flashes on reveal (no red marker).
   function skipQ() { handleIncorrect(); }
 
   // ── daily quiz ────────────────────────────────────────────────────────────
@@ -886,11 +902,16 @@ export default function QuizScreen() {
     : profile.parts.filter((p) => p.checked).map((p) => p.name);
   const showSettingsBar = !chooserVisible && cards.length > 0;
 
+  const sessionAccuracy = sessionAnsweredRef.current > 0
+    ? Math.round((sessionCorrectRef.current / sessionAnsweredRef.current) * 100)
+    : 0;
+  const weakestPart = profile.getTopBadParts()[0];
+
   return (
-    <SafeAreaView style={s.container} edges={['bottom']}>
-      {loading && cards.length === 0 && (
-        <View style={s.loadingOverlay}>
-          <ActivityIndicator size="large" color="#0d2d4e" />
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
+      {loading && cards.length === 0 && !chooserVisible && (
+        <View style={[s.loadingOverlay, { backgroundColor: colors.paper }]}>
+          <ActivityIndicator size="large" color={colors.ink} />
         </View>
       )}
 
@@ -898,13 +919,13 @@ export default function QuizScreen() {
           and keep answering the current run undisturbed. Replaces the old
           window.confirm/Alert.alert that used to interrupt the run outright. */}
       {dailyBannerHead && !dailyMode && (
-        <TouchableOpacity style={s.dailyBanner} onPress={startDailyFromBanner} activeOpacity={0.85}>
-          <Text style={s.dailyBannerIcon}>⭐</Text>
-          <Text style={s.dailyBannerTxt}>اختبار اليوم جاهز</Text>
-          <TouchableOpacity onPress={dismissDailyBanner} hitSlop={8} style={s.dailyBannerClose}>
-            <Ionicons name="close" size={16} color="#3a2a05" />
-          </TouchableOpacity>
-        </TouchableOpacity>
+        <PressScale style={[s.dailyBanner, { backgroundColor: colors.gold }]} onPress={startDailyFromBanner}>
+          <Ionicons name="star" size={16} color={colors.navy} />
+          <Text style={[s.dailyBannerTxt, { color: colors.navy }]}>اختبار اليوم جاهز</Text>
+          <PressScale onPress={dismissDailyBanner} hitSlop={8} style={s.dailyBannerClose}>
+            <Ionicons name="close" size={16} color={colors.navy} />
+          </PressScale>
+        </PressScale>
       )}
 
       {/* Progress-milestone celebration — a brief, non-blocking toast (fades
@@ -912,7 +933,7 @@ export default function QuizScreen() {
       {milestoneToast && (
         <Animated.View
           pointerEvents="none"
-          style={[s.milestoneToast, { opacity: milestoneOpacity }]}
+          style={[s.milestoneToast, { backgroundColor: colors.navy, opacity: milestoneOpacity }]}
         >
           <Text style={s.milestoneToastTxt}>{milestoneToast}</Text>
         </Animated.View>
@@ -921,8 +942,9 @@ export default function QuizScreen() {
       {/* Consecutive-correct combo badge — pure feedback "juice", shown once
           there's an actual streak to brag about (2+); resets silently on a miss. */}
       {combo >= 2 && (
-        <View style={s.comboBadge} pointerEvents="none">
-          <Text style={s.comboBadgeTxt}>🔥 {combo} متتالية</Text>
+        <View style={[s.comboBadge, { backgroundColor: colors.gold }]} pointerEvents="none">
+          <Ionicons name="flame" size={13} color={colors.navy} />
+          <Text style={[s.comboBadgeTxt, { color: colors.navy }]}>{arNum(combo)} متتالية</Text>
         </View>
       )}
 
@@ -937,141 +959,160 @@ export default function QuizScreen() {
         />
       )}
 
-      <FlatList
-        ref={listRef}
-        data={cards}
-        keyExtractor={(_, i) => String(i)}
-        renderItem={({ item, index }) => {
-          const isLast = index === cards.length - 1;
-          return (
-            <QuizCard
-              card={item}
-              isActive={isLast}
-              score={score}
-              scoreUp={QS.getUpScore()}
-              isDailyMode={dailyMode}
-              timerValue={timerValue}
-              timerMax={timerMax}
-              onSelectOption={isLast ? selectOption : () => {}}
-              onSkip={isLast ? skipQ : () => {}}
-              onScrollDown={onScrollDown}
-              onReport={openReport}
-              round={isLast ? (active?.round ?? 0) : (QS.qo.rounds - 1)}
-              totalRounds={item.qo.rounds}
-              shuffledOptions={isLast ? (active?.shuffledOptions ?? []) : (item.qo.txt.op[0] ?? [])}
-              flipTrigger={isLast ? (active?.flipTrigger ?? 0) : 1}
-              isCorrect={isLast ? (active?.isCorrect ?? false) : (item.wasCorrect ?? true)}
-            />
-          );
-        }}
-        contentContainerStyle={s.listContent}
-        centerContent
-        showsVerticalScrollIndicator={false}
-      />
+      {/* Session chooser — the screen's own idle state (not an overlay). The
+          first thing a player sees on this tab when nothing is running. */}
+      {chooserVisible ? (
+        <ScrollView contentContainerStyle={s.chooserScreen} showsVerticalScrollIndicator={false}>
+          <Text style={[s.chooserTitle, { color: colors.ink }]}>ابدأ اختباراً</Text>
+          <PressScale
+            style={[s.chooserPrimary, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]}
+            onPress={() => startSession({})}
+          >
+            <Ionicons name="shuffle" size={20} color={colors.navy} />
+            <Text style={[s.chooserPrimaryTxt, { color: colors.navy }]}>اختبار عشوائي</Text>
+          </PressScale>
+          {profile.getWeakCheckedParts(3).length > 0 && (
+            <>
+              <Text style={[s.chooserSubtitle, { color: colors.inkSoft }]}>أو راجع سورة تحتاج تحسيناً:</Text>
+              <View style={s.chooserList}>
+                {profile.getWeakCheckedParts(3).map(({ index, name }) => (
+                  <PressScale
+                    key={index}
+                    style={[s.chooserOption, { backgroundColor: colors.card, borderColor: colors.line }]}
+                    onPress={() => startSession({ partIndex: index })}
+                  >
+                    <Ionicons name="chevron-back" size={16} color={colors.inkSoft} />
+                    <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{name}</Text>
+                  </PressScale>
+                ))}
+              </View>
+            </>
+          )}
+        </ScrollView>
+      ) : (
+        <FlatList
+          ref={listRef}
+          data={cards}
+          keyExtractor={(_, i) => String(i)}
+          renderItem={({ item, index }) => {
+            const isLast = index === cards.length - 1;
+            return (
+              <QuizCard
+                card={item}
+                isActive={isLast}
+                score={score}
+                scoreUp={QS.getUpScore()}
+                isDailyMode={dailyMode}
+                timerValue={timerValue}
+                timerMax={timerMax}
+                onSelectOption={isLast ? selectOption : () => {}}
+                onSkip={isLast ? skipQ : () => {}}
+                onScrollDown={onScrollDown}
+                onReport={openReport}
+                round={isLast ? (active?.round ?? 0) : (QS.qo.rounds - 1)}
+                totalRounds={item.qo.rounds}
+                shuffledOptions={isLast ? (active?.shuffledOptions ?? []) : (item.qo.txt.op[0] ?? [])}
+                flipTrigger={isLast ? (active?.flipTrigger ?? 0) : 1}
+                isCorrect={isLast ? (active?.isCorrect ?? false) : (item.wasCorrect ?? true)}
+                correctIndex={isLast ? active?.shuffle.indexOf(0) : undefined}
+                pickedIndex={isLast ? active?.pickedIndex : undefined}
+              />
+            );
+          }}
+          contentContainerStyle={s.listContent}
+          centerContent
+          showsVerticalScrollIndicator={false}
+        />
+      )}
 
-      {/* Report modal */}
+      {/* Report modal — a genuine input form, stays a small centered card. */}
       <Modal visible={reportVisible} transparent animationType="slide" onRequestClose={() => setReportVisible(false)}>
         <View style={s.modalBg}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>الإبلاغ عن خطأ</Text>
+          <View style={[s.modalBox, { backgroundColor: colors.card }]}>
+            <Text style={[s.modalTitle, { color: colors.ink }]}>الإبلاغ عن خطأ</Text>
             <TextInput
-              style={s.reportInput}
+              style={[s.reportInput, { borderColor: colors.line, color: colors.ink }]}
               placeholder="برجاء توضيح الخطأ ..."
+              placeholderTextColor={colors.inkSoft}
               value={reportMsg}
               onChangeText={setReportMsg}
               textAlign="right"
             />
             <View style={s.modalRow}>
-              <TouchableOpacity style={s.btnCancel} onPress={() => setReportVisible(false)}>
-                <Text style={s.btnCancelText}>لا</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={s.btnConfirm} onPress={submitReport}>
+              <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => setReportVisible(false)}>
+                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>لا</Text>
+              </PressScale>
+              <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={submitReport}>
                 <Text style={s.btnConfirmText}>نعم</Text>
-              </TouchableOpacity>
+              </PressScale>
             </View>
           </View>
         </View>
       </Modal>
 
-      {/* Daily quiz end modal */}
-      <Modal visible={dailyEndVisible} transparent animationType="fade" onRequestClose={() => setDailyEndVisible(false)}>
-        <View style={s.modalBg}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>شكراً لاشتراكك في اختبار اليوم</Text>
-            <Text style={s.modalBody}>حصلت على:</Text>
-            <Text style={s.bigScore}>{dailyFinalScore} نقطة</Text>
-            {dailyRankLine && <Text style={s.rankLine}>{dailyRankLine}</Text>}
-            <Text style={s.modalBody}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
+      {/* Daily quiz end — full-height sheet with an accuracy ring and one
+          orchestrated celebration (confetti only at ≥80%). */}
+      <Modal visible={dailyEndVisible} transparent animationType="slide" onRequestClose={() => setDailyEndVisible(false)}>
+        <View style={s.sheetBg}>
+          <Confetti active={dailyEndVisible && dailyFinalScore >= 80} />
+          <View style={[s.sheet, { backgroundColor: colors.card }]}>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>شكراً لاشتراكك في اختبار اليوم</Text>
+            <View style={s.sheetRingWrap}>
+              <Ring pct={dailyFinalScore} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} size={128} label={`${arNum(Math.round(dailyFinalScore))}`} />
+            </View>
+            {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep }]}>{dailyRankLine}</Text>}
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
             <View style={s.postWinRow}>
-              <TouchableOpacity style={s.postWinBtn} onPress={shareScoreDaily}>
-                <Ionicons name="share-social-outline" size={16} color="#1a5276" />
-                <Text style={s.postWinBtnTxt}>شارك النتيجة</Text>
-              </TouchableOpacity>
+              <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={shareScoreDaily}>
+                <Ionicons name="share-social-outline" size={16} color={colors.goldDeep} />
+                <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>شارك النتيجة</Text>
+              </PressScale>
               {profile.getWeakCheckedParts(1).length > 0 && (
-                <TouchableOpacity style={s.postWinBtn} onPress={practiceWeakestSura}>
-                  <Ionicons name="book-outline" size={16} color="#1a5276" />
-                  <Text style={s.postWinBtnTxt}>تدرّب على أضعف سورة</Text>
-                </TouchableOpacity>
+                <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={practiceWeakestSura}>
+                  <Ionicons name="book-outline" size={16} color={colors.goldDeep} />
+                  <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>تدرّب على أضعف سورة</Text>
+                </PressScale>
               )}
             </View>
-            <TouchableOpacity style={s.btnConfirm} onPress={() => {
+            <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={() => {
               setDailyEndVisible(false);
               if (shouldRestoreNormalRunAfterDaily(!!sessionCache.normalSnapshot)) restoreNormalSession();
               router.replace('/(app)/me');
             }}>
               <Text style={s.btnConfirmText}>حسناً</Text>
-            </TouchableOpacity>
+            </PressScale>
           </View>
         </View>
       </Modal>
 
-      {/* Session chooser modal */}
-      <Modal visible={chooserVisible} transparent animationType="slide" onRequestClose={() => {}}>
-        <View style={s.modalBg}>
-          <View style={[s.modalBox, { maxHeight: '80%' }]}>
-            <Text style={s.modalTitle}>ابدأ اختباراً</Text>
-            <TouchableOpacity
-              style={s.chooserOption}
-              onPress={() => startSession({})}
-            >
-              <Text style={s.chooserOptionTxt}>˖ ݁𖥔 ݁ اختبار عشوائي</Text>
-            </TouchableOpacity>
-            <Text style={[s.modalBody, { marginTop: 12 }]}>أو راجع سورة تحتاج تحسيناً:</Text>
-            <ScrollView style={s.chooserList}>
-              {profile.getWeakCheckedParts(3).map(({ index, name }) => (
-                <TouchableOpacity
-                  key={index}
-                  style={[s.chooserOption, s.chooserSuraBtn]}
-                  onPress={() => startSession({ partIndex: index })}
-                >
-                  <Text style={s.chooserOptionTxt}>{name}</Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </View>
-      </Modal>
-
-      {/* Post-session summary modal */}
-      <Modal visible={summaryVisible} transparent animationType="fade" onRequestClose={() => { setSummaryVisible(false); loadNextQuestion(); }}>
-        <View style={s.modalBg}>
-          <View style={s.modalBox}>
-            <Text style={s.modalTitle}>ممتاز! 🎉</Text>
-            <Text style={s.modalBody}>أجبت على {sessionCorrectRef.current} سؤال صحيح في هذه الجلسة</Text>
-            <Text style={s.bigScore}>{score.toLocaleString()}</Text>
-            <Text style={[s.modalBody, { textAlign: 'center', marginBottom: 16 }]}>نقطة إجمالية</Text>
-            {profile.getTopBadParts()[0] !== '-' && (
-              <Text style={[s.modalBody, { color: '#f39c12' }]}>
-                💡 {profile.getTopBadParts()[0]} تحتاج مراجعة
+      {/* Post-session summary — full-height sheet with an accuracy ring;
+          confetti only at ≥80% (one orchestrated celebration, not four grey
+          boxes). Replaces the identical center-modal treatment. */}
+      <Modal visible={summaryVisible} transparent animationType="slide" onRequestClose={() => { setSummaryVisible(false); loadNextQuestion(); }}>
+        <View style={s.sheetBg}>
+          <Confetti active={summaryVisible && sessionAccuracy >= 80} />
+          <View style={[s.sheet, { backgroundColor: colors.card }]}>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>ممتاز!</Text>
+            <View style={s.sheetRingWrap}>
+              <Ring pct={sessionAccuracy} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} size={128} />
+            </View>
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>
+              أجبت على {arNum(sessionCorrectRef.current)} من {arNum(sessionAnsweredRef.current)} سؤال بشكل صحيح
+            </Text>
+            <Text style={[s.bigScore, { color: colors.ink }]}>{arNum(score)}</Text>
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center', marginBottom: 16 }]}>نقطة إجمالية</Text>
+            {weakestPart !== '-' && (
+              <Text style={[s.modalBody, { color: colors.goldDeep, textAlign: 'center' }]}>
+                {weakestPart} تحتاج مراجعة
               </Text>
             )}
             <View style={s.modalRow}>
-              <TouchableOpacity style={s.btnCancel} onPress={() => { setSummaryVisible(false); router.replace('/(app)/me'); }}>
-                <Text style={s.btnCancelText}>الرئيسية</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={s.btnConfirm} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>
+              <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => { setSummaryVisible(false); router.replace('/(app)/me'); }}>
+                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>الرئيسية</Text>
+              </PressScale>
+              <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>
                 <Text style={s.btnConfirmText}>واصل</Text>
-              </TouchableOpacity>
+              </PressScale>
             </View>
           </View>
         </View>
@@ -1081,52 +1122,82 @@ export default function QuizScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1 },
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
-  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10, backgroundColor: '#edf1f5' },
+  loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
   dailyBanner: {
     flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
-    backgroundColor: '#f39c12',
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  dailyBannerIcon: { fontSize: 16 },
-  dailyBannerTxt: { flex: 1, color: '#3a2a05', fontWeight: '800', fontSize: 13, textAlign: 'right' },
+  dailyBannerTxt: { flex: 1, fontFamily: 'PlexArabic-Bold', fontSize: 13, textAlign: 'right' },
   dailyBannerClose: { padding: 2 },
   milestoneToast: {
     position: 'absolute',
     top: 10,
     alignSelf: 'center',
     zIndex: 20,
-    backgroundColor: '#0d2d4e',
     paddingVertical: 10,
     paddingHorizontal: 18,
-    borderRadius: 20,
+    borderRadius: radii.pill,
     boxShadow: '0px 3px 10px rgba(0,0,0,0.25)',
     elevation: 6,
   },
-  milestoneToastTxt: { color: '#fff', fontWeight: '800', fontSize: 13, textAlign: 'center' },
+  milestoneToastTxt: { color: '#fff', fontFamily: 'PlexArabic-Bold', fontSize: 13, textAlign: 'center' },
   comboBadge: {
     position: 'absolute',
     top: 10,
     right: 14,
     zIndex: 15,
-    backgroundColor: '#e67e22',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 4,
     paddingVertical: 6,
     paddingHorizontal: 12,
-    borderRadius: 16,
+    borderRadius: radii.pill,
     boxShadow: '0px 2px 6px rgba(0,0,0,0.2)',
     elevation: 4,
   },
-  comboBadgeTxt: { color: '#fff', fontWeight: '800', fontSize: 12 },
+  comboBadgeTxt: { fontFamily: 'PlexArabic-Bold', fontSize: 12 },
+
+  // ── Inline chooser — the screen's own idle state, not an overlay ──────────
+  chooserScreen: { flexGrow: 1, padding: 20, gap: 12, alignItems: 'stretch', justifyContent: 'center' },
+  chooserTitle: { fontSize: 22, fontFamily: 'PlexArabic-Bold', textAlign: 'center', marginBottom: 8 },
+  chooserPrimary: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: radii.md,
+    paddingVertical: 18,
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  chooserPrimaryTxt: { fontSize: 17, fontFamily: 'PlexArabic-Bold' },
+  chooserSubtitle: { fontSize: 13, textAlign: 'center', marginTop: 16, marginBottom: 4 },
+  chooserList: { gap: 8 },
+  chooserOption: {
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    borderRadius: radii.md,
+    padding: 14,
+    borderWidth: 1,
+  },
+  chooserOptionTxt: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold' },
+
+  // ── Modals / sheets ─────────────────────────────────────────────────────
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  modalBox: { backgroundColor: '#fff', borderRadius: 12, padding: 20, width: '100%', maxWidth: 432 },
-  modalTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12, color: '#0d2d4e' },
-  modalBody: { fontSize: 14, textAlign: 'right', color: '#444', marginBottom: 8 },
-  bigScore: { fontSize: 36, fontWeight: 'bold', color: '#27ae60', textAlign: 'center', marginVertical: 12 },
-  rankLine: { fontSize: 13, fontWeight: '700', color: '#b7770d', textAlign: 'center', marginBottom: 10 },
+  modalBox: { borderRadius: radii.md, padding: 20, width: '100%', maxWidth: 432 },
+  modalTitle: { fontSize: 17, fontFamily: 'PlexArabic-Bold', textAlign: 'right', marginBottom: 12 },
+  modalBody: { fontSize: 14, textAlign: 'right', marginBottom: 8 },
+  bigScore: { fontSize: 36, fontFamily: 'PlexArabic-Bold', textAlign: 'center', marginVertical: 4 },
+  rankLine: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center', marginBottom: 10 },
   postWinRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
   postWinBtn: {
     flex: 1,
@@ -1136,25 +1207,27 @@ const s = StyleSheet.create({
     justifyContent: 'center',
     gap: 5,
     paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#f5f7fa',
+    borderRadius: radii.sm,
   },
-  postWinBtnTxt: { fontSize: 12, fontWeight: '700', color: '#1a5276', textAlign: 'center' },
-  reportInput: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
+  postWinBtnTxt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center' },
+  reportInput: { borderWidth: 1, borderRadius: radii.sm, padding: 10, marginBottom: 16, textAlign: 'right' },
   modalRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
-  btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#ecf0f1' },
-  btnCancelText: { color: '#555', fontWeight: '600' },
-  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8, backgroundColor: '#0d2d4e', marginTop: 8 },
-  btnConfirmText: { color: '#fff', fontWeight: '700', textAlign: 'center' },
-  chooserOption: {
-    backgroundColor: '#d8e8f2',
-    borderRadius: 8,
-    padding: 14,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#d6eaf8',
+  btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: radii.sm },
+  btnCancelText: { fontFamily: 'PlexArabic-SemiBold' },
+  btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: radii.sm, marginTop: 8 },
+  btnConfirmText: { color: '#fff', fontFamily: 'PlexArabic-Bold', textAlign: 'center' },
+
+  // Full-height sheet — replaces the summary/daily-end center-modal pile-up.
+  sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: {
+    borderTopLeftRadius: radii.lg + 4,
+    borderTopRightRadius: radii.lg + 4,
+    padding: 24,
+    paddingBottom: 36,
+    width: '100%',
+    maxWidth: 512,
+    alignSelf: 'center',
   },
-  chooserOptionTxt: { fontSize: 16, fontWeight: '700', color: '#0d2d4e' },
-  chooserList: { maxHeight: 300, marginTop: 4 },
-  chooserSuraBtn: { marginTop: 8 },
+  sheetTitle: { fontSize: 20, fontWeight: '700', textAlign: 'center', marginBottom: 16 },
+  sheetRingWrap: { alignItems: 'center', marginBottom: 16 },
 });

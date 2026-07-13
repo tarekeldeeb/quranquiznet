@@ -110,11 +110,9 @@ describe('decideOutcome', () => {
     expect(decideOutcome({ correct: 7, timeMs: 90_000 }, { correct: 6, timeMs: 10_000 })).toBe('win');
     expect(decideOutcome({ correct: 3, timeMs: 10_000 }, { correct: 6, timeMs: 90_000 })).toBe('loss');
   });
-  it('equal scores tie-break on speed', () => {
-    expect(decideOutcome({ correct: 5, timeMs: 60_000 }, { correct: 5, timeMs: 70_000 })).toBe('win');
-    expect(decideOutcome({ correct: 5, timeMs: 70_000 }, { correct: 5, timeMs: 60_000 })).toBe('loss');
-  });
-  it('identical score and time is a draw', () => {
+  it('equal scores are a draw regardless of time', () => {
+    expect(decideOutcome({ correct: 5, timeMs: 60_000 }, { correct: 5, timeMs: 70_000 })).toBe('draw');
+    expect(decideOutcome({ correct: 5, timeMs: 70_000 }, { correct: 5, timeMs: 60_000 })).toBe('draw');
     expect(decideOutcome({ correct: 5, timeMs: 60_000 }, { correct: 5, timeMs: 60_000 })).toBe('draw');
   });
 });

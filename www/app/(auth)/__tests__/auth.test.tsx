@@ -40,9 +40,10 @@ describe('Auth screen', () => {
     expect(getByText('شبكة اختبار القرآن')).toBeTruthy();
     expect(getByText('تحدٍّ يومي')).toBeTruthy();       // a why-join feature tile
     expect(getByText('مزامنة سحابية')).toBeTruthy();
+    // Guest play is the primary, inverted-funnel CTA; social sign-in is secondary.
+    expect(getByText('العب الآن')).toBeTruthy();
     expect(getByText('المتابعة بحساب جوجل')).toBeTruthy();
     expect(getByText('المتابعة بحساب فيسبوك')).toBeTruthy();
-    expect(getByText('المتابعة كزائر')).toBeTruthy();
   });
 
   it('signs in with Google when the Google button is pressed', () => {
@@ -57,9 +58,9 @@ describe('Auth screen', () => {
     expect(mockSignInFacebook).toHaveBeenCalled();
   });
 
-  it('continues as guest when the guest option is pressed', () => {
+  it('plays as guest when the primary CTA is pressed', () => {
     const { getByText } = renderAuth();
-    fireEvent.press(getByText('المتابعة كزائر'));
+    fireEvent.press(getByText('العب الآن'));
     expect(mockSignInAnon).toHaveBeenCalled();
   });
 

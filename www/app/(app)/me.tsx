@@ -1,45 +1,57 @@
 import { useEffect, useRef, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  Switch, Alert, ActivityIndicator, Modal, FlatList, Animated, Platform, Share, TextInput,
+  View, Text, Image, StyleSheet, ScrollView,
+  Alert, ActivityIndicator, Modal, Animated, Platform, Share, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
+import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  signInGoogle, signInFacebook, signOut, getDailyHead, getComparisonReport, type DailyHead,
+  signInGoogle, signInFacebook, getDailyHead, getComparisonReport, type DailyHead,
 } from '../../src/services/firebase';
-import { useProfileStore, CORRECT_RATIO_RANGE } from '../../src/stores/profileStore';
+import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
-import Constants from 'expo-constants';
 import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeRankGap } from '../../src/models/dailyRank';
-
-const APP_ICON = require('../../assets/images/app-icon.png');
-// Pulled from app.json (expo.version) at build/runtime — single source of truth.
-const APP_VERSION = Constants.expoConfig?.version ?? '';
-
-type BulkAction = 'all' | 'good' | 'weak';
-
-const NAVY = '#0d2d4e';
-const AMBER = '#f39c12';
+import { getRankInfo, getRankLadder } from '../../src/models/rank';
+import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import PressScale from '../../src/components/PressScale';
+import Ring from '../../src/components/Ring';
 
 // react-native-web has no native animation driver (RCTAnimation is a native-only
 // module) — passing useNativeDriver: NATIVE_DRIVER there is a no-op that also spams the
 // console every frame, so only ask for it off-web.
 const NATIVE_DRIVER = Platform.OS !== 'web';
 
-const DOT_COLOR: Record<number, string> = {
-  [CORRECT_RATIO_RANGE.HIGH]:  '#27ae60',
-  [CORRECT_RATIO_RANGE.MID]:   AMBER,
-  [CORRECT_RATIO_RANGE.LOW]:   '#e74c3c',
-  [CORRECT_RATIO_RANGE.EMPTY]: '#bdc3c7',
-};
-
 const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
+// Matches notifications.ts's STREAK_REMINDER_HOUR — "tonight" starts at the
+// same evening hour the streak-loss reminder itself fires.
+const EVENING_HOUR = 19;
+
+const APP_ICON = require('../../assets/images/app-icon.png');
+
+/** Small brand mark for the header's right slot — icon + app name, sitting
+ * beside the personalized greeting (headerTitle, centered) rather than
+ * replacing it the way the tab navigator's default HeaderLogo does on
+ * screens with no situational title. A thin gold ring gives it a seal-like
+ * finish instead of a plain square icon. */
+function HeaderBrand() {
+  return (
+    <View style={hb.wrap}>
+      <Image source={APP_ICON} style={hb.icon} />
+      <Text style={hb.name}>اختبار القرآن</Text>
+    </View>
+  );
+}
+
+const hb = StyleSheet.create({
+  wrap: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6 },
+  icon: { width: 24, height: 24, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(217,173,85,0.6)' },
+  name: { color: '#fff', fontSize: 12, fontFamily: 'PlexArabic-Bold' },
+});
 
 /** Cross-platform alert (RN Alert is a no-op on react-native-web). */
 function notify(title: string, msg: string) {
@@ -70,85 +82,8 @@ function formatRemaining(ms: number): string {
   return hPart || mPart || 'أقل من دقيقة';
 }
 
-/** Short, soft bell chime on web (no native dependency). No-op elsewhere. */
-function playBell() {
-  if (Platform.OS !== 'web') return;
-  try {
-    const w = window as unknown as { AudioContext?: typeof AudioContext; webkitAudioContext?: typeof AudioContext };
-    const Ctx = w.AudioContext ?? w.webkitAudioContext;
-    if (!Ctx) return;
-    const ctx = new Ctx();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = 'sine';
-    o.frequency.value = 880;
-    g.gain.setValueAtTime(0.0001, ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.14, ctx.currentTime + 0.01);
-    g.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.35);
-    o.connect(g);
-    g.connect(ctx.destination);
-    o.start();
-    o.stop(ctx.currentTime + 0.36);
-    o.onended = () => ctx.close();
-  } catch { /* audio is non-critical */ }
-}
-
-/** Active-parts counter that tweens up/down, with a bell that rings on increase. */
-function ActiveCountBadge({ value }: { value: number }) {
-  const [display, setDisplay] = useState(value);
-  const fromRef = useRef(value);
-  const prevRef = useRef(value);
-  const rafRef = useRef<number | null>(null);
-  const shake = useRef(new Animated.Value(0)).current;
-
-  useEffect(() => {
-    const from = fromRef.current;
-    const to = value;
-
-    if (from !== to) {
-      const duration = 450;
-      const start = Date.now();
-      const tick = () => {
-        const t = Math.min(1, (Date.now() - start) / duration);
-        const eased = 1 - (1 - t) ** 3; // easeOutCubic
-        setDisplay(Math.round(from + (to - from) * eased));
-        if (t < 1) rafRef.current = requestAnimationFrame(tick);
-        else { fromRef.current = to; rafRef.current = null; }
-      };
-      rafRef.current = requestAnimationFrame(tick);
-    }
-
-    if (to > prevRef.current) {
-      shake.setValue(0);
-      Animated.sequence([
-        Animated.timing(shake, { toValue: 1, duration: 80, useNativeDriver: NATIVE_DRIVER }),
-        Animated.timing(shake, { toValue: -1, duration: 80, useNativeDriver: NATIVE_DRIVER }),
-        Animated.timing(shake, { toValue: 0.5, duration: 70, useNativeDriver: NATIVE_DRIVER }),
-        Animated.timing(shake, { toValue: 0, duration: 70, useNativeDriver: NATIVE_DRIVER }),
-      ]).start();
-      playBell();
-    }
-    prevRef.current = to;
-
-    return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
-  }, [value, shake]);
-
-  const rotate = shake.interpolate({ inputRange: [-1, 1], outputRange: ['-22deg', '22deg'] });
-
-  return (
-    <View style={s.countBadge}>
-      <Animated.View style={{ transform: [{ rotate }] }}>
-        <Ionicons name="notifications" size={15} color="#b7770d" />
-      </Animated.View>
-      <Text style={s.countNum}>{display}</Text>
-    </View>
-  );
-}
-
 /** Compact score-over-time sparkline tile (one bar per recorded day). */
-function ProgressChart({ scores }: { scores: { date: number; score: number }[] }) {
-  // Bars are min 2px wide with a 1.5px gap inside a ~165px tile, so anything
-  // beyond ~45 records overflows the row — render only the most recent days.
+function ProgressChart({ scores, colors }: { scores: { date: number; score: number }[]; colors: ReturnType<typeof useTheme>['colors'] }) {
   const MAX_BARS = 40;
   const data = scores.slice(-MAX_BARS);
   const H = 46;
@@ -165,54 +100,171 @@ function ProgressChart({ scores }: { scores: { date: number; score: number }[] }
       const norm = range > 0 ? (d.score - min) / range : 0.5;
       const h = MIN_BAR + norm * (H - MIN_BAR);
       const isLast = i === data.length - 1;
-      return <View key={i} style={[s.sparkBar, { height: h }, isLast && s.barLast]} />;
+      return <View key={i} style={[s.sparkBar, { height: h, backgroundColor: isLast ? colors.gold : colors.line }]} />;
     });
   }
 
   return (
-    <View style={[s.bentoHalf, s.statTile]}>
+    <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
       {/* RTL: newest (اليوم) on the left */}
       <View style={[s.sparkRow, { height: H }]}>
-        {enough ? bars : <Text style={s.sparkEmpty}>—</Text>}
+        {enough ? bars : <Text style={[s.sparkEmpty, { color: colors.line }]}>—</Text>}
       </View>
-      <Text style={s.statLabel}>تقدّمك</Text>
-      <Text style={s.statSub}>{enough ? `${data.length} يوم` : 'ابدأ اللعب'}</Text>
+      <Text style={[s.statLabel, { color: colors.ink }]}>تقدّمك</Text>
+      <Text style={[s.statSub, { color: colors.inkSoft }]}>{enough ? `${arNum(data.length)} يوم` : 'ابدأ اللعب'}</Text>
     </View>
   );
 }
 
-/** Compact circular progress shown inside the stat tiles. */
-function Ring({ pct, color }: { pct: number; color: string }) {
-  const clamped = Math.max(0, Math.min(100, pct));
-  // Lightweight conic-gradient ring (RN-web supports backgroundImage).
+/** Streak sheet — tapping the flame opens a place, not just a sticker: a week
+ * calendar (days with a recorded score, as a play-day proxy), the best streak,
+ * and an "at risk tonight" nudge once the evening reminder hour has passed. */
+function StreakSheet({
+  visible, onClose, colors, streak, bestStreak, scores, playedToday,
+}: {
+  visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors'];
+  streak: number; bestStreak: number; scores: { date: number; score: number }[]; playedToday: boolean;
+}) {
+  const DOW = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  const days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - (6 - i));
+    const key = d.toISOString().split('T')[0];
+    const played = scores.some((sc) => new Date(sc.date).toISOString().split('T')[0] === key);
+    return { label: DOW[d.getDay()], played, isToday: i === 6 };
+  });
+  const atRisk = !playedToday && new Date().getHours() >= EVENING_HOUR && streak > 0;
+
   return (
-    <View style={s.ringOuter}>
-      <View
-        style={[
-          s.ringTrack,
-          { backgroundImage: `conic-gradient(${color} ${clamped * 3.6}deg, #e8edf2 0deg)` } as object,
-        ]}
-      />
-      <View style={s.ringInner}>
-        <Text style={[s.ringTxt, { color }]}>{Math.round(clamped)}%</Text>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={s.sheetBg}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          <View style={s.sheetHeader}>
+            <PressScale onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.inkSoft} />
+            </PressScale>
+            <Text style={[s.sheetTitle, { color: colors.ink }]}>سلسلتك</Text>
+            <View style={{ width: 22 }} />
+          </View>
+
+          <View style={s.streakHero}>
+            <Ionicons name="flame" size={36} color={colors.gold} />
+            <Text style={[s.streakBig, { color: colors.ink }]}>{arNum(streak)}</Text>
+            <Text style={[s.streakUnit, { color: colors.inkSoft }]}>يوماً متتالياً</Text>
+          </View>
+
+          <View style={s.weekRow}>
+            {days.map((d, i) => (
+              <View key={i} style={s.weekCell}>
+                <View style={[
+                  s.weekDot,
+                  { backgroundColor: d.played ? colors.gold : colors.goldPale },
+                  d.isToday && { borderWidth: 2, borderColor: colors.ink },
+                ]}
+                >
+                  {d.played && <Ionicons name="checkmark" size={14} color={colors.navy} />}
+                </View>
+                <Text style={[s.weekLabel, { color: colors.inkSoft }]}>{d.label}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={[s.streakStatRow, { borderColor: colors.line }]}>
+            <Ionicons name="trophy-outline" size={16} color={colors.goldDeep} />
+            <Text style={[s.streakStatTxt, { color: colors.ink }]}>أفضل سلسلة: {arNum(bestStreak)} يوماً</Text>
+          </View>
+
+          {atRisk && (
+            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale }]}>
+              <Ionicons name="warning-outline" size={16} color={colors.wrong} />
+              <Text style={[s.riskTxt, { color: colors.wrong }]}>سلسلتك في خطر الليلة — العب اختباراً قبل منتصف الليل!</Text>
+            </View>
+          )}
+        </View>
       </View>
-    </View>
+    </Modal>
+  );
+}
+
+// A distinct badge per rank — a growing sense of accomplishment on the way
+// up, not four identical dots with different labels.
+const RANK_ICONS: React.ComponentProps<typeof Ionicons>['name'][] = ['leaf-outline', 'flame', 'book', 'trophy'];
+
+/** Rank ladder sheet — tapping the rank progress bar opens the whole path
+ * instead of leaving "متقن" a mystery: every rank, the points needed to
+ * reach it, and a badge for reached / current / locked. */
+function RankSheet({
+  visible, onClose, colors, score,
+}: {
+  visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors']; score: number;
+}) {
+  const ladder = getRankLadder(score);
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={s.sheetBg}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          <View style={s.sheetHeader}>
+            <PressScale onPress={onClose} hitSlop={8}>
+              <Ionicons name="close" size={22} color={colors.inkSoft} />
+            </PressScale>
+            <Text style={[s.sheetTitle, { color: colors.ink }]}>درجات الحفظ</Text>
+            <View style={{ width: 22 }} />
+          </View>
+
+          <View style={s.rankList}>
+            {ladder.map((r, i) => (
+              <View
+                key={r.title}
+                style={[s.rankLadderRow, { borderColor: colors.line }, r.current && { backgroundColor: colors.goldPale }]}
+              >
+                <View style={[
+                  s.rankBadge,
+                  { backgroundColor: r.reached ? colors.gold : colors.goldPale },
+                  r.current && { borderWidth: 2, borderColor: colors.goldDeep },
+                ]}
+                >
+                  <Ionicons name={RANK_ICONS[i]} size={19} color={r.reached ? colors.navy : colors.inkSoft} />
+                </View>
+                <View style={s.rankLadderInfo}>
+                  <Text style={[s.rankLadderTitle, { color: colors.ink }]}>{r.title}</Text>
+                  <Text style={[s.rankLadderSub, { color: colors.inkSoft }]}>
+                    {i === 0 ? 'من البداية' : `من ${arNum(r.threshold)} نقطة`}
+                  </Text>
+                </View>
+                {r.current ? (
+                  <View style={[s.rankNowBadge, { backgroundColor: colors.gold }]}>
+                    <Text style={[s.rankNowTxt, { color: colors.navy }]}>مستواك الآن</Text>
+                  </View>
+                ) : r.reached ? (
+                  <Ionicons name="checkmark-circle" size={20} color={colors.correct} />
+                ) : (
+                  <Ionicons name="lock-closed-outline" size={16} color={colors.inkSoft} />
+                )}
+              </View>
+            ))}
+          </View>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 export default function MeScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+  const { colors } = useTheme();
   const profile = useProfileStore();
   const social = profile.social;
 
   const [dailyHead, setDailyHead] = useState<DailyHead | null | 'loading'>('loading');
-  const [partsModalOpen, setPartsModalOpen] = useState(false);
   const [now, setNow] = useState(() => Date.now());
   const [avatarError, setAvatarError] = useState(false);
   // Post-win engagement: rank-comparison line for the "already done today" card.
   const [dailyRankLine, setDailyRankLine] = useState<string | null>(null);
   const [nicknameModalOpen, setNicknameModalOpen] = useState(false);
   const [nicknameInput, setNicknameInput] = useState('');
+  const [streakSheetOpen, setStreakSheetOpen] = useState(false);
+  const [rankSheetOpen, setRankSheetOpen] = useState(false);
 
   useEffect(() => {
     getDailyHead()
@@ -270,6 +322,26 @@ export default function MeScreen() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [social.isAnonymous, social.displayName]);
 
+  // Reclaim the header: greeting + a gear icon into settings, replacing the
+  // repeated app-name nameplate.
+  const firstName = social.displayName?.split(' ')[0] ?? '';
+  const greeting = firstName ? `مرحباً ${firstName}` : 'مرحباً';
+  useEffect(() => {
+    navigation.setOptions({
+      headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{greeting}</Text>,
+      // RTL: brand mark at the right (reading-start), greeting centered, and
+      // the gear — a secondary, trailing action — at the left, matching the
+      // app's row-reverse convention (primary content right, controls left).
+      headerRight: () => <HeaderBrand />,
+      headerLeft: () => (
+        <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={8} style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
+          <Ionicons name="settings-outline" size={24} color="#fff" />
+        </PressScale>
+      ),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [greeting]);
+
   async function saveNickname() {
     const trimmed = nicknameInput.trim().slice(0, 20);
     if (trimmed) {
@@ -309,34 +381,6 @@ export default function MeScreen() {
     router.push({ pathname: '/(app)/quiz', params: { customPart: String(weak.index), nonce: String(Date.now()) } });
   }
 
-  async function performSignOut() {
-    // Wait for Firebase to clear the session BEFORE navigating. Otherwise the
-    // (auth) screen's auth listener re-reads the still-signed-in user and bounces
-    // straight back here, leaving the screen with no account actions.
-    try {
-      await signOut();
-    } catch (e) {
-      console.error(e);
-    }
-    await profile.delete().catch(console.error);
-    router.replace('/(auth)');
-  }
-
-  function handleSignOut() {
-    const msg = 'سيتم مسح بيانات التطبيق المحلية. هل تريد المتابعة؟';
-    // RN Alert is a no-op on react-native-web, so use the browser confirm there.
-    if (Platform.OS === 'web') {
-      if (typeof window === 'undefined' || window.confirm(`تسجيل الخروج\n\n${msg}`)) {
-        performSignOut();
-      }
-      return;
-    }
-    Alert.alert('تسجيل الخروج', msg, [
-      { text: 'لا', style: 'cancel' },
-      { text: 'نعم', style: 'destructive', onPress: performSignOut },
-    ]);
-  }
-
   async function upgradeGuest(provider: 'google' | 'facebook') {
     try {
       await (provider === 'google' ? signInGoogle() : signInFacebook());
@@ -345,68 +389,19 @@ export default function MeScreen() {
     }
   }
 
-  function togglePart(index: number) {
-    if (index === 0) return;
-    const parts = [...profile.parts];
-    parts[index] = { ...parts[index], checked: !parts[index].checked };
-    useProfileStore.setState({ parts });
-    profile.saveParts();
-  }
-
-  // Special questions are only available from level 2 upward.
-  // Levels 0 and 1 force the toggle off.
-  const SPECIAL_MIN_LEVEL = 2;
-
-  function setLevel(value: number) {
-    const patch: { level: number; specialEnabled?: boolean } = { level: value };
-    if (value < SPECIAL_MIN_LEVEL) patch.specialEnabled = false;
-    useProfileStore.setState(patch);
-    profile.saveSettings();
-  }
-
-  function toggleSpecial(v: boolean) {
-    if (profile.level < SPECIAL_MIN_LEVEL) return; // not editable below level 2
-    useProfileStore.setState({ specialEnabled: v });
-    profile.saveSettings();
-  }
-
-  const specialEditable = profile.level >= SPECIAL_MIN_LEVEL;
-
-  function applyBulk(action: BulkAction) {
-    const parts = profile.parts.map((p, i) => {
-      if (i === 0) return p; // Al-Fatiha always stays checked
-      const range = profile.getCorrectRatioRange(i);
-      let checked: boolean;
-      if (action === 'all') checked = true;
-      else if (action === 'good') checked = range === CORRECT_RATIO_RANGE.HIGH;
-      else checked = range !== CORRECT_RATIO_RANGE.HIGH;
-      return { ...p, checked };
-    });
-    // Fallback: a good/weak filter can match no suras, leaving only Al-Fatiha.
-    // Guarantee a usable quiz set by enabling Juz 'Amma (the last part).
-    const hasSubstantive = parts.some((p, i) => i !== 0 && p.checked);
-    if (!hasSubstantive && parts.length > 0) {
-      const juzAmma = parts.length - 1;
-      parts[juzAmma] = { ...parts[juzAmma], checked: true };
-    }
-    useProfileStore.setState({ parts });
-    profile.saveParts();
-  }
-
   // ── Derived values ──
-  const firstName = social.displayName?.split(' ')[0] ?? '';
-  const greeting = firstName ? `مرحباً ${firstName}` : 'مرحباً';
-
   const score = profile.getScore();
   const yesterday = profile.scores.length >= 2
     ? profile.scores[profile.scores.length - 2]?.score ?? 0
     : 0;
   const trend = score - yesterday;
+  const rank = getRankInfo(score);
 
   const today = new Date().toISOString().split('T')[0];
   const dailyCompleted = dailyHead !== 'loading'
     && dailyHead != null
     && profile.lastDailyCompletedDate === today;
+  const playedToday = profile.lastPlayDate === today;
 
   // The daily quiz rotates every 24h from start_time. Roll forward to the next
   // 24h boundary so the countdown is always a concrete, positive wait — even if
@@ -421,343 +416,230 @@ export default function MeScreen() {
   const weakPartIndex = weakSura && weakSura !== '-'
     ? profile.parts.findIndex((p) => p.name === weakSura)
     : -1;
-  const weakPart = weakPartIndex >= 0 ? profile.parts[weakPartIndex] : null;
 
   const studyPct = parseFloat(profile.getPercentTotalStudy()) || 0;
   const ratioPct = parseFloat(profile.getPercentTotalRatio()) || 0;
-
-  const activePartsList = profile.parts
-    .map((part, index) => ({ part, index, range: profile.getCorrectRatioRange(index) }))
-    .filter(({ part }) => part.checked);
-  const activeParts = activePartsList.length;
-  const PREVIEW_MAX = 10;
-  const selectedPreview = activePartsList.slice(0, PREVIEW_MAX);
-  const extraCount = activeParts - selectedPreview.length;
+  const activeParts = profile.parts.filter((p) => p.checked).length;
+  const pvpTotal = profile.pvp.wins + profile.pvp.losses + profile.pvp.draws;
 
   const avatarUri = social.photoURL && !avatarError ? social.photoURL : undefined;
 
+  // "Ways to play" — quick play + PvP as a 2-up row, with the weak-sura nudge
+  // folded in as a third option, instead of three competing full-width blocks.
+  const waysToPlay = (
+    <View style={s.waysWrap}>
+      <View style={s.waysRow}>
+        <PressScale
+          style={[s.wayTile, { backgroundColor: colors.navy }]}
+          onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}
+        >
+          <Ionicons name="play" size={22} color="#fff" />
+          <Text style={s.wayTileTxt}>ابدأ اختباراً</Text>
+        </PressScale>
+        <PressScale
+          style={[s.wayTile, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold }]}
+          onPress={() => router.push('/(app)/pvp')}
+        >
+          <Ionicons name="flash" size={22} color={colors.goldDeep} />
+          <Text style={[s.wayTileTxt, { color: colors.goldDeep }]}>منافسة مباشرة</Text>
+          {pvpTotal > 0 && (
+            <View style={[s.wayBadge, { backgroundColor: colors.goldPale }]}>
+              <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{arNum(profile.pvp.wins)} فوز</Text>
+            </View>
+          )}
+        </PressScale>
+      </View>
+      {weakPartIndex >= 0 && (
+        <PressScale
+          style={[s.wayNudge, { backgroundColor: colors.goldPale }]}
+          onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
+        >
+          <Ionicons name="chevron-back" size={16} color={colors.goldDeep} />
+          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep }]}>راجع أضعف سورة: {weakSura}</Text>
+          <Ionicons name="warning" size={15} color={colors.goldDeep} />
+        </PressScale>
+      )}
+    </View>
+  );
+
   return (
-    <SafeAreaView style={s.container} edges={['bottom']}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
-        {/* ── Greeting + identity strip ── */}
+        {/* ── Identity strip: avatar + points + streak (greeting lives in the header) ── */}
         <View style={s.topStrip}>
           <Avatar
             uri={avatarUri}
-            fallback={APP_ICON}
-            style={s.topAvatar}
+            fallback={require('../../assets/images/app-icon.png')}
+            style={[s.topAvatar, { borderColor: colors.goldPale, backgroundColor: colors.paper }]}
             onError={() => setAvatarError(true)}
           />
           <View style={s.topInfo}>
-            <Text style={s.greeting}>{greeting}</Text>
             {social.isAnonymous ? (
-              <TouchableOpacity style={s.topSubRow} onPress={openNicknameEditor} hitSlop={6}>
-                <Ionicons name="pencil" size={11} color="#8a97a5" />
-                <Text style={s.topSub} numberOfLines={1}>{social.displayName || DEFAULT_GUEST_NAME}</Text>
-              </TouchableOpacity>
+              <PressScale style={s.topSubRow} onPress={openNicknameEditor} hitSlop={6}>
+                <Ionicons name="pencil" size={11} color={colors.inkSoft} />
+                <Text style={[s.topSub, { color: colors.inkSoft }]} numberOfLines={1}>{social.displayName || DEFAULT_GUEST_NAME}</Text>
+              </PressScale>
             ) : (
-              <Text style={s.topSub} numberOfLines={1}>{social.email ?? social.displayName ?? ''}</Text>
-            )}
-          </View>
-          <View style={s.topRight}>
-            {profile.streak > 0 && (
-              <View style={s.streakBadge}>
-                <Text style={s.streakTxt}>🔥 {profile.streak}</Text>
-              </View>
+              <Text style={[s.topSub, { color: colors.inkSoft }]} numberOfLines={1}>{social.email ?? social.displayName ?? ''}</Text>
             )}
             <Text style={s.topPoints} numberOfLines={1}>
-              <Text style={s.topPointsLabel}>نقاطك: </Text>
               {trend !== 0 && (
-                <Text style={trend > 0 ? s.trendUp : s.trendDown}>{trend > 0 ? '▲' : '▼'} </Text>
+                <Text style={trend > 0 ? { color: colors.correct } : { color: colors.wrong }}>{trend > 0 ? '▲' : '▼'} </Text>
               )}
-              <Text style={s.topPointsVal}>{score.toLocaleString()}</Text>
+              <Text style={[s.topPointsVal, { color: colors.ink }]}>{arNum(score)}</Text>
+              <Text style={[s.topPointsLabel, { color: colors.inkSoft }]}> نقطة</Text>
             </Text>
           </View>
+          <PressScale
+            style={[s.streakBadge, { backgroundColor: colors.goldPale, borderColor: colors.gold, opacity: profile.streak > 0 ? 1 : 0.5 }]}
+            onPress={() => setStreakSheetOpen(true)}
+          >
+            <Ionicons name="flame" size={16} color={colors.goldDeep} />
+            <Text style={[s.streakTxt, { color: colors.goldDeep }]}>{arNum(profile.streak)}</Text>
+          </PressScale>
         </View>
 
-        {/* ── BENTO: hero daily card (full width) ── */}
+        {/* ── Give the score a destination: badge + rank title + progress to
+            next rank — tap opens the full ladder (all ranks + how to reach
+            each one). Same badge icon set as the ladder sheet, so the current
+            rank reads as one continuous idea between the two. ── */}
+        <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => setRankSheetOpen(true)}>
+          <View style={s.rankHeaderRow}>
+            <View style={[s.rankBadgeSmall, { backgroundColor: colors.gold }]}>
+              <Ionicons name={RANK_ICONS[rank.index]} size={18} color={colors.navy} />
+            </View>
+            <View style={s.rankColumn}>
+              <View style={s.rankRow}>
+                <View style={s.rankTitleRow}>
+                  <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
+                  <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+                </View>
+                {rank.nextTitle && (
+                  <Text style={[s.rankNext, { color: colors.inkSoft }]}>
+                    {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
+                  </Text>
+                )}
+              </View>
+              <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
+                <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold }]} />
+              </View>
+            </View>
+          </View>
+        </PressScale>
+
+        {/* ── One hero at a time: the daily card until completed ── */}
         {dailyHead === 'loading' ? (
-          <View style={[s.bentoFull, s.dailyHeroDark]}>
+          <View style={[s.bentoFull, s.dailyHeroDark, { backgroundColor: colors.navy }]}>
             <ActivityIndicator color="#fff" size="large" />
           </View>
         ) : dailyCompleted ? (
-          <View style={[s.bentoFull, s.dailyHeroDoneCol]}>
-            <View style={s.dailyHeroRow}>
-              <Text style={s.dailyIcon}>✅</Text>
-              <View style={s.dailyHeroText}>
-                <Text style={s.dailyTitleDone}>أحسنت! أكملت اختبار اليوم</Text>
-                <Text style={s.dailyBodyDone}>
-                  الاختبار الجديد بعد {formatRemaining(nextDailyMs)}
-                </Text>
-              </View>
+          <View style={[s.bentoFull, s.dailyStripDone, { backgroundColor: colors.correctPale, borderColor: colors.correct }]}>
+            <Ionicons name="checkmark-circle" size={20} color={colors.correct} />
+            <View style={s.dailyStripText}>
+              <Text style={[s.dailyStripTitle, { color: colors.correct }]}>أكملت اختبار اليوم — الاختبار الجديد بعد {formatRemaining(nextDailyMs)}</Text>
+              {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep }]}>{dailyRankLine}</Text>}
             </View>
-            {dailyRankLine && <Text style={s.rankLine}>{dailyRankLine}</Text>}
-            <View style={s.postWinRow}>
-              <TouchableOpacity style={s.postWinBtn} onPress={shareScore}>
-                <Ionicons name="share-social-outline" size={15} color="#1a5276" />
-                <Text style={s.postWinBtnTxt}>شارك النتيجة</Text>
-              </TouchableOpacity>
-              {profile.getWeakCheckedParts(1).length > 0 && (
-                <TouchableOpacity style={s.postWinBtn} onPress={practiceWeakestSura}>
-                  <Ionicons name="book-outline" size={15} color="#1a5276" />
-                  <Text style={s.postWinBtnTxt}>تدرّب على أضعف سورة</Text>
-                </TouchableOpacity>
-              )}
-            </View>
+            <PressScale onPress={shareScore} hitSlop={6}>
+              <Ionicons name="share-social-outline" size={18} color={colors.correct} />
+            </PressScale>
           </View>
         ) : dailyHead ? (
-          <View style={[s.bentoFull, s.dailyHeroDark]}>
+          <View style={[s.bentoFull, s.dailyHeroDark, { backgroundColor: colors.navy }]}>
             <View style={s.dailyHeroRow}>
-              <Text style={s.dailyIcon}>⭐</Text>
+              <Ionicons name="star" size={34} color={colors.gold} />
               <View style={s.dailyHeroText}>
                 <Text style={s.dailyTitle}>اختبار اليوم جاهز!</Text>
-                <Text style={s.dailyBody}>10 أسئلة × صحة وسرعة</Text>
+                <Text style={[s.dailyBody, { color: colors.navySoft }]}>١٠ أسئلة × صحة وسرعة</Text>
               </View>
             </View>
-            <TouchableOpacity style={s.dailyBtn} onPress={startDaily} activeOpacity={0.85}>
-              <Text style={s.dailyBtnTxt}>ابدأ اختبار اليوم</Text>
-            </TouchableOpacity>
+            <PressScale style={[s.dailyBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={startDaily}>
+              <Text style={[s.dailyBtnTxt, { color: colors.navy }]}>ابدأ اختبار اليوم</Text>
+            </PressScale>
           </View>
         ) : (
-          <View style={[s.bentoFull, s.dailyHeroUnavail]}>
-            <Text style={s.dailyIcon}>⏰</Text>
+          <View style={[s.bentoFull, s.dailyHeroUnavail, { backgroundColor: colors.card }]}>
+            <Ionicons name="time-outline" size={30} color={colors.inkSoft} />
             <View style={s.dailyHeroText}>
-              <Text style={s.dailyUnavailTxt}>لا يوجد اختبار اليوم حتى الآن</Text>
-              <Text style={s.dailyUnavailSub}>يتجدد الاختبار كل 24 ساعة</Text>
+              <Text style={[s.dailyUnavailTxt, { color: colors.ink }]}>لا يوجد اختبار اليوم حتى الآن</Text>
+              <Text style={[s.dailyUnavailSub, { color: colors.inkSoft }]}>يتجدد الاختبار كل 24 ساعة</Text>
             </View>
           </View>
         )}
 
-        {/* ── BENTO: 2× progress ring tiles ── */}
+        {/* ── Ways to play — promoted once the daily is done, present either way ── */}
+        {waysToPlay}
+
+        {/* ── BENTO: 2× progress ring tiles + sparkline ── */}
         <View style={s.bentoRow}>
-          <View style={[s.bentoHalf, s.statTile]}>
-            <Ring pct={studyPct} color={NAVY} />
-            <Text style={s.statLabel}>كم الحفظ</Text>
-            <Text style={s.statSub}>من القرآن</Text>
+          <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
+            <Ring pct={studyPct} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} />
+            <Text style={[s.statLabel, { color: colors.ink }]}>كم الحفظ</Text>
+            <Text style={[s.statSub, { color: colors.inkSoft }]}>من القرآن</Text>
           </View>
-          <View style={[s.bentoHalf, s.statTile]}>
-            <Ring pct={ratioPct} color="#27ae60" />
-            <Text style={s.statLabel}>صحة الحفظ</Text>
-            <Text style={s.statSub}>دقة الإجابات</Text>
+          <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
+            <Ring pct={ratioPct} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} />
+            <Text style={[s.statLabel, { color: colors.ink }]}>صحة الحفظ</Text>
+            <Text style={[s.statSub, { color: colors.inkSoft }]}>دقة الإجابات</Text>
           </View>
-          <ProgressChart scores={profile.scores} />
+          <ProgressChart scores={profile.scores} colors={colors} />
         </View>
 
-        {/* ── Weak sura alert (full width) ── */}
-        {weakPart && (
-          <TouchableOpacity
-            style={[s.bentoFull, s.alertCard]}
-            onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
-            activeOpacity={0.85}
-          >
-            <Ionicons name="chevron-back" size={18} color="#b7770d" />
-            <View style={s.alertBody}>
-              <Text style={s.alertTitle}>تحتاج مراجعة: {weakSura}</Text>
-              <Text style={s.alertSub}>اضغط لبدء تدريب مخصص</Text>
-            </View>
-            <Text style={s.alertIcon}>⚠️</Text>
-          </TouchableOpacity>
-        )}
-
-        {/* ── Quick play CTA ── */}
-        <TouchableOpacity
-          style={[s.bentoFull, s.quickBtn]}
-          onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="play" size={20} color="#fff" />
-          <Text style={s.quickBtnTxt}>ابدأ اختباراً الآن</Text>
-        </TouchableOpacity>
-
-        {/* ── PvP: live 1v1 — real opponent first, falls back to the bot ── */}
-        <TouchableOpacity
-          style={[s.bentoFull, s.pvpCard]}
-          onPress={() => router.push('/(app)/pvp')}
-          activeOpacity={0.85}
-        >
-          <Ionicons name="chevron-back" size={18} color="#8a97a5" />
-          <View style={s.pvpBody}>
-            <Text style={s.pvpTitle}>منافسة مباشرة ⚔️</Text>
-            <Text style={s.pvpSub}>١٠ أسئلة وجهاً لوجه ضد لاعب حقيقي أو الحافظ 🤖 — الأدق والأسرع يفوز</Text>
-          </View>
-          {(profile.pvp.wins + profile.pvp.losses + profile.pvp.draws) > 0 && (
-            <View style={s.pvpRecordBadge}>
-              <Text style={s.pvpRecordTxt}>🏆 {profile.pvp.wins}</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        {/* ── Sign-in prompt for guests ── */}
-        {social.isAnonymous && (
-          <View style={[s.bentoFull, s.anonCard]}>
-            <Text style={s.anonTxt}>سجّل دخولك لحفظ تقدمك ومزامنة بياناتك</Text>
-            <View style={s.anonBtns}>
-              <TouchableOpacity style={[s.socialBtn, s.btnGoogle]} onPress={() => upgradeGuest('google')}>
-                <Text style={s.socialBtnTxt}>جوجل</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={[s.socialBtn, s.btnFb]} onPress={() => upgradeGuest('facebook')}>
-                <Text style={s.socialBtnTxt}>فيسبوك</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        )}
-
-        {/* ── BENTO: active parts (half) + settings (half) ── */}
-        <View style={s.bentoRow}>
-          {/* Active study parts — tap to edit in popup */}
-          <TouchableOpacity
-            style={[s.bentoHalf, s.halfCard]}
-            activeOpacity={0.85}
-            onPress={() => setPartsModalOpen(true)}
-          >
-            <View style={s.halfHeader}>
-              <Ionicons name="create-outline" size={16} color="#8a97a5" />
-              <Text style={s.halfTitle}>حفظي</Text>
-            </View>
-            <Text style={s.partsCount}>
-              {arPlural(activeParts, 'سورة مُفعّلة', 'سورتان مُفعّلتان', 'سور مُفعّلة', 'سورة مُفعّلة')}
+        {/* ── The progression map — replaces the parts-editor summary card ── */}
+        <PressScale style={[s.bentoFull, s.mapCard, { backgroundColor: colors.navy }]} onPress={() => router.push('/(app)/map')}>
+          <Ionicons name="chevron-back" size={18} color={colors.navySoft} />
+          <View style={s.mapBody}>
+            <Text style={s.mapTitle}>خريطة الحفظ</Text>
+            <Text style={[s.mapSub, { color: colors.navySoft }]}>
+              {arPlural(activeParts, 'سورة مُفعّلة', 'سورتان مُفعّلتان', 'سور مُفعّلة', 'سورة مُفعّلة')} — اضغط لعرض التفاصيل
             </Text>
-            <View style={s.chipWrap}>
-              {selectedPreview.map(({ part, index, range }) => (
-                <View key={index} style={s.chip}>
-                  <View style={[s.chipDot, { backgroundColor: DOT_COLOR[range] }]} />
-                  <Text style={s.chipTxt} numberOfLines={1}>{part.name}</Text>
-                </View>
-              ))}
-              {extraCount > 0 && (
-                <View style={[s.chip, s.chipMoreBox]}>
-                  <Text style={s.chipMore}>+{extraCount}</Text>
-                </View>
-              )}
-            </View>
-            <Text style={s.halfHint}>اضغط للتعديل ✎</Text>
-          </TouchableOpacity>
-
-          {/* Settings — level + special, non-collapsible */}
-          <View style={[s.bentoHalf, s.halfCard]}>
-            <View style={s.halfHeader}>
-              <Ionicons name="settings-outline" size={16} color="#8a97a5" />
-              <Text style={s.halfTitle}>الإعدادات</Text>
-            </View>
-            <Text style={s.settingsField}>مستوى الاختبار</Text>
-            {profile.levels.map((lvl) => (
-              <TouchableOpacity
-                key={lvl.value}
-                style={[s.levelRowSm, lvl.disabled && s.levelDisabled]}
-                onPress={() => !lvl.disabled && setLevel(lvl.value)}
-                activeOpacity={lvl.disabled ? 1 : 0.7}
-              >
-                <View style={[s.radio, profile.level === lvl.value && s.radioSelected]}>
-                  {profile.level === lvl.value && <View style={s.radioDot} />}
-                </View>
-                <Text style={[s.levelNameSm, lvl.disabled && s.disabledTxt]} numberOfLines={1}>
-                  {lvl.text}
-                </Text>
-              </TouchableOpacity>
-            ))}
-            <View style={s.toggleRowSm}>
-              <Switch
-                value={specialEditable && profile.specialEnabled}
-                onValueChange={toggleSpecial}
-                disabled={!specialEditable}
-                trackColor={{ false: '#ccc', true: NAVY }}
-                thumbColor={specialEditable && profile.specialEnabled ? '#fff' : '#f4f3f4'}
-                style={s.partSwitch}
-              />
-              <View style={s.toggleLabelCol}>
-                <Text style={[s.toggleLabelSm, !specialEditable && s.disabledTxt]}>الأسئلة الخاصة</Text>
-                {!specialEditable && (
-                  <Text style={s.toggleHintSm}>من المستوى الثانوي فأعلى</Text>
-                )}
-              </View>
-            </View>
-            <Text style={s.version}>الإصدار {APP_VERSION}</Text>
           </View>
-        </View>
+          <Ionicons name="map-outline" size={26} color={colors.gold} />
+        </PressScale>
 
-        {/* ── Logout — very last ── */}
-        {!social.isAnonymous && social.uid && (
-          <TouchableOpacity style={s.signOutLink} onPress={handleSignOut}>
-            <Ionicons name="log-out-outline" size={16} color="#e74c3c" />
-            <Text style={s.signOutTxt}>تسجيل الخروج</Text>
-          </TouchableOpacity>
+        {/* ── Sign-in nag — demoted to a one-line banner, modern brand colors ── */}
+        {social.isAnonymous && (
+          <View style={[s.anonBanner, { backgroundColor: colors.card, borderColor: colors.line }]}>
+            <Text style={[s.anonTxt, { color: colors.inkSoft }]} numberOfLines={1}>سجّل دخولك لحفظ تقدمك</Text>
+            <View style={s.anonBtns}>
+              <PressScale
+                style={[s.iconBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line }]}
+                onPress={() => upgradeGuest('google')}
+                accessibilityRole="button"
+                accessibilityLabel="المتابعة بحساب جوجل"
+              >
+                <Ionicons name="logo-google" size={16} color="#4285F4" />
+              </PressScale>
+              <PressScale
+                style={[s.iconBtn, { backgroundColor: '#1877F2' }]}
+                onPress={() => upgradeGuest('facebook')}
+                accessibilityRole="button"
+                accessibilityLabel="المتابعة بحساب فيسبوك"
+              >
+                <Ionicons name="logo-facebook" size={16} color="#fff" />
+              </PressScale>
+            </View>
+          </View>
         )}
 
       </ScrollView>
 
-      {/* ── Study-parts editor popup (list, not cards) ── */}
-      <Modal
-        visible={partsModalOpen}
-        animationType="slide"
-        transparent
-        onRequestClose={() => setPartsModalOpen(false)}
-      >
-        <View style={s.modalOverlay}>
-          <View style={s.modalSheet}>
-            <View style={s.modalHeader}>
-              <TouchableOpacity onPress={() => setPartsModalOpen(false)} hitSlop={8}>
-                <Ionicons name="close" size={24} color="#444" />
-              </TouchableOpacity>
-              <View style={s.modalHeaderRight}>
-                <Text style={s.modalTitle}>اختر سور الحفظ</Text>
-                <ActiveCountBadge value={activeParts} />
-              </View>
-            </View>
+      <StreakSheet
+        visible={streakSheetOpen}
+        onClose={() => setStreakSheetOpen(false)}
+        colors={colors}
+        streak={profile.streak}
+        bestStreak={profile.bestStreak}
+        scores={profile.scores}
+        playedToday={playedToday}
+      />
 
-            <View style={s.filterRow}>
-              {([['all', 'الكل'], ['good', 'الجيد'], ['weak', 'الضعيف']] as [BulkAction, string][]).map(([action, label]) => (
-                <TouchableOpacity key={action} style={s.filterBtn} onPress={() => applyBulk(action)}>
-                  <Text style={s.filterBtnTxt}>{label}</Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <FlatList
-              data={profile.parts}
-              keyExtractor={(_, i) => String(i)}
-              ItemSeparatorComponent={() => <View style={s.sep} />}
-              renderItem={({ item: part, index }) => {
-                const range = profile.getCorrectRatioRange(index);
-                const correct = part.numCorrect[1] + part.numCorrect[2] + part.numCorrect[3] + (part.numCorrect[4] ?? 0);
-                const questions = part.numQuestions[1] + part.numQuestions[2] + part.numQuestions[3] + (part.numQuestions[4] ?? 0);
-                return (
-                  <View style={s.partRow}>
-                    <View style={[s.rangeDot, { backgroundColor: DOT_COLOR[range] }]} />
-                    <View style={s.partRowInfo}>
-                      <View style={s.partNameRow}>
-                        {range === CORRECT_RATIO_RANGE.HIGH && (
-                          <View style={s.masteryBadge}>
-                            <Text style={s.masteryBadgeTxt}>🏅 متمكن</Text>
-                          </View>
-                        )}
-                        <Text style={s.partName} numberOfLines={1}>{part.name}</Text>
-                      </View>
-                      <Text style={s.partSub}>{correct} صحيحة من {questions}</Text>
-                    </View>
-                    <TouchableOpacity
-                      style={s.practiceBtn}
-                      onPress={() => {
-                        setPartsModalOpen(false);
-                        router.push({ pathname: '/(app)/quiz', params: { customPart: String(index), nonce: String(Date.now()) } });
-                      }}
-                    >
-                      <Ionicons name="play" size={13} color={NAVY} />
-                      <Text style={s.practiceTxt}>تدرّب</Text>
-                    </TouchableOpacity>
-                    <Switch
-                      value={part.checked}
-                      onValueChange={() => togglePart(index)}
-                      disabled={index === 0}
-                      trackColor={{ false: '#ccc', true: NAVY }}
-                      thumbColor={part.checked ? '#fff' : '#f4f3f4'}
-                    />
-                  </View>
-                );
-              }}
-            />
-          </View>
-        </View>
-      </Modal>
+      <RankSheet
+        visible={rankSheetOpen}
+        onClose={() => setRankSheetOpen(false)}
+        colors={colors}
+        score={score}
+      />
 
       {/* Guest nickname picker — auto-shown once for a fresh guest, always
           reachable afterward via the ✎ next to the identity subtitle. */}
@@ -768,25 +650,25 @@ export default function MeScreen() {
         onRequestClose={() => setNicknameModalOpen(false)}
       >
         <View style={s.nickOverlay}>
-          <View style={s.nickBox}>
-            <Text style={s.nickTitle}>اختر اسماً يظهر على لوحة الصدارة</Text>
+          <View style={[s.nickBox, { backgroundColor: colors.card }]}>
+            <Text style={[s.nickTitle, { color: colors.ink }]}>اختر اسماً يظهر على لوحة الصدارة</Text>
             <TextInput
-              style={s.nickInput}
+              style={[s.nickInput, { borderColor: colors.line, color: colors.ink }]}
               value={nicknameInput}
               onChangeText={setNicknameInput}
               placeholder={DEFAULT_GUEST_NAME}
-              placeholderTextColor="#aaa"
+              placeholderTextColor={colors.inkSoft}
               maxLength={20}
               textAlign="right"
               autoFocus
             />
             <View style={s.nickRow}>
-              <TouchableOpacity style={s.nickSkip} onPress={() => setNicknameModalOpen(false)}>
-                <Text style={s.nickSkipTxt}>لاحقاً</Text>
-              </TouchableOpacity>
-              <TouchableOpacity style={s.nickSave} onPress={saveNickname}>
+              <PressScale style={[s.nickSkip, { backgroundColor: colors.goldPale }]} onPress={() => setNicknameModalOpen(false)}>
+                <Text style={[s.nickSkipTxt, { color: colors.inkSoft }]}>لاحقاً</Text>
+              </PressScale>
+              <PressScale style={[s.nickSave, { backgroundColor: colors.navy }]} onPress={saveNickname}>
                 <Text style={s.nickSaveTxt}>حفظ</Text>
-              </TouchableOpacity>
+              </PressScale>
             </View>
           </View>
         </View>
@@ -801,7 +683,7 @@ const CARD_SHADOW = {
 } as const;
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1 },
   scroll: { padding: 14, gap: 12, paddingBottom: 36 },
 
   // Top strip
@@ -812,331 +694,155 @@ const s = StyleSheet.create({
     paddingHorizontal: 2,
     paddingTop: 2,
   },
-  topAvatar: { width: 46, height: 46, borderRadius: 23, borderWidth: 2, borderColor: '#d6eaf8', backgroundColor: '#e8eef4' },
+  topAvatar: { width: 46, height: 46, borderRadius: 23, borderWidth: 2 },
   topInfo: { flex: 1, alignItems: 'flex-end' },
-  greeting: { fontSize: 19, fontWeight: '800', color: NAVY, textAlign: 'right' },
-  topSub: { fontSize: 12, color: '#8a97a5', textAlign: 'right', marginTop: 1 },
-  topSubRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4, marginTop: 1 },
-  topRight: { alignItems: 'flex-end', gap: 5 },
-  topPoints: { fontSize: 13, textAlign: 'right' },
-  topPointsLabel: { color: '#8a97a5', fontWeight: '700' },
-  topPointsVal: { color: NAVY, fontWeight: '800' },
+  topSub: { fontSize: 12, textAlign: 'right' },
+  topSubRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
+  topPoints: { fontSize: 15, textAlign: 'right', marginTop: 2 },
+  topPointsVal: { fontFamily: 'PlexArabic-Bold' },
+  topPointsLabel: { fontSize: 12 },
   streakBadge: {
-    backgroundColor: '#fff3cd',
+    flexDirection: 'row-reverse',
+    alignItems: 'center',
+    gap: 5,
     paddingHorizontal: 12,
-    paddingVertical: 7,
-    borderRadius: 20,
+    paddingVertical: 8,
+    borderRadius: radii.pill,
     borderWidth: 1,
-    borderColor: AMBER,
   },
-  streakTxt: { fontSize: 14, fontWeight: '800', color: '#b7770d' },
+  streakTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold' },
 
   // Bento primitives
-  bentoFull: { borderRadius: 18, ...CARD_SHADOW },
+  bentoFull: { borderRadius: radii.lg, ...CARD_SHADOW },
   bentoRow: { flexDirection: 'row-reverse', gap: 12 },
-  bentoHalf: { flex: 1, borderRadius: 18, ...CARD_SHADOW },
+  bentoHalf: { flex: 1, borderRadius: radii.lg, ...CARD_SHADOW },
+
+  // Rank card
+  rankCard: { padding: 14 },
+  rankHeaderRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10 },
+  rankBadgeSmall: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  rankColumn: { flex: 1, gap: 8 },
+  rankRow: { flexDirection: 'row-reverse', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  rankTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
+  rankTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
+  rankNext: { fontSize: 12, flexShrink: 1, textAlign: 'left' },
+  rankTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
+  rankFill: { height: 6, borderRadius: 3 },
+
+  // Rank ladder sheet
+  rankList: { gap: 8, marginTop: 12 },
+  rankLadderRow: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 12,
+    padding: 10, borderRadius: radii.md, borderWidth: 1,
+  },
+  rankBadge: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
+  rankLadderInfo: { flex: 1, alignItems: 'flex-end' },
+  rankLadderTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
+  rankLadderSub: { fontSize: 12, textAlign: 'right', marginTop: 1 },
+  rankNowBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radii.pill },
+  rankNowTxt: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
 
   // Daily hero
-  dailyHeroDark: {
-    backgroundColor: NAVY,
-    padding: 20,
-    gap: 14,
-  },
+  dailyHeroDark: { padding: 20, gap: 14 },
   dailyHeroRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
   dailyHeroText: { flex: 1, alignItems: 'flex-end' },
-  dailyHeroDoneCol: {
-    backgroundColor: '#eafaf1',
-    padding: 20,
-    gap: 12,
-    borderWidth: 1.5,
-    borderColor: '#27ae60',
-  },
-  rankLine: { fontSize: 12, fontWeight: '700', color: '#b7770d', textAlign: 'right' },
-  postWinRow: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 8 },
-  postWinBtn: {
-    flex: 1,
-    minWidth: '45%',
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 5,
-    paddingVertical: 10,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-  },
-  postWinBtnTxt: { fontSize: 12, fontWeight: '700', color: '#1a5276', textAlign: 'center' },
-  dailyHeroUnavail: {
-    backgroundColor: '#fff',
-    padding: 20,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 14,
-  },
-  dailyIcon: { fontSize: 40 },
-  dailyTitle: { fontSize: 20, fontWeight: '800', color: '#fff', textAlign: 'right' },
-  dailyBody: { fontSize: 13, color: '#9bbdd4', textAlign: 'right', marginTop: 2 },
-  dailyTitleDone: { fontSize: 17, fontWeight: '800', color: '#1e8449', textAlign: 'right' },
-  dailyBodyDone: { fontSize: 13, color: '#5ca87b', textAlign: 'right', marginTop: 2 },
-  dailyUnavailTxt: { fontSize: 15, color: '#444', textAlign: 'right', fontWeight: '700' },
-  dailyUnavailSub: { fontSize: 12, color: '#aaa', textAlign: 'right', marginTop: 2 },
+  dailyTitle: { fontSize: 20, fontFamily: 'PlexArabic-Bold', color: '#fff', textAlign: 'right' },
+  dailyBody: { fontSize: 13, textAlign: 'right', marginTop: 2 },
   dailyBtn: {
-    backgroundColor: AMBER,
     paddingVertical: 14,
-    borderRadius: 12,
+    borderRadius: radii.md,
     alignItems: 'center',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 4,
   },
-  dailyBtnTxt: { fontSize: 16, fontWeight: '800', color: NAVY },
+  dailyBtnTxt: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
+  dailyStripDone: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 10, padding: 14, borderWidth: 1.5,
+  },
+  dailyStripText: { flex: 1, alignItems: 'flex-end' },
+  dailyStripTitle: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  rankLine: { fontSize: 11, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right', marginTop: 2 },
+  dailyHeroUnavail: { padding: 18, flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
+  dailyUnavailTxt: { fontSize: 14, textAlign: 'right', fontFamily: 'PlexArabic-SemiBold' },
+  dailyUnavailSub: { fontSize: 12, textAlign: 'right', marginTop: 2 },
 
-  // Score trend (used by points line beside name)
-  trendUp: { color: '#27ae60' },
-  trendDown: { color: '#e74c3c' },
-
-  // Progress sparkline tile
-  sparkRow: { width: '100%', flexDirection: 'row-reverse', alignItems: 'flex-end', justifyContent: 'center', gap: 1.5 },
-  sparkBar: { flex: 1, maxWidth: 9, minWidth: 2, backgroundColor: '#cdddec', borderRadius: 2 },
-  barLast: { backgroundColor: AMBER },
-  sparkEmpty: { color: '#cbd3db', fontSize: 18, fontWeight: '800' },
+  // Ways to play
+  waysWrap: { gap: 8 },
+  waysRow: { flexDirection: 'row-reverse', gap: 10 },
+  wayTile: {
+    flex: 1,
+    borderRadius: radii.lg,
+    paddingVertical: 18,
+    alignItems: 'center',
+    gap: 6,
+    ...CARD_SHADOW,
+  },
+  wayTileTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold', color: '#fff' },
+  wayBadge: { position: 'absolute', top: 8, left: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
+  wayBadgeTxt: { fontSize: 10, fontFamily: 'PlexArabic-Bold' },
+  wayNudge: {
+    flexDirection: 'row-reverse', alignItems: 'center', gap: 6, padding: 10, borderRadius: radii.md,
+  },
+  wayNudgeTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
 
   // Stat ring tiles
-  statTile: { backgroundColor: '#fff', padding: 14, alignItems: 'center', justifyContent: 'center', gap: 6 },
-  statLabel: { fontSize: 13, fontWeight: '800', color: NAVY },
-  statSub: { fontSize: 11, color: '#9aa6b2' },
-  ringOuter: { width: 76, height: 76, alignItems: 'center', justifyContent: 'center' },
-  ringTrack: { position: 'absolute', width: 76, height: 76, borderRadius: 38 },
-  ringInner: {
-    width: 58, height: 58, borderRadius: 29,
-    backgroundColor: '#fff',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  ringTxt: { fontSize: 16, fontWeight: '800' },
+  statTile: { padding: 14, alignItems: 'center', justifyContent: 'center', gap: 6 },
+  statLabel: { fontSize: 13, fontFamily: 'PlexArabic-Bold' },
+  statSub: { fontSize: 11 },
+  sparkRow: { width: '100%', flexDirection: 'row-reverse', alignItems: 'flex-end', justifyContent: 'center', gap: 1.5 },
+  sparkBar: { flex: 1, maxWidth: 9, minWidth: 2, borderRadius: 2 },
+  sparkEmpty: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
 
-  // Weak sura alert
-  alertCard: {
-    backgroundColor: '#fffaf0',
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    padding: 16,
-    gap: 10,
-    borderWidth: 1,
-    borderColor: '#f6e2bd',
-  },
-  alertBody: { flex: 1, alignItems: 'flex-end' },
-  alertTitle: { fontSize: 14, fontWeight: '800', color: '#b7770d', textAlign: 'right' },
-  alertSub: { fontSize: 12, color: '#a98c5a', textAlign: 'right', marginTop: 1 },
-  alertIcon: { fontSize: 22 },
+  // Map card
+  mapCard: { flexDirection: 'row-reverse', alignItems: 'center', padding: 16, gap: 10 },
+  mapBody: { flex: 1, alignItems: 'flex-end' },
+  mapTitle: { fontSize: 15, fontFamily: 'Amiri-Regular', fontWeight: '700', color: '#fff', textAlign: 'right' },
+  mapSub: { fontSize: 11, textAlign: 'right', marginTop: 2 },
 
-  // Quick play
-  quickBtn: {
-    backgroundColor: NAVY,
-    paddingVertical: 16,
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
+  // Sign-in nag — a compact one-liner
+  anonBanner: {
+    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 14, paddingVertical: 10, borderRadius: radii.md, borderWidth: 1, gap: 8,
   },
-  quickBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
+  anonTxt: { fontSize: 12, flex: 1, textAlign: 'right' },
+  anonBtns: { flexDirection: 'row-reverse', gap: 6 },
+  iconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
 
-  // PvP challenge card
-  pvpCard: {
-    backgroundColor: '#fff',
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    padding: 16,
-    gap: 10,
-    borderWidth: 1.5,
-    borderColor: '#d6eaf8',
+  // Bottom sheets (streak, rank ladder) — Modal renders outside the web
+  // column wrapper (see WebFrame in app/_layout.tsx), so the sheet itself
+  // needs the same width cap or it stretches full-browser-width on desktop.
+  sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: {
+    borderTopLeftRadius: radii.lg + 4, borderTopRightRadius: radii.lg + 4,
+    padding: 20, paddingBottom: 32,
+    width: '100%', maxWidth: 512, alignSelf: 'center',
   },
-  pvpBody: { flex: 1, alignItems: 'flex-end' },
-  pvpTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
-  pvpSub: { fontSize: 12, color: '#8a97a5', textAlign: 'right', marginTop: 2 },
-  pvpRecordBadge: {
-    backgroundColor: '#fff7e6',
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 12,
-  },
-  pvpRecordTxt: { fontSize: 13, fontWeight: '800', color: '#b7770d' },
-
-  // Anon / sign out
-  anonCard: { backgroundColor: '#fff', padding: 16, gap: 12 },
-  anonTxt: { fontSize: 13, color: '#555', textAlign: 'right' },
-  anonBtns: { flexDirection: 'row-reverse', gap: 8 },
-  socialBtn: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center' },
-  btnGoogle: { backgroundColor: '#dd4b39' },
-  btnFb: { backgroundColor: '#3b5998' },
-  socialBtnTxt: { color: '#fff', fontWeight: '800', fontSize: 14 },
-  signOutLink: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 6,
-  },
-  signOutTxt: { color: '#e74c3c', fontSize: 13, fontWeight: '700' },
-
-  // Study filters (shared by popup)
-  filterRow: { flexDirection: 'row-reverse', padding: 12, gap: 8 },
-  filterBtn: {
-    flex: 1,
-    paddingVertical: 9,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: '#edf1f5',
-    borderWidth: 1,
-    borderColor: '#d8e0ea',
-  },
-  filterBtnTxt: { fontSize: 13, fontWeight: '700', color: NAVY },
-
-  // Half cards (active parts + settings)
-  halfCard: { backgroundColor: '#fff', padding: 14, gap: 8 },
-  halfHeader: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-  halfTitle: { fontSize: 14, fontWeight: '800', color: NAVY },
-
-  // Active parts preview
-  partsCount: { fontSize: 12, color: '#8a97a5', fontWeight: '700', textAlign: 'right' },
-  chipWrap: {
-    flexDirection: 'row-reverse',
-    flexWrap: 'wrap',
-    gap: 6,
-    flex: 1,
-    alignContent: 'flex-start',
-  },
-  chip: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: '#f4f7fa',
-    borderRadius: 8,
-    paddingHorizontal: 7,
-    paddingVertical: 4,
-  },
-  chipDot: { width: 8, height: 8, borderRadius: 4 },
-  chipTxt: { fontSize: 11, fontWeight: '700', color: '#33485e', maxWidth: 90 },
-  chipMoreBox: { backgroundColor: '#e7edf3' },
-  chipMore: { fontSize: 11, fontWeight: '800', color: NAVY },
-  halfHint: { fontSize: 11, color: '#a7b3bf', textAlign: 'left', marginTop: 2 },
-
-  // Settings (compact, half width)
-  settingsField: { fontSize: 12, color: '#7a8794', fontWeight: '700', textAlign: 'right' },
-  levelRowSm: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, paddingVertical: 5 },
-  levelNameSm: { flex: 1, fontSize: 13, fontWeight: '700', color: '#1a1a1a', textAlign: 'right' },
-  toggleRowSm: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: 8,
-    marginTop: 6,
-    paddingTop: 8,
-    borderTopWidth: 1,
-    borderColor: '#f0f0f0',
-  },
-  toggleLabelCol: { flex: 1, alignItems: 'flex-end' },
-  toggleLabelSm: { fontSize: 12, fontWeight: '700', color: '#1a1a1a', textAlign: 'right' },
-  toggleHintSm: { fontSize: 10, color: '#a7b3bf', textAlign: 'right', marginTop: 1 },
-
-  // Shared bits
-  partSwitch: { transform: [{ scale: 0.85 }] },
-  rangeDot: { width: 12, height: 12, borderRadius: 6 },
-  partNameRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6 },
-  partName: { fontSize: 14, fontWeight: '700', color: '#1a1a1a', textAlign: 'right' },
-  partSub: { fontSize: 11, color: '#8a97a5', textAlign: 'right', marginTop: 1 },
-  // Mastery badge — shown next to a sura's name once its accuracy tier
-  // reaches HIGH (see CORRECT_RATIO_RANGE.HIGH), the same milestone quiz.tsx
-  // celebrates with a toast the first time it's crossed.
-  masteryBadge: {
-    backgroundColor: '#eafaf1',
-    borderRadius: 8,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderWidth: 1,
-    borderColor: '#a8e6bf',
-  },
-  masteryBadgeTxt: { fontSize: 10, fontWeight: '800', color: '#1e8449' },
-  radio: {
-    width: 20, height: 20, borderRadius: 10,
-    borderWidth: 2, borderColor: '#bbb',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  radioSelected: { borderColor: NAVY },
-  radioDot: { width: 10, height: 10, borderRadius: 5, backgroundColor: NAVY },
-  levelDisabled: { opacity: 0.5 },
-  disabledTxt: { color: '#bbb' },
-  version: { textAlign: 'center', color: '#bbb', fontSize: 11, paddingTop: 10 },
-
-  // Parts popup (modal)
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end', alignItems: 'center' },
-  modalSheet: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    width: '100%',
-    maxWidth: 480,
-    maxHeight: '85%',
-    paddingBottom: 8,
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
-  modalHeaderRight: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8 },
-  modalTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
-  countBadge: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: '#fff7e6',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 14,
-  },
-  countNum: { fontSize: 14, fontWeight: '800', color: '#b7770d', minWidth: 14, textAlign: 'center' },
-  partRow: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 11,
-    gap: 10,
-  },
-  partRowInfo: { flex: 1, alignItems: 'flex-end' },
-  practiceBtn: {
-    flexDirection: 'row-reverse',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 8,
-    backgroundColor: '#eef3f8',
-  },
-  practiceTxt: { fontSize: 12, fontWeight: '700', color: NAVY },
-  sep: { height: 1, backgroundColor: '#f3f5f7', marginHorizontal: 16 },
+  sheetHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  sheetTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
+  streakHero: { alignItems: 'center', gap: 4, paddingVertical: 16 },
+  streakBig: { fontSize: 40, fontFamily: 'PlexArabic-Bold' },
+  streakUnit: { fontSize: 13 },
+  weekRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 16 },
+  weekCell: { alignItems: 'center', gap: 4 },
+  weekDot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  weekLabel: { fontSize: 10 },
+  streakStatRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, paddingTop: 14, borderTopWidth: 1 },
+  streakStatTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
+  riskBanner: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, padding: 12, borderRadius: radii.md, marginTop: 14 },
+  riskTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
 
   // Guest nickname modal
   nickOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
-  nickBox: {
-    backgroundColor: '#fff',
-    borderRadius: 16,
-    padding: 20,
-    width: '100%',
-    maxWidth: 400,
-    gap: 14,
-  },
-  nickTitle: { fontSize: 15, fontWeight: '800', color: NAVY, textAlign: 'right' },
+  nickBox: { borderRadius: radii.lg, padding: 20, width: '100%', maxWidth: 400, gap: 14 },
+  nickTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
   nickInput: {
-    borderWidth: 1,
-    borderColor: '#d8e0ea',
-    borderRadius: 10,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 15,
-    color: '#1a1a1a',
+    borderWidth: 1, borderRadius: radii.md, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15,
   },
   nickRow: { flexDirection: 'row-reverse', gap: 10 },
-  nickSkip: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: '#f0f0f0' },
-  nickSkipTxt: { fontSize: 14, fontWeight: '700', color: '#666' },
-  nickSave: { flex: 1, paddingVertical: 12, borderRadius: 10, alignItems: 'center', backgroundColor: NAVY },
-  nickSaveTxt: { fontSize: 14, fontWeight: '700', color: '#fff' },
+  nickSkip: { flex: 1, paddingVertical: 12, borderRadius: radii.md, alignItems: 'center' },
+  nickSkipTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
+  nickSave: { flex: 1, paddingVertical: 12, borderRadius: radii.md, alignItems: 'center' },
+  nickSaveTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold', color: '#fff' },
 });

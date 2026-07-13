@@ -105,7 +105,7 @@ export default function Root({ children }: PropsWithChildren) {
 
         {/* PWA */}
         <link rel="manifest" href="/manifest.webmanifest?v=2" />
-        <meta name="theme-color" content="#1a5276" />
+        <meta name="theme-color" content="#0d2d4e" />
         <meta name="mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

@@ -61,11 +61,11 @@ const s = StyleSheet.create({
     boxShadow: '0px -2px 16px rgba(0,0,0,0.25)',
   },
   text: { color: '#dbe6f0', fontSize: 13, lineHeight: 20, textAlign: 'right', marginBottom: 12 },
-  link: { color: '#f39c12', textDecorationLine: 'underline' },
+  link: { color: '#c8973a', textDecorationLine: 'underline' },
   row: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
   btn: { paddingVertical: 9, paddingHorizontal: 22, borderRadius: 8 },
   decline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#5a7491' },
   declineTxt: { color: '#aebfd0', fontWeight: '600' },
-  accept: { backgroundColor: '#f39c12' },
+  accept: { backgroundColor: '#c8973a' },
   acceptTxt: { color: '#0d2d4e', fontWeight: '700' },
 });

@@ -6,8 +6,10 @@
 // Informative only — no editing here.
 import React, { useEffect, useState } from 'react';
 import {
-  View, Text, TouchableOpacity, StyleSheet,
+  View, Text, StyleSheet,
 } from 'react-native';
+import PressScale from './PressScale';
+import { useTheme, radii } from '../theme/tokens';
 
 export type ScopeMode = 'random' | 'custom' | 'daily';
 
@@ -32,6 +34,7 @@ const COLLAPSE_THRESHOLD = 3;
 export default function QuizSettingsBar({
   levelText, specialEnabled, scopeNames, scopeMode, dailyCurrent = 0, dailyTotal = 0,
 }: Props) {
+  const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   const summary = scopeMode === 'daily'
@@ -46,43 +49,39 @@ export default function QuizSettingsBar({
   const clamp = collapsible && !expanded;
 
   return (
-    <View style={s.wrapper}>
-      <Text style={s.summary}>{summary}</Text>
+    <View style={[s.wrapper, { backgroundColor: colors.card, borderColor: colors.line }]}>
+      <Text style={[s.summary, { color: colors.ink }]}>{summary}</Text>
 
       {scopeMode === 'daily' ? (
         <>
           {dailyTotal > 0 && (
             <View style={s.progressWrap}>
-              <View style={s.progressTrack}>
+              <View style={[s.progressTrack, { backgroundColor: colors.goldPale }]}>
                 <View
                   style={[
                     s.progressFill,
-                    { width: `${Math.min(dailyCurrent / dailyTotal, 1) * 100}%` },
+                    { width: `${Math.min(dailyCurrent / dailyTotal, 1) * 100}%`, backgroundColor: colors.gold },
                   ]}
                 />
               </View>
-              <Text style={s.progressLabel}>السؤال {dailyCurrent} من {dailyTotal}</Text>
+              <Text style={[s.progressLabel, { color: colors.goldDeep }]}>السؤال {dailyCurrent} من {dailyTotal}</Text>
             </View>
           )}
-          <Text style={s.note}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
+          <Text style={[s.note, { color: colors.inkSoft }]}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
         </>
       ) : (
         <>
           <View style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
             {scopeNames.map((name, i) => (
-              <Text key={i} style={s.chip}>{name}</Text>
+              <Text key={i} style={[s.chip, { color: colors.ink, backgroundColor: colors.paper }]}>{name}</Text>
             ))}
           </View>
           {collapsible && (
-            <TouchableOpacity
-              style={s.toggle}
-              onPress={() => setExpanded((v) => !v)}
-              activeOpacity={0.7}
-            >
-              <Text style={s.toggleTxt}>
+            <PressScale style={s.toggle} onPress={() => setExpanded((v) => !v)}>
+              <Text style={[s.toggleTxt, { color: colors.goldDeep }]}>
                 {expanded ? 'أقل ▴' : `المزيد (${scopeNames.length}) ▾`}
               </Text>
-            </TouchableOpacity>
+            </PressScale>
           )}
         </>
       )}
@@ -92,26 +91,22 @@ export default function QuizSettingsBar({
 
 const s = StyleSheet.create({
   wrapper: {
-    backgroundColor: '#fff',
     borderBottomWidth: 1,
-    borderColor: '#dde6ee',
     paddingHorizontal: 12,
     paddingVertical: 8,
     alignItems: 'center',
   },
   summary: {
     fontSize: 13,
-    fontWeight: '600',
-    color: '#0d2d4e',
+    fontFamily: 'PlexArabic-SemiBold',
     textAlign: 'center',
     marginBottom: 8,
   },
-  note: { fontSize: 13, color: '#5b7186', textAlign: 'center' },
+  note: { fontSize: 13, textAlign: 'center' },
   progressWrap: { alignSelf: 'stretch', alignItems: 'center', marginBottom: 8 },
   progressTrack: {
     alignSelf: 'stretch',
     height: 8,
-    backgroundColor: '#e3ebf3',
     borderRadius: 4,
     overflow: 'hidden',
     // RTL: the fill grows from the right edge (app convention).
@@ -122,10 +117,9 @@ const s = StyleSheet.create({
     top: 0,
     bottom: 0,
     right: 0,
-    backgroundColor: '#1a5276',
     borderRadius: 4,
   },
-  progressLabel: { fontSize: 12, fontWeight: '700', color: '#1a5276', marginTop: 5 },
+  progressLabel: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', marginTop: 5 },
   chips: {
     flexDirection: 'row-reverse',   // RTL: first sura on the right (app convention)
     flexWrap: 'wrap',
@@ -136,13 +130,11 @@ const s = StyleSheet.create({
   chip: {
     fontSize: 12,
     lineHeight: CHIP_LINE,
-    color: '#0d2d4e',
-    backgroundColor: '#eef3f8',
     paddingHorizontal: 9,
     paddingVertical: CHIP_PAD_V,
-    borderRadius: 12,
+    borderRadius: radii.md,
     overflow: 'hidden',
   },
   toggle: { marginTop: 6, paddingVertical: 2, paddingHorizontal: 10 },
-  toggleTxt: { fontSize: 12, fontWeight: '700', color: '#a9690a' },
+  toggleTxt: { fontSize: 12, fontFamily: 'PlexArabic-Bold' },
 });

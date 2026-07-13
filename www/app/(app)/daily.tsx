@@ -96,7 +96,7 @@ export default function DailyScreen() {
 
           {status === 'available' && (
             <View style={s.center}>
-              <Ionicons name="star" size={48} color="#f39c12" />
+              <Ionicons name="star" size={48} color="#c8973a" />
               <Text style={s.readyTitle}>اختبار اليوم جاهز!</Text>
               <Text style={s.readyBody}>
                 أجب على 10 أسئلة بشكل صحيح وسريع لتحصل على أعلى نقاط
@@ -170,7 +170,7 @@ export default function DailyScreen() {
 }
 
 const s = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#edf1f5' },
+  container: { flex: 1, backgroundColor: '#faf6ec' },
   scrollView: { flex: 1 },
   scroll: { padding: 16, gap: 16, paddingBottom: 32 },
   card: {
@@ -183,7 +183,7 @@ const s = StyleSheet.create({
   statusTxt: { fontSize: 16, color: '#555', textAlign: 'center', marginTop: 8 },
   subTxt: { fontSize: 13, color: '#aaa', textAlign: 'center' },
   errorTitle: { fontSize: 16, fontWeight: '700', color: '#c0392b', textAlign: 'center' },
-  errorMsg: { fontSize: 12, color: '#e74c3c', textAlign: 'center', fontFamily: 'monospace' },
+  errorMsg: { fontSize: 12, color: '#b3473d', textAlign: 'center', fontFamily: 'monospace' },
   startBtn: {
     flexDirection: 'row', alignItems: 'center', backgroundColor: '#0d2d4e',
     paddingHorizontal: 28, paddingVertical: 14, borderRadius: 10, marginTop: 8,

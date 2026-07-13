@@ -10,6 +10,8 @@ import {
   DAILYQUIZ_MAXTIME, DAILYQUIZ_MINTIME,
   countedScore,
 } from '../models/constants';
+import { MasteryTier } from '../models/milestones';
+import type { ThemeMode } from '../theme/tokens';
 
 export interface StudyPart {
   start: number;
@@ -64,6 +66,18 @@ export const CORRECT_RATIO_RANGE = {
   MID: 2,
   LOW: 3,
 } as const;
+
+/** Translate a CORRECT_RATIO_RANGE value into models/milestones.ts's string
+ * tier — the one place that enum crosses into the (deliberately decoupled)
+ * MasteryTier vocabulary used by the khatam-star mastery icons. */
+export function tierFromRatioRange(range: number): MasteryTier {
+  switch (range) {
+    case CORRECT_RATIO_RANGE.HIGH: return 'HIGH';
+    case CORRECT_RATIO_RANGE.MID:  return 'MID';
+    case CORRECT_RATIO_RANGE.LOW:  return 'LOW';
+    default:                       return 'EMPTY';
+  }
+}
 
 function makeDefaultParts(): StudyPart[] {
   const parts: StudyPart[] = [];
@@ -145,11 +159,16 @@ interface ProfileState {
   version: ProfileVersion;
   loaded: boolean;
   streak: number;
+  bestStreak: number;
   lastPlayDate: string;
   lastDailyCompletedDate: string;   // 'YYYY-MM-DD' of the last completed daily quiz
   lastDailyScore: number;           // the graded score (0-100) from that completed daily quiz
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
   pvp: PvpRecord;                   // 1v1 win/loss/draw record (trophies)
+  // Device/UI preference, not user data — stored under its own key (see
+  // THEME_KEY) so it survives sign-out/delete instead of resetting with the
+  // rest of the profile. Defaults to dark (وضع الليل is the app's default look).
+  themeMode: ThemeMode;
 
   // Actions
   load(): Promise<boolean>;
@@ -166,6 +185,7 @@ interface ProfileState {
   markDailyCompleted(score?: number): void;
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
+  setThemeMode(mode: ThemeMode): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -200,11 +220,16 @@ const KEYS = {
   version: 'prf_version',
   social: 'prf_social',
   streak: 'prf_streak',
+  bestStreak: 'prf_bestStreak',
   lastPlayDate: 'prf_lastPlayDate',
   lastDailyCompletedDate: 'prf_lastDailyDate',
   pvp: 'prf_pvp',
   lastDailyScore: 'prf_lastDailyScore',
 };
+
+// Deliberately outside KEYS: delete() wipes every KEYS entry on sign-out, but
+// the theme is a device preference, not profile data — it should survive that.
+const THEME_KEY = 'prf_themeMode';
 
 const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
 
@@ -230,11 +255,13 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   version: { db: 1.0, app: 2.0, profile: 1.0 },
   loaded: false,
   streak: 0,
+  bestStreak: 0,
   lastPlayDate: '',
   lastDailyCompletedDate: '',
   lastDailyScore: 0,
   country: '',
   pvp: EMPTY_PVP,
+  themeMode: 'dark',
 
   levels: [
     { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
@@ -244,15 +271,18 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   ],
 
   async load() {
+    // Independent of the uid branch below — a device preference, present (or
+    // not) regardless of whether a profile has ever been signed into.
+    const themeMode = await loadKey<ThemeMode>(THEME_KEY, 'dark');
     const uid = await loadKey<string>(KEYS.uid, '-1');
     if (uid === '-1') {
       const parts = makeDefaultParts();
       const seed = Math.floor(Math.random() * (QURAN_WORDS - 1));
-      set({ parts, lastSeed: seed, loaded: true });
+      set({ parts, lastSeed: seed, loaded: true, themeMode });
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, bestStreak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -264,12 +294,16 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<ProfileVersion>(KEYS.version, { db: 1, app: 2, profile: 1 }),
         loadKey<ProfileSocial>(KEYS.social, {}),
         loadKey<number>(KEYS.streak, 0),
+        loadKey<number>(KEYS.bestStreak, 0),
         loadKey<string>(KEYS.lastPlayDate, ''),
         loadKey<string>(KEYS.lastDailyCompletedDate, ''),
         loadKey<PvpRecord>(KEYS.pvp, EMPTY_PVP),
         loadKey<number>(KEYS.lastDailyScore, 0),
       ]);
-    set({ uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, loaded: true });
+    set({
+      uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
+      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, loaded: true, themeMode,
+    });
     return true;
   },
 
@@ -287,6 +321,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.version,        JSON.stringify(s.version)],
       [KEYS.social,         JSON.stringify(s.social)],
       [KEYS.streak,                    JSON.stringify(s.streak)],
+      [KEYS.bestStreak,                JSON.stringify(s.bestStreak)],
       [KEYS.lastPlayDate,              JSON.stringify(s.lastPlayDate)],
       [KEYS.lastDailyCompletedDate,     JSON.stringify(s.lastDailyCompletedDate)],
       [KEYS.pvp,                       JSON.stringify(s.pvp)],
@@ -321,7 +356,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       scores: [{ date: Date.now(), score: 0 }],
       parts: [],
       social: {},
-      streak: 0, lastPlayDate: '',
+      streak: 0, bestStreak: 0, lastPlayDate: '',
       lastDailyCompletedDate: '',
       pvp: EMPTY_PVP,
       lastDailyScore: 0,
@@ -341,12 +376,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   recordPlay() {
     const today = new Date().toISOString().split('T')[0];
-    const { lastPlayDate, streak } = get();
+    const { lastPlayDate, streak, bestStreak } = get();
     if (lastPlayDate === today) return;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     const newStreak = lastPlayDate === yesterday ? streak + 1 : 1;
-    set({ streak: newStreak, lastPlayDate: today });
+    const newBest = Math.max(bestStreak, newStreak);
+    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today });
     saveKey(KEYS.streak, newStreak);
+    saveKey(KEYS.bestStreak, newBest);
     saveKey(KEYS.lastPlayDate, today);
   },
 
@@ -361,6 +398,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   setCountry(code: string) {
     set({ country: code });
+  },
+
+  setThemeMode(mode: ThemeMode) {
+    set({ themeMode: mode });
+    saveKey(THEME_KEY, mode);
   },
 
   addPvpResult(outcome) {
