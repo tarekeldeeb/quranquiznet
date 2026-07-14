@@ -97,6 +97,41 @@ function injectHoverFix() {
 }
 injectHoverFix();
 
+// The sura-start line's ornamental frame is painted via a fixed black SVG
+// background-image (see quran-madina-html.css) — theme-blind, same class of
+// bug as the hover fix above. Left commented out in the library's own source
+// as an abandoned attempt (`f8698f8 Enhance Css for dark/light contexts`) at
+// exactly this: swapping the image from a background-image (fixed black
+// pixels) to a mask-image (an alpha stencil) painted with background-color:
+// currentColor instead. currentColor already carries the theme's ink color
+// this deep (see QuranText's own `color: colors.ink` on the wrapping node),
+// so this makes the frame automatically light-on-dark instead of a
+// near-invisible black smear on dark mode's near-black card background.
+// !important + re-declaring background-image guards against load-order races
+// with the library's own async-fetched stylesheet.
+const QMH_SURA_BORDER_FIX_CSS = `
+quran-madina-html-line:has(.quran-madina-html-sura-start) {
+  background-image: none !important;
+  background-color: currentColor !important;
+  -webkit-mask-image: url(${MADINA_BASE}assets/img/sura_border_sym4.svg) !important;
+  mask-image: url(${MADINA_BASE}assets/img/sura_border_sym4.svg) !important;
+  -webkit-mask-size: 95% 100% !important;
+  mask-size: 95% 100% !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+}
+`;
+function injectSuraBorderFix() {
+  if (typeof document === 'undefined' || document.getElementById('qmh-sura-border-fix')) return;
+  const el = document.createElement('style');
+  el.id = 'qmh-sura-border-fix';
+  el.textContent = QMH_SURA_BORDER_FIX_CSS;
+  document.head.appendChild(el);
+}
+injectSuraBorderFix();
+
 export default function QuranText({ sura, aya, words, hideTitle, style }: QuranTextProps) {
   const { colors } = useTheme();
   return (

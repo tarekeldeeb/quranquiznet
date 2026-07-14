@@ -13,8 +13,9 @@
       "backgroundColor": "#0d2d4e"
     },
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "net.quranquiz"
+      "supportsTablet": false,
+      "bundleIdentifier": "net.quranquiz",
+      "buildNumber": "1"
     },
     "android": {
       "adaptiveIcon": {

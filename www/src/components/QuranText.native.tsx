@@ -58,6 +58,26 @@ quran-madina-html {
   --qmh-background: ${paper};
 }
 quran-madina-html-header { display: none !important; }
+/* The sura-start line's ornamental frame is a fixed black SVG background-image
+   (see quran-madina-html.css) — theme-blind, same as the word text was before
+   this component set its own color above. Swapping it from a background-image
+   (fixed black pixels) to a mask-image (an alpha stencil) painted with
+   background-color: currentColor makes it inherit the ink color set on
+   html,body above, so it's light-on-dark instead of a near-invisible black
+   smear on a dark-mode card. See QuranText.web.tsx's mirror of this fix for
+   the library-side context (a commented-out WIP left in its own source). */
+quran-madina-html-line:has(.quran-madina-html-sura-start) {
+  background-image: none !important;
+  background-color: currentColor !important;
+  -webkit-mask-image: url(assets/img/sura_border_sym4.svg) !important;
+  mask-image: url(assets/img/sura_border_sym4.svg) !important;
+  -webkit-mask-size: 95% 100% !important;
+  mask-size: 95% 100% !important;
+  -webkit-mask-position: center !important;
+  mask-position: center !important;
+  -webkit-mask-repeat: no-repeat !important;
+  mask-repeat: no-repeat !important;
+}
 </style>
 <script>
 (function () {

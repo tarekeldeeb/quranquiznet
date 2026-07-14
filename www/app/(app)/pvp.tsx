@@ -128,6 +128,7 @@ export default function PvpScreen() {
   const opponentUnsubRef = useRef<(() => void) | null>(null);
   const resultUnsubRef = useRef<(() => void) | null>(null);
   const searchTickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const joinRetryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const disconnectGraceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const joinWatchdogRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const myQueueTsRef = useRef<number | null>(null);
@@ -156,6 +157,7 @@ export default function PvpScreen() {
     if (countdownRef.current) { clearInterval(countdownRef.current); countdownRef.current = null; }
     if (advanceRef.current) { clearTimeout(advanceRef.current); advanceRef.current = null; }
     if (searchTickRef.current) { clearInterval(searchTickRef.current); searchTickRef.current = null; }
+    if (joinRetryRef.current) { clearTimeout(joinRetryRef.current); joinRetryRef.current = null; }
     if (disconnectGraceTimerRef.current) { clearTimeout(disconnectGraceTimerRef.current); disconnectGraceTimerRef.current = null; }
     if (joinWatchdogRef.current) { clearTimeout(joinWatchdogRef.current); joinWatchdogRef.current = null; }
   }
@@ -174,6 +176,7 @@ export default function PvpScreen() {
     queueUnsubRef.current?.(); queueUnsubRef.current = null;
     ownEntryUnsubRef.current?.(); ownEntryUnsubRef.current = null;
     if (searchTickRef.current) { clearInterval(searchTickRef.current); searchTickRef.current = null; }
+    if (joinRetryRef.current) { clearTimeout(joinRetryRef.current); joinRetryRef.current = null; }
   }
 
   /** Tear down every RTDB listener/queue-entry for this screen. `forfeitIfLive`
@@ -275,6 +278,30 @@ export default function PvpScreen() {
 
   // ── Matchmaking (searching phase) ─────────────────────────────────────────
 
+  /** Writes our queue entry, retrying a couple of times before conceding. On
+   *  web, a fresh page load/refresh can mount this screen before Firebase
+   *  Auth has finished rehydrating its session (`app/index.tsx`'s auth-ready
+   *  gate isn't in the tree for a direct route load), so the very first write
+   *  can race an auth token that isn't attached to the RTDB connection yet
+   *  and come back PERMISSION_DENIED. Falling straight to the bot on that
+   *  would defeat the whole 15s search window every time it happens — retry
+   *  instead, and only give up once retries are exhausted or a match already
+   *  landed some other way. */
+  function attemptJoin(
+    uid: string,
+    entry: Omit<PvpQueueEntry, 'ts' | 'matchId'>,
+    attempt: number,
+  ) {
+    FB.joinPvpQueue(uid, entry)
+      .then((ts) => { myQueueTsRef.current = ts; })
+      .catch((e) => {
+        console.error('joinPvpQueue error:', e);
+        if (claimedRef.current) return;
+        if (attempt >= 2) { giveUpSearchAndUseBot(uid); return; }
+        joinRetryRef.current = setTimeout(() => attemptJoin(uid, entry, attempt + 1), 1500);
+      });
+  }
+
   function startSearch() {
     claimedRef.current = false;
     myQueueTsRef.current = null;
@@ -285,14 +312,13 @@ export default function PvpScreen() {
     const scope = scopeFromParts(profile.parts);
     const mine = { level: profile.level, scope };
 
-    FB.joinPvpQueue(uid, {
+    attemptJoin(uid, {
       name: profile.social.displayName?.split(' ')[0] || 'أنت',
       photoURL: profile.social.photoURL,
       country: profile.country || undefined,
       level: profile.level,
       scope,
-    }).then((ts) => { myQueueTsRef.current = ts; })
-      .catch((e) => { console.error('joinPvpQueue error:', e); giveUpSearchAndUseBot(uid); });
+    }, 0);
 
     queueUnsubRef.current = FB.watchPvpQueue((entries) => {
       if (claimedRef.current || myQueueTsRef.current === null) return;

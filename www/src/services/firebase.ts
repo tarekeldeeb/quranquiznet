@@ -456,7 +456,15 @@ export async function joinPvpQueue(
   const r = pvpQueueRef(uid);
   const ts = Date.now();
   await onDisconnect(r).remove();
-  await set(r, { ...entry, ts, matchId: null });
+  // Optional fields (photoURL/country) are frequently absent — e.g. guest
+  // accounts have no photoURL, and geo-detection may not have resolved yet.
+  // The RTDB SDK throws synchronously if `set()` is given any `undefined`
+  // nested value, which was silently aborting the whole 15s search.
+  const payload: Record<string, unknown> = { ...entry, ts, matchId: null };
+  for (const key of Object.keys(payload)) {
+    if (payload[key] === undefined) delete payload[key];
+  }
+  await set(r, payload);
   return ts;
 }
 
@@ -524,7 +532,12 @@ export async function writeMyPvpState(
   uid: string,
   patch: Partial<PvpPlayerState>,
 ): Promise<void> {
-  await update(pvpMatchPlayerRef(matchId, uid), patch);
+  // Same undefined-value hazard as joinPvpQueue — strip before writing.
+  const clean: Record<string, unknown> = { ...patch };
+  for (const key of Object.keys(clean)) {
+    if (clean[key] === undefined) delete clean[key];
+  }
+  await update(pvpMatchPlayerRef(matchId, uid), clean);
 }
 
 /** Best-effort, write-once: if the opponent's result already landed, the security
