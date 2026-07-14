@@ -1,6 +1,5 @@
 {
   "rules": {
-	".read": "auth != null",
     "users": {
       "$user_id": {
         ".read":  "$user_id === auth.uid",
@@ -17,6 +16,7 @@
         ".read":  "auth != null",
 	  },
 	  "head_submit": {
+		".read": "auth != null",
 		".write": "auth != null",
 		".indexOn": ["score"]
 	  },
@@ -26,8 +26,8 @@
     },
 	"pvp": {
 	  "queue": {
+	    ".read": "auth != null",
 	    "$uid": {
-	      ".read": "auth != null",
 	      ".write": "auth != null && auth.uid === $uid",
 	      "matchId": {
 	        ".write": "auth != null && data.val() === null && newData.val() !== null"
