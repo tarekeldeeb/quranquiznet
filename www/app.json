@@ -15,7 +15,10 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "1"
+      "buildNumber": "1",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
@@ -23,12 +26,13 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 11
+      "versionCode": 12
     },
     "web": {
       "bundler": "metro",
       "output": "static"
     },
+    "newArchEnabled": false,
     "plugins": [
       "expo-router",
       [
@@ -48,7 +52,8 @@
         "expo-build-properties",
         {
           "android": {
-            "targetSdkVersion": 35
+            "targetSdkVersion": 35,
+            "ndkVersion": "28.2.13676358"
           }
         }
       ],
@@ -61,6 +66,20 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "googleAuth": {
+        "iosClientId": "635224907527-h6m6o8kqoud1bcroammqlf97ip6t41lt.apps.googleusercontent.com",
+        "androidClientId": "635224907527-bqg6h4e8cpel7l9q14n2b084f71hch24.apps.googleusercontent.com",
+        "webClientId": "635224907527-bdic77p58a8tjkeuj96csup7tnoe870s.apps.googleusercontent.com"
+      },
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "5c3fe7d8-80ae-44cf-81d6-b65b253ae52f"
+      }
+    },
+    "owner": "tarekeldeeb"
   }
 }

@@ -16,7 +16,10 @@
     "production": {
       "ios": {
         "ascAppId": "6790435986",
-        "appleId": "tarekeldeeb@msn.com"
+        "appleId": "tarekeldeeb@msn.com",
+        "ascApiKeyPath": "/Users/tarek/.appstoreconnect/private_keys/AuthKey_L2PLHJ565P.p8",
+        "ascApiKeyId": "L2PLHJ565P",
+        "ascApiKeyIssuerId": "8864d41f-f7d9-474a-bdc4-289d262d4bf2"
       }
     }
   }
