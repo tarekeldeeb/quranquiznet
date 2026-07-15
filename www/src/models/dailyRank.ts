@@ -1,29 +1,57 @@
-// Post-win rank comparison — turns a raw leaderboard cohort + the user's own
-// daily score into a single human-readable line ("you're N points behind X",
-// or a celebration if nobody beat them). Pure/no framework deps so it's cheap
-// to unit test and reusable from both the daily-end modal and the me.tsx idle
-// "already done today" card.
+// Live rank comparison — turns today's actual (unbounded) standings + the
+// user's uid into a single human-readable line: an ordinal rank among
+// today's real participants, plus the point-gap to whoever's just ahead.
+// Pure/no framework deps so it's cheap to unit test and reusable from the
+// daily-end modal, the me.tsx idle "already done today" card, and the league
+// screen — all three read the same live cohort, so they never disagree.
 
 export interface LeaderboardEntry {
   name?: string;
-  score?: number;
+  score: number;
   uid?: string;
+  country?: string;
+}
+
+export interface RankedEntry extends LeaderboardEntry { rank: number }
+
+export interface OwnRank {
+  rank: number;
+  total: number;
+  entry: RankedEntry;
+  above: RankedEntry[];
+  below: RankedEntry[];
 }
 
 /**
- * Find the closest better score in `entries` and describe the gap. Returns
- * null when there's no usable data (empty cohort) so callers can hide the line
- * entirely instead of showing a hollow message.
+ * Find the signed-in user's position in a full, best-first-sorted standings
+ * list, plus their immediate neighbors above/below — so they see where they
+ * stand even when far outside the visible top 10.
  */
-export function describeRankGap(entries: LeaderboardEntry[], myScore: number): string | null {
-  if (!Array.isArray(entries) || entries.length === 0) return null;
-  const better = entries
-    .filter((e): e is Required<Pick<LeaderboardEntry, 'score'>> & LeaderboardEntry =>
-      typeof e?.score === 'number' && e.score > myScore)
-    .sort((a, b) => a.score - b.score);
-  if (better.length === 0) return 'أنت متقدم على الجميع اليوم! 🏆';
-  const target = better[0];
-  const diff = Math.max(1, Math.round((target.score - myScore) * 100) / 100);
-  const name = target.name?.trim() || 'زائر(ة)';
-  return `أنت متأخر ${diff} نقطة عن ${name} فقط`;
+export function findOwnRank(sorted: LeaderboardEntry[], uid: string | undefined, neighborCount = 2): OwnRank | null {
+  if (!uid) return null;
+  const ranked: RankedEntry[] = sorted.map((e, i) => ({ ...e, rank: i + 1 }));
+  const idx = ranked.findIndex((e) => e.uid === uid);
+  if (idx === -1) return null;
+  return {
+    rank: idx + 1,
+    total: ranked.length,
+    entry: ranked[idx],
+    above: ranked.slice(Math.max(0, idx - neighborCount), idx),
+    below: ranked.slice(idx + 1, idx + 1 + neighborCount),
+  };
+}
+
+/**
+ * Describe today's live rank as a single line, computed from the same
+ * standings the league screen's اليوم tab shows. Returns null when the user
+ * has no entry yet (cohort not loaded, or they haven't submitted today).
+ */
+export function describeLiveRank(sorted: LeaderboardEntry[], uid: string | undefined): string | null {
+  const own = findOwnRank(sorted, uid, 1);
+  if (!own) return null;
+  if (own.rank === 1) return 'أنت متقدم على الجميع اليوم! 🏆';
+  const better = own.above[own.above.length - 1];
+  const diff = Math.max(1, Math.round((better.score - own.entry.score) * 100) / 100);
+  const name = better.name?.trim() || 'زائر(ة)';
+  return `ترتيبك اليوم: #${own.rank} من ${own.total} — متأخر ${diff} نقطة عن ${name}`;
 }

@@ -4,25 +4,26 @@
     "slug": "quranquiznet",
     "version": "2.2.1",
     "orientation": "portrait",
-    "icon": "./assets/images/app-icon.png",
+    "icon": "./assets/images/icon.png",
     "scheme": "quranquiz",
-    "userInterfaceStyle": "light",
+    "userInterfaceStyle": "dark",
     "splash": {
-      "image": "./assets/images/app-icon.png",
+      "image": "./assets/images/splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#0d2d4e"
     },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "1",
+      "buildNumber": "3",
+      "appleTeamId": "FNSP52WBLF",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/app-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",

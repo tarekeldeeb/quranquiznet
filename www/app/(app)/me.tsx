@@ -8,14 +8,14 @@ import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
-  signInGoogle, signInFacebook, getDailyHead, getComparisonReport, type DailyHead,
+  signInGoogle, signInFacebook, getDailyHead, getTodayStandings, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
-import { describeRankGap } from '../../src/models/dailyRank';
+import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
@@ -291,8 +291,9 @@ export default function MeScreen() {
     scheduleDailyReminder(nextAt);
   }, [dailyHead, profile.lastDailyCompletedDate]);
 
-  // Once today's daily quiz is done, fetch a rank-comparison line against
-  // yesterday's/this-month's leaderboard (best-effort; hidden if unavailable).
+  // Once today's daily quiz is done, fetch a live rank-comparison line against
+  // today's actual participants — the same cohort the league screen's اليوم tab
+  // shows, so the two never disagree (best-effort; hidden if unavailable).
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
     if (profile.lastDailyCompletedDate !== today || !profile.lastDailyScore) {
@@ -300,11 +301,11 @@ export default function MeScreen() {
       return;
     }
     let cancelled = false;
-    getComparisonReport()
-      .then((entries) => { if (!cancelled) setDailyRankLine(describeRankGap(entries as never[], profile.lastDailyScore)); })
+    getTodayStandings()
+      .then((entries) => { if (!cancelled) setDailyRankLine(describeLiveRank(entries, profile.uid)); })
       .catch(() => { if (!cancelled) setDailyRankLine(null); });
     return () => { cancelled = true; };
-  }, [profile.lastDailyCompletedDate, profile.lastDailyScore]);
+  }, [profile.lastDailyCompletedDate, profile.lastDailyScore, profile.uid]);
 
   // Prompt a guest once to pick a nickname instead of the generic "زائر(ة)" on
   // the leaderboard — auto-shown the first time they land here still on the

@@ -278,27 +278,27 @@ export default function PvpScreen() {
 
   // ── Matchmaking (searching phase) ─────────────────────────────────────────
 
-  /** Writes our queue entry, retrying a couple of times before conceding. On
-   *  web, a fresh page load/refresh can mount this screen before Firebase
-   *  Auth has finished rehydrating its session (`app/index.tsx`'s auth-ready
-   *  gate isn't in the tree for a direct route load), so the very first write
-   *  can race an auth token that isn't attached to the RTDB connection yet
-   *  and come back PERMISSION_DENIED. Falling straight to the bot on that
-   *  would defeat the whole 15s search window every time it happens — retry
-   *  instead, and only give up once retries are exhausted or a match already
-   *  landed some other way. */
+  /** Writes our queue entry, retrying every 1.5s until it lands. On web, a
+   *  fresh page load/refresh can mount this screen before Firebase Auth has
+   *  finished rehydrating its session (`app/index.tsx`'s auth-ready gate
+   *  isn't in the tree for a direct route load), so early writes can race an
+   *  auth token that isn't attached to the RTDB connection yet and come back
+   *  PERMISSION_DENIED. On some devices (e.g. iPhone Safari on a cold
+   *  reload) that handshake can take several seconds — a fixed retry cap
+   *  was falling back to the bot well before the visible 15s countdown
+   *  reached zero. There's no cap here: the 15s searchTick (startSearch) is
+   *  the sole authority for giving up, and it clears joinRetryRef via
+   *  stopSearchListeners when it does, so retries stop right along with it. */
   function attemptJoin(
     uid: string,
     entry: Omit<PvpQueueEntry, 'ts' | 'matchId'>,
-    attempt: number,
   ) {
     FB.joinPvpQueue(uid, entry)
       .then((ts) => { myQueueTsRef.current = ts; })
       .catch((e) => {
         console.error('joinPvpQueue error:', e);
         if (claimedRef.current) return;
-        if (attempt >= 2) { giveUpSearchAndUseBot(uid); return; }
-        joinRetryRef.current = setTimeout(() => attemptJoin(uid, entry, attempt + 1), 1500);
+        joinRetryRef.current = setTimeout(() => attemptJoin(uid, entry), 1500);
       });
   }
 
@@ -318,7 +318,7 @@ export default function PvpScreen() {
       country: profile.country || undefined,
       level: profile.level,
       scope,
-    }, 0);
+    });
 
     queueUnsubRef.current = FB.watchPvpQueue((entries) => {
       if (claimedRef.current || myQueueTsRef.current === null) return;

@@ -364,16 +364,6 @@ export async function getMonthlyTopReport(): Promise<unknown[]> {
   }
 }
 
-// A leaderboard cohort for the post-quiz rank comparison: prefer yesterday's
-// top scores (the most recent, most relevant cohort); fall back to this
-// month's top when yesterday's report is empty (e.g. before the first
-// rotation, or on a fresh install of this feature).
-export async function getComparisonReport(): Promise<unknown[]> {
-  const yday = await getYesterdayReport();
-  if (Array.isArray(yday) && yday.length > 0) return yday;
-  return getMonthlyTopReport();
-}
-
 export interface LeaderboardEntry { name?: string; score: number; uid?: string; country?: string }
 
 /**
@@ -420,6 +410,19 @@ export function subscribeTodayStandings(cb: (entries: LeaderboardEntry[]) => voi
     },
     () => cb([]),
   );
+}
+
+/** One-shot read of today's live standings — see subscribeTodayStandings. */
+export async function getTodayStandings(): Promise<LeaderboardEntry[]> {
+  try {
+    const snap = await dbGet(ref(getFirebaseDb(), '/daily/head_submit'));
+    const val = snap.val() as Record<string, LeaderboardEntry> | null;
+    const list = val ? Object.values(val) : [];
+    list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+    return list;
+  } catch {
+    return [];
+  }
 }
 
 export async function reportQuestion(card: unknown): Promise<void> {

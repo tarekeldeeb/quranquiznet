@@ -68,6 +68,10 @@ module.exports = ({ config }) => {
 
   return {
     ...config,
+    plugins: [
+      ...(config.plugins || []),
+      './plugins/withFmtConstevalFix',
+    ],
     ios: {
       ...config.ios,
       infoPlist: {

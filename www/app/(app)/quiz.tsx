@@ -31,7 +31,7 @@ import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
   shouldShowSummary, shouldRestoreNormalRunAfterDaily,
 } from '../../src/models/quizFlow';
-import { describeRankGap } from '../../src/models/dailyRank';
+import { describeLiveRank } from '../../src/models/dailyRank';
 import { detectMilestones } from '../../src/models/milestones';
 import { hapticCorrect, hapticIncorrect } from '../../src/services/haptics';
 import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
@@ -142,8 +142,9 @@ export default function QuizScreen() {
   const [reportMsg, setReportMsg] = useState('');
   const [dailyEndVisible, setDailyEndVisible] = useState(false);
   const [dailyFinalScore, setDailyFinalScore] = useState(0);
-  // Post-win engagement: a rank-comparison line against yesterday's/this-month's
-  // leaderboard, fetched once the daily quiz ends (null while loading/unavailable).
+  // Post-win engagement: a live rank-comparison line against today's actual
+  // participants (the same cohort the league screen's اليوم tab shows), fetched
+  // once the daily quiz ends (null while loading/unavailable).
   const [dailyRankLine, setDailyRankLine] = useState<string | null>(null);
   // Non-blocking "today's quiz is ready" banner — set by checkForDailyQuiz(),
   // shown above the cards, dismissed by the user tapping either action.
@@ -819,10 +820,11 @@ export default function QuizScreen() {
       time_sec: Math.round(dailyTimeRef.current / 1000),
     });
     setDailyEndVisible(true);
-    // Best-effort rank comparison — submitted after the score post so the fresh
-    // result has a chance of being reflected; falls back gracefully if not.
-    FB.getComparisonReport()
-      .then((entries) => setDailyRankLine(describeRankGap(entries as never[], finalScore)))
+    // Best-effort rank comparison against today's live standings — read after
+    // the score post so the fresh submission is included; falls back gracefully
+    // if not (e.g. RTDB replication lag or a network hiccup).
+    FB.getTodayStandings()
+      .then((entries) => setDailyRankLine(describeLiveRank(entries, profile.uid)))
       .catch(() => setDailyRankLine(null));
   }
 

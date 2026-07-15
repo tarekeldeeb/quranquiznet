@@ -10,6 +10,7 @@ import {
   getDailyHead, subscribeYesterdayReport, subscribeMonthlyTopReport, subscribeTodayStandings,
   type DailyHead, type LeaderboardEntry,
 } from '../../src/services/firebase';
+import { findOwnRank, type RankedEntry } from '../../src/models/dailyRank';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { flagEmoji } from '../../src/models/constants';
@@ -21,25 +22,6 @@ type Status = 'loading' | 'available' | 'empty' | 'error';
 
 const MEDAL = ['🥇', '🥈', '🥉'];
 const PODIUM_TINTS = ['#c8973a', '#8a99a8', '#b06a3a']; // gold / silver / bronze accents
-
-interface RankedEntry extends LeaderboardEntry { rank: number }
-interface OwnRank { rank: number; entry: RankedEntry; above: RankedEntry[]; below: RankedEntry[] }
-
-// Find the signed-in user's position in a full, best-first-sorted standings
-// list, plus their 1-2 immediate neighbors above/below — so they see where
-// they stand even when far outside the visible top 10.
-function findOwnRank(sorted: LeaderboardEntry[], uid: string | undefined, neighborCount = 2): OwnRank | null {
-  if (!uid) return null;
-  const ranked: RankedEntry[] = sorted.map((e, i) => ({ ...e, rank: i + 1 }));
-  const idx = ranked.findIndex((e) => e.uid === uid);
-  if (idx === -1) return null;
-  return {
-    rank: idx + 1,
-    entry: ranked[idx],
-    above: ranked.slice(Math.max(0, idx - neighborCount), idx),
-    below: ranked.slice(idx + 1, idx + 1 + neighborCount),
-  };
-}
 
 /** First-letter circle avatar — leaderboard entries carry no photo. */
 function InitialAvatar({ name, size, tint, colors }: { name: string; size: number; tint?: string; colors: ReturnType<typeof useTheme>['colors'] }) {
@@ -277,7 +259,7 @@ export default function LeagueScreen() {
                 <View style={s.podium}>
                   {[1, 0, 2].map((i) => {
                     const e = podium[i];
-                    const heights = [64, 84, 52]; // second, first, third
+                    const heights = [84, 64, 52]; // first, second, third
                     return (
                       <View key={i} style={s.podCol}>
                         <InitialAvatar name={e.name ?? '؟'} size={i === 0 ? 52 : 44} tint={PODIUM_TINTS[i]} colors={colors} />
