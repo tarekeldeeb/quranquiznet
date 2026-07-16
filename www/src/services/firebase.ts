@@ -206,6 +206,7 @@ async function nativeSocialSignIn(kind: SocialKind): Promise<User | null> {
   // Lazy require so the native-only OAuth code (and its expo-auth-session deps,
   // whose module side-effects run on load) is never executed on web. The `import
   // type` keeps this fully typed without a runtime ESM import.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
   const oauth = require('./nativeOAuth') as typeof import('./nativeOAuth');
   const auth = getFirebaseAuth();
   const credential = await oauth.acquireCredential(kind);

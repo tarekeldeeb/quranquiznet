@@ -24,7 +24,7 @@ import {
   BOT_NAME, BOT_EMOJI, MatchPlan, BotTimeline, BotProgress, PvpOutcome,
   scopeFromParts, makeMatchPlan, makeBotTimeline, botProgressAt,
   decideOutcome, newMatchSeed,
-  intersectScope, isCompatibleCandidate, mayClaim,
+  intersectScope, isCompatibleCandidate, mayClaim, commonLevel,
   PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult, MatchScopePart,
 } from '../../src/services/pvpService';
 import { Avatar } from '../../src/components/Avatar';
@@ -292,13 +292,14 @@ export default function PvpScreen() {
   function attemptJoin(
     uid: string,
     entry: Omit<PvpQueueEntry, 'ts' | 'matchId'>,
+    onJoined: () => void,
   ) {
     FB.joinPvpQueue(uid, entry)
-      .then((ts) => { myQueueTsRef.current = ts; })
+      .then((ts) => { myQueueTsRef.current = ts; onJoined(); })
       .catch((e) => {
         console.error('joinPvpQueue error:', e);
         if (claimedRef.current) return;
-        joinRetryRef.current = setTimeout(() => attemptJoin(uid, entry), 1500);
+        joinRetryRef.current = setTimeout(() => attemptJoin(uid, entry, onJoined), 1500);
       });
   }
 
@@ -312,18 +313,15 @@ export default function PvpScreen() {
     const scope = scopeFromParts(profile.parts);
     const mine = { level: profile.level, scope };
 
-    attemptJoin(uid, {
-      name: profile.social.displayName?.split(' ')[0] || 'أنت',
-      photoURL: profile.social.photoURL,
-      country: profile.country || undefined,
-      level: profile.level,
-      scope,
-    });
-
-    queueUnsubRef.current = FB.watchPvpQueue((entries) => {
+    // Queue events that arrive before our own join is acked are skipped
+    // (myQueueTsRef is still null) — and with two players quietly waiting the
+    // queue never fires again, so the join ack must re-run the evaluation
+    // itself over the latest snapshot or both sides deadlock into the bot.
+    let latestEntries: Record<string, PvpQueueEntry> = {};
+    const tryMatch = () => {
       if (claimedRef.current || myQueueTsRef.current === null) return;
       const mineTs = myQueueTsRef.current;
-      for (const [candidateUid, candidate] of Object.entries(entries)) {
+      for (const [candidateUid, candidate] of Object.entries(latestEntries)) {
         if (candidateUid === uid) continue;
         if (!isCompatibleCandidate(mine, candidate, Date.now())) continue;
         if (!mayClaim({ ts: mineTs, uid }, { ts: candidate.ts, uid: candidateUid })) continue;
@@ -331,6 +329,19 @@ export default function PvpScreen() {
         attemptClaim(uid, mine, candidateUid, candidate);
         break;
       }
+    };
+
+    attemptJoin(uid, {
+      name: profile.social.displayName?.split(' ')[0] || 'أنت',
+      photoURL: profile.social.photoURL,
+      country: profile.country || undefined,
+      level: profile.level,
+      scope,
+    }, tryMatch);
+
+    queueUnsubRef.current = FB.watchPvpQueue((entries) => {
+      latestEntries = entries;
+      tryMatch();
     });
 
     ownEntryUnsubRef.current = FB.watchOwnQueueEntry(uid, (entry) => {
@@ -375,17 +386,14 @@ export default function PvpScreen() {
     candidate: PvpQueueEntry,
   ) {
     const matchId = `${uid}_${candidateUid}_${Date.now()}`;
-    let won = false;
-    try { won = await FB.claimMatch(candidateUid, matchId); } catch { won = false; }
-    if (!won) {
-      claimedRef.current = false; // still searching — another candidate may work
-      return;
-    }
-    stopSearchListeners();
+    // The match doc must exist BEFORE the claim lands: the claimed side does a
+    // one-shot meta read the moment it sees matchId on its queue entry, and
+    // reading before this client's meta write arrived sent it to the bot. An
+    // orphaned doc from a lost claim race is inert (matchId is unique per attempt).
     const meta: PvpMatchMeta = {
       seed: newMatchSeed(),
-      level: mine.level,
-      scope: intersectScope(mine.scope, candidate.scope),
+      level: commonLevel(mine.level, candidate.level),
+      scope: intersectScope(mine.scope, candidate.scope ?? []),
       rounds: PVP_ROUNDS,
       createdAt: Date.now(),
       creator: uid,
@@ -394,10 +402,16 @@ export default function PvpScreen() {
       await FB.createPvpMatch(matchId, meta);
     } catch (e) {
       console.error('createPvpMatch error:', e);
-      claimedRef.current = false;
-      giveUpSearchAndUseBot(uid);
+      claimedRef.current = false; // keep searching; the 15s tick still bots out
       return;
     }
+    let won = false;
+    try { won = await FB.claimMatch(candidateUid, matchId); } catch { won = false; }
+    if (!won) {
+      claimedRef.current = false; // still searching — another candidate may work
+      return;
+    }
+    stopSearchListeners();
     await FB.leavePvpQueue(uid).catch(() => {});
     enterLiveMatch(matchId, candidateUid, {
       name: candidate.name, photoURL: candidate.photoURL, country: candidate.country,

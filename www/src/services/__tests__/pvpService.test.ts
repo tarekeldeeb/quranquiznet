@@ -9,7 +9,7 @@
 import {
   PVP_QUESTIONS, PVP_ROUNDS, MIN_SCOPE_WORDS, QUEUE_FRESHNESS_MS,
   scopeFromParts, makeMatchPlan, makeBotTimeline, botProgressAt, decideOutcome,
-  intersectScope, totalScopeWords, isCompatibleCandidate, mayClaim,
+  intersectScope, totalScopeWords, isCompatibleCandidate, mayClaim, commonLevel,
   MatchScopePart, PvpQueueEntry,
 } from '../pvpService';
 import type { StudyPart } from '../../stores/profileStore';
@@ -119,9 +119,11 @@ describe('decideOutcome', () => {
 
 // ─── Live matchmaking (Phase 2) ────────────────────────────────────────────────
 
+// Mirrors an entry as READ BACK from RTDB: no matchId key at all — RTDB never
+// stores the null we write, so an unclaimed entry comes back with the key absent.
 function queueEntry(overrides: Partial<PvpQueueEntry> = {}): PvpQueueEntry {
   return {
-    name: 'صديق', level: 1, scope: SCOPE, ts: Date.now(), matchId: null,
+    name: 'صديق', level: 1, scope: SCOPE, ts: Date.now(),
     ...overrides,
   };
 }
@@ -154,9 +156,9 @@ describe('isCompatibleCandidate', () => {
     expect(isCompatibleCandidate(mine, c, now)).toBe(false);
   });
 
-  it('rejects a different level', () => {
+  it('accepts a different level — the match runs at the lower of the two', () => {
     const c = queueEntry({ level: 2, ts: now });
-    expect(isCompatibleCandidate(mine, c, now)).toBe(false);
+    expect(isCompatibleCandidate(mine, c, now)).toBe(true);
   });
 
   it('rejects a stale queue entry', () => {
@@ -172,6 +174,25 @@ describe('isCompatibleCandidate', () => {
   it('accepts a fresh, same-level candidate with enough overlap', () => {
     const c = queueEntry({ ts: now });
     expect(isCompatibleCandidate(mine, c, now)).toBe(true);
+  });
+
+  it('treats a missing matchId as unclaimed — RTDB never stores the null we write', () => {
+    const c = queueEntry({ ts: now });
+    expect('matchId' in c).toBe(false);
+    expect(isCompatibleCandidate(mine, c, now)).toBe(true);
+  });
+
+  it('rejects (not crashes on) an entry with no scope — RTDB stores an empty array as nothing', () => {
+    const c = queueEntry({ ts: now, scope: undefined });
+    expect(isCompatibleCandidate(mine, c, now)).toBe(false);
+  });
+});
+
+describe('commonLevel', () => {
+  it('runs a cross-level match at the easier (lower) level, either direction', () => {
+    expect(commonLevel(1, 3)).toBe(1);
+    expect(commonLevel(3, 1)).toBe(1);
+    expect(commonLevel(2, 2)).toBe(2);
   });
 });
 

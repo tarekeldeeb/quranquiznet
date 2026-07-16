@@ -1,7 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   View, Text, Image, StyleSheet, ScrollView,
-  Alert, ActivityIndicator, Modal, Animated, Platform, Share, TextInput,
+  Alert, ActivityIndicator, Modal, Platform, Share, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
@@ -20,11 +20,6 @@ import { getRankInfo, getRankLadder } from '../../src/models/rank';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
-
-// react-native-web has no native animation driver (RCTAnimation is a native-only
-// module) — passing useNativeDriver: NATIVE_DRIVER there is a no-op that also spams the
-// console every frame, so only ask for it off-web.
-const NATIVE_DRIVER = Platform.OS !== 'web';
 
 const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
 // Matches notifications.ts's STREAK_REMINDER_HOUR — "tonight" starts at the
@@ -374,12 +369,6 @@ export default function MeScreen() {
         url: 'https://quranquiz.net',
       });
     } catch { /* ignore */ }
-  }
-
-  function practiceWeakestSura() {
-    const weak = profile.getWeakCheckedParts(1)[0];
-    if (!weak) return;
-    router.push({ pathname: '/(app)/quiz', params: { customPart: String(weak.index), nonce: String(Date.now()) } });
   }
 
   async function upgradeGuest(provider: 'google' | 'facebook') {

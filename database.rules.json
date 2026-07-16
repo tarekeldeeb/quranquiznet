@@ -27,6 +27,7 @@
 	"pvp": {
 	  "queue": {
 	    ".read": "auth != null",
+	    ".indexOn": ["ts"],
 	    "$uid": {
 	      ".write": "auth != null && auth.uid === $uid",
 	      "matchId": {
@@ -35,6 +36,7 @@
 	    }
 	  },
 	  "matches": {
+	    ".indexOn": ["meta/createdAt"],
 	    "$matchId": {
 	      ".read": "auth != null",
 	      "meta":    { ".write": "auth != null && !data.exists()" },

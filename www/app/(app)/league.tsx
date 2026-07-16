@@ -248,9 +248,18 @@ export default function LeagueScreen() {
             <View style={s.emptyWrap}>
               <Ionicons name="trophy-outline" size={30} color={colors.inkSoft} />
               <Text style={[s.emptyTitle, { color: colors.ink }]}>كن أول المتصدرين {tab === 'month' ? 'هذا الشهر' : 'اليوم'}</Text>
-              <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}>
-                <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
-              </PressScale>
+              {/* Only daily-quiz scores feed the league, so the CTA starts
+                  today's quiz whenever it's startable; a plain practice quiz
+                  is the fallback (daily done, unpublished, or still loading). */}
+              {status === 'available' && !dailyDone ? (
+                <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={startDaily}>
+                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختبار اليوم</Text>
+                </PressScale>
+              ) : (
+                <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}>
+                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
+                </PressScale>
+              )}
             </View>
           ) : (
             <>

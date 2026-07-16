@@ -22,6 +22,7 @@ exports.dailysched = onSchedule('every 24 hours', async () => {
 exports.weeklysched = onSchedule('every 168 hours', async () => {
   logger.log(':::: WeeklyJobs ::::');
   await removeAnonymous();
+  await purgePvp();
 });
 
 function dailyQuiz() {
@@ -66,6 +67,45 @@ function dailyQuiz() {
       // Clear submissions
       await admin.database().ref('daily/head_submit').remove();
     });
+}
+
+// ── PvP hygiene ─────────────────────────────────────────────────────────────
+// Matches: clients never delete match docs, and a lost matchmaking claim race
+// leaves an orphaned one (the claimer must create the doc before the claim can
+// fail) — purge anything older than 7 days.
+// Queue: onDisconnect() normally removes a searcher's entry, but a crashed
+// client can leak one forever (searchers already ignore entries older than 60s).
+const PVP_MATCH_MAX_AGE_MS = 7 * 24 * 3600 * 1000;
+const PVP_QUEUE_MAX_AGE_MS = 24 * 3600 * 1000;
+
+async function purgePvp() {
+  const db = admin.database();
+  const now = Date.now();
+
+  // endAt also matches docs with no createdAt at all (null sorts first) —
+  // exactly the malformed leftovers a purge should sweep.
+  const staleMatches = await db.ref('pvp/matches')
+    .orderByChild('meta/createdAt')
+    .endAt(now - PVP_MATCH_MAX_AGE_MS)
+    .once('value');
+  const matchDeletes = {};
+  staleMatches.forEach(function (m) { matchDeletes[m.key] = null; });
+  if (Object.keys(matchDeletes).length > 0) {
+    await db.ref('pvp/matches').update(matchDeletes);
+  }
+
+  const staleQueue = await db.ref('pvp/queue')
+    .orderByChild('ts')
+    .endAt(now - PVP_QUEUE_MAX_AGE_MS)
+    .once('value');
+  const queueDeletes = {};
+  staleQueue.forEach(function (q) { queueDeletes[q.key] = null; });
+  if (Object.keys(queueDeletes).length > 0) {
+    await db.ref('pvp/queue').update(queueDeletes);
+  }
+
+  logger.log('PvP purge: removed ' + Object.keys(matchDeletes).length + ' matches, '
+    + Object.keys(queueDeletes).length + ' queue entries');
 }
 
 function removeAnonymous() {

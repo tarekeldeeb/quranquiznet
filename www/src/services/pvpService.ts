@@ -201,9 +201,13 @@ export interface PvpQueueEntry {
   photoURL?: string;
   country?: string;
   level: number;
-  scope: MatchScopePart[];
+  /** Absent when the player had no checked parts — RTDB stores an empty array
+   *  as nothing at all. */
+  scope?: MatchScopePart[];
   ts: number;
-  matchId: string | null;
+  /** Written by a claimer. RTDB never stores nulls, so an unclaimed entry reads
+   *  back with this key absent — never a literal null. */
+  matchId?: string;
 }
 
 export interface PvpMatchMeta {
@@ -233,16 +237,26 @@ export interface PvpMatchResult {
   reason: 'score' | 'forfeit';
 }
 
-/** Is `candidate` a viable live opponent for a player with `mine`'s level/scope? */
+/** Level of a cross-level match: the easier (lower) of the two, so the weaker
+ *  player isn't forced above their level. Both clients derive questions from
+ *  this shared value (it lands in the match meta), never their own level. */
+export function commonLevel(a: number, b: number): number {
+  return Math.min(a, b);
+}
+
+/** Is `candidate` a viable live opponent for a player with `mine`'s scope?
+ *  Levels don't need to match — a cross-level match runs at commonLevel(). */
 export function isCompatibleCandidate(
   mine: { level: number; scope: MatchScopePart[] },
   candidate: PvpQueueEntry,
   nowMs: number,
 ): boolean {
-  if (candidate.matchId !== null) return false;
-  if (candidate.level !== mine.level) return false;
+  // != null on purpose: we write matchId as null, but RTDB drops nulls, so an
+  // unclaimed entry reads back with the key absent (undefined). A strict
+  // !== null here rejected every real candidate and no live match ever formed.
+  if (candidate.matchId != null) return false;
   if (nowMs - candidate.ts > QUEUE_FRESHNESS_MS) return false;
-  return totalScopeWords(intersectScope(mine.scope, candidate.scope)) >= MIN_SCOPE_WORDS;
+  return totalScopeWords(intersectScope(mine.scope, candidate.scope ?? [])) >= MIN_SCOPE_WORDS;
 }
 
 /** Anti-race claim rule: legal only against an entry strictly "older" than mine

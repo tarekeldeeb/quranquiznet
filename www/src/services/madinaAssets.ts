@@ -9,7 +9,6 @@ import { Platform } from 'react-native';
 import * as FileSystem from 'expo-file-system';
 import { Asset } from 'expo-asset';
 import { unzipSync, strFromU8 } from 'fflate';
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const pkg = require('../../package.json') as { dependencies: Record<string, string> };
 
 const BASE_DIR = `${FileSystem.documentDirectory}quran-madina/`;
