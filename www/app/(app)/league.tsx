@@ -1,7 +1,7 @@
-import { useEffect, useState, useCallback } from 'react';
+import { Fragment, useEffect, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, ScrollView,
-  ActivityIndicator, Alert, FlatList, Platform,
+  ActivityIndicator, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
@@ -273,13 +273,15 @@ export default function LeagueScreen() {
                   })}
                 </View>
               )}
-              <FlatList
-                data={rest}
-                keyExtractor={(_, i) => String(i)}
-                renderItem={renderRow}
-                scrollEnabled={false}
-                ItemSeparatorComponent={() => <View style={[s.sep, { backgroundColor: colors.line }]} />}
-              />
+              {/* Plain rows, not a FlatList: a disabled nested list gets
+                  touch-action:none on web, which blocked iOS Safari from
+                  panning the page ScrollView for touches starting on it. */}
+              {rest.map((item, index) => (
+                <Fragment key={index}>
+                  {index > 0 && <View style={[s.sep, { backgroundColor: colors.line }]} />}
+                  {renderRow({ item, index })}
+                </Fragment>
+              ))}
             </>
           )}
         </View>
