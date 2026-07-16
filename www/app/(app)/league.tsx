@@ -256,7 +256,7 @@ export default function LeagueScreen() {
                   <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختبار اليوم</Text>
                 </PressScale>
               ) : (
-                <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}>
+                <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={startDaily}>
                   <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
                 </PressScale>
               )}
