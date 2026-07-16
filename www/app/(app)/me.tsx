@@ -727,8 +727,9 @@ const s = StyleSheet.create({
   rankTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
   rankTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
   rankNext: { fontSize: 12, flexShrink: 1, textAlign: 'left' },
-  rankTrack: { height: 6, borderRadius: 3, overflow: 'hidden' },
-  rankFill: { height: 6, borderRadius: 3 },
+  // RTL: the fill grows from the right edge (app convention).
+  rankTrack: { height: 6, borderRadius: 3, overflow: 'hidden', position: 'relative' },
+  rankFill: { position: 'absolute', top: 0, bottom: 0, right: 0, borderRadius: 3 },
 
   // Rank ladder sheet
   rankList: { gap: 8, marginTop: 12 },
