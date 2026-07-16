@@ -8,7 +8,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
 import { initDb } from '../src/db/initDb';
 import { initMadinaAssets } from '../src/services/madinaAssets';
-import { getFirebaseApp } from '../src/services/firebase';
+import { getFirebaseApp, flushPendingDailySubmit } from '../src/services/firebase';
 import { configureNotifications } from '../src/services/notifications';
 import { useProfileStore } from '../src/stores/profileStore';
 import { Analytics } from '../src/components/Analytics';
@@ -153,6 +153,10 @@ export default function RootLayout() {
   useEffect(() => {
     (async () => {
       await loadProfile();
+      // Best-effort retry of a daily-quiz submission that didn't confirm last
+      // time (see endDailyQuiz in quiz.tsx) — fire-and-forget, must not block
+      // startup on network.
+      flushPendingDailySubmit().catch(() => {});
       // initDb and initMadinaAssets are independent (different storage, no
       // shared state), so run them together instead of stacking their latency.
       await Promise.all([

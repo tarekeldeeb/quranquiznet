@@ -53,6 +53,18 @@ export interface PvpRecord {
   draws: number;
 }
 
+// A daily-quiz submission that reached endDailyQuiz() but hasn't yet been
+// confirmed written to /daily/head_submit (the in-session retries in
+// submitDailyResultWithRetry all failed) — persisted so a later app open or
+// quiz-screen visit can retry it instead of silently losing the score.
+export interface DailySubmitPayload {
+  score: number;
+  name: string;
+  uid: string;
+  country?: string;
+  date: string; // 'YYYY-MM-DD' this submission was for
+}
+
 export interface QORef {
   level: number;
   qType: { id: number; score: number };
@@ -163,6 +175,7 @@ interface ProfileState {
   lastPlayDate: string;
   lastDailyCompletedDate: string;   // 'YYYY-MM-DD' of the last completed daily quiz
   lastDailyScore: number;           // the graded score (0-100) from that completed daily quiz
+  pendingDailySubmit: DailySubmitPayload | null; // completed today, not yet confirmed written
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
   pvp: PvpRecord;                   // 1v1 win/loss/draw record (trophies)
   // Device/UI preference, not user data — stored under its own key (see
@@ -183,6 +196,7 @@ interface ProfileState {
   addIncorrect(qo: QORef): Promise<void>;
   recordPlay(): void;
   markDailyCompleted(score?: number): void;
+  setPendingDailySubmit(payload: DailySubmitPayload | null): void;
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
   setThemeMode(mode: ThemeMode): void;
@@ -225,6 +239,7 @@ const KEYS = {
   lastDailyCompletedDate: 'prf_lastDailyDate',
   pvp: 'prf_pvp',
   lastDailyScore: 'prf_lastDailyScore',
+  pendingDailySubmit: 'prf_pendingDailySubmit',
 };
 
 // Deliberately outside KEYS: delete() wipes every KEYS entry on sign-out, but
@@ -259,6 +274,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   lastPlayDate: '',
   lastDailyCompletedDate: '',
   lastDailyScore: 0,
+  pendingDailySubmit: null,
   country: '',
   pvp: EMPTY_PVP,
   themeMode: 'dark',
@@ -282,7 +298,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, bestStreak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, bestStreak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -299,10 +315,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<string>(KEYS.lastDailyCompletedDate, ''),
         loadKey<PvpRecord>(KEYS.pvp, EMPTY_PVP),
         loadKey<number>(KEYS.lastDailyScore, 0),
+        loadKey<DailySubmitPayload | null>(KEYS.pendingDailySubmit, null),
       ]);
     set({
       uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
-      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, loaded: true, themeMode,
+      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit, loaded: true, themeMode,
     });
     return true;
   },
@@ -326,6 +343,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.lastDailyCompletedDate,     JSON.stringify(s.lastDailyCompletedDate)],
       [KEYS.pvp,                       JSON.stringify(s.pvp)],
       [KEYS.lastDailyScore,            JSON.stringify(s.lastDailyScore)],
+      [KEYS.pendingDailySubmit,        JSON.stringify(s.pendingDailySubmit)],
     ]);
   },
 
@@ -360,6 +378,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       lastDailyCompletedDate: '',
       pvp: EMPTY_PVP,
       lastDailyScore: 0,
+      pendingDailySubmit: null,
       loaded: false,
     });
   },
@@ -394,6 +413,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     set(patch);
     saveKey(KEYS.lastDailyCompletedDate, today);
     if (score !== undefined) saveKey(KEYS.lastDailyScore, score);
+  },
+
+  setPendingDailySubmit(payload) {
+    set({ pendingDailySubmit: payload });
+    saveKey(KEYS.pendingDailySubmit, payload);
   },
 
   setCountry(code: string) {

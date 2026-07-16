@@ -36,7 +36,9 @@ jest.mock('../../../src/services/questionnaireService', () => {
 
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: jest.fn(() => Promise.resolve(null)),
-  submitDailyResult: jest.fn(() => Promise.resolve()),
+  submitDailyResultWithRetry: jest.fn(() => Promise.resolve(true)),
+  getTodayStandings: jest.fn(() => Promise.resolve([])),
+  flushPendingDailySubmit: jest.fn(() => Promise.resolve()),
   reportQuestion: jest.fn(() => Promise.resolve()),
 }));
 

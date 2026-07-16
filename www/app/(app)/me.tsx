@@ -363,9 +363,16 @@ export default function MeScreen() {
   }
 
   async function shareScore() {
+    // A submission still pending confirmation hasn't updated lastDailyScore
+    // yet (see endDailyQuiz in quiz.tsx) — fall back to the pending payload's
+    // score so a share right after finishing shows today's actual result.
+    const today = new Date().toISOString().split('T')[0];
+    const score = profile.lastDailyCompletedDate === today
+      ? profile.lastDailyScore
+      : profile.pendingDailySubmit?.score ?? profile.lastDailyScore;
     try {
       await Share.share({
-        message: `حصلت على ${profile.lastDailyScore} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
+        message: `حصلت على ${score} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
         url: 'https://quranquiz.net',
       });
     } catch { /* ignore */ }
@@ -388,9 +395,12 @@ export default function MeScreen() {
   const rank = getRankInfo(score);
 
   const today = new Date().toISOString().split('T')[0];
+  // Treat an unconfirmed submission from today the same as completed — the
+  // quiz was in fact taken, it just hasn't been retried/confirmed yet (see
+  // endDailyQuiz in quiz.tsx), so don't offer to start it again.
   const dailyCompleted = dailyHead !== 'loading'
     && dailyHead != null
-    && profile.lastDailyCompletedDate === today;
+    && (profile.lastDailyCompletedDate === today || profile.pendingDailySubmit?.date === today);
   const playedToday = profile.lastPlayDate === today;
 
   // The daily quiz rotates every 24h from start_time. Roll forward to the next

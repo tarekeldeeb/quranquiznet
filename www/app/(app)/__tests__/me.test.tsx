@@ -20,6 +20,7 @@ const mockSignInGoogle = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'g
 const mockSignInFacebook = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'f1' }));
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: (...a: unknown[]) => mockGetDailyHead(...a),
+  getTodayStandings: jest.fn(() => Promise.resolve([])),
   signOut: (...a: unknown[]) => mockSignOut(...a),
   signInGoogle: (...a: unknown[]) => mockSignInGoogle(...a),
   signInFacebook: (...a: unknown[]) => mockSignInFacebook(...a),

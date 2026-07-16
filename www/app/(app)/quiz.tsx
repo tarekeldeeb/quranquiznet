@@ -760,10 +760,15 @@ export default function QuizScreen() {
   // unless) the user taps it.
   async function checkForDailyQuiz() {
     try {
+      const today = new Date().toISOString().split('T')[0];
+      // A prior completion is still awaiting confirmation (see endDailyQuiz) —
+      // retry it now rather than re-offering a fresh quiz for the same day.
+      if (profile.pendingDailySubmit) await FB.flushPendingDailySubmit();
       // Don't re-offer today's daily quiz to someone who already completed it,
       // and don't bother if we're already inside the daily quiz itself.
-      const today = new Date().toISOString().split('T')[0];
-      if (profile.lastDailyCompletedDate === today) return;
+      const freshProfile = useProfileStore.getState();
+      if (freshProfile.lastDailyCompletedDate === today) return;
+      if (freshProfile.pendingDailySubmit?.date === today) return;
       if (dailyModeRef.current) return;
       const head = await FB.getDailyHead();
       if (!head) return;
@@ -800,12 +805,21 @@ export default function QuizScreen() {
       dailyScoreRef.current,
       dailyTimeRef.current / 1000,
     );
-    profile.markDailyCompleted(finalScore);
     profile.updateScoreRecord();
     setDailyFinalScore(finalScore);
     setDailyRankLine(null);
+    // Show the result screen immediately — don't make the user wait on the
+    // network for a score they've already earned locally.
+    setDailyEndVisible(true);
+    trackEvent('daily_quiz_submit', {
+      score: finalScore,
+      correct: dailyScoreRef.current,
+      time_sec: Math.round(dailyTimeRef.current / 1000),
+    });
+
+    const today = new Date().toISOString().split('T')[0];
     const social = profile.social;
-    await FB.submitDailyResult({
+    const payload = {
       score: finalScore,
       // A guest's own nickname (stored as displayName like a social user's)
       // takes priority over the generic default — first word only, matching
@@ -813,13 +827,16 @@ export default function QuizScreen() {
       name: (social.displayName || DEFAULT_GUEST_NAME).split(' ')[0],
       uid: profile.uid,
       country: profile.country || undefined,
-    });
-    trackEvent('daily_quiz_submit', {
-      score: finalScore,
-      correct: dailyScoreRef.current,
-      time_sec: Math.round(dailyTimeRef.current / 1000),
-    });
-    setDailyEndVisible(true);
+    };
+    // Only mark the quiz "completed" once the write is actually confirmed —
+    // a completion that never reaches /daily/head_submit shouldn't block a
+    // retry (see checkForDailyQuiz + profileStore.flushPendingDailySubmit).
+    const confirmed = await FB.submitDailyResultWithRetry(payload);
+    if (confirmed) {
+      profile.markDailyCompleted(finalScore);
+    } else {
+      profile.setPendingDailySubmit({ ...payload, date: today });
+    }
     // Best-effort rank comparison against today's live standings — read after
     // the score post so the fresh submission is included; falls back gracefully
     // if not (e.g. RTDB replication lag or a network hiccup).

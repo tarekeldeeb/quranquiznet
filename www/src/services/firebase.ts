@@ -21,6 +21,7 @@ import {
 } from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
 import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult } from './pvpService';
+import { useProfileStore } from '../stores/profileStore';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
 // values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
@@ -333,13 +334,63 @@ export async function submitDailyResult(score: {
   country?: string;
   city?: string;
   uid: string;
-}): Promise<void> {
+}): Promise<boolean> {
   try {
     const head = await getDailyHead();
-    if (!head) return;
+    if (!head) return false;
     await push(ref(getFirebaseDb(), `/daily/${head.submit_to_ref}`), score);
+    return true;
   } catch (e) {
     console.error('submitDailyResult error:', e);
+    return false;
+  }
+}
+
+function delay(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+/**
+ * Same as submitDailyResult, but retries a few times with backoff — covers a
+ * transient network blip or RTDB hiccup right as the daily quiz ends, so a
+ * completed quiz isn't silently dropped from today's standings. Callers
+ * should still handle a final `false` (e.g. queue it for a later retry).
+ */
+export async function submitDailyResultWithRetry(
+  score: { score: number; name: string; country?: string; city?: string; uid: string },
+  attempts = 3,
+): Promise<boolean> {
+  for (let i = 0; i < attempts; i++) {
+    if (await submitDailyResult(score)) return true;
+    if (i < attempts - 1) await delay(1000 * (i + 1));
+  }
+  return false;
+}
+
+/**
+ * Retries a daily-quiz submission that didn't confirm the first time (see
+ * endDailyQuiz in quiz.tsx) — called opportunistically on app start and on
+ * the quiz screen's daily-quiz check. A single attempt per call is enough
+ * since those are already recurring retry points; only marks the quiz
+ * completed once the write is actually confirmed.
+ */
+export async function flushPendingDailySubmit(): Promise<void> {
+  const profile = useProfileStore.getState();
+  const pending = profile.pendingDailySubmit;
+  if (!pending) return;
+  const today = new Date().toISOString().split('T')[0];
+  if (pending.date !== today) {
+    // The day has rotated — resubmitting now would land in the wrong
+    // cohort, so the score is lost rather than corrupting today's board.
+    profile.setPendingDailySubmit(null);
+    return;
+  }
+  const ok = await submitDailyResultWithRetry({
+    score: pending.score, name: pending.name, uid: pending.uid, country: pending.country,
+  }, 1);
+  if (ok) {
+    profile.markDailyCompleted(pending.score);
+    profile.setPendingDailySubmit(null);
   }
 }
 
