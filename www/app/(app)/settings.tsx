@@ -2,7 +2,7 @@
 // Home via the gear icon in the header (see (app)/me.tsx) instead of living
 // inline on Home, which used to do five jobs at once.
 import { useState } from 'react';
-import { View, Text, Switch, Alert, Modal, ActivityIndicator, StyleSheet, ScrollView, Platform } from 'react-native';
+import { View, Text, Switch, Alert, Modal, ActivityIndicator, StyleSheet, ScrollView, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -14,6 +14,25 @@ import PressScale from '../../src/components/PressScale';
 import ThemeToggle from '../../src/components/ThemeToggle';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '';
+
+// Native app store links, shown on web only (no point advertising the app to
+// someone already inside it).
+const STORE_LINKS = [
+  {
+    key: 'ios',
+    icon: 'logo-apple' as const,
+    name: 'App Store',
+    hint: 'لأجهزة iPhone و iPad',
+    url: 'https://apps.apple.com/app/id6790435986',
+  },
+  {
+    key: 'android',
+    icon: 'logo-google-playstore' as const,
+    name: 'Google Play',
+    hint: 'لأجهزة أندرويد',
+    url: 'https://play.google.com/store/apps/details?id=net.quranquiz',
+  },
+];
 
 function notify(title: string, msg: string) {
   if (Platform.OS === 'web') {
@@ -188,6 +207,27 @@ export default function SettingsScreen() {
           </View>
         </View>
 
+        {/* Native app store links — web only */}
+        {Platform.OS === 'web' && (
+          <View style={[s.section, { backgroundColor: colors.card }]}>
+            <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>تطبيق الجوال</Text>
+            {STORE_LINKS.map((store) => (
+              <PressScale
+                key={store.key}
+                style={[s.storeRow, { borderColor: colors.line }]}
+                onPress={() => Linking.openURL(store.url)}
+              >
+                <Ionicons name={store.icon} size={22} color={colors.ink} />
+                <View style={s.storeInfo}>
+                  <Text style={[s.storeName, { color: colors.ink }]}>{store.name}</Text>
+                  <Text style={[s.storeHint, { color: colors.inkSoft }]}>{store.hint}</Text>
+                </View>
+                <Ionicons name="open-outline" size={16} color={colors.inkSoft} />
+              </PressScale>
+            ))}
+          </View>
+        )}
+
         {/* Account */}
         {!social.isAnonymous && social.uid && (
           <PressScale
@@ -249,6 +289,10 @@ const s = StyleSheet.create({
   toggleInfo: { flex: 1, alignItems: 'flex-end' },
   toggleLabel: { fontSize: 14, textAlign: 'right' },
   toggleHint: { fontSize: 11, textAlign: 'right', marginTop: 2 },
+  storeRow: { flexDirection: 'row-reverse', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1 },
+  storeInfo: { flex: 1, alignItems: 'flex-end' },
+  storeName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  storeHint: { fontSize: 12, textAlign: 'right', marginTop: 2 },
   signOutRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14 },
   signOutTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
   deleteLink: {
