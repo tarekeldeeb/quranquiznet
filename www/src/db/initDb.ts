@@ -44,15 +44,25 @@ export async function initDb(
   };
   const rows = qData.objects[0].rows;
   const BATCH = 2000;
+  // Rows per single multi-row INSERT statement. One runAsync call per row
+  // (77k+ of them) took several minutes over the bridge — folding CHUNK rows
+  // into one statement cuts that to ~total/CHUNK round-trips. 500 rows * 8
+  // cols = 4000 bound params, comfortably under SQLite's default limit.
+  const CHUNK = 500;
   const total = rows.length;
 
   for (let i = 0; i < total; i += BATCH) {
     const batch = rows.slice(i, i + BATCH);
     await db.withExclusiveTransactionAsync(async (txn) => {
-      for (const r of batch) {
+      for (let j = 0; j < batch.length; j += CHUNK) {
+        const chunk = batch.slice(j, j + CHUNK);
+        const placeholders = chunk.map(() => '(?,?,?,?,?,?,?,?)').join(',');
+        const params = chunk.flatMap((r) => [
+          r[0], r[1], r[2], r[3] ?? 1, r[4] ?? 0, r[5] ?? 0, r[6] ?? null, r[7] ?? null,
+        ]);
         await txn.runAsync(
-          'INSERT INTO q(_id,txt,txtsym,sim1,sim2,sim3,sim1not2p1,aya) VALUES(?,?,?,?,?,?,?,?)',
-          [r[0], r[1], r[2], r[3] ?? 1, r[4] ?? 0, r[5] ?? 0, r[6] ?? null, r[7] ?? null],
+          `INSERT INTO q(_id,txt,txtsym,sim1,sim2,sim3,sim1not2p1,aya) VALUES${placeholders}`,
+          params,
         );
       }
     });

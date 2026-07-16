@@ -17,13 +17,15 @@ jest.mock('react-native-webview', () => {
   return { WebView: View };
 });
 
-// expo-av's native module isn't available in the Jest environment either
-// (sound.ts uses Audio.Sound.createAsync/replayAsync for answer-feedback
-// chimes) — stub just the Sound API surface actually used.
-jest.mock('expo-av', () => ({
-  Audio: {
-    Sound: {
-      createAsync: jest.fn().mockResolvedValue({ sound: { replayAsync: jest.fn() } }),
-    },
-  },
+// expo-audio's native module isn't available in the Jest environment either
+// (sound.ts uses createAudioPlayer/seekTo/play for answer-feedback chimes) —
+// stub just the AudioPlayer API surface actually used, pre-loaded so
+// ensureLoaded() resolves without waiting on a playbackStatusUpdate event.
+jest.mock('expo-audio', () => ({
+  createAudioPlayer: jest.fn(() => ({
+    isLoaded: true,
+    seekTo: jest.fn().mockResolvedValue(undefined),
+    play: jest.fn(),
+    addListener: jest.fn(() => ({ remove: jest.fn() })),
+  })),
 }));

@@ -41,7 +41,7 @@ describe('Auth screen', () => {
     expect(getByText('تحدٍّ يومي')).toBeTruthy();       // a why-join feature tile
     expect(getByText('مزامنة سحابية')).toBeTruthy();
     // Guest play is the primary, inverted-funnel CTA; social sign-in is secondary.
-    expect(getByText('العب الآن')).toBeTruthy();
+    expect(getByText('ابدأ الآن')).toBeTruthy();
     expect(getByText('المتابعة بحساب جوجل')).toBeTruthy();
     expect(getByText('المتابعة بحساب فيسبوك')).toBeTruthy();
   });
@@ -60,7 +60,7 @@ describe('Auth screen', () => {
 
   it('plays as guest when the primary CTA is pressed', () => {
     const { getByText } = renderAuth();
-    fireEvent.press(getByText('العب الآن'));
+    fireEvent.press(getByText('ابدأ الآن'));
     expect(mockSignInAnon).toHaveBeenCalled();
   });
 

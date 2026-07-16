@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import {
-  I18nManager, ActivityIndicator, View, Text, TextInput, Image, Platform, StyleSheet,
+  I18nManager, ActivityIndicator, View, Text, TextInput, ImageBackground, Platform, StyleSheet,
 } from 'react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -14,7 +14,7 @@ import { useProfileStore } from '../src/stores/profileStore';
 import { Analytics } from '../src/components/Analytics';
 import { ConsentBanner } from '../src/components/ConsentBanner';
 
-const appIcon = require('../assets/images/app-icon.png');
+const splashImage = require('../assets/images/splash.png');
 
 // RTL is hand-built everywhere via `flexDirection: 'row-reverse'`/textAlign,
 // same as on web (where RNW's I18nManager is a no-op, isRTL always false).
@@ -172,15 +172,18 @@ export default function RootLayout() {
     return (
       <SafeAreaProvider>
         <WebFrame>
-          <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0d2d4e', gap: 20 }}>
-            <Image source={appIcon} style={{ width: 96, height: 96, borderRadius: 20 }} />
+          <ImageBackground
+            source={splashImage}
+            resizeMode="cover"
+            style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#0d2d4e', gap: 20 }}
+          >
             <ActivityIndicator size="large" color="#c8973a" />
             {dbProgress > 0 && dbProgress < 1 && (
-              <Text style={{ color: '#9bbdd4', fontSize: 13 }}>
+              <Text style={{ color: '#0d2d4e', fontSize: 13 }}>
                 تحميل البيانات {Math.round(dbProgress * 100)}٪
               </Text>
             )}
-          </View>
+          </ImageBackground>
         </WebFrame>
       </SafeAreaProvider>
     );

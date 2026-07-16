@@ -96,7 +96,7 @@ export default function AuthScreen() {
         <View style={[s.card, { backgroundColor: colors.card }]}>
           <PressScale style={[s.playBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={handleAnonymous}>
             <Ionicons name="play" size={22} color={colors.navy} />
-            <Text style={[s.playBtnTxt, { color: colors.navy }]}>العب الآن</Text>
+            <Text style={[s.playBtnTxt, { color: colors.navy }]}>ابدأ الآن</Text>
           </PressScale>
           <Text style={[s.playHint, { color: colors.inkSoft }]}>بلا تسجيل — أول سؤال خلال ثوانٍ</Text>
 

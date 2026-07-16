@@ -2,16 +2,11 @@
   "expo": {
     "name": "اختبار القرآن",
     "slug": "quranquiznet",
-    "version": "2.2.2",
+    "version": "2.2.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quranquiz",
     "userInterfaceStyle": "dark",
-    "splash": {
-      "image": "./assets/images/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#0d2d4e"
-    },
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
@@ -50,6 +45,14 @@
       ],
       "expo-notifications",
       [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash.png",
+          "resizeMode": "cover",
+          "backgroundColor": "#0d2d4e"
+        }
+      ],
+      [
         "expo-build-properties",
         {
           "android": {
@@ -59,7 +62,7 @@
         }
       ],
       [
-        "expo-av",
+        "expo-audio",
         {
           "microphonePermission": false
         }
