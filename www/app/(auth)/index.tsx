@@ -38,7 +38,11 @@ export default function AuthScreen() {
 
   useEffect(() => {
     const unsub = onAuthChange((user) => {
-      if (user) router.replace('/(app)/me');
+      if (!user) return;
+      // Guests land on Study Parts first to build a basic profile; social
+      // sign-ins already have (or will sync) a real profile, so they go
+      // straight in.
+      router.replace(user.isAnonymous ? '/(onboarding)/setup' : '/(app)/me');
     });
     return unsub;
   // eslint-disable-next-line react-hooks/exhaustive-deps

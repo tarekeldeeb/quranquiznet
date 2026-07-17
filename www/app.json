@@ -2,7 +2,7 @@
   "expo": {
     "name": "اختبار القرآن",
     "slug": "quranquiznet",
-    "version": "2.2.3",
+    "version": "2.2.4",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quranquiz",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "3",
+      "buildNumber": "4",
       "appleTeamId": "FNSP52WBLF",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -22,7 +22,7 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 12
+      "versionCode": 13
     },
     "web": {
       "bundler": "metro",

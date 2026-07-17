@@ -4,6 +4,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
@@ -199,12 +200,20 @@ export default function SlidesScreen() {
   const [frameW, setFrameW] = useState(SW);
   const listRef = useRef<FlatList>(null);
 
+  // The Study Parts screen is no longer shown to everyone here — it now only
+  // runs for guests, right after they pick "continue as guest" on the auth
+  // screen. Everyone finishing (or skipping) the slides goes to auth next.
+  async function finishSlides() {
+    await AsyncStorage.setItem('onboarding_done', 'true');
+    router.replace('/(auth)');
+  }
+
   function goNext() {
     if (current < SLIDES.length - 1) {
       listRef.current?.scrollToIndex({ index: current + 1, animated: true });
       setCurrent(current + 1);
     } else {
-      router.replace('/(onboarding)/setup');
+      finishSlides();
     }
   }
 
@@ -216,7 +225,7 @@ export default function SlidesScreen() {
   }
 
   function skip() {
-    router.replace('/(onboarding)/setup');
+    finishSlides();
   }
 
   return (
