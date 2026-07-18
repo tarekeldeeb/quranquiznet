@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "4",
+      "buildNumber": "5",
       "appleTeamId": "FNSP52WBLF",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -31,6 +31,7 @@
     "newArchEnabled": false,
     "plugins": [
       "expo-router",
+      "expo-apple-authentication",
       [
         "expo-font",
         {

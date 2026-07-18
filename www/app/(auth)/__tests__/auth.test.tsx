@@ -12,6 +12,7 @@ jest.mock('expo-router', () => ({
 
 const mockSignInGoogle = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'g1' }));
 const mockSignInFacebook = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'f1' }));
+const mockSignInApple = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'a1' }));
 const mockSignInAnon = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'anon' }));
 // Captured so individual tests can simulate the auth callback firing with a user.
 let mockAuthCallback: ((user: { isAnonymous: boolean } | null) => void) | null = null;
@@ -19,6 +20,7 @@ jest.mock('../../../src/services/firebase', () => ({
   // Wrapped so the reference resolves at call-time (after the consts init).
   signInGoogle: (...a: unknown[]) => mockSignInGoogle(...a),
   signInFacebook: (...a: unknown[]) => mockSignInFacebook(...a),
+  signInApple: (...a: unknown[]) => mockSignInApple(...a),
   signInAnon: (...a: unknown[]) => mockSignInAnon(...a),
   onAuthChange: (cb: (user: { isAnonymous: boolean } | null) => void) => {
     mockAuthCallback = cb;
@@ -36,7 +38,8 @@ const renderAuth = () => render(<SafeAreaProvider initialMetrics={metrics}><Auth
 
 beforeEach(() => {
   mockReplace.mockClear(); mockPush.mockClear();
-  mockSignInGoogle.mockClear(); mockSignInFacebook.mockClear(); mockSignInAnon.mockClear();
+  mockSignInGoogle.mockClear(); mockSignInFacebook.mockClear();
+  mockSignInApple.mockClear(); mockSignInAnon.mockClear();
   mockAuthCallback = null;
 });
 
@@ -62,6 +65,12 @@ describe('Auth screen', () => {
     const { getByText } = renderAuth();
     fireEvent.press(getByText('المتابعة بحساب فيسبوك'));
     expect(mockSignInFacebook).toHaveBeenCalled();
+  });
+
+  it('signs in with Apple when the Apple button is pressed (iOS)', () => {
+    const { getByTestId } = renderAuth();
+    fireEvent(getByTestId('apple-signin-button'), 'buttonPress');
+    expect(mockSignInApple).toHaveBeenCalled();
   });
 
   it('plays as guest when the primary CTA is pressed', () => {

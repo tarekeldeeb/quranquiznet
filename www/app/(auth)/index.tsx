@@ -5,7 +5,8 @@ import {
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
-import { signInAnon, signInGoogle, signInFacebook, onAuthChange } from '../../src/services/firebase';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import { signInAnon, signInGoogle, signInFacebook, signInApple, onAuthChange } from '../../src/services/firebase';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
 import PressScale from '../../src/components/PressScale';
 
@@ -64,6 +65,14 @@ export default function AuthScreen() {
     }
   }
 
+  async function handleApple() {
+    try {
+      await signInApple();
+    } catch {
+      notify('خطأ', 'تعذر تسجيل الدخول بحساب Apple');
+    }
+  }
+
   async function handleAnonymous() {
     await signInAnon();
   }
@@ -109,6 +118,20 @@ export default function AuthScreen() {
             <Text style={[s.dividerTxt, { color: colors.inkSoft }]}>أو سجّل دخولك لحفظ تقدمك</Text>
             <View style={[s.dividerLine, { backgroundColor: colors.line }]} />
           </View>
+
+          {/* Apple requires its own native button component (not a custom one)
+              to start the auth flow — App Store guideline 4.8. iOS only: no
+              Android/web equivalent, and Apple only requires this on iOS. */}
+          {Platform.OS === 'ios' && (
+            <AppleAuthentication.AppleAuthenticationButton
+              testID="apple-signin-button"
+              buttonType={AppleAuthentication.AppleAuthenticationButtonType.SIGN_IN}
+              buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+              cornerRadius={radii.md}
+              style={s.appleBtn}
+              onPress={handleApple}
+            />
+          )}
 
           {/* Google's own button spec: fixed white surface + #3c4043 text
               regardless of app theme (brand requirement, not themeable) — was
@@ -233,6 +256,7 @@ const s = StyleSheet.create({
   featureTitle: { color: '#fff', fontSize: 13, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
   featureBody: { fontSize: 11, textAlign: 'right', marginTop: 1, lineHeight: 15 },
 
+  appleBtn: { width: '100%', height: 46 },
   socialBtn: {
     flexDirection: 'row-reverse',
     alignItems: 'center',

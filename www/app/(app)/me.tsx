@@ -7,8 +7,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as AppleAuthentication from 'expo-apple-authentication';
 import {
-  signInGoogle, signInFacebook, getDailyHead, getTodayStandings, type DailyHead,
+  signInGoogle, signInFacebook, signInApple, getDailyHead, getTodayStandings, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
@@ -378,9 +379,11 @@ export default function MeScreen() {
     } catch { /* ignore */ }
   }
 
-  async function upgradeGuest(provider: 'google' | 'facebook') {
+  async function upgradeGuest(provider: 'google' | 'facebook' | 'apple') {
     try {
-      await (provider === 'google' ? signInGoogle() : signInFacebook());
+      if (provider === 'google') await signInGoogle();
+      else if (provider === 'facebook') await signInFacebook();
+      else await signInApple();
     } catch {
       notify('خطأ', 'تعذر تسجيل الدخول. حاول مرة أخرى.');
     }
@@ -602,6 +605,19 @@ export default function MeScreen() {
           <View style={[s.anonBanner, { backgroundColor: colors.card, borderColor: colors.line }]}>
             <Text style={[s.anonTxt, { color: colors.inkSoft }]} numberOfLines={1}>سجّل دخولك لحفظ تقدمك</Text>
             <View style={s.anonBtns}>
+              {/* Apple requires its own native button component (not a custom
+                  one) to start the auth flow — App Store guideline 4.8. iOS
+                  only: no Android/web equivalent. */}
+              {Platform.OS === 'ios' && (
+                <AppleAuthentication.AppleAuthenticationButton
+                  testID="apple-upgrade-button"
+                  buttonType={AppleAuthentication.AppleAuthenticationButtonType.CONTINUE}
+                  buttonStyle={AppleAuthentication.AppleAuthenticationButtonStyle.BLACK}
+                  cornerRadius={15}
+                  style={s.appleIconBtn}
+                  onPress={() => upgradeGuest('apple')}
+                />
+              )}
               <PressScale
                 style={[s.iconBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line }]}
                 onPress={() => upgradeGuest('google')}
@@ -810,6 +826,7 @@ const s = StyleSheet.create({
   anonTxt: { fontSize: 12, flex: 1, textAlign: 'right' },
   anonBtns: { flexDirection: 'row-reverse', gap: 6 },
   iconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  appleIconBtn: { width: 130, height: 30 },
 
   // Bottom sheets (streak, rank ladder) — Modal renders outside the web
   // column wrapper (see WebFrame in app/_layout.tsx), so the sheet itself

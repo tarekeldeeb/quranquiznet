@@ -16,10 +16,12 @@
 
 import * as WebBrowser from 'expo-web-browser';
 import * as AuthSession from 'expo-auth-session';
+import * as AppleAuthentication from 'expo-apple-authentication';
+import * as Crypto from 'expo-crypto';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import {
-  GoogleAuthProvider, FacebookAuthProvider, OAuthCredential,
+  GoogleAuthProvider, FacebookAuthProvider, OAuthProvider, OAuthCredential,
 } from 'firebase/auth';
 
 // Required so the browser-based auth flow can dismiss its tab and return control
@@ -148,6 +150,46 @@ export async function acquireFacebookCredential(): Promise<OAuthCredential | nul
   const accessToken = result.params.access_token;
   if (!accessToken) throw new Error('Facebook sign-in returned no access_token.');
   return FacebookAuthProvider.credential(accessToken);
+}
+
+export interface AppleCredentialResult {
+  credential: OAuthCredential;
+  // Apple only returns the user's name the very first time they authorize this
+  // app (never again, even after a token refresh) — firebase.ts uses this to
+  // set the Firebase displayName once, since the identity token itself carries
+  // no name claim.
+  fullName: AppleAuthentication.AppleAuthenticationFullName | null;
+}
+
+/**
+ * Run Sign in with Apple (native AuthenticationServices UI) and return a
+ * Firebase credential, or null if the user cancels. The nonce dance guards
+ * against replay: a random raw nonce is hashed and sent to Apple, which
+ * embeds the hash in the identity token; Firebase re-hashes the raw nonce
+ * server-side to verify it matches.
+ */
+export async function acquireAppleCredential(): Promise<AppleCredentialResult | null> {
+  const rawNonce = Crypto.randomUUID();
+  const hashedNonce = await Crypto.digestStringAsync(Crypto.CryptoDigestAlgorithm.SHA256, rawNonce);
+
+  let appleCredential: AppleAuthentication.AppleAuthenticationCredential;
+  try {
+    appleCredential = await AppleAuthentication.signInAsync({
+      requestedScopes: [
+        AppleAuthentication.AppleAuthenticationScope.FULL_NAME,
+        AppleAuthentication.AppleAuthenticationScope.EMAIL,
+      ],
+      nonce: hashedNonce,
+    });
+  } catch (e: unknown) {
+    if ((e as { code?: string }).code === 'ERR_REQUEST_CANCELED') return null;
+    throw e;
+  }
+
+  const { identityToken, fullName } = appleCredential;
+  if (!identityToken) throw new Error('Apple sign-in returned no identity token.');
+  const credential = new OAuthProvider('apple.com').credential({ idToken: identityToken, rawNonce });
+  return { credential, fullName };
 }
 
 export type SocialKind = 'google' | 'facebook';

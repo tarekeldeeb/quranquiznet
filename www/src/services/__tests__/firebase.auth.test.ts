@@ -49,7 +49,7 @@ jest.mock('firebase/auth', () => {
 });
 
 import * as fbAuth from 'firebase/auth';
-import { signInGoogle, signInFacebook } from '../firebase';
+import { signInGoogle, signInFacebook, signInApple } from '../firebase';
 
 // Typed handles to the mocks.
 const m = fbAuth as unknown as {
@@ -185,5 +185,12 @@ describe('social sign-in — same-email collision (account-exists-with-different
       .mockRejectedValueOnce({ code: 'auth/popup-closed-by-user' });
 
     await expect(signInFacebook()).resolves.toBeNull();
+  });
+});
+
+describe('signInApple — iOS-only gate', () => {
+  it('is a no-op on web (Apple sign-in only ships on iOS)', async () => {
+    await expect(signInApple()).resolves.toBeNull();
+    expect(m.signInWithCredential).not.toHaveBeenCalled();
   });
 });

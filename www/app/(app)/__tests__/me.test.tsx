@@ -18,12 +18,14 @@ const mockGetDailyHead = jest.fn();
 const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
 const mockSignInGoogle = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'g1' }));
 const mockSignInFacebook = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'f1' }));
+const mockSignInApple = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'a1' }));
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: (...a: unknown[]) => mockGetDailyHead(...a),
   getTodayStandings: jest.fn(() => Promise.resolve([])),
   signOut: (...a: unknown[]) => mockSignOut(...a),
   signInGoogle: (...a: unknown[]) => mockSignInGoogle(...a),
   signInFacebook: (...a: unknown[]) => mockSignInFacebook(...a),
+  signInApple: (...a: unknown[]) => mockSignInApple(...a),
 }));
 
 const mockInitDailyQuiz = jest.fn();
@@ -64,6 +66,7 @@ beforeEach(() => {
   mockSignOut.mockReset(); mockSignOut.mockResolvedValue(undefined);
   mockSignInGoogle.mockReset(); mockSignInGoogle.mockResolvedValue({ uid: 'g1' });
   mockSignInFacebook.mockReset(); mockSignInFacebook.mockResolvedValue({ uid: 'f1' });
+  mockSignInApple.mockReset(); mockSignInApple.mockResolvedValue({ uid: 'a1' });
   // Full 50-part profile (45 suras + 5 juz), as in production — the daily-weights
   // computation indexes every part.
   const parts = Array.from({ length: 50 }, (_, i) => part(`جزء/سورة ${i}`, i < 3));
@@ -130,6 +133,13 @@ describe('Me dashboard — guest upgrade [bug #3]', () => {
     const { findByLabelText } = renderMe();
     expect(await findByLabelText('المتابعة بحساب جوجل')).toBeTruthy();
     expect(await findByLabelText('المتابعة بحساب فيسبوك')).toBeTruthy();
+  });
+
+  it('shows the Apple upgrade button for a guest (iOS) and signs in on press', async () => {
+    mockGetDailyHead.mockResolvedValue(null);
+    const { findByTestId } = renderMe();
+    fireEvent(await findByTestId('apple-upgrade-button'), 'buttonPress');
+    await waitFor(() => expect(mockSignInApple).toHaveBeenCalled());
   });
 
   it('surfaces an error (does not fail silently) when the upgrade is refused', async () => {

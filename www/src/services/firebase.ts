@@ -7,7 +7,7 @@ import {
   getAuth, initializeAuth, onAuthStateChanged, signInAnonymously,
   signInWithPopup, linkWithPopup, signInWithCredential, linkWithCredential,
   GoogleAuthProvider, FacebookAuthProvider, AuthProvider, AuthCredential, OAuthCredential,
-  signOut as fbSignOut, deleteUser, User, Auth,
+  signOut as fbSignOut, deleteUser, updateProfile, User, Auth,
 } from 'firebase/auth';
 // getReactNativePersistence is only exported from Firebase's React Native build;
 // the app's tsconfig resolves the web/node types, so the type isn't visible here.
@@ -262,6 +262,54 @@ export function signInGoogle(): Promise<User | null> {
 
 export function signInFacebook(): Promise<User | null> {
   return socialSignIn(new FacebookAuthProvider(), 'facebook');
+}
+
+async function linkOrSignInApple(auth: Auth, current: User, credential: AuthCredential): Promise<User> {
+  try {
+    return (await linkWithCredential(current, credential)).user;
+  } catch (e: unknown) {
+    // The Apple account is already registered — sign into it directly.
+    if ((e as { code?: string }).code === 'auth/credential-already-in-use') {
+      return (await signInWithCredential(auth, credential)).user;
+    }
+    throw e;
+  }
+}
+
+/**
+ * Sign in with Apple — iOS only. Apple's native AuthenticationServices sheet
+ * has no counterpart on Android/web, and Apple requires this option only for
+ * iOS apps that offer other third-party sign-in (App Store guideline 4.8).
+ *
+ * Unlike signInGoogle/signInFacebook, an email collision with an existing
+ * Google/Facebook account is not auto-linked here (just surfaced as a normal
+ * thrown error): Apple's private-relay email rarely matches the other
+ * provider's real address, so that recovery path isn't worth building for
+ * this rare case.
+ */
+export async function signInApple(): Promise<User | null> {
+  if (Platform.OS !== 'ios') return null;
+  // Lazy require — see nativeSocialSignIn above for why.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  const oauth = require('./nativeOAuth') as typeof import('./nativeOAuth');
+  const auth = getFirebaseAuth();
+  const result = await oauth.acquireAppleCredential();
+  if (!result) return null; // user cancelled
+  const { credential, fullName } = result;
+
+  const current = auth.currentUser;
+  const user = current?.isAnonymous
+    ? await linkOrSignInApple(auth, current, credential)
+    : (await signInWithCredential(auth, credential)).user;
+
+  // Apple only returns the user's name on their very first authorization, and
+  // the identity token itself carries no name claim, so Firebase never sets
+  // displayName on its own — set it here while we still have it.
+  if (!user.displayName && (fullName?.givenName || fullName?.familyName)) {
+    const displayName = [fullName.givenName, fullName.familyName].filter(Boolean).join(' ');
+    await updateProfile(user, { displayName }).catch((e) => console.warn('apple displayName update failed:', e));
+  }
+  return user;
 }
 
 export async function signOut(): Promise<void> {
