@@ -41,6 +41,8 @@ describe('describeLiveRank', () => {
   });
 
   it('reports rank, total, and the gap to the closest better score', () => {
-    expect(describeLiveRank(standings, 'b')).toBe('ترتيبك اليوم: #2 من 3 — متأخر 20 نقطة عن Abdallah');
+    // Arabic-Indic digits — i18next's interpolation formatter locale-formats
+    // every numeric interpolation value (see src/i18n/index.ts).
+    expect(describeLiveRank(standings, 'b')).toBe('ترتيبك اليوم: #٢ من ٣ — متأخر ٢٠ نقطة عن Abdallah');
   });
 });

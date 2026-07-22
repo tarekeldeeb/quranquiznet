@@ -358,5 +358,21 @@
       }
     }
   },
-  "quizCard": {}
+  "quizCard": {
+    "answerOption": {
+      "sura": "سورة {{name}}",
+      "ayahCount": "ايات السورة {{count}}",
+      "ayahNumber": "رقم الاية {{count}}"
+    },
+    "meccan": "مكية",
+    "medinan": "مدنية"
+  },
+  "dailyRank": {
+    "ahead": "أنت متقدم على الجميع اليوم! 🏆",
+    "behindBy": "ترتيبك اليوم: #{{rank}} من {{total}} — متأخر {{diff}} نقطة عن {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{threshold}} إجابة صحيحة في {{partName}}!",
+    "mastery": "🏅 أتقنت {{partName}}!"
+  }
 }

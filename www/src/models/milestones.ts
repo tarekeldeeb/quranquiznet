@@ -7,6 +7,8 @@
 // models/ file staying independent of stores/) — callers translate the
 // numeric range into this string tier before calling detectMilestones().
 
+import i18n from '../i18n';
+
 export type MasteryTier = 'EMPTY' | 'LOW' | 'MID' | 'HIGH';
 
 export interface MilestoneInput {
@@ -39,7 +41,7 @@ export function detectMilestones(input: MilestoneInput): Milestone[] {
     if (input.beforeCorrect < threshold && input.afterCorrect >= threshold) {
       milestones.push({
         key: `correct:${input.partName}:${threshold}`,
-        text: `💯 ${threshold} إجابة صحيحة في ${input.partName}!`,
+        text: i18n.t('milestones.correctThreshold', { threshold, partName: input.partName }),
       });
     }
   }
@@ -47,7 +49,7 @@ export function detectMilestones(input: MilestoneInput): Milestone[] {
   if (input.beforeTier !== 'HIGH' && input.afterTier === 'HIGH') {
     milestones.push({
       key: `mastery:${input.partName}`,
-      text: `🏅 أتقنت ${input.partName}!`,
+      text: i18n.t('milestones.mastery', { partName: input.partName }),
     });
   }
 

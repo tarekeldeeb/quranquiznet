@@ -11,8 +11,10 @@ const base: MilestoneInput = {
 describe('detectMilestones', () => {
   it('fires a correct-count milestone when a threshold is crossed', () => {
     const result = detectMilestones({ ...base, beforeCorrect: 99, afterCorrect: 100 });
+    // Arabic-Indic digits — i18next's interpolation formatter locale-formats
+    // every numeric interpolation value (see src/i18n/index.ts).
     expect(result).toEqual([
-      { key: 'correct:سورة البقرة:100', text: '💯 100 إجابة صحيحة في سورة البقرة!' },
+      { key: 'correct:سورة البقرة:100', text: '💯 ١٠٠ إجابة صحيحة في سورة البقرة!' },
     ]);
   });
 

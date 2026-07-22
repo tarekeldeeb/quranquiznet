@@ -358,5 +358,21 @@
       }
     }
   },
-  "quizCard": {}
+  "quizCard": {
+    "answerOption": {
+      "sura": "Surah {{name}}",
+      "ayahCount": "Ayah count {{count}}",
+      "ayahNumber": "Ayah number {{count}}"
+    },
+    "meccan": "Meccan",
+    "medinan": "Medinan"
+  },
+  "dailyRank": {
+    "ahead": "You're ahead of everyone today! 🏆",
+    "behindBy": "Your rank today: #{{rank}} of {{total}} — behind by {{diff}} points from {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{threshold}} correct answers in {{partName}}!",
+    "mastery": "🏅 You've mastered {{partName}}!"
+  }
 }

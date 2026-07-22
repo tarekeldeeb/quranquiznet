@@ -1,5 +1,7 @@
 // All Quran structural constants — ported from www/_model_/utils.js
 
+import i18n from '../i18n';
+
 // Default display name for an anonymous/guest user who hasn't picked a
 // nickname yet. Shared so every surface that shows/compares a guest's name
 // (auth handler, me.tsx, the daily-quiz submission) agrees on the same string.
@@ -144,7 +146,7 @@ export function modQWords(n: number): number {
 }
 
 export function getSuraTanzil(wordIdx: number): string {
-  return SURA_MAKKI[getSuraIdx(wordIdx)] === 1 ? 'مكية' : 'مدنية';
+  return SURA_MAKKI[getSuraIdx(wordIdx)] === 1 ? i18n.t('quizCard.meccan') : i18n.t('quizCard.medinan');
 }
 
 export function formattedAyaMark(ayaNum: number): string {

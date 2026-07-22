@@ -5,6 +5,8 @@
 // daily-end modal, the me.tsx idle "already done today" card, and the league
 // screen — all three read the same live cohort, so they never disagree.
 
+import i18n from '../i18n';
+
 export interface LeaderboardEntry {
   name?: string;
   score: number;
@@ -49,9 +51,9 @@ export function findOwnRank(sorted: LeaderboardEntry[], uid: string | undefined,
 export function describeLiveRank(sorted: LeaderboardEntry[], uid: string | undefined): string | null {
   const own = findOwnRank(sorted, uid, 1);
   if (!own) return null;
-  if (own.rank === 1) return 'أنت متقدم على الجميع اليوم! 🏆';
+  if (own.rank === 1) return i18n.t('dailyRank.ahead');
   const better = own.above[own.above.length - 1];
   const diff = Math.max(1, Math.round((better.score - own.entry.score) * 100) / 100);
-  const name = better.name?.trim() || 'زائر(ة)';
-  return `ترتيبك اليوم: #${own.rank} من ${own.total} — متأخر ${diff} نقطة عن ${name}`;
+  const name = better.name?.trim() || i18n.t('common.guestName');
+  return i18n.t('dailyRank.behindBy', { rank: own.rank, total: own.total, diff, name });
 }
