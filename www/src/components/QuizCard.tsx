@@ -15,7 +15,8 @@ import {
 } from '../models/constants';
 import QuranText from './QuranText';
 import PressScale from './PressScale';
-import { useTheme, arNum, radii } from '../theme/tokens';
+import { useTheme, arNum, localeNum, radii } from '../theme/tokens';
+import { useDirection, rowDir, alignDir } from '../theme/direction';
 import { hapticTick } from '../services/haptics';
 
 // Word count of an Arabic snippet, ignoring aya-end markers in either form
@@ -110,6 +111,7 @@ export default function QuizCard({
 }: Props) {
   const { t } = useTranslation();
   const { colors } = useTheme();
+  const { isRTL, language } = useDirection();
   // paper and card sit close together by design in both palettes (a warm
   // cream-vs-white step in light, a subtle navy-vs-navy step in dark) — the
   // card was relying entirely on a fixed, light-mode-tuned shadow
@@ -369,12 +371,12 @@ export default function QuizCard({
         pointerEvents={flipped ? 'auto' : 'none'}
       >
 
-        {/* Sura / aya header */}
-        <View style={[s.backHeader, { backgroundColor: colors.paper, borderBottomColor: borderColor, borderBottomWidth: 2 }]}>
-          <View style={s.backHeaderLeft}>
+        {/* Sura / aya header — name+aya leads (reading-start), info trails */}
+        <View style={[s.backHeader, { backgroundColor: colors.paper, borderBottomColor: borderColor, borderBottomWidth: 2, flexDirection: rowDir(isRTL) }]}>
+          <Text style={[s.backSuraName, { color: colors.ink, fontFamily: AMIRI_FONT, textAlign: alignDir(isRTL) }]}>{t('quizCard.answerOption.sura', { name: suraName })} · {t('quizCard.ayahLabel', { number: localeNum(card.answerAya, language) })}</Text>
+          <View style={s.backHeaderInfo}>
             <Text style={[s.backSuraInfo, { color: colors.inkSoft }]}>{suraInfo}</Text>
           </View>
-          <Text style={[s.backSuraName, { color: colors.ink, fontFamily: AMIRI_FONT }]}>{t('quizCard.answerOption.sura', { name: suraName })} · {t('quizCard.ayahLabel', { number: arNum(card.answerAya) })}</Text>
         </View>
 
         {/* Answer text */}
@@ -545,17 +547,15 @@ const s = StyleSheet.create({
 
   // ── BACK ─────────────────────────────────────────────────────────────────
   backHeader: {
-    flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
   },
-  backHeaderLeft: { alignItems: 'flex-start' },
+  backHeaderInfo: { alignItems: 'flex-start' },
   backSuraName: {
     fontSize: 16,
     fontWeight: '700',
-    textAlign: 'right',
     flexShrink: 1,
   },
   backSuraInfo: {
