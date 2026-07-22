@@ -921,7 +921,8 @@ export default function QuizScreen() {
   // ── render ────────────────────────────────────────────────────────────────
   // Read-only summary of the settings driving the current run.
   const scopeMode: ScopeMode = dailyMode ? 'daily' : customPartIndex != null ? 'custom' : 'random';
-  const levelText = profile.levels.find((l) => l.value === profile.level)?.text ?? '';
+  const levelTextKey = profile.levels.find((l) => l.value === profile.level)?.text;
+  const levelText = levelTextKey ? t(levelTextKey) : '';
   const scopeNames =
     scopeMode === 'daily' ? []
     : scopeMode === 'custom' ? [profile.parts[customPartIndex!]?.name ?? '—']

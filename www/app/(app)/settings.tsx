@@ -186,7 +186,7 @@ export default function SettingsScreen() {
         {/* Level selector */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
           <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
-            {t('settings.levelHeader', { level: profile.levels[profile.level]?.text })}
+            {t('settings.levelHeader', { level: profile.levels[profile.level] ? t(profile.levels[profile.level].text) : '' })}
           </Text>
           {profile.levels.map((lvl) => (
             <PressScale
@@ -201,8 +201,8 @@ export default function SettingsScreen() {
                 </View>
               </View>
               <View style={[s.levelRight, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[s.levelName, { color: colors.ink, textAlign: alignDir(isRTL) }, lvl.disabled && { color: colors.inkSoft }]}>{lvl.text}</Text>
-                <Text style={[s.levelComment, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{lvl.comment}</Text>
+                <Text style={[s.levelName, { color: colors.ink, textAlign: alignDir(isRTL) }, lvl.disabled && { color: colors.inkSoft }]}>{t(lvl.text)}</Text>
+                <Text style={[s.levelComment, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t(lvl.comment)}</Text>
               </View>
             </PressScale>
           ))}

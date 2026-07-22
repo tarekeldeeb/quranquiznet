@@ -391,5 +391,29 @@
   "milestones": {
     "correctThreshold": "💯 {{threshold}} correct answers in {{partName}}!",
     "mastery": "🏅 You've mastered {{partName}}!"
+  },
+  "rank": {
+    "beginner": "Beginner",
+    "diligent": "Diligent",
+    "hafiz": "Hafiz",
+    "master": "Master"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Beginner Level",
+      "comment": "The question starts from the top of the verse, and increases your score by 5"
+    },
+    "elementary": {
+      "text": "Elementary Level",
+      "comment": "The question starts from three words, and increases your score by 10"
+    },
+    "secondary": {
+      "text": "Secondary Level",
+      "comment": "The question starts from two words, and increases your score by 20"
+    },
+    "advanced": {
+      "text": "Advanced Level",
+      "comment": "More than one correct answer, and increases your score by 30"
+    }
   }
 }

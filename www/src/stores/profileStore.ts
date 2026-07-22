@@ -286,11 +286,14 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   themeMode: 'dark',
   language: 'ar',
 
+  // text/comment are i18next translation keys, not display text — every
+  // consumer must call t(lvl.text)/t(lvl.comment) at render time (same
+  // pattern as questionnaire.ts's Q_TYPE.txt).
   levels: [
-    { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
-    { value: 1, text: 'مستوى أولي',   comment: 'السؤال من ثلاث كلمات، يزيد النقاط بعشرة', disabled: false },
-    { value: 2, text: 'مستوى ثانوي',  comment: 'السؤال من كلمتين، يزيد النقاط بعشرين', disabled: false },
-    { value: 3, text: 'مستوى متقدم',  comment: 'أكثر من اجابة صحيحة، يزيد النقاط بثلاثين', disabled: true },
+    { value: 0, text: 'levels.beginner.text',   comment: 'levels.beginner.comment',   disabled: false },
+    { value: 1, text: 'levels.elementary.text', comment: 'levels.elementary.comment', disabled: false },
+    { value: 2, text: 'levels.secondary.text',  comment: 'levels.secondary.comment',  disabled: false },
+    { value: 3, text: 'levels.advanced.text',   comment: 'levels.advanced.comment',   disabled: true },
   ],
 
   async load() {

@@ -391,5 +391,29 @@
   "milestones": {
     "correctThreshold": "💯 {{threshold}} إجابة صحيحة في {{partName}}!",
     "mastery": "🏅 أتقنت {{partName}}!"
+  },
+  "rank": {
+    "beginner": "مبتدئ",
+    "diligent": "مجتهد",
+    "hafiz": "حافظ",
+    "master": "متقن"
+  },
+  "levels": {
+    "beginner": {
+      "text": "مستوى ابتدائي",
+      "comment": "يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة"
+    },
+    "elementary": {
+      "text": "مستوى أولي",
+      "comment": "السؤال من ثلاث كلمات، يزيد النقاط بعشرة"
+    },
+    "secondary": {
+      "text": "مستوى ثانوي",
+      "comment": "السؤال من كلمتين، يزيد النقاط بعشرين"
+    },
+    "advanced": {
+      "text": "مستوى متقدم",
+      "comment": "أكثر من اجابة صحيحة، يزيد النقاط بثلاثين"
+    }
   }
 }
