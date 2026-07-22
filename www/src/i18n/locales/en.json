@@ -1,7 +1,13 @@
 {
   "common": {
     "guestName": "Guest",
-    "appName": "Quran Quiz Net"
+    "appName": "Quran Quiz Net",
+    "consentBanner": {
+      "text": "We use cookies to analyze app usage and improve your experience.",
+      "privacyPolicy": "Privacy Policy",
+      "decline": "Decline",
+      "accept": "Accept"
+    }
   },
   "onboarding": {
     "skip": "Skip",
@@ -78,7 +84,44 @@
   "league": {},
   "map": {},
   "auth": {},
-  "privacy": {},
+  "privacy": {
+    "title": "Terms & Privacy Policy",
+    "updated": "Last updated: June 2026",
+    "sections": {
+      "intro": {
+        "title": "Introduction",
+        "body": "At Quran Quiz Net, we value your privacy. This page explains what data we collect, how we use it, and how we protect it when you use the app."
+      },
+      "dataCollected": {
+        "title": "Data We Collect",
+        "body": "When you sign in with Google or Facebook, we store your name, profile photo, and email address to create your profile. We also save your memorization progress, test results, and settings. You can also use the app as a guest without signing in."
+      },
+      "useOfData": {
+        "title": "How We Use Your Data",
+        "body": "We use your data to save and sync your progress across your devices, display your ranking in the leaderboard and daily challenge, and improve your in-app experience. We do not sell your data or display ads."
+      },
+      "cookiesAnalytics": {
+        "title": "Cookies & Analytics",
+        "body": "We use Google Analytics to understand how the app is used (such as visited pages and test count) to improve the user experience, using cookies. We only enable this tracking with your consent, and you can decline it from the consent banner without affecting your app usage. We use this data for analytics only and not for advertising."
+      },
+      "storageSecurity": {
+        "title": "Storage & Security",
+        "body": "Your data is stored on Google's Firebase servers with appropriate protection. Your local data remains on your device and is cleared when you sign out."
+      },
+      "accountDeletion": {
+        "title": "Account Deletion",
+        "body": "You can sign out at any time to clear your local data from this device. To permanently delete your account and all your data from our servers yourself: from the main screen, tap the settings icon ⚙ at the top of the page, then tap \"Delete Account\" at the bottom of the Settings page, and confirm deletion. Your account is deleted immediately, and this action cannot be undone."
+      },
+      "termsOfUse": {
+        "title": "Terms of Use",
+        "body": "The app is designed to help you review your memorization of the Holy Quran. The service is provided \"as is\" without warranties, and we strive for accuracy in the Quranic content based on the Tanzil source (tanzil.net)."
+      },
+      "contact": {
+        "title": "Contact",
+        "body": "For any inquiries regarding privacy or terms, you can contact us via the app's official email."
+      }
+    }
+  },
   "support": {},
   "quizCard": {}
 }

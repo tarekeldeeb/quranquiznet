@@ -4,11 +4,15 @@
 import { useEffect, useState } from 'react';
 import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
+import { useDirection, alignDir } from '../theme/direction';
 import { getStoredConsent, setAnalyticsConsent, type ConsentChoice } from '../services/analytics';
 
 export function ConsentBanner(): React.ReactElement | null {
   const [visible, setVisible] = useState(false);
   const router = useRouter();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
 
   useEffect(() => {
     if (Platform.OS !== 'web') return;
@@ -30,18 +34,18 @@ export function ConsentBanner(): React.ReactElement | null {
   return (
     <View style={s.wrap} pointerEvents="box-none">
       <View style={s.banner}>
-        <Text style={s.text}>
-          نستخدم ملفات تعريف الارتباط لتحليل استخدام التطبيق وتحسين تجربتك.{' '}
+        <Text style={[s.text, { textAlign: alignDir(isRTL) }]}>
+          {t('common.consentBanner.text')}{' '}
           <Text style={s.link} onPress={() => router.push('/privacy')}>
-            سياسة الخصوصية
+            {t('common.consentBanner.privacyPolicy')}
           </Text>
         </Text>
-        <View style={s.row}>
+        <View style={[s.row, { justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}>
           <TouchableOpacity style={[s.btn, s.decline]} onPress={() => choose('denied')}>
-            <Text style={s.declineTxt}>رفض</Text>
+            <Text style={s.declineTxt}>{t('common.consentBanner.decline')}</Text>
           </TouchableOpacity>
           <TouchableOpacity style={[s.btn, s.accept]} onPress={() => choose('granted')}>
-            <Text style={s.acceptTxt}>موافق</Text>
+            <Text style={s.acceptTxt}>{t('common.consentBanner.accept')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -60,9 +64,9 @@ const s = StyleSheet.create({
     paddingBottom: 18,
     boxShadow: '0px -2px 16px rgba(0,0,0,0.25)',
   },
-  text: { color: '#dbe6f0', fontSize: 13, lineHeight: 20, textAlign: 'right', marginBottom: 12 },
+  text: { color: '#dbe6f0', fontSize: 13, lineHeight: 20, marginBottom: 12 },
   link: { color: '#c8973a', textDecorationLine: 'underline' },
-  row: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
+  row: { flexDirection: 'row', gap: 10 },
   btn: { paddingVertical: 9, paddingHorizontal: 22, borderRadius: 8 },
   decline: { backgroundColor: 'transparent', borderWidth: 1, borderColor: '#5a7491' },
   declineTxt: { color: '#aebfd0', fontWeight: '600' },

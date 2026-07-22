@@ -1,69 +1,85 @@
+import { useMemo } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, TouchableOpacity,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '../../src/theme/tokens';
-
-const SECTIONS: { title: string; body: string }[] = [
-  {
-    title: 'مقدمة',
-    body: 'نهتم في «شبكة اختبار القرآن» بخصوصيتك. توضّح هذه الصفحة البيانات التي نجمعها وكيفية استخدامها وحمايتها عند استعمالك للتطبيق.',
-  },
-  {
-    title: 'البيانات التي نجمعها',
-    body: 'عند تسجيل الدخول عبر جوجل أو فيسبوك نحفظ اسمك وصورتك وبريدك الإلكتروني لإنشاء ملفك الشخصي. كما نحفظ تقدّمك في الحفظ ونتائج الاختبارات وإعداداتك. يمكنك أيضاً استخدام التطبيق كزائر دون تسجيل دخول.',
-  },
-  {
-    title: 'كيف نستخدم بياناتك',
-    body: 'نستخدم بياناتك لحفظ تقدّمك ومزامنته بين أجهزتك، ولعرض ترتيبك في البطولة والاختبار اليومي، ولتحسين تجربتك داخل التطبيق. لا نبيع بياناتك ولا نعرض إعلانات.',
-  },
-  {
-    title: 'ملفات تعريف الارتباط والتحليلات',
-    body: 'نستخدم خدمة Google Analytics لفهم كيفية استخدام التطبيق (مثل الصفحات التي تُزار وعدد الاختبارات) بهدف تحسين التجربة، وذلك عبر ملفات تعريف الارتباط (cookies). لا نفعّل هذا التتبّع إلا بعد موافقتك، ويمكنك رفضه من شريط الموافقة دون أن يؤثر ذلك على استخدامك للتطبيق. نستخدم هذه البيانات للتحليل فقط ولا نستعملها للإعلانات.',
-  },
-  {
-    title: 'التخزين والأمان',
-    body: 'تُخزَّن بياناتك على خوادم Firebase التابعة لجوجل بحماية مناسبة. تبقى بياناتك المحلية على جهازك، وتُمسح عند تسجيل الخروج.',
-  },
-  {
-    title: 'حذف الحساب',
-    body: 'يمكنك تسجيل الخروج في أي وقت لمسح بياناتك المحلية من هذا الجهاز. لحذف حسابك وجميع بياناتك من خوادمنا نهائياً بنفسك: من الشاشة الرئيسية اضغط على أيقونة الإعدادات ⚙ أعلى الصفحة، ثم اضغط على «حذف الحساب» في أسفل صفحة الإعدادات، وأكِّد الحذف. يُحذف حسابك فوراً ولا يمكن التراجع عن هذا الإجراء.',
-  },
-  {
-    title: 'شروط الاستخدام',
-    body: 'التطبيق مخصّص لمساعدتك على مراجعة حفظك للقرآن الكريم. تُقدَّم الخدمة كما هي دون ضمانات، ونحرص على دقة المحتوى القرآني المستند إلى مصدر تنزيل (tanzil.net).',
-  },
-  {
-    title: 'التواصل',
-    body: 'لأي استفسار حول الخصوصية أو الشروط، يمكنك مراسلتنا عبر البريد الإلكتروني الخاص بالتطبيق.',
-  },
-];
+import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 
 export default function PrivacyScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
+
+  const sections = useMemo(
+    () => [
+      {
+        key: 'intro',
+        title: t('privacy.sections.intro.title'),
+        body: t('privacy.sections.intro.body'),
+      },
+      {
+        key: 'dataCollected',
+        title: t('privacy.sections.dataCollected.title'),
+        body: t('privacy.sections.dataCollected.body'),
+      },
+      {
+        key: 'useOfData',
+        title: t('privacy.sections.useOfData.title'),
+        body: t('privacy.sections.useOfData.body'),
+      },
+      {
+        key: 'cookiesAnalytics',
+        title: t('privacy.sections.cookiesAnalytics.title'),
+        body: t('privacy.sections.cookiesAnalytics.body'),
+      },
+      {
+        key: 'storageSecurity',
+        title: t('privacy.sections.storageSecurity.title'),
+        body: t('privacy.sections.storageSecurity.body'),
+      },
+      {
+        key: 'accountDeletion',
+        title: t('privacy.sections.accountDeletion.title'),
+        body: t('privacy.sections.accountDeletion.body'),
+      },
+      {
+        key: 'termsOfUse',
+        title: t('privacy.sections.termsOfUse.title'),
+        body: t('privacy.sections.termsOfUse.body'),
+      },
+      {
+        key: 'contact',
+        title: t('privacy.sections.contact.title'),
+        body: t('privacy.sections.contact.body'),
+      },
+    ],
+    [t]
+  );
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['top', 'bottom']}>
       {/* Header — a fixed navy panel like the auth/onboarding heroes, correct in both modes */}
-      <View style={[s.header, { backgroundColor: colors.navy }]}>
+      <View style={[s.header, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]}>
         <TouchableOpacity style={s.backBtn} onPress={() => router.back()} hitSlop={8}>
-          <Ionicons name="chevron-forward" size={24} color="#fff" />
+          <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={s.headerTitle}>الشروط وسياسة الخصوصية</Text>
+        <Text style={s.headerTitle}>{t('privacy.title')}</Text>
         <View style={s.backBtn} />
       </View>
 
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
-        {SECTIONS.map((sec) => (
-          <View key={sec.title} style={[s.card, { backgroundColor: colors.card }]}>
-            <Text style={[s.cardTitle, { color: colors.ink }]}>{sec.title}</Text>
-            <Text style={[s.cardBody, { color: colors.ink }]}>{sec.body}</Text>
+        {sections.map((sec) => (
+          <View key={sec.key} style={[s.card, { backgroundColor: colors.card }]}>
+            <Text style={[s.cardTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{sec.title}</Text>
+            <Text style={[s.cardBody, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{sec.body}</Text>
           </View>
         ))}
-        <Text style={[s.updated, { color: colors.inkSoft }]}>آخر تحديث: يونيو 2026</Text>
+        <Text style={[s.updated, { color: colors.inkSoft }]}>{t('privacy.updated')}</Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -72,7 +88,6 @@ export default function PrivacyScreen() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
@@ -89,7 +104,7 @@ const s = StyleSheet.create({
     boxShadow: '0px 2px 8px rgba(13,45,78,0.06)',
     elevation: 2,
   },
-  cardTitle: { fontSize: 15, fontWeight: '800', textAlign: 'right' },
-  cardBody: { fontSize: 14, textAlign: 'right', lineHeight: 24 },
+  cardTitle: { fontSize: 15, fontWeight: '800' },
+  cardBody: { fontSize: 14, lineHeight: 24 },
   updated: { fontSize: 12, textAlign: 'center', marginTop: 4 },
 });
