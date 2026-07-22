@@ -385,7 +385,10 @@ export default function MeScreen() {
       else if (provider === 'facebook') await signInFacebook();
       else await signInApple();
     } catch {
-      notify('خطأ', 'تعذر تسجيل الدخول. حاول مرة أخرى.');
+      // A slight delay avoids a real iOS timing issue where Alert.alert can
+      // silently fail to show if it's presented immediately after a native
+      // auth sheet dismisses (see handleApple in (auth)/index.tsx).
+      setTimeout(() => notify('خطأ', 'تعذر تسجيل الدخول. حاول مرة أخرى.'), 400);
     }
   }
 
