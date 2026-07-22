@@ -365,7 +365,21 @@
       "ayahNumber": "Ayah number {{count}}"
     },
     "meccan": "Meccan",
-    "medinan": "Medinan"
+    "medinan": "Medinan",
+    "instructionNotSpecial": "Choose the correct continuation",
+    "instructionSuraName": "Choose the Surah name",
+    "instructionAyahCount": "Choose the Surah's Ayah count",
+    "instructionMakki": "Choose the Surah's classification",
+    "instructionAyahNumber": "Choose the Ayah number",
+    "correctMark": "✓ Correct",
+    "pickedWrongMark": "You picked ✗",
+    "skip": "I don't know",
+    "ayahCount": "{{count}} verses",
+    "ayahLabel": "Ayah {{number}}",
+    "ok": "OK",
+    "view": "View",
+    "compete": "Compete",
+    "shareMsg": "Compete with me on {{appName}}!\n{{url}}"
   },
   "dailyRank": {
     "ahead": "You're ahead of everyone today! 🏆",

@@ -7,6 +7,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withTiming, interpolate, Extrapolation,
 } from 'react-native-reanimated';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { QuestionObject, Q_TYPE } from '../models/questionnaire';
 import {
   removeAyaNum, SURA_NAME, SURA_AYAS, SURA_IDX, QURAN_WORDS, getSuraIdx,
@@ -107,6 +108,7 @@ export default function QuizCard({
   onSelectOption, onSkip, onScrollDown, onReport, round, totalRounds,
   shuffledOptions, flipTrigger, isCorrect, correctIndex, pickedIndex,
 }: Props) {
+  const { t } = useTranslation();
   const { colors } = useTheme();
   // paper and card sit close together by design in both palettes (a warm
   // cream-vs-white step in light, a subtle navy-vs-navy step in dark) — the
@@ -131,7 +133,7 @@ export default function QuizCard({
 
   const sura     = getSuraIdx(card.qo.startIdx);
   const suraName = SURA_NAME[sura];
-  const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · ${SURA_AYAS[sura]} آية`;
+  const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · ${t('quizCard.ayahCount', { count: SURA_AYAS[sura] })}`;
   const pageURL  = getPageURLFromSuraAyah(sura, card.answerAya);
 
   // Madina renderer (web only — see QuranText.web.tsx) applies to real Quran
@@ -235,7 +237,13 @@ export default function QuizCard({
 
   async function handleShare() {
     try {
-      await Share.share({ message: `نافسني في اختبار القرآن\n${card.socialURL}`, url: card.socialURL });
+      await Share.share({
+        message: t('quizCard.shareMsg', {
+          appName: t('common.appName'),
+          url: card.socialURL,
+        }),
+        url: card.socialURL,
+      });
     } catch { /* ignore */ }
   }
 
@@ -257,7 +265,7 @@ export default function QuizCard({
             reads as the card's own header, not a strip that blends into the
             page background sitting behind the card. */}
         <View style={[s.topBar, { backgroundColor: colors.card, borderColor: colors.line }]}>
-          <Text style={[s.instruction, { color: colors.inkSoft }]}>{card.qo.qType.txt}</Text>
+          <Text style={[s.instruction, { color: colors.inkSoft }]}>{t(card.qo.qType.txt)}</Text>
           <View style={s.dotsRow}>
             {Array.from({ length: totalRounds }, (_, i) => (
               <View
@@ -325,8 +333,8 @@ export default function QuizCard({
                   <Text style={[s.optionText, { color: colors.ink }, !isActive && { color: colors.inkSoft }]}>
                     {shuffledOptions[i] ?? ''}
                   </Text>
-                  {isCorrectOpt && <Text style={[s.optionMark, { color: colors.correct }]}>✓ الصحيحة</Text>}
-                  {isPickedWrong && <Text style={[s.optionMark, { color: colors.wrong }]}>اخترت ✗</Text>}
+                  {isCorrectOpt && <Text style={[s.optionMark, { color: colors.correct }]}>{t('quizCard.correctMark')}</Text>}
+                  {isPickedWrong && <Text style={[s.optionMark, { color: colors.wrong }]}>{t('quizCard.pickedWrongMark')}</Text>}
                 </PressScale>
               );
             })}
@@ -348,7 +356,7 @@ export default function QuizCard({
 
             <PressScale style={s.skipBtn} onPress={() => isActive && onSkip()} disabled={!isActive}>
               <Ionicons name="remove-circle-outline" size={18} color={isActive ? colors.wrong : colors.line} />
-              <Text style={[s.skipText, { color: isActive ? colors.wrong : colors.line }]}>لا أعلم</Text>
+              <Text style={[s.skipText, { color: isActive ? colors.wrong : colors.line }]}>{t('quizCard.skip')}</Text>
             </PressScale>
           </View>
         </View>
@@ -366,7 +374,7 @@ export default function QuizCard({
           <View style={s.backHeaderLeft}>
             <Text style={[s.backSuraInfo, { color: colors.inkSoft }]}>{suraInfo}</Text>
           </View>
-          <Text style={[s.backSuraName, { color: colors.ink, fontFamily: AMIRI_FONT }]}>سورة {suraName} · آية {arNum(card.answerAya)}</Text>
+          <Text style={[s.backSuraName, { color: colors.ink, fontFamily: AMIRI_FONT }]}>{t('quizCard.answerOption.sura', { name: suraName })} · {t('quizCard.ayahLabel', { number: arNum(card.answerAya) })}</Text>
         </View>
 
         {/* Answer text */}
@@ -389,18 +397,18 @@ export default function QuizCard({
         <View style={[s.actionRow, { borderColor: colors.line }]}>
           <PressScale style={[s.actionBtn, { backgroundColor: colors.navy }]} onPress={onScrollDown}>
             <Ionicons name="chevron-down" size={16} color="#fff" />
-            <Text style={s.actionBtnTxt}> حسناً</Text>
+            <Text style={s.actionBtnTxt}> {t('quizCard.ok')}</Text>
           </PressScale>
           <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={() => setImgVisible(true)}>
             <Ionicons name="book-outline" size={16} color={colors.ink} />
-            <Text style={[s.actionBtnTxt, { color: colors.ink }]}> شاهد</Text>
+            <Text style={[s.actionBtnTxt, { color: colors.ink }]}> {t('quizCard.view')}</Text>
           </PressScale>
           {/* Share links to /quiz?start=<word>, which only reproduces normal
               "complete the verse" questions — so hide it on special questions. */}
           {card.qo.qType.id === Q_TYPE.NOTSPECIAL.id && (
             <PressScale style={[s.actionBtn, { backgroundColor: colors.paper }]} onPress={handleShare}>
               <Ionicons name="share-social-outline" size={16} color={colors.ink} />
-              <Text style={[s.actionBtnTxt, { color: colors.ink }]}> نافس</Text>
+              <Text style={[s.actionBtnTxt, { color: colors.ink }]}> {t('quizCard.compete')}</Text>
             </PressScale>
           )}
           <PressScale style={[s.reportBtn, { backgroundColor: colors.wrongPale }]} onPress={() => onReport(card)}>

@@ -365,7 +365,21 @@
       "ayahNumber": "رقم الاية {{count}}"
     },
     "meccan": "مكية",
-    "medinan": "مدنية"
+    "medinan": "مدنية",
+    "instructionNotSpecial": "اختر التكملة الصحيحة",
+    "instructionSuraName": "اختر اسم السورة",
+    "instructionAyahCount": "اختر عدد ايات السورة",
+    "instructionMakki": "اختر بيان السورة",
+    "instructionAyahNumber": "اختر رقم الاية",
+    "correctMark": "✓ الصحيحة",
+    "pickedWrongMark": "اخترت ✗",
+    "skip": "لا أعلم",
+    "ayahCount": "{{count}} آية",
+    "ayahLabel": "آية {{number}}",
+    "ok": "حسناً",
+    "view": "شاهد",
+    "compete": "نافس",
+    "shareMsg": "نافسني في {{appName}}\n{{url}}"
   },
   "dailyRank": {
     "ahead": "أنت متقدم على الجميع اليوم! 🏆",

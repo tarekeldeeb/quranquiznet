@@ -1,11 +1,11 @@
 // Types for the questionnaire engine — mirrors the original qTypeEnum and qo object
 
 export const Q_TYPE = {
-  NOTSPECIAL:  { id: 1, score: 10, txt: 'اختر التكملة الصحيحة' },
-  SURANAME:    { id: 2, score: 5,  txt: 'اختر اسم السورة' },
-  SURAAYACOUNT:{ id: 3, score: 25, txt: 'اختر عدد ايات السورة' },
-  MAKKI:       { id: 4, score: 15, txt: 'اختر بيان السورة' },
-  AYANUMBER:   { id: 5, score: 35, txt: 'اختر رقم الاية' },
+  NOTSPECIAL:  { id: 1, score: 10, txt: 'quizCard.instructionNotSpecial' },
+  SURANAME:    { id: 2, score: 5,  txt: 'quizCard.instructionSuraName' },
+  SURAAYACOUNT:{ id: 3, score: 25, txt: 'quizCard.instructionAyahCount' },
+  MAKKI:       { id: 4, score: 15, txt: 'quizCard.instructionMakki' },
+  AYANUMBER:   { id: 5, score: 35, txt: 'quizCard.instructionAyahNumber' },
 } as const;
 
 export type QType = typeof Q_TYPE[keyof typeof Q_TYPE];
