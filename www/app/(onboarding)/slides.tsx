@@ -252,12 +252,14 @@ export default function SlidesScreen() {
       }}
     >
       <View style={[s.header, { flexDirection: rowDir(isRTL) }]}>
-        {current > 0 ? (
-          <PressScale style={s.backBtn} onPress={goBack}>
-            <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={22} color={colors.navySoft} />
-          </PressScale>
-        ) : <View style={s.backBtn} />}
-        <LanguagePicker value={language} onChange={setLanguage} />
+        <View style={[s.headerStart, { flexDirection: rowDir(isRTL) }]}>
+          <LanguagePicker value={language} onChange={setLanguage} />
+          {current > 0 ? (
+            <PressScale style={s.backBtn} onPress={goBack}>
+              <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={22} color={colors.navySoft} />
+            </PressScale>
+          ) : <View style={s.backBtn} />}
+        </View>
         <PressScale style={s.skipBtn} onPress={skip}>
           <Text style={[s.skipTxt, { color: colors.navySoft }]}>{t('onboarding.skip')}</Text>
         </PressScale>
@@ -318,6 +320,7 @@ const s = StyleSheet.create({
     paddingHorizontal: 8,
     zIndex: 10,
   },
+  headerStart: { alignItems: 'center', gap: 4 },
   backBtn: { padding: 16, width: 54 },
   skipBtn: { padding: 16 },
   skipTxt: { fontSize: 14 },
