@@ -16,7 +16,10 @@ describe('QuizSettingsBar — daily progress', () => {
         dailyTotal={10}
       />,
     );
-    expect(getByText('السؤال 3 من 10')).toBeTruthy();
+    // Arabic-Indic digits — i18next's interpolation formatter locale-formats
+    // every numeric interpolation value (see src/i18n/index.ts), consistent
+    // with the rest of the app's Arabic number convention.
+    expect(getByText('السؤال ٣ من ١٠')).toBeTruthy();
   });
 
   it('does not render progress when total is 0', () => {
