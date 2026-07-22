@@ -2,6 +2,7 @@
 // Persisted via AsyncStorage (replaces localStorage).
 
 import { create } from 'zustand';
+import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   SURA_IDX, SURA_NAME, LAST5_JUZ_IDX, LAST5_JUZ_NAME,
@@ -254,6 +255,17 @@ const LANGUAGE_KEY = 'prf_language';
 
 const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
 
+// `?lang=ar` / `?lang=en` on a web URL (e.g. a shared/campaign link) should
+// override both the persisted preference and the device locale, and stick
+// like an explicit in-app choice — not just for that one page load. Native
+// `window` has no `.location` (see Analytics.tsx), so this only ever fires
+// on web.
+function getUrlLang(): 'ar' | 'en' | null {
+  if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
+  const lang = new URLSearchParams(window.location.search).get('lang');
+  return lang === 'ar' || lang === 'en' ? lang : null;
+}
+
 async function saveKey(key: string, value: unknown) {
   await AsyncStorage.setItem(key, JSON.stringify(value));
 }
@@ -302,8 +314,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const themeMode = await loadKey<ThemeMode>(THEME_KEY, 'dark');
 
     const rawLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+    const urlLang = getUrlLang();
     let language: 'ar' | 'en';
-    if (rawLanguage === null) {
+    if (urlLang) {
+      language = urlLang;
+      await saveKey(LANGUAGE_KEY, language);
+    } else if (rawLanguage === null) {
       const sysLang = Localization.getLocales()[0]?.languageCode;
       language = sysLang?.startsWith('ar') ? 'ar' : 'en';
       await saveKey(LANGUAGE_KEY, language);
