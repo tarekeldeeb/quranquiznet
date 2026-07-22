@@ -340,6 +340,22 @@
       }
     }
   },
-  "support": {},
+  "support": {
+    "title": "Support & Help",
+    "sections": {
+      "technical": {
+        "title": "Technical Support",
+        "body": "Encountered an issue with the app, or have a suggestion to improve it? We're happy to help. Email us below and we will respond as soon as possible."
+      },
+      "sync": {
+        "title": "Sign-in or Sync Issues",
+        "body": "If you experience an issue signing in with Google or Facebook, or notice that your progress is not syncing across your devices, contact us mentioning your device type and operating system so we can assist you faster."
+      },
+      "deletion": {
+        "title": "Account or Data Deletion",
+        "body": "To request the permanent deletion of your account and data stored on our servers, email us below and we will complete the request within a few days."
+      }
+    }
+  },
   "quizCard": {}
 }
