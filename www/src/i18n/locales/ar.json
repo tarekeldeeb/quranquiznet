@@ -199,6 +199,7 @@
     }
   },
   "pvp": {
+    "botName": "الحافظ",
     "you": "أنت",
     "theOpponent": "المنافس",
     "opponent": "منافس",

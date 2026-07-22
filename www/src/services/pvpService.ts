@@ -18,7 +18,6 @@ export const PVP_TIMER_NEXT = 5;    // seconds for each later round
 // How long an answered (flipped) card stays visible before auto-advancing.
 export const PVP_ADVANCE_MS = 1600;
 
-export const BOT_NAME = 'الحافظ';
 export const BOT_EMOJI = '🤖';
 
 export type PvpOutcome = 'win' | 'loss' | 'draw';

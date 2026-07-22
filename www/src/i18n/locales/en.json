@@ -199,6 +199,7 @@
     }
   },
   "pvp": {
+    "botName": "Hafiz",
     "you": "You",
     "theOpponent": "The opponent",
     "opponent": "Opponent",

@@ -23,7 +23,7 @@ import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
 import {
   PVP_QUESTIONS, PVP_ROUNDS, PVP_TIMER_FIRST, PVP_TIMER_NEXT, PVP_ADVANCE_MS,
-  BOT_NAME, BOT_EMOJI, MatchPlan, BotTimeline, BotProgress, PvpOutcome,
+  BOT_EMOJI, MatchPlan, BotTimeline, BotProgress, PvpOutcome,
   scopeFromParts, makeMatchPlan, makeBotTimeline, botProgressAt,
   decideOutcome, newMatchSeed,
   intersectScope, isCompatibleCandidate, mayClaim, commonLevel,
@@ -758,7 +758,7 @@ export default function PvpScreen() {
   const avatarUri = profile.social.photoURL || undefined;
   const playing = phase === 'playing' || phase === 'done';
 
-  const opponentLabel = opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? t('pvp.theOpponent'));
+  const opponentLabel = opponentKind === 'bot' ? t('pvp.botName') : (humanOpponent?.name ?? t('pvp.theOpponent'));
   const outcomeTitle =
     outcome === 'win' ? t('pvp.outcome.winTitle')
     : outcome === 'loss' ? t('pvp.outcome.lossTitle', { name: opponentLabel })
@@ -779,7 +779,7 @@ export default function PvpScreen() {
           </View>
           <Text style={[s.idleTitle, { color: colors.ink }]}>{t('pvp.idleTitle')}</Text>
           <Text style={[s.idleSub, { color: colors.inkSoft }]}>
-            {t('pvp.idleSub', { count: PVP_QUESTIONS, botName: BOT_NAME, botEmoji: BOT_EMOJI })}
+            {t('pvp.idleSub', { count: PVP_QUESTIONS, botName: t('pvp.botName'), botEmoji: BOT_EMOJI })}
           </Text>
           <View style={[s.recordRow, { flexDirection: rowDir(isRTL) }]}>
             <View style={s.recordCell}>
@@ -846,7 +846,7 @@ export default function PvpScreen() {
               )}
               <Text style={[s.vsName, { color: colors.ink }]} numberOfLines={1}>
                 {opponentKind === 'human' && humanOpponent?.country ? `${flagEmoji(humanOpponent.country)} ` : ''}
-                {opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? t('pvp.opponent'))}
+                {opponentKind === 'bot' ? t('pvp.botName') : (humanOpponent?.name ?? t('pvp.opponent'))}
               </Text>
             </View>
             <Text style={[s.vsScore, { color: colors.ink }]}>{botView.correct}</Text>
@@ -915,7 +915,7 @@ export default function PvpScreen() {
               <Text style={[s.resultDash, { color: colors.inkSoft }]}>—</Text>
               <View style={s.resultCell}>
                 <Text style={[s.resultName, { color: colors.inkSoft }]}>
-                  {opponentKind === 'bot' ? BOT_NAME : opponentLabel}
+                  {opponentKind === 'bot' ? t('pvp.botName') : opponentLabel}
                 </Text>
                 <Text style={[s.resultNum, { color: colors.ink }, outcome === 'loss' && { color: colors.correct }]}>
                   {opponentKind === 'bot' ? (botRef.current?.final.correct ?? 0) : botView.correct}
