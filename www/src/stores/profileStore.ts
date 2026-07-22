@@ -10,8 +10,10 @@ import {
   DAILYQUIZ_MAXTIME, DAILYQUIZ_MINTIME,
   countedScore,
 } from '../models/constants';
+import * as Localization from 'expo-localization';
 import { MasteryTier } from '../models/milestones';
 import type { ThemeMode } from '../theme/tokens';
+import { changeLanguage } from '../i18n';
 
 export interface StudyPart {
   start: number;
@@ -182,6 +184,7 @@ interface ProfileState {
   // THEME_KEY) so it survives sign-out/delete instead of resetting with the
   // rest of the profile. Defaults to dark (وضع الليل is the app's default look).
   themeMode: ThemeMode;
+  language: 'ar' | 'en';
 
   // Actions
   load(): Promise<boolean>;
@@ -200,6 +203,7 @@ interface ProfileState {
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
   setThemeMode(mode: ThemeMode): void;
+  setLanguage(lang: 'ar' | 'en'): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -245,6 +249,8 @@ const KEYS = {
 // Deliberately outside KEYS: delete() wipes every KEYS entry on sign-out, but
 // the theme is a device preference, not profile data — it should survive that.
 const THEME_KEY = 'prf_themeMode';
+// Deliberately outside KEYS: device preference that survives sign-out/delete.
+const LANGUAGE_KEY = 'prf_language';
 
 const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
 
@@ -278,6 +284,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   country: '',
   pvp: EMPTY_PVP,
   themeMode: 'dark',
+  language: 'ar',
 
   levels: [
     { value: 0, text: 'مستوى ابتدائي', comment: 'يبدأ السؤال من رأس الآية، ويزيد النقاط بخمسة', disabled: false },
@@ -290,11 +297,27 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     // Independent of the uid branch below — a device preference, present (or
     // not) regardless of whether a profile has ever been signed into.
     const themeMode = await loadKey<ThemeMode>(THEME_KEY, 'dark');
+
+    const rawLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
+    let language: 'ar' | 'en';
+    if (rawLanguage === null) {
+      const sysLang = Localization.getLocales()[0]?.languageCode;
+      language = sysLang?.startsWith('ar') ? 'ar' : 'en';
+      await saveKey(LANGUAGE_KEY, language);
+    } else {
+      try {
+        language = JSON.parse(rawLanguage) as 'ar' | 'en';
+      } catch {
+        language = 'ar';
+      }
+    }
+    changeLanguage(language);
+
     const uid = await loadKey<string>(KEYS.uid, '-1');
     if (uid === '-1') {
       const parts = makeDefaultParts();
       const seed = Math.floor(Math.random() * (QURAN_WORDS - 1));
-      set({ parts, lastSeed: seed, loaded: true, themeMode });
+      set({ parts, lastSeed: seed, loaded: true, themeMode, language });
       await get().saveAll();
       return false;
     }
@@ -319,7 +342,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       ]);
     set({
       uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
-      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit, loaded: true, themeMode,
+      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit, loaded: true, themeMode, language,
     });
     return true;
   },
@@ -427,6 +450,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   setThemeMode(mode: ThemeMode) {
     set({ themeMode: mode });
     saveKey(THEME_KEY, mode);
+  },
+
+  setLanguage(lang: 'ar' | 'en') {
+    set({ language: lang });
+    saveKey(LANGUAGE_KEY, lang);
+    changeLanguage(lang);
   },
 
   addPvpResult(outcome) {

@@ -1,0 +1,17 @@
+{
+  "common": {
+    "guestName": "زائر(ة)",
+    "appName": "اختبار القرآن"
+  },
+  "onboarding": {},
+  "settings": {},
+  "me": {},
+  "quiz": {},
+  "pvp": {},
+  "league": {},
+  "map": {},
+  "auth": {},
+  "privacy": {},
+  "support": {},
+  "quizCard": {}
+}

@@ -1,0 +1,17 @@
+{
+  "common": {
+    "guestName": "Guest",
+    "appName": "Quran Quiz Net"
+  },
+  "onboarding": {},
+  "settings": {},
+  "me": {},
+  "quiz": {},
+  "pvp": {},
+  "league": {},
+  "map": {},
+  "auth": {},
+  "privacy": {},
+  "support": {},
+  "quizCard": {}
+}

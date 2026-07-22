@@ -6,6 +6,8 @@ import {
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { useFonts } from 'expo-font';
+import { I18nextProvider } from 'react-i18next';
+import i18n from '../src/i18n';
 import { initDb } from '../src/db/initDb';
 import { initMadinaAssets } from '../src/services/madinaAssets';
 import { getFirebaseApp, flushPendingDailySubmit } from '../src/services/firebase';
@@ -132,6 +134,7 @@ export default function RootLayout() {
   // WebView needs (see src/services/madinaAssets.ts); a no-op resolved promise on web.
   const [madinaReady, setMadinaReady] = useState(Platform.OS === 'web');
   const loadProfile = useProfileStore((s) => s.load);
+  const language = useProfileStore((s) => s.language);
 
   const [fontsLoaded] = useFonts({
     // UI face — buttons, tabs, labels, body text; legible at 11-13px where
@@ -194,7 +197,9 @@ export default function RootLayout() {
       <StatusBar style="light" />
       <Analytics />
       <WebFrame>
-        <Stack screenOptions={{ headerShown: false }} />
+        <I18nextProvider i18n={i18n}>
+          <Stack key={language} screenOptions={{ headerShown: false }} />
+        </I18nextProvider>
       </WebFrame>
       <ConsentBanner />
     </SafeAreaProvider>

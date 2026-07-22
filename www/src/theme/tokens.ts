@@ -100,3 +100,8 @@ export function useTheme() {
 export function arNum(n: number): string {
   return n.toLocaleString('ar-EG');
 }
+
+export function localeNum(n: number, lang: 'ar' | 'en'): string {
+  return lang === 'ar' ? n.toLocaleString('ar-EG') : n.toLocaleString('en-US');
+}
+
