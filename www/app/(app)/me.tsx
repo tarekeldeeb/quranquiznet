@@ -8,6 +8,7 @@ import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useTranslation } from 'react-i18next';
 import {
   signInGoogle, signInFacebook, signInApple, getDailyHead, getTodayStandings, type DailyHead,
 } from '../../src/services/firebase';
@@ -18,7 +19,8 @@ import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
 
@@ -35,16 +37,18 @@ const APP_ICON = require('../../assets/images/app-icon.png');
  * screens with no situational title. A thin gold ring gives it a seal-like
  * finish instead of a plain square icon. */
 function HeaderBrand() {
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   return (
-    <View style={hb.wrap}>
+    <View style={[hb.wrap, { flexDirection: rowDir(isRTL) }]}>
       <Image source={APP_ICON} style={hb.icon} />
-      <Text style={hb.name}>اختبار القرآن</Text>
+      <Text style={[hb.name, { textAlign: alignDir(isRTL) }]}>{t('common.appName')}</Text>
     </View>
   );
 }
 
 const hb = StyleSheet.create({
-  wrap: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6 },
+  wrap: { alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6 },
   icon: { width: 24, height: 24, borderRadius: 6, borderWidth: 1, borderColor: 'rgba(217,173,85,0.6)' },
   name: { color: '#fff', fontSize: 12, fontFamily: 'PlexArabic-Bold' },
 });
@@ -58,28 +62,23 @@ function notify(title: string, msg: string) {
   Alert.alert(title, msg);
 }
 
-/** Arabic plural for a count + singular/dual/plural noun forms. */
-function arPlural(n: number, one: string, two: string, few: string, many: string): string {
-  if (n === 1) return one;
-  if (n === 2) return two;
-  if (n >= 3 && n <= 10) return `${n} ${few}`;
-  return `${n} ${many}`;
-}
-
 /** Format a remaining duration (ms) as e.g. "5 ساعات و23 دقيقة". */
-function formatRemaining(ms: number): string {
-  if (ms <= 0) return 'متاح الآن';
+function formatRemaining(ms: number, t: (key: string, options?: any) => string): string {
+  if (ms <= 0) return t('me.duration.availableNow');
   const totalMin = Math.ceil(ms / 60000);
   const h = Math.floor(totalMin / 60);
   const m = totalMin % 60;
-  const hPart = h > 0 ? arPlural(h, 'ساعة', 'ساعتان', 'ساعات', 'ساعة') : '';
-  const mPart = m > 0 ? arPlural(m, 'دقيقة', 'دقيقتان', 'دقائق', 'دقيقة') : '';
-  if (hPart && mPart) return `${hPart} و${mPart}`;
-  return hPart || mPart || 'أقل من دقيقة';
+  const hPart = h > 0 ? t('me.duration.hours', { count: h }) : '';
+  const mPart = m > 0 ? t('me.duration.minutes', { count: m }) : '';
+  if (hPart && mPart) return t('me.duration.combined', { hours: hPart, minutes: mPart });
+  return hPart || mPart || t('me.duration.lessThanMinute');
 }
 
 /** Compact score-over-time sparkline tile (one bar per recorded day). */
 function ProgressChart({ scores, colors }: { scores: { date: number; score: number }[]; colors: ReturnType<typeof useTheme>['colors'] }) {
+  const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
+  const lang = i18n.language as 'ar' | 'en';
   const MAX_BARS = 40;
   const data = scores.slice(-MAX_BARS);
   const H = 46;
@@ -102,12 +101,14 @@ function ProgressChart({ scores, colors }: { scores: { date: number; score: numb
 
   return (
     <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
-      {/* RTL: newest (اليوم) on the left */}
-      <View style={[s.sparkRow, { height: H }]}>
+      {/* Newest bar nearest the reading-start side */}
+      <View style={[s.sparkRow, { height: H, flexDirection: rowDir(isRTL) }]}>
         {enough ? bars : <Text style={[s.sparkEmpty, { color: colors.line }]}>—</Text>}
       </View>
-      <Text style={[s.statLabel, { color: colors.ink }]}>تقدّمك</Text>
-      <Text style={[s.statSub, { color: colors.inkSoft }]}>{enough ? `${arNum(data.length)} يوم` : 'ابدأ اللعب'}</Text>
+      <Text style={[s.statLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.progressChart.label')}</Text>
+      <Text style={[s.statSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+        {enough ? t('me.progressChart.days', { count: localeNum(data.length, lang) }) : t('me.progressChart.startPlaying')}
+      </Text>
     </View>
   );
 }
@@ -121,7 +122,13 @@ function StreakSheet({
   visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors'];
   streak: number; bestStreak: number; scores: { date: number; score: number }[]; playedToday: boolean;
 }) {
-  const DOW = ['أحد', 'اثنين', 'ثلاثاء', 'أربعاء', 'خميس', 'جمعة', 'سبت'];
+  const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
+  const lang = i18n.language as 'ar' | 'en';
+  const DOW = [
+    t('me.dow.sun'), t('me.dow.mon'), t('me.dow.tue'), t('me.dow.wed'),
+    t('me.dow.thu'), t('me.dow.fri'), t('me.dow.sat'),
+  ];
   const days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
@@ -135,21 +142,21 @@ function StreakSheet({
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={s.sheetBg}>
         <View style={[s.sheet, { backgroundColor: colors.card }]}>
-          <View style={s.sheetHeader}>
+          <View style={[s.sheetHeader, { flexDirection: rowDir(isRTL) }]}>
             <PressScale onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color={colors.inkSoft} />
             </PressScale>
-            <Text style={[s.sheetTitle, { color: colors.ink }]}>سلسلتك</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.streakSheet.title')}</Text>
             <View style={{ width: 22 }} />
           </View>
 
           <View style={s.streakHero}>
             <Ionicons name="flame" size={36} color={colors.gold} />
-            <Text style={[s.streakBig, { color: colors.ink }]}>{arNum(streak)}</Text>
-            <Text style={[s.streakUnit, { color: colors.inkSoft }]}>يوماً متتالياً</Text>
+            <Text style={[s.streakBig, { color: colors.ink }]}>{localeNum(streak, lang)}</Text>
+            <Text style={[s.streakUnit, { color: colors.inkSoft }]}>{t('me.streakSheet.daysInRow')}</Text>
           </View>
 
-          <View style={s.weekRow}>
+          <View style={[s.weekRow, { flexDirection: rowDir(isRTL) }]}>
             {days.map((d, i) => (
               <View key={i} style={s.weekCell}>
                 <View style={[
@@ -165,15 +172,19 @@ function StreakSheet({
             ))}
           </View>
 
-          <View style={[s.streakStatRow, { borderColor: colors.line }]}>
+          <View style={[s.streakStatRow, { borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
             <Ionicons name="trophy-outline" size={16} color={colors.goldDeep} />
-            <Text style={[s.streakStatTxt, { color: colors.ink }]}>أفضل سلسلة: {arNum(bestStreak)} يوماً</Text>
+            <Text style={[s.streakStatTxt, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
+              {t('me.streakSheet.bestStreak', { count: localeNum(bestStreak, lang) })}
+            </Text>
           </View>
 
           {atRisk && (
-            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale }]}>
+            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale, flexDirection: rowDir(isRTL) }]}>
               <Ionicons name="warning-outline" size={16} color={colors.wrong} />
-              <Text style={[s.riskTxt, { color: colors.wrong }]}>سلسلتك في خطر الليلة — العب اختباراً قبل منتصف الليل!</Text>
+              <Text style={[s.riskTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>
+                {t('me.streakSheet.riskBanner')}
+              </Text>
             </View>
           )}
         </View>
@@ -194,16 +205,19 @@ function RankSheet({
 }: {
   visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors']; score: number;
 }) {
+  const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
+  const lang = i18n.language as 'ar' | 'en';
   const ladder = getRankLadder(score);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={s.sheetBg}>
         <View style={[s.sheet, { backgroundColor: colors.card }]}>
-          <View style={s.sheetHeader}>
+          <View style={[s.sheetHeader, { flexDirection: rowDir(isRTL) }]}>
             <PressScale onPress={onClose} hitSlop={8}>
               <Ionicons name="close" size={22} color={colors.inkSoft} />
             </PressScale>
-            <Text style={[s.sheetTitle, { color: colors.ink }]}>درجات الحفظ</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.rankSheet.title')}</Text>
             <View style={{ width: 22 }} />
           </View>
 
@@ -211,7 +225,7 @@ function RankSheet({
             {ladder.map((r, i) => (
               <View
                 key={r.title}
-                style={[s.rankLadderRow, { borderColor: colors.line }, r.current && { backgroundColor: colors.goldPale }]}
+                style={[s.rankLadderRow, { borderColor: colors.line, flexDirection: rowDir(isRTL) }, r.current && { backgroundColor: colors.goldPale }]}
               >
                 <View style={[
                   s.rankBadge,
@@ -221,15 +235,15 @@ function RankSheet({
                 >
                   <Ionicons name={RANK_ICONS[i]} size={19} color={r.reached ? colors.navy : colors.inkSoft} />
                 </View>
-                <View style={s.rankLadderInfo}>
-                  <Text style={[s.rankLadderTitle, { color: colors.ink }]}>{r.title}</Text>
-                  <Text style={[s.rankLadderSub, { color: colors.inkSoft }]}>
-                    {i === 0 ? 'من البداية' : `من ${arNum(r.threshold)} نقطة`}
+                <View style={[s.rankLadderInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <Text style={[s.rankLadderTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{r.title}</Text>
+                  <Text style={[s.rankLadderSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+                    {i === 0 ? t('me.rankSheet.fromStart') : t('me.rankSheet.fromPoints', { count: localeNum(r.threshold, lang) })}
                   </Text>
                 </View>
                 {r.current ? (
                   <View style={[s.rankNowBadge, { backgroundColor: colors.gold }]}>
-                    <Text style={[s.rankNowTxt, { color: colors.navy }]}>مستواك الآن</Text>
+                    <Text style={[s.rankNowTxt, { color: colors.navy }]}>{t('me.rankSheet.yourLevel')}</Text>
                   </View>
                 ) : r.reached ? (
                   <Ionicons name="checkmark-circle" size={20} color={colors.correct} />
@@ -249,6 +263,9 @@ export default function MeScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const { colors } = useTheme();
+  const { t, i18n } = useTranslation();
+  const { isRTL } = useDirection();
+  const lang = i18n.language as 'ar' | 'en';
   const profile = useProfileStore();
   const social = profile.social;
 
@@ -322,7 +339,7 @@ export default function MeScreen() {
   // Reclaim the header: greeting + a gear icon into settings, replacing the
   // repeated app-name nameplate.
   const firstName = social.displayName?.split(' ')[0] ?? '';
-  const greeting = firstName ? `مرحباً ${firstName}` : 'مرحباً';
+  const greeting = firstName ? t('me.greeting', { name: firstName }) : t('me.greetingNoName');
   useEffect(() => {
     navigation.setOptions({
       headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{greeting}</Text>,
@@ -434,34 +451,34 @@ export default function MeScreen() {
   // folded in as a third option, instead of three competing full-width blocks.
   const waysToPlay = (
     <View style={s.waysWrap}>
-      <View style={s.waysRow}>
+      <View style={[s.waysRow, { flexDirection: rowDir(isRTL) }]}>
         <PressScale
           style={[s.wayTile, { backgroundColor: colors.navy }]}
           onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}
         >
           <Ionicons name="play" size={22} color="#fff" />
-          <Text style={s.wayTileTxt}>ابدأ اختباراً</Text>
+          <Text style={s.wayTileTxt}>{t('quiz.startQuiz')}</Text>
         </PressScale>
         <PressScale
           style={[s.wayTile, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold }]}
           onPress={() => router.push('/(app)/pvp')}
         >
           <Ionicons name="flash" size={22} color={colors.goldDeep} />
-          <Text style={[s.wayTileTxt, { color: colors.goldDeep }]}>منافسة مباشرة</Text>
+          <Text style={[s.wayTileTxt, { color: colors.goldDeep }]}>{t('pvp.idleTitle')}</Text>
           {pvpTotal > 0 && (
-            <View style={[s.wayBadge, { backgroundColor: colors.goldPale }]}>
-              <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{arNum(profile.pvp.wins)} فوز</Text>
+            <View style={[s.wayBadge, { backgroundColor: colors.goldPale, [isRTL ? 'left' : 'right']: 8 }]}>
+              <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{t('me.pvpWinsBadge', { count: localeNum(profile.pvp.wins, lang) })}</Text>
             </View>
           )}
         </PressScale>
       </View>
       {weakPartIndex >= 0 && (
         <PressScale
-          style={[s.wayNudge, { backgroundColor: colors.goldPale }]}
+          style={[s.wayNudge, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}
           onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
         >
-          <Ionicons name="chevron-back" size={16} color={colors.goldDeep} />
-          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep }]}>راجع أضعف سورة: {weakSura}</Text>
+          <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.goldDeep} />
+          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{t('me.weakSuraNudge', { sura: weakSura })}</Text>
           <Ionicons name="warning" size={15} color={colors.goldDeep} />
         </PressScale>
       )}
@@ -473,36 +490,40 @@ export default function MeScreen() {
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Identity strip: avatar + points + streak (greeting lives in the header) ── */}
-        <View style={s.topStrip}>
+        <View style={[s.topStrip, { flexDirection: rowDir(isRTL) }]}>
           <Avatar
             uri={avatarUri}
             fallback={require('../../assets/images/app-icon.png')}
             style={[s.topAvatar, { borderColor: colors.goldPale, backgroundColor: colors.paper }]}
             onError={() => setAvatarError(true)}
           />
-          <View style={s.topInfo}>
+          <View style={[s.topInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
             {social.isAnonymous ? (
-              <PressScale style={s.topSubRow} onPress={openNicknameEditor} hitSlop={6}>
+              <PressScale style={[s.topSubRow, { flexDirection: rowDir(isRTL) }]} onPress={openNicknameEditor} hitSlop={6}>
                 <Ionicons name="pencil" size={11} color={colors.inkSoft} />
-                <Text style={[s.topSub, { color: colors.inkSoft }]} numberOfLines={1}>{social.displayName || DEFAULT_GUEST_NAME}</Text>
+                <Text style={[s.topSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]} numberOfLines={1}>
+                  {social.displayName || t('common.guestName')}
+                </Text>
               </PressScale>
             ) : (
-              <Text style={[s.topSub, { color: colors.inkSoft }]} numberOfLines={1}>{social.email ?? social.displayName ?? ''}</Text>
+              <Text style={[s.topSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]} numberOfLines={1}>
+                {social.email ?? social.displayName ?? ''}
+              </Text>
             )}
-            <Text style={s.topPoints} numberOfLines={1}>
+            <Text style={[s.topPoints, { textAlign: alignDir(isRTL) }]} numberOfLines={1}>
               {trend !== 0 && (
                 <Text style={trend > 0 ? { color: colors.correct } : { color: colors.wrong }}>{trend > 0 ? '▲' : '▼'} </Text>
               )}
-              <Text style={[s.topPointsVal, { color: colors.ink }]}>{arNum(score)}</Text>
-              <Text style={[s.topPointsLabel, { color: colors.inkSoft }]}> نقطة</Text>
+              <Text style={[s.topPointsVal, { color: colors.ink }]}>{localeNum(score, lang)}</Text>
+              <Text style={[s.topPointsLabel, { color: colors.inkSoft }]}>{t('me.pointsSuffix')}</Text>
             </Text>
           </View>
           <PressScale
-            style={[s.streakBadge, { backgroundColor: colors.goldPale, borderColor: colors.gold, opacity: profile.streak > 0 ? 1 : 0.5 }]}
+            style={[s.streakBadge, { backgroundColor: colors.goldPale, borderColor: colors.gold, opacity: profile.streak > 0 ? 1 : 0.5, flexDirection: rowDir(isRTL) }]}
             onPress={() => setStreakSheetOpen(true)}
           >
             <Ionicons name="flame" size={16} color={colors.goldDeep} />
-            <Text style={[s.streakTxt, { color: colors.goldDeep }]}>{arNum(profile.streak)}</Text>
+            <Text style={[s.streakTxt, { color: colors.goldDeep }]}>{localeNum(profile.streak, lang)}</Text>
           </PressScale>
         </View>
 
@@ -511,24 +532,24 @@ export default function MeScreen() {
             each one). Same badge icon set as the ladder sheet, so the current
             rank reads as one continuous idea between the two. ── */}
         <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => setRankSheetOpen(true)}>
-          <View style={s.rankHeaderRow}>
+          <View style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]}>
             <View style={[s.rankBadgeSmall, { backgroundColor: colors.gold }]}>
               <Ionicons name={RANK_ICONS[rank.index]} size={18} color={colors.navy} />
             </View>
             <View style={s.rankColumn}>
-              <View style={s.rankRow}>
-                <View style={s.rankTitleRow}>
+              <View style={[s.rankRow, { flexDirection: rowDir(isRTL) }]}>
+                <View style={[s.rankTitleRow, { flexDirection: rowDir(isRTL) }]}>
                   <Text style={[s.rankTitle, { color: colors.ink }]}>{rank.title}</Text>
-                  <Ionicons name="chevron-back" size={14} color={colors.inkSoft} />
+                  <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={14} color={colors.inkSoft} />
                 </View>
                 {rank.nextTitle && (
-                  <Text style={[s.rankNext, { color: colors.inkSoft }]}>
-                    {arNum(rank.remaining)} نقطة إلى «{rank.nextTitle}» ✦
+                  <Text style={[s.rankNext, { color: colors.inkSoft, textAlign: isRTL ? 'left' : 'right' }]}>
+                    {t('me.pointsToRank', { remaining: localeNum(rank.remaining, lang), nextTitle: rank.nextTitle })}
                   </Text>
                 )}
               </View>
               <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
-                <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold }]} />
+                <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold, [isRTL ? 'right' : 'left']: 0 }]} />
               </View>
             </View>
           </View>
@@ -540,11 +561,13 @@ export default function MeScreen() {
             <ActivityIndicator color="#fff" size="large" />
           </View>
         ) : dailyCompleted ? (
-          <View style={[s.bentoFull, s.dailyStripDone, { backgroundColor: colors.correctPale, borderColor: colors.correct }]}>
+          <View style={[s.bentoFull, s.dailyStripDone, { backgroundColor: colors.correctPale, borderColor: colors.correct, flexDirection: rowDir(isRTL) }]}>
             <Ionicons name="checkmark-circle" size={20} color={colors.correct} />
-            <View style={s.dailyStripText}>
-              <Text style={[s.dailyStripTitle, { color: colors.correct }]}>أكملت اختبار اليوم — الاختبار الجديد بعد {formatRemaining(nextDailyMs)}</Text>
-              {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep }]}>{dailyRankLine}</Text>}
+            <View style={[s.dailyStripText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.dailyStripTitle, { color: colors.correct, textAlign: alignDir(isRTL) }]}>
+                {t('me.dailyHero.completed', { duration: formatRemaining(nextDailyMs, t) })}
+              </Text>
+              {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{dailyRankLine}</Text>}
             </View>
             <PressScale onPress={shareScore} hitSlop={6}>
               <Ionicons name="share-social-outline" size={18} color={colors.correct} />
@@ -552,23 +575,23 @@ export default function MeScreen() {
           </View>
         ) : dailyHead ? (
           <View style={[s.bentoFull, s.dailyHeroDark, { backgroundColor: colors.navy }]}>
-            <View style={s.dailyHeroRow}>
+            <View style={[s.dailyHeroRow, { flexDirection: rowDir(isRTL) }]}>
               <Ionicons name="star" size={34} color={colors.gold} />
-              <View style={s.dailyHeroText}>
-                <Text style={s.dailyTitle}>اختبار اليوم جاهز!</Text>
-                <Text style={[s.dailyBody, { color: colors.navySoft }]}>١٠ أسئلة × صحة وسرعة</Text>
+              <View style={[s.dailyHeroText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.dailyTitle, { textAlign: alignDir(isRTL) }]}>{t('me.dailyHero.readyTitle')}</Text>
+                <Text style={[s.dailyBody, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>{t('me.dailyHero.readyBody')}</Text>
               </View>
             </View>
             <PressScale style={[s.dailyBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={startDaily}>
-              <Text style={[s.dailyBtnTxt, { color: colors.navy }]}>ابدأ اختبار اليوم</Text>
+              <Text style={[s.dailyBtnTxt, { color: colors.navy }]}>{t('league.emptyBtnDaily')}</Text>
             </PressScale>
           </View>
         ) : (
-          <View style={[s.bentoFull, s.dailyHeroUnavail, { backgroundColor: colors.card }]}>
+          <View style={[s.bentoFull, s.dailyHeroUnavail, { backgroundColor: colors.card, flexDirection: rowDir(isRTL) }]}>
             <Ionicons name="time-outline" size={30} color={colors.inkSoft} />
-            <View style={s.dailyHeroText}>
-              <Text style={[s.dailyUnavailTxt, { color: colors.ink }]}>لا يوجد اختبار اليوم حتى الآن</Text>
-              <Text style={[s.dailyUnavailSub, { color: colors.inkSoft }]}>يتجدد الاختبار كل 24 ساعة</Text>
+            <View style={[s.dailyHeroText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.dailyUnavailTxt, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.dailyHero.unavailTitle')}</Text>
+              <Text style={[s.dailyUnavailSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('me.dailyHero.unavailSub')}</Text>
             </View>
           </View>
         )}
@@ -577,27 +600,27 @@ export default function MeScreen() {
         {waysToPlay}
 
         {/* ── BENTO: 2× progress ring tiles + sparkline ── */}
-        <View style={s.bentoRow}>
+        <View style={[s.bentoRow, { flexDirection: rowDir(isRTL) }]}>
           <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
             <Ring pct={studyPct} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} />
-            <Text style={[s.statLabel, { color: colors.ink }]}>كم الحفظ</Text>
-            <Text style={[s.statSub, { color: colors.inkSoft }]}>من القرآن</Text>
+            <Text style={[s.statLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.statTiles.studyLabel')}</Text>
+            <Text style={[s.statSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('me.statTiles.studySub')}</Text>
           </View>
           <View style={[s.bentoHalf, s.statTile, { backgroundColor: colors.card }]}>
             <Ring pct={ratioPct} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} />
-            <Text style={[s.statLabel, { color: colors.ink }]}>صحة الحفظ</Text>
-            <Text style={[s.statSub, { color: colors.inkSoft }]}>دقة الإجابات</Text>
+            <Text style={[s.statLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.statTiles.ratioLabel')}</Text>
+            <Text style={[s.statSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('me.statTiles.ratioSub')}</Text>
           </View>
           <ProgressChart scores={profile.scores} colors={colors} />
         </View>
 
         {/* ── The progression map — replaces the parts-editor summary card ── */}
-        <PressScale style={[s.bentoFull, s.mapCard, { backgroundColor: colors.navy }]} onPress={() => router.push('/(app)/map')}>
-          <Ionicons name="chevron-back" size={18} color={colors.navySoft} />
-          <View style={s.mapBody}>
-            <Text style={s.mapTitle}>خريطة الحفظ</Text>
-            <Text style={[s.mapSub, { color: colors.navySoft }]}>
-              {arPlural(activeParts, 'سورة مُفعّلة', 'سورتان مُفعّلتان', 'سور مُفعّلة', 'سورة مُفعّلة')} — اضغط لعرض التفاصيل
+        <PressScale style={[s.bentoFull, s.mapCard, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/map')}>
+          <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={18} color={colors.navySoft} />
+          <View style={[s.mapBody, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+            <Text style={[s.mapTitle, { textAlign: alignDir(isRTL) }]}>{t('me.mapCard.title')}</Text>
+            <Text style={[s.mapSub, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>
+              {t('me.activeParts', { count: activeParts })} — {t('me.mapCard.tapForDetails')}
             </Text>
           </View>
           <Ionicons name="map-outline" size={26} color={colors.gold} />
@@ -605,9 +628,9 @@ export default function MeScreen() {
 
         {/* ── Sign-in nag — demoted to a one-line banner, modern brand colors ── */}
         {social.isAnonymous && (
-          <View style={[s.anonBanner, { backgroundColor: colors.card, borderColor: colors.line }]}>
-            <Text style={[s.anonTxt, { color: colors.inkSoft }]} numberOfLines={1}>سجّل دخولك لحفظ تقدمك</Text>
-            <View style={s.anonBtns}>
+          <View style={[s.anonBanner, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
+            <Text style={[s.anonTxt, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{t('me.anonNag')}</Text>
+            <View style={[s.anonBtns, { flexDirection: rowDir(isRTL) }]}>
               {/* Apple requires its own native button component (not a custom
                   one) to start the auth flow — App Store guideline 4.8. iOS
                   only: no Android/web equivalent. */}
@@ -625,7 +648,7 @@ export default function MeScreen() {
                 style={[s.iconBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: colors.line }]}
                 onPress={() => upgradeGuest('google')}
                 accessibilityRole="button"
-                accessibilityLabel="المتابعة بحساب جوجل"
+                accessibilityLabel={t('auth.continueGoogle')}
               >
                 <Ionicons name="logo-google" size={16} color="#4285F4" />
               </PressScale>
@@ -633,7 +656,7 @@ export default function MeScreen() {
                 style={[s.iconBtn, { backgroundColor: '#1877F2' }]}
                 onPress={() => upgradeGuest('facebook')}
                 accessibilityRole="button"
-                accessibilityLabel="المتابعة بحساب فيسبوك"
+                accessibilityLabel={t('auth.continueFacebook')}
               >
                 <Ionicons name="logo-facebook" size={16} color="#fff" />
               </PressScale>
@@ -670,23 +693,23 @@ export default function MeScreen() {
       >
         <View style={s.nickOverlay}>
           <View style={[s.nickBox, { backgroundColor: colors.card }]}>
-            <Text style={[s.nickTitle, { color: colors.ink }]}>اختر اسماً يظهر على لوحة الصدارة</Text>
+            <Text style={[s.nickTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('me.nicknameModal.title')}</Text>
             <TextInput
               style={[s.nickInput, { borderColor: colors.line, color: colors.ink }]}
               value={nicknameInput}
               onChangeText={setNicknameInput}
-              placeholder={DEFAULT_GUEST_NAME}
+              placeholder={t('common.guestName')}
               placeholderTextColor={colors.inkSoft}
               maxLength={20}
-              textAlign="right"
+              textAlign={alignDir(isRTL)}
               autoFocus
             />
-            <View style={s.nickRow}>
+            <View style={[s.nickRow, { flexDirection: rowDir(isRTL) }]}>
               <PressScale style={[s.nickSkip, { backgroundColor: colors.goldPale }]} onPress={() => setNicknameModalOpen(false)}>
-                <Text style={[s.nickSkipTxt, { color: colors.inkSoft }]}>لاحقاً</Text>
+                <Text style={[s.nickSkipTxt, { color: colors.inkSoft }]}>{t('me.nicknameModal.later')}</Text>
               </PressScale>
               <PressScale style={[s.nickSave, { backgroundColor: colors.navy }]} onPress={saveNickname}>
-                <Text style={s.nickSaveTxt}>حفظ</Text>
+                <Text style={s.nickSaveTxt}>{t('me.nicknameModal.save')}</Text>
               </PressScale>
             </View>
           </View>
@@ -707,21 +730,19 @@ const s = StyleSheet.create({
 
   // Top strip
   topStrip: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 12,
     paddingHorizontal: 2,
     paddingTop: 2,
   },
   topAvatar: { width: 46, height: 46, borderRadius: 23, borderWidth: 2 },
-  topInfo: { flex: 1, alignItems: 'flex-end' },
-  topSub: { fontSize: 12, textAlign: 'right' },
-  topSubRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
-  topPoints: { fontSize: 15, textAlign: 'right', marginTop: 2 },
+  topInfo: { flex: 1 },
+  topSub: { fontSize: 12 },
+  topSubRow: { alignItems: 'center', gap: 4 },
+  topPoints: { fontSize: 15, marginTop: 2 },
   topPointsVal: { fontFamily: 'PlexArabic-Bold' },
   topPointsLabel: { fontSize: 12 },
   streakBadge: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 5,
     paddingHorizontal: 12,
@@ -733,41 +754,41 @@ const s = StyleSheet.create({
 
   // Bento primitives
   bentoFull: { borderRadius: radii.lg, ...CARD_SHADOW },
-  bentoRow: { flexDirection: 'row-reverse', gap: 12 },
+  bentoRow: { gap: 12 },
   bentoHalf: { flex: 1, borderRadius: radii.lg, ...CARD_SHADOW },
 
   // Rank card
   rankCard: { padding: 14 },
-  rankHeaderRow: { flexDirection: 'row-reverse', alignItems: 'flex-start', gap: 10 },
+  rankHeaderRow: { alignItems: 'flex-start', gap: 10 },
   rankBadgeSmall: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   rankColumn: { flex: 1, gap: 8 },
-  rankRow: { flexDirection: 'row-reverse', alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
-  rankTitleRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 4 },
+  rankRow: { alignItems: 'baseline', justifyContent: 'space-between', gap: 8 },
+  rankTitleRow: { alignItems: 'center', gap: 4 },
   rankTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
-  rankNext: { fontSize: 12, flexShrink: 1, textAlign: 'left' },
+  rankNext: { fontSize: 12, flexShrink: 1 },
   // RTL: the fill grows from the right edge (app convention).
   rankTrack: { height: 6, borderRadius: 3, overflow: 'hidden', position: 'relative' },
-  rankFill: { position: 'absolute', top: 0, bottom: 0, right: 0, borderRadius: 3 },
+  rankFill: { position: 'absolute', top: 0, bottom: 0, borderRadius: 3 },
 
   // Rank ladder sheet
   rankList: { gap: 8, marginTop: 12 },
   rankLadderRow: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 12,
+    alignItems: 'center', gap: 12,
     padding: 10, borderRadius: radii.md, borderWidth: 1,
   },
   rankBadge: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center' },
-  rankLadderInfo: { flex: 1, alignItems: 'flex-end' },
-  rankLadderTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
-  rankLadderSub: { fontSize: 12, textAlign: 'right', marginTop: 1 },
+  rankLadderInfo: { flex: 1 },
+  rankLadderTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold' },
+  rankLadderSub: { fontSize: 12, marginTop: 1 },
   rankNowBadge: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: radii.pill },
   rankNowTxt: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
 
   // Daily hero
   dailyHeroDark: { padding: 20, gap: 14 },
-  dailyHeroRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
-  dailyHeroText: { flex: 1, alignItems: 'flex-end' },
-  dailyTitle: { fontSize: 20, fontFamily: 'PlexArabic-Bold', color: '#fff', textAlign: 'right' },
-  dailyBody: { fontSize: 13, textAlign: 'right', marginTop: 2 },
+  dailyHeroRow: { alignItems: 'center', gap: 14 },
+  dailyHeroText: { flex: 1 },
+  dailyTitle: { fontSize: 20, fontFamily: 'PlexArabic-Bold', color: '#fff' },
+  dailyBody: { fontSize: 13, marginTop: 2 },
   dailyBtn: {
     paddingVertical: 14,
     borderRadius: radii.md,
@@ -779,18 +800,18 @@ const s = StyleSheet.create({
   },
   dailyBtnTxt: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
   dailyStripDone: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 10, padding: 14, borderWidth: 1.5,
+    alignItems: 'center', gap: 10, padding: 14, borderWidth: 1.5,
   },
-  dailyStripText: { flex: 1, alignItems: 'flex-end' },
-  dailyStripTitle: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
-  rankLine: { fontSize: 11, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right', marginTop: 2 },
-  dailyHeroUnavail: { padding: 18, flexDirection: 'row-reverse', alignItems: 'center', gap: 14 },
-  dailyUnavailTxt: { fontSize: 14, textAlign: 'right', fontFamily: 'PlexArabic-SemiBold' },
-  dailyUnavailSub: { fontSize: 12, textAlign: 'right', marginTop: 2 },
+  dailyStripText: { flex: 1 },
+  dailyStripTitle: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
+  rankLine: { fontSize: 11, fontFamily: 'PlexArabic-SemiBold', marginTop: 2 },
+  dailyHeroUnavail: { padding: 18, alignItems: 'center', gap: 14 },
+  dailyUnavailTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
+  dailyUnavailSub: { fontSize: 12, marginTop: 2 },
 
   // Ways to play
   waysWrap: { gap: 8 },
-  waysRow: { flexDirection: 'row-reverse', gap: 10 },
+  waysRow: { gap: 10 },
   wayTile: {
     flex: 1,
     borderRadius: radii.lg,
@@ -800,34 +821,34 @@ const s = StyleSheet.create({
     ...CARD_SHADOW,
   },
   wayTileTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold', color: '#fff' },
-  wayBadge: { position: 'absolute', top: 8, left: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
+  wayBadge: { position: 'absolute', top: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
   wayBadgeTxt: { fontSize: 10, fontFamily: 'PlexArabic-Bold' },
   wayNudge: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 6, padding: 10, borderRadius: radii.md,
+    alignItems: 'center', gap: 6, padding: 10, borderRadius: radii.md,
   },
-  wayNudgeTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  wayNudgeTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
 
   // Stat ring tiles
   statTile: { padding: 14, alignItems: 'center', justifyContent: 'center', gap: 6 },
   statLabel: { fontSize: 13, fontFamily: 'PlexArabic-Bold' },
   statSub: { fontSize: 11 },
-  sparkRow: { width: '100%', flexDirection: 'row-reverse', alignItems: 'flex-end', justifyContent: 'center', gap: 1.5 },
+  sparkRow: { width: '100%', alignItems: 'flex-end', justifyContent: 'center', gap: 1.5 },
   sparkBar: { flex: 1, maxWidth: 9, minWidth: 2, borderRadius: 2 },
   sparkEmpty: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
 
   // Map card
-  mapCard: { flexDirection: 'row-reverse', alignItems: 'center', padding: 16, gap: 10 },
-  mapBody: { flex: 1, alignItems: 'flex-end' },
-  mapTitle: { fontSize: 15, fontFamily: 'Amiri-Regular', fontWeight: '700', color: '#fff', textAlign: 'right' },
-  mapSub: { fontSize: 11, textAlign: 'right', marginTop: 2 },
+  mapCard: { alignItems: 'center', padding: 16, gap: 10 },
+  mapBody: { flex: 1 },
+  mapTitle: { fontSize: 15, fontFamily: 'Amiri-Regular', fontWeight: '700', color: '#fff' },
+  mapSub: { fontSize: 11, marginTop: 2 },
 
   // Sign-in nag — a compact one-liner
   anonBanner: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between',
+    alignItems: 'center', justifyContent: 'space-between',
     paddingHorizontal: 14, paddingVertical: 10, borderRadius: radii.md, borderWidth: 1, gap: 8,
   },
-  anonTxt: { fontSize: 12, flex: 1, textAlign: 'right' },
-  anonBtns: { flexDirection: 'row-reverse', gap: 6 },
+  anonTxt: { fontSize: 12, flex: 1 },
+  anonBtns: { gap: 6 },
   iconBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   appleIconBtn: { width: 130, height: 30 },
 
@@ -840,28 +861,28 @@ const s = StyleSheet.create({
     padding: 20, paddingBottom: 32,
     width: '100%', maxWidth: 512, alignSelf: 'center',
   },
-  sheetHeader: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'space-between' },
+  sheetHeader: { alignItems: 'center', justifyContent: 'space-between' },
   sheetTitle: { fontSize: 16, fontFamily: 'PlexArabic-Bold' },
   streakHero: { alignItems: 'center', gap: 4, paddingVertical: 16 },
   streakBig: { fontSize: 40, fontFamily: 'PlexArabic-Bold' },
   streakUnit: { fontSize: 13 },
-  weekRow: { flexDirection: 'row-reverse', justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 16 },
+  weekRow: { justifyContent: 'space-between', paddingHorizontal: 4, marginBottom: 16 },
   weekCell: { alignItems: 'center', gap: 4 },
   weekDot: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   weekLabel: { fontSize: 10 },
-  streakStatRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, paddingTop: 14, borderTopWidth: 1 },
+  streakStatRow: { alignItems: 'center', gap: 8, paddingTop: 14, borderTopWidth: 1 },
   streakStatTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
-  riskBanner: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, padding: 12, borderRadius: radii.md, marginTop: 14 },
-  riskTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  riskBanner: { alignItems: 'center', gap: 8, padding: 12, borderRadius: radii.md, marginTop: 14 },
+  riskTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
 
   // Guest nickname modal
   nickOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   nickBox: { borderRadius: radii.lg, padding: 20, width: '100%', maxWidth: 400, gap: 14 },
-  nickTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
+  nickTitle: { fontSize: 15, fontFamily: 'PlexArabic-Bold' },
   nickInput: {
     borderWidth: 1, borderRadius: radii.md, paddingHorizontal: 14, paddingVertical: 10, fontSize: 15,
   },
-  nickRow: { flexDirection: 'row-reverse', gap: 10 },
+  nickRow: { gap: 10 },
   nickSkip: { flex: 1, paddingVertical: 12, borderRadius: radii.md, alignItems: 'center' },
   nickSkipTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
   nickSave: { flex: 1, paddingVertical: 12, borderRadius: radii.md, alignItems: 'center' },

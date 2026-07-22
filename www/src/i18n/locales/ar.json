@@ -98,7 +98,83 @@
     "errorBody": "تعذر حذف الحساب. حاول مرة أخرى لاحقاً.",
     "version": "الإصدار {{version}}"
   },
-  "me": {},
+  "me": {
+    "duration": {
+      "hours_one": "ساعة",
+      "hours_two": "ساعتان",
+      "hours_few": "{{count}} ساعات",
+      "hours_many": "{{count}} ساعة",
+      "hours_other": "{{count}} ساعة",
+      "minutes_one": "دقيقة",
+      "minutes_two": "دقيقتان",
+      "minutes_few": "{{count}} دقائق",
+      "minutes_many": "{{count}} دقيقة",
+      "minutes_other": "{{count}} دقيقة",
+      "combined": "{{hours}} و{{minutes}}",
+      "availableNow": "متاح الآن",
+      "lessThanMinute": "أقل من دقيقة"
+    },
+    "activeParts_one": "سورة مُفعّلة",
+    "activeParts_two": "سورتان مُفعّلتان",
+    "activeParts_few": "{{count}} سور مُفعّلة",
+    "activeParts_many": "{{count}} سورة مُفعّلة",
+    "activeParts_other": "{{count}} سورة مُفعّلة",
+    "greeting": "مرحباً {{name}}",
+    "greetingNoName": "مرحباً",
+    "streakSheet": {
+      "title": "سلسلتك",
+      "daysInRow": "يوماً متتالياً",
+      "bestStreak": "أفضل سلسلة: {{count}} يوماً",
+      "riskBanner": "سلسلتك في خطر الليلة — العب اختباراً قبل منتصف الليل!"
+    },
+    "dow": {
+      "sun": "أحد",
+      "mon": "اثنين",
+      "tue": "ثلاثاء",
+      "wed": "أربعاء",
+      "thu": "خميس",
+      "fri": "جمعة",
+      "sat": "سبت"
+    },
+    "rankSheet": {
+      "title": "درجات الحفظ",
+      "fromStart": "من البداية",
+      "fromPoints": "من {{count}} نقطة",
+      "yourLevel": "مستواك الآن"
+    },
+    "pointsSuffix": " نقطة",
+    "pointsToRank": "{{remaining}} نقطة إلى «{{nextTitle}}» ✦",
+    "dailyHero": {
+      "completed": "أكملت اختبار اليوم — الاختبار الجديد بعد {{duration}}",
+      "readyTitle": "اختبار اليوم جاهز!",
+      "readyBody": "١٠ أسئلة × صحة وسرعة",
+      "unavailTitle": "لا يوجد اختبار اليوم حتى الآن",
+      "unavailSub": "يتجدد الاختبار كل 24 ساعة"
+    },
+    "pvpWinsBadge": "{{count}} فوز",
+    "weakSuraNudge": "راجع أضعف سورة: {{sura}}",
+    "anonNag": "سجّل دخولك لحفظ تقدمك",
+    "nicknameModal": {
+      "title": "اختر اسماً يظهر على لوحة الصدارة",
+      "later": "لاحقاً",
+      "save": "حفظ"
+    },
+    "progressChart": {
+      "label": "تقدّمك",
+      "days": "{{count}} يوم",
+      "startPlaying": "ابدأ اللعب"
+    },
+    "statTiles": {
+      "studyLabel": "كم الحفظ",
+      "studySub": "من القرآن",
+      "ratioLabel": "صحة الحفظ",
+      "ratioSub": "دقة الإجابات"
+    },
+    "mapCard": {
+      "title": "خريطة الحفظ",
+      "tapForDetails": "اضغط لعرض التفاصيل"
+    }
+  },
   "quiz": {
     "startQuiz": "ابدأ اختباراً",
     "scorePoints": "{{count}} نقطة",

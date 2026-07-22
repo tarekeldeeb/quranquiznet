@@ -98,7 +98,83 @@
     "errorBody": "Failed to delete account. Please try again later.",
     "version": "Version {{version}}"
   },
-  "me": {},
+  "me": {
+    "duration": {
+      "hours_one": "{{count}} hour",
+      "hours_two": "{{count}} hours",
+      "hours_few": "{{count}} hours",
+      "hours_many": "{{count}} hours",
+      "hours_other": "{{count}} hours",
+      "minutes_one": "{{count}} minute",
+      "minutes_two": "{{count}} minutes",
+      "minutes_few": "{{count}} minutes",
+      "minutes_many": "{{count}} minutes",
+      "minutes_other": "{{count}} minutes",
+      "combined": "{{hours}} and {{minutes}}",
+      "availableNow": "Available now",
+      "lessThanMinute": "Less than a minute"
+    },
+    "activeParts_one": "{{count}} active Surah",
+    "activeParts_two": "{{count}} active Surahs",
+    "activeParts_few": "{{count}} active Surahs",
+    "activeParts_many": "{{count}} active Surahs",
+    "activeParts_other": "{{count}} active Surahs",
+    "greeting": "Welcome {{name}}",
+    "greetingNoName": "Welcome",
+    "streakSheet": {
+      "title": "Your Streak",
+      "daysInRow": "days in a row",
+      "bestStreak": "Best streak: {{count}} days",
+      "riskBanner": "Your streak is at risk tonight — play a quiz before midnight!"
+    },
+    "dow": {
+      "sun": "Sun",
+      "mon": "Mon",
+      "tue": "Tue",
+      "wed": "Wed",
+      "thu": "Thu",
+      "fri": "Fri",
+      "sat": "Sat"
+    },
+    "rankSheet": {
+      "title": "Memorization Ranks",
+      "fromStart": "From the start",
+      "fromPoints": "From {{count}} pts",
+      "yourLevel": "Your level now"
+    },
+    "pointsSuffix": " pts",
+    "pointsToRank": "{{remaining}} pts to \"{{nextTitle}}\" ✦",
+    "dailyHero": {
+      "completed": "You completed today's quiz — new quiz in {{duration}}",
+      "readyTitle": "Today's quiz is ready!",
+      "readyBody": "10 questions × accuracy and speed",
+      "unavailTitle": "No quiz today yet",
+      "unavailSub": "The quiz renews every 24 hours"
+    },
+    "pvpWinsBadge": "{{count}} wins",
+    "weakSuraNudge": "Review weakest Surah: {{sura}}",
+    "anonNag": "Sign in to save your progress",
+    "nicknameModal": {
+      "title": "Choose a name to display on the leaderboard",
+      "later": "Later",
+      "save": "Save"
+    },
+    "progressChart": {
+      "label": "Your Progress",
+      "days": "{{count}} days",
+      "startPlaying": "Start playing"
+    },
+    "statTiles": {
+      "studyLabel": "Memorization",
+      "studySub": "of the Quran",
+      "ratioLabel": "Accuracy",
+      "ratioSub": "Answer accuracy"
+    },
+    "mapCard": {
+      "title": "Memorization Map",
+      "tapForDetails": "Tap to view details"
+    }
+  },
   "quiz": {
     "startQuiz": "Start a Quiz",
     "scorePoints": "{{count}} pts",
