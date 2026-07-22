@@ -341,20 +341,23 @@ export default function MeScreen() {
   const firstName = social.displayName?.split(' ')[0] ?? '';
   const greeting = firstName ? t('me.greeting', { name: firstName }) : t('me.greetingNoName');
   useEffect(() => {
+    // headerLeft/headerRight are always physical sides (I18nManager RTL is
+    // force-disabled — see app/_layout.tsx), so the brand mark (reading-start)
+    // and the gear (a secondary, trailing action) must swap sides by hand:
+    // brand mark right + gear left in RTL, mirrored in LTR.
+    const gearButton = () => (
+      <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={8} style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
+        <Ionicons name="settings-outline" size={24} color={colors.navySoft} />
+      </PressScale>
+    );
+    const brandMark = () => <HeaderBrand />;
     navigation.setOptions({
       headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{greeting}</Text>,
-      // RTL: brand mark at the right (reading-start), greeting centered, and
-      // the gear — a secondary, trailing action — at the left, matching the
-      // app's row-reverse convention (primary content right, controls left).
-      headerRight: () => <HeaderBrand />,
-      headerLeft: () => (
-        <PressScale onPress={() => router.push('/(app)/settings')} hitSlop={8} style={{ paddingHorizontal: 10, paddingVertical: 6 }}>
-          <Ionicons name="settings-outline" size={24} color={colors.navySoft} />
-        </PressScale>
-      ),
+      headerRight: isRTL ? brandMark : gearButton,
+      headerLeft: isRTL ? gearButton : brandMark,
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [greeting]);
+  }, [greeting, isRTL]);
 
   async function saveNickname() {
     const trimmed = nicknameInput.trim().slice(0, 20);
