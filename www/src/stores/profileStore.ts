@@ -607,8 +607,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const totalStudyWeight = Math.ceil(totalStudyLength / JUZ2_AVG_WORDS);
     let sum = 0;
     for (let i = 0; i < DAILYQUIZ_PARTS_COUNT; i++) {
-      const qs = countedScore(parts[i]?.numQuestions as unknown as number[]);
-      if (i === 0 || qs === 0 || !parts[i]?.checked) {
+      if (i === 0 || !parts[i]?.checked) {
         sparse[i] = 0;
       } else {
         const Wn = Math.ceil((DAILYQUIZ_QPERPART_COUNT * PART_WEIGHT_100[i]) / (totalStudyWeight * 100));
