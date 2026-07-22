@@ -29,3 +29,14 @@ jest.mock('expo-audio', () => ({
     addListener: jest.fn(() => ({ remove: jest.fn() })),
   })),
 }));
+
+// expo-localization's native module isn't available in the Jest environment
+// either (src/i18n/index.ts and profileStore.ts's load() use getLocales() to
+// guess the initial UI language from the device locale) — mock a fixed Arabic
+// locale so language-dependent screens render deterministically, matching
+// every other test in this suite that was written assuming Arabic (the app's
+// only language before the EN/AR rollout) rather than whatever locale the
+// host machine/CI runner happens to report.
+jest.mock('expo-localization', () => ({
+  getLocales: () => [{ languageCode: 'ar', languageTag: 'ar-SA', textDirection: 'rtl' }],
+}));

@@ -7,11 +7,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
+import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { signOut, deleteAccount } from '../../src/services/firebase';
 import { useTheme, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 import ThemeToggle from '../../src/components/ThemeToggle';
+import LanguagePicker from '../../src/components/LanguagePicker';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '';
 
@@ -22,14 +25,14 @@ const STORE_LINKS = [
     key: 'ios',
     icon: 'logo-apple' as const,
     name: 'App Store',
-    hint: 'لأجهزة iPhone و iPad',
+    hintKey: 'settings.storeLinks.iosHint',
     url: 'https://apps.apple.com/app/id6790435986',
   },
   {
     key: 'android',
     icon: 'logo-google-playstore' as const,
     name: 'Google Play',
-    hint: 'لأجهزة أندرويد',
+    hintKey: 'settings.storeLinks.androidHint',
     url: 'https://play.google.com/store/apps/details?id=net.quranquiz',
   },
 ];
@@ -50,6 +53,7 @@ function DeleteAccountSheet({
   visible: boolean; onClose: () => void; onConfirm: () => void; deleting: boolean;
   colors: ReturnType<typeof useTheme>['colors'];
 }) {
+  const { t } = useTranslation();
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
       <View style={s.sheetBg}>
@@ -57,9 +61,9 @@ function DeleteAccountSheet({
           <View style={[s.sheetIconRing, { backgroundColor: colors.wrongPale }]}>
             <Ionicons name="warning" size={28} color={colors.wrong} />
           </View>
-          <Text style={[s.sheetTitle, { color: colors.ink }]}>حذف الحساب نهائياً؟</Text>
+          <Text style={[s.sheetTitle, { color: colors.ink }]}>{t('settings.deleteSheetTitle')}</Text>
           <Text style={[s.sheetBody, { color: colors.inkSoft }]}>
-            سيُحذف تقدّمك ونتائجك وكل بياناتك من خوادمنا ومن هذا الجهاز. هذا الإجراء لا يمكن التراجع عنه.
+            {t('settings.deleteSheetBody')}
           </Text>
           <PressScale
             style={[s.deleteConfirmBtn, { backgroundColor: colors.wrong }, deleting && { opacity: 0.6 }]}
@@ -68,10 +72,10 @@ function DeleteAccountSheet({
           >
             {deleting
               ? <ActivityIndicator color="#fff" size="small" />
-              : <Text style={s.deleteConfirmTxt}>حذف الحساب نهائياً</Text>}
+              : <Text style={s.deleteConfirmTxt}>{t('settings.deleteSheetConfirm')}</Text>}
           </PressScale>
           <PressScale style={s.deleteCancelBtn} onPress={onClose} disabled={deleting}>
-            <Text style={[s.deleteCancelTxt, { color: colors.inkSoft }]}>إلغاء</Text>
+            <Text style={[s.deleteCancelTxt, { color: colors.inkSoft }]}>{t('settings.cancel')}</Text>
           </PressScale>
         </View>
       </View>
@@ -81,6 +85,8 @@ function DeleteAccountSheet({
 
 export default function SettingsScreen() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const router = useRouter();
   const profile = useProfileStore();
   const social = profile.social;
@@ -116,14 +122,14 @@ export default function SettingsScreen() {
   }
 
   function handleSignOut() {
-    const msg = 'سيتم مسح بيانات التطبيق المحلية. هل تريد المتابعة؟';
+    const msg = t('settings.signOutConfirmMsg');
     if (Platform.OS === 'web') {
-      if (typeof window === 'undefined' || window.confirm(`تسجيل الخروج\n\n${msg}`)) performSignOut();
+      if (typeof window === 'undefined' || window.confirm(`${t('settings.signOut')}\n\n${msg}`)) performSignOut();
       return;
     }
-    Alert.alert('تسجيل الخروج', msg, [
-      { text: 'لا', style: 'cancel' },
-      { text: 'نعم', style: 'destructive', onPress: performSignOut },
+    Alert.alert(t('settings.signOut'), msg, [
+      { text: t('settings.no'), style: 'cancel' },
+      { text: t('settings.yes'), style: 'destructive', onPress: performSignOut },
     ]);
   }
 
@@ -139,10 +145,10 @@ export default function SettingsScreen() {
       setDeleteSheetOpen(false);
       const code = (e as { code?: string })?.code;
       if (code === 'auth/requires-recent-login') {
-        notify('يلزم تسجيل الدخول مجدداً', 'لأسباب أمنية، سجّل الخروج ثم ادخل مرة أخرى قبل حذف الحساب.');
+        notify(t('settings.reloginTitle'), t('settings.reloginBody'));
       } else {
         console.error(e);
-        notify('خطأ', 'تعذر حذف الحساب. حاول مرة أخرى لاحقاً.');
+        notify(t('settings.errorTitle'), t('settings.errorBody'));
       }
     }
   }
@@ -152,20 +158,35 @@ export default function SettingsScreen() {
       <ScrollView style={s.scrollView} contentContainerStyle={s.scroll}>
         {/* Appearance */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>المظهر</Text>
-          <View style={s.toggleRow}>
-            <View style={s.toggleInfo}>
-              <Text style={[s.toggleLabel, { color: colors.ink }]}>مظهر التطبيق</Text>
-              <Text style={[s.toggleHint, { color: colors.inkSoft }]}>الوضع الداكن هو الافتراضي</Text>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {t('settings.appearanceHeader')}
+          </Text>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL) }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.themeLabel')}</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.themeHint')}</Text>
             </View>
             <ThemeToggle value={profile.themeMode} onChange={profile.setThemeMode} />
           </View>
         </View>
 
+        {/* Language */}
+        <View style={[s.section, { backgroundColor: colors.card, overflow: 'visible', zIndex: 10 }]}>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {t('settings.languageHeader')}
+          </Text>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL) }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.languageLabel')}</Text>
+            </View>
+            <LanguagePicker value={profile.language} onChange={profile.setLanguage} />
+          </View>
+        </View>
+
         {/* Level selector */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>
-            مستوى الاختبار: {profile.levels[profile.level]?.text}
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {t('settings.levelHeader', { level: profile.levels[profile.level]?.text })}
           </Text>
           {profile.levels.map((lvl) => (
             <PressScale
@@ -179,9 +200,9 @@ export default function SettingsScreen() {
                   {profile.level === lvl.value && <View style={[s.radioDot, { backgroundColor: colors.gold }]} />}
                 </View>
               </View>
-              <View style={s.levelRight}>
-                <Text style={[s.levelName, { color: colors.ink }, lvl.disabled && { color: colors.inkSoft }]}>{lvl.text}</Text>
-                <Text style={[s.levelComment, { color: colors.inkSoft }]}>{lvl.comment}</Text>
+              <View style={[s.levelRight, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.levelName, { color: colors.ink, textAlign: alignDir(isRTL) }, lvl.disabled && { color: colors.inkSoft }]}>{lvl.text}</Text>
+                <Text style={[s.levelComment, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{lvl.comment}</Text>
               </View>
             </PressScale>
           ))}
@@ -189,12 +210,14 @@ export default function SettingsScreen() {
 
         {/* Special questions toggle */}
         <View style={[s.section, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>الأسئلة الخاصة</Text>
-          <View style={s.toggleRow}>
-            <View style={s.toggleInfo}>
-              <Text style={[s.toggleLabel, { color: colors.ink }]}>تفعيل الأسئلة عن اسم السورة ورقم الآية</Text>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {t('settings.specialHeader')}
+          </Text>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL) }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.specialLabel')}</Text>
               {!specialEditable && (
-                <Text style={[s.toggleHint, { color: colors.inkSoft }]}>من المستوى الثانوي فأعلى</Text>
+                <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.specialHint')}</Text>
               )}
             </View>
             <Switch
@@ -210,17 +233,19 @@ export default function SettingsScreen() {
         {/* Native app store links — web only */}
         {Platform.OS === 'web' && (
           <View style={[s.section, { backgroundColor: colors.card }]}>
-            <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line }]}>تطبيق الجوال</Text>
+            <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+              {t('settings.mobileAppHeader')}
+            </Text>
             {STORE_LINKS.map((store) => (
               <PressScale
                 key={store.key}
-                style={[s.storeRow, { borderColor: colors.line }]}
+                style={[s.storeRow, { borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
                 onPress={() => Linking.openURL(store.url)}
               >
                 <Ionicons name={store.icon} size={22} color={colors.ink} />
-                <View style={s.storeInfo}>
-                  <Text style={[s.storeName, { color: colors.ink }]}>{store.name}</Text>
-                  <Text style={[s.storeHint, { color: colors.inkSoft }]}>{store.hint}</Text>
+                <View style={[s.storeInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <Text style={[s.storeName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{store.name}</Text>
+                  <Text style={[s.storeHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t(store.hintKey)}</Text>
                 </View>
                 <Ionicons name="open-outline" size={16} color={colors.inkSoft} />
               </PressScale>
@@ -231,27 +256,27 @@ export default function SettingsScreen() {
         {/* Account */}
         {!social.isAnonymous && social.uid && (
           <PressScale
-            style={[s.section, s.signOutRow, { backgroundColor: colors.card }]}
+            style={[s.section, s.signOutRow, { backgroundColor: colors.card, flexDirection: rowDir(isRTL) }]}
             onPress={handleSignOut}
             disabled={signingOut}
           >
             <Ionicons name="log-out-outline" size={18} color={colors.wrong} />
-            <Text style={[s.signOutTxt, { color: colors.wrong }]}>تسجيل الخروج</Text>
+            <Text style={[s.signOutTxt, { color: colors.wrong }]}>{t('settings.signOut')}</Text>
           </PressScale>
         )}
 
         {/* Deliberately small and unboxed — a quiet, deniable-by-accident
             link rather than a card matching sign-out's prominence. */}
         <PressScale
-          style={s.deleteLink}
+          style={[s.deleteLink, { flexDirection: rowDir(isRTL) }]}
           onPress={() => setDeleteSheetOpen(true)}
           disabled={signingOut || deletingAccount}
         >
           <Ionicons name="trash-outline" size={13} color={colors.wrong} />
-          <Text style={[s.deleteLinkTxt, { color: colors.wrong }]}>حذف الحساب</Text>
+          <Text style={[s.deleteLinkTxt, { color: colors.wrong }]}>{t('settings.deleteAccountLink')}</Text>
         </PressScale>
 
-        <Text style={[s.version, { color: colors.inkSoft }]}>الإصدار {APP_VERSION}</Text>
+        <Text style={[s.version, { color: colors.inkSoft }]}>{t('settings.version', { version: APP_VERSION })}</Text>
       </ScrollView>
 
       <DeleteAccountSheet
@@ -274,7 +299,7 @@ const s = StyleSheet.create({
     boxShadow: '0px 0px 4px rgba(0,0,0,0.05)', elevation: 2,
   },
   sectionHeader: {
-    fontSize: 14, fontFamily: 'PlexArabic-Bold', textAlign: 'right',
+    fontSize: 14, fontFamily: 'PlexArabic-Bold',
     padding: 14, borderBottomWidth: 1,
   },
   levelRow: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, gap: 12, borderBottomWidth: 1 },
@@ -282,21 +307,21 @@ const s = StyleSheet.create({
   levelLeft: { paddingTop: 2 },
   radio: { width: 20, height: 20, borderRadius: 10, borderWidth: 2, alignItems: 'center', justifyContent: 'center' },
   radioDot: { width: 10, height: 10, borderRadius: 5 },
-  levelRight: { flex: 1, alignItems: 'flex-end' },
-  levelName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
-  levelComment: { fontSize: 12, textAlign: 'right', marginTop: 2 },
-  toggleRow: { flexDirection: 'row-reverse', alignItems: 'center', padding: 14, gap: 12 },
-  toggleInfo: { flex: 1, alignItems: 'flex-end' },
-  toggleLabel: { fontSize: 14, textAlign: 'right' },
-  toggleHint: { fontSize: 11, textAlign: 'right', marginTop: 2 },
-  storeRow: { flexDirection: 'row-reverse', alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1 },
-  storeInfo: { flex: 1, alignItems: 'flex-end' },
-  storeName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
-  storeHint: { fontSize: 12, textAlign: 'right', marginTop: 2 },
-  signOutRow: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14 },
+  levelRight: { flex: 1 },
+  levelName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold' },
+  levelComment: { fontSize: 12, marginTop: 2 },
+  toggleRow: { alignItems: 'center', padding: 14, gap: 12 },
+  toggleInfo: { flex: 1 },
+  toggleLabel: { fontSize: 14 },
+  toggleHint: { fontSize: 11, marginTop: 2 },
+  storeRow: { alignItems: 'center', padding: 14, gap: 12, borderBottomWidth: 1 },
+  storeInfo: { flex: 1 },
+  storeName: { fontSize: 15, fontFamily: 'PlexArabic-SemiBold' },
+  storeHint: { fontSize: 12, marginTop: 2 },
+  signOutRow: { alignItems: 'center', justifyContent: 'center', gap: 8, padding: 14 },
   signOutTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
   deleteLink: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center',
+    alignItems: 'center', justifyContent: 'center',
     gap: 4, paddingVertical: 6, alignSelf: 'center',
   },
   deleteLinkTxt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },

@@ -6,8 +6,12 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir, writingDir, mirror } from '../../src/theme/direction';
+import { useProfileStore } from '../../src/stores/profileStore';
 import PressScale from '../../src/components/PressScale';
+import LanguagePicker from '../../src/components/LanguagePicker';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -146,40 +150,18 @@ interface Slide {
   visual: ReactNode;
 }
 
-const SLIDES: Slide[] = [
-  {
-    title: 'اختبر حفظك',
-    body: 'تطبيق يختبر حفظك للقرآن الكريم بأسئلة اختيار من متعدد، وتنافس مع حفّاظ من حول العالم.',
-    points: ['أسئلة على نطاق حفظك أنت', 'تحدٍّ يومي بالمؤقّت', 'ترتيب عالمي للمتصدّرين'],
-    visual: <FeatureBadges />,
-  },
-  {
-    title: 'كيف يعمل؟',
-    body: 'يظهر لك مقطع من آية، فتختار الكلمة التالية الصحيحة من بين خمسة خيارات. كل إجابة صحيحة ترفع نقاطك، وإن أخطأت نكشف لك الآية كاملة وموضعها في المصحف.',
-    visual: <QuizPreview />,
-  },
-  {
-    title: 'التحدي اليومي',
-    body: '١٠ أسئلة جديدة كل يوم ضمن نطاق حفظك، مع مؤقّت زمني. أجب بسرعة ودقّة لتجمع أعلى عدد من النقاط قبل انتهاء الوقت.',
-    visual: <DailyPreview />,
-  },
-  {
-    title: 'تصدّر الترتيب',
-    body: 'قارن نتيجتك مع الحفّاظ حول العالم في لوحة المتصدّرين — ترتيب اليوم وترتيب كل الأوقات. اجمع النقاط وتسلّق القائمة.',
-    visual: <LeaguePreview />,
-  },
-];
-
 // Small feature row for the welcome slide.
 function FeatureBadges() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const items = [
-    { icon: 'help-circle' as const, label: 'اختبار' },
-    { icon: 'star' as const, label: 'تحدٍّ يومي' },
-    { icon: 'trophy' as const, label: 'ترتيب' },
+    { icon: 'help-circle' as const, label: t('onboarding.badges.quiz') },
+    { icon: 'star' as const, label: t('onboarding.badges.daily') },
+    { icon: 'trophy' as const, label: t('onboarding.badges.leaderboard') },
   ];
   return (
-    <View style={p.badgesRow}>
+    <View style={[p.badgesRow, { flexDirection: rowDir(isRTL) }]}>
       {items.map((it, i) => (
         <View key={i} style={[p.badge, { borderColor: `${colors.gold}59` }]}>
           <Ionicons name={it.icon} size={26} color={colors.gold} />
@@ -193,12 +175,45 @@ function FeatureBadges() {
 export default function SlidesScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
+  const language = useProfileStore((s) => s.language);
+  const setLanguage = useProfileStore((s) => s.setLanguage);
+
   const [current, setCurrent] = useState(0);
   // Width of the actual rendered column (the web frame caps it at ~512px),
   // NOT the full browser window. Measured via onLayout so each slide and the
   // paging offsets match the visible container instead of overflowing it.
   const [frameW, setFrameW] = useState(SW);
   const listRef = useRef<FlatList>(null);
+
+  const slides: Slide[] = [
+    {
+      title: t('onboarding.slides.s1.title'),
+      body: t('onboarding.slides.s1.body'),
+      points: [
+        t('onboarding.slides.s1.p1'),
+        t('onboarding.slides.s1.p2'),
+        t('onboarding.slides.s1.p3'),
+      ],
+      visual: <FeatureBadges />,
+    },
+    {
+      title: t('onboarding.slides.s2.title'),
+      body: t('onboarding.slides.s2.body'),
+      visual: <QuizPreview />,
+    },
+    {
+      title: t('onboarding.slides.s3.title'),
+      body: t('onboarding.slides.s3.body'),
+      visual: <DailyPreview />,
+    },
+    {
+      title: t('onboarding.slides.s4.title'),
+      body: t('onboarding.slides.s4.body'),
+      visual: <LeaguePreview />,
+    },
+  ];
 
   // The Study Parts screen is no longer shown to everyone here — it now only
   // runs for guests, right after they pick "continue as guest" on the auth
@@ -209,7 +224,7 @@ export default function SlidesScreen() {
   }
 
   function goNext() {
-    if (current < SLIDES.length - 1) {
+    if (current < slides.length - 1) {
       listRef.current?.scrollToIndex({ index: current + 1, animated: true });
       setCurrent(current + 1);
     } else {
@@ -236,23 +251,24 @@ export default function SlidesScreen() {
         if (w > 0 && w !== frameW) setFrameW(w);
       }}
     >
-      <View style={s.header}>
+      <View style={[s.header, { flexDirection: rowDir(isRTL) }]}>
         {current > 0 ? (
           <PressScale style={s.backBtn} onPress={goBack}>
-            <Ionicons name="chevron-forward" size={22} color={colors.navySoft} />
+            <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={22} color={colors.navySoft} />
           </PressScale>
         ) : <View style={s.backBtn} />}
+        <LanguagePicker value={language} onChange={setLanguage} />
         <PressScale style={s.skipBtn} onPress={skip}>
-          <Text style={[s.skipTxt, { color: colors.navySoft }]}>تخطي</Text>
+          <Text style={[s.skipTxt, { color: colors.navySoft }]}>{t('onboarding.skip')}</Text>
         </PressScale>
       </View>
 
       <FlatList
         ref={listRef}
-        data={SLIDES}
+        data={slides}
         keyExtractor={(_, i) => String(i)}
         horizontal
-        inverted
+        inverted={isRTL}
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         scrollEnabled={false}
@@ -262,12 +278,12 @@ export default function SlidesScreen() {
         renderItem={({ item }) => (
           <View style={[s.slide, { width: frameW }]}>
             <Text style={s.title}>{item.title}</Text>
-            <Text style={[s.body, { color: colors.navySoft }]}>{item.body}</Text>
+            <Text style={[s.body, { color: colors.navySoft, writingDirection: writingDir(isRTL) }]}>{item.body}</Text>
             {item.points && (
               <View style={s.points}>
                 {item.points.map((pt: string, i: number) => (
-                  <View key={i} style={s.pointRow}>
-                    <Text style={s.pointText}>{pt}</Text>
+                  <View key={i} style={[s.pointRow, { flexDirection: rowDir(isRTL) }]}>
+                    <Text style={[s.pointText, { textAlign: alignDir(isRTL) }]}>{pt}</Text>
                     <Ionicons name="checkmark-circle" size={18} color={colors.gold} />
                   </View>
                 ))}
@@ -278,15 +294,15 @@ export default function SlidesScreen() {
         )}
       />
 
-      <View style={s.dots}>
-        {SLIDES.map((_, i) => (
+      <View style={[s.dots, { flexDirection: rowDir(isRTL) }]}>
+        {slides.map((_, i) => (
           <View key={i} style={[s.dot, i === current && { backgroundColor: colors.gold, width: 24 }]} />
         ))}
       </View>
 
       <PressScale style={[s.nextBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={goNext}>
         <Text style={[s.nextTxt, { color: colors.navy }]}>
-          {current < SLIDES.length - 1 ? 'التالي' : 'ابدأ'}
+          {current < slides.length - 1 ? t('onboarding.next') : t('onboarding.start')}
         </Text>
       </PressScale>
     </SafeAreaView>
@@ -297,10 +313,10 @@ const s = StyleSheet.create({
   container: { flex: 1, alignItems: 'center' },
   header: {
     width: '100%',
-    flexDirection: 'row-reverse',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: 8,
+    zIndex: 10,
   },
   backBtn: { padding: 16, width: 54 },
   skipBtn: { padding: 16 },
@@ -318,17 +334,15 @@ const s = StyleSheet.create({
     fontSize: 15,
     textAlign: 'center',
     lineHeight: 26,
-    writingDirection: 'rtl',
   },
   points: { gap: 8, alignSelf: 'stretch', paddingHorizontal: 8 },
   pointRow: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
-  pointText: { color: '#e8f0f7', fontSize: 14, textAlign: 'right', flexShrink: 1 },
+  pointText: { color: '#e8f0f7', fontSize: 14, flexShrink: 1 },
   visualWrap: { marginTop: 8, alignItems: 'center' },
-  dots: { flexDirection: 'row-reverse', gap: 8, marginBottom: 24 },
+  dots: { gap: 8, marginBottom: 24 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: 'rgba(255,255,255,0.3)' },
   nextBtn: {
     paddingHorizontal: 48,
@@ -494,7 +508,7 @@ const p = StyleSheet.create({
   boardScoreMe: { color: '#c8973a' },
 
   // ── Welcome feature badges ───────────────────────────────────────────────────
-  badgesRow: { flexDirection: 'row-reverse', gap: 14, marginTop: 4 },
+  badgesRow: { gap: 14, marginTop: 4 },
   badge: {
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderWidth: 1,

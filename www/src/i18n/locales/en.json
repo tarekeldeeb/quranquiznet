@@ -3,8 +3,75 @@
     "guestName": "Guest",
     "appName": "Quran Quiz Net"
   },
-  "onboarding": {},
-  "settings": {},
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next",
+    "start": "Start",
+    "badges": {
+      "quiz": "Quiz",
+      "daily": "Daily Challenge",
+      "leaderboard": "Leaderboard"
+    },
+    "slides": {
+      "s1": {
+        "title": "Test Your Memorization",
+        "body": "An app that tests your Quran memorization with multiple-choice questions and lets you compete with memorizers worldwide.",
+        "p1": "Questions tailored to your memorization scope",
+        "p2": "Timed daily challenge",
+        "p3": "Global leaderboard rankings"
+      },
+      "s2": {
+        "title": "How It Works",
+        "body": "A verse snippet appears, and you choose the correct next word from five options. Each correct answer increases your score, and if you make a mistake, we reveal the full verse and its position in the Quran."
+      },
+      "s3": {
+        "title": "Daily Challenge",
+        "body": "10 new questions every day within your memorized scope, with a timer. Answer quickly and accurately to score maximum points before time runs out."
+      },
+      "s4": {
+        "title": "Top the Leaderboard",
+        "body": "Compare your score with memorizers worldwide on the leaderboard — daily and all-time rankings. Collect points and climb the ranks."
+      }
+    },
+    "setup": {
+      "title": "What Have You Memorized?",
+      "subtitle": "Select the Surahs and Juz' you have memorized",
+      "all": "All",
+      "none": "None",
+      "recent": "Recent",
+      "confirm": "Confirm & Continue"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Appearance",
+    "themeLabel": "App Theme",
+    "themeHint": "Dark mode is default",
+    "languageHeader": "Language",
+    "languageLabel": "App Language",
+    "levelHeader": "Quiz level: {{level}}",
+    "specialHeader": "Special Questions",
+    "specialLabel": "Enable questions about Surah name and Verse number",
+    "specialHint": "Secondary level and above",
+    "mobileAppHeader": "Mobile App",
+    "storeLinks": {
+      "iosHint": "For iPhone and iPad",
+      "androidHint": "For Android devices"
+    },
+    "signOut": "Sign Out",
+    "signOutConfirmMsg": "Local app data will be cleared. Do you want to continue?",
+    "no": "No",
+    "yes": "Yes",
+    "deleteAccountLink": "Delete Account",
+    "deleteSheetTitle": "Delete account permanently?",
+    "deleteSheetBody": "Your progress, results, and all data will be deleted from our servers and this device. This action cannot be undone.",
+    "deleteSheetConfirm": "Delete Account Permanently",
+    "cancel": "Cancel",
+    "reloginTitle": "Re-authentication Required",
+    "reloginBody": "For security reasons, please sign out and sign in again before deleting your account.",
+    "errorTitle": "Error",
+    "errorBody": "Failed to delete account. Please try again later.",
+    "version": "Version {{version}}"
+  },
   "me": {},
   "quiz": {},
   "pvp": {},

@@ -4,12 +4,16 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { useTheme } from '../../src/theme/tokens';
+import { useDirection, alignDir } from '../../src/theme/direction';
 
 export default function SetupScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const profile = useProfileStore();
   const [parts, setParts] = useState(() => profile.parts.map((p) => ({ ...p })));
 
@@ -49,19 +53,23 @@ export default function SetupScreen() {
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]}>
       <View style={s.header}>
-        <Text style={[s.title, { color: colors.ink }]}>ماذا حفظت؟</Text>
-        <Text style={[s.subtitle, { color: colors.inkSoft }]}>اختر السور والأجزاء التي حفظتها</Text>
+        <Text style={[s.title, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
+          {t('onboarding.setup.title')}
+        </Text>
+        <Text style={[s.subtitle, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+          {t('onboarding.setup.subtitle')}
+        </Text>
       </View>
 
       <View style={s.actionRow}>
         <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectAll}>
-          <Text style={[s.actionTxt, { color: colors.ink }]}>الكل</Text>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>{t('onboarding.setup.all')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectNone}>
-          <Text style={[s.actionTxt, { color: colors.ink }]}>لا شيء</Text>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>{t('onboarding.setup.none')}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={[s.actionBtn, { backgroundColor: colors.card, borderColor: colors.line }]} onPress={selectLast}>
-          <Text style={[s.actionTxt, { color: colors.ink }]}>الأخيرة</Text>
+          <Text style={[s.actionTxt, { color: colors.ink }]}>{t('onboarding.setup.recent')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -77,7 +85,7 @@ export default function SetupScreen() {
               trackColor={{ false: colors.line, true: colors.gold }}
               thumbColor="#fff"
             />
-            <Text style={[s.partName, { color: colors.ink }, index === 0 && { color: colors.goldDeep, fontWeight: '600' }]}>
+            <Text style={[s.partName, { color: colors.ink, textAlign: alignDir(isRTL) }, index === 0 && { color: colors.goldDeep, fontWeight: '600' }]}>
               {item.name}
             </Text>
           </View>
@@ -88,7 +96,7 @@ export default function SetupScreen() {
       />
 
       <TouchableOpacity style={[s.confirmBtn, { backgroundColor: colors.navy }]} onPress={confirm}>
-        <Text style={s.confirmTxt}>تأكيد واستمر</Text>
+        <Text style={s.confirmTxt}>{t('onboarding.setup.confirm')}</Text>
       </TouchableOpacity>
     </SafeAreaView>
   );
@@ -97,8 +105,8 @@ export default function SetupScreen() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: { paddingHorizontal: 20, paddingTop: 20, paddingBottom: 12 },
-  title: { fontSize: 24, fontWeight: '700', textAlign: 'right' },
-  subtitle: { fontSize: 14, textAlign: 'right', marginTop: 4 },
+  title: { fontSize: 24, fontWeight: '700' },
+  subtitle: { fontSize: 14, marginTop: 4 },
   actionRow: {
     flexDirection: 'row',
     paddingHorizontal: 16,
@@ -122,7 +130,7 @@ const s = StyleSheet.create({
     paddingVertical: 12,
     gap: 12,
   },
-  partName: { flex: 1, fontSize: 15, textAlign: 'right' },
+  partName: { flex: 1, fontSize: 15 },
   sep: { height: 1 },
   confirmBtn: {
     margin: 16,
