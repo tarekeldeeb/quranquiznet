@@ -177,11 +177,7 @@ export default function AppLayout() {
       <Tabs.Screen name="pvp"      options={{ href: null }} />
       {/* map.tsx renders its own in-page header (title + active-count badge) */}
       <Tabs.Screen name="map"      options={{ href: null, headerShown: false }} />
-      {/* Legacy screens — hidden from tab bar */}
       <Tabs.Screen name="home"     options={{ href: null }} />
-      <Tabs.Screen name="daily"    options={{ href: null }} />
-      <Tabs.Screen name="profile"  options={{ href: null }} />
-      <Tabs.Screen name="study"    options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
   );
