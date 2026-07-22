@@ -2,6 +2,9 @@
   "common": {
     "guestName": "Guest",
     "appName": "Quran Quiz Net",
+    "homePage": "Home Page",
+    "start": "Start",
+    "home": "Home",
     "consentBanner": {
       "text": "We use cookies to analyze app usage and improve your experience.",
       "privacyPolicy": "Privacy Policy",

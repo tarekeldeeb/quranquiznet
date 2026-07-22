@@ -2,6 +2,7 @@
 import { Tabs, useRouter } from 'expo-router';
 import { useEffect } from 'react';
 import { Image, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import {
   onAuthChange, fetchRemoteProfile, pushProfile,
 } from '../../src/services/firebase';
@@ -9,6 +10,7 @@ import { useProfileStore } from '../../src/stores/profileStore';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/tokens';
+import { useDirection, rowDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
@@ -24,16 +26,18 @@ function TabIcon({ name, color, size }: { name: IconName; color: string; size: n
 // this with something situational instead of repeating the app's name.
 function HeaderLogo() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   return (
     <TouchableOpacity
-      style={s.headerLogo}
+      style={[s.headerLogo, { flexDirection: rowDir(isRTL) }]}
       onPress={() => router.navigate('/(app)/me')}
       activeOpacity={0.7}
       accessibilityRole="button"
-      accessibilityLabel="الصفحة الرئيسية"
+      accessibilityLabel={t('common.homePage')}
     >
       <Image source={appIcon} style={s.headerIcon} />
-      <Text style={s.headerTitle}>شبكة اختبار القرآن</Text>
+      <Text style={s.headerTitle}>{t('common.appName')}</Text>
     </TouchableOpacity>
   );
 }
@@ -45,19 +49,20 @@ function HeaderLogo() {
 function PlayTabButton({
   onPress, accessibilityState, colors,
 }: { onPress?: () => void; accessibilityState?: { selected?: boolean }; colors: ReturnType<typeof useTheme>['colors'] }) {
+  const { t } = useTranslation();
   return (
     <PressScale
       onPress={onPress}
       style={s.playSlot}
       scaleTo={0.93}
       accessibilityRole="button"
-      accessibilityLabel="ابدأ"
+      accessibilityLabel={t('common.start')}
       accessibilityState={accessibilityState}
     >
       <View style={[s.playCircle, { backgroundColor: colors.gold, borderColor: colors.card, shadowColor: colors.goldDeep }]}>
         <Ionicons name="play" size={24} color={colors.navy} style={{ marginRight: -2 }} />
       </View>
-      <Text style={[s.playLabel, { color: colors.gold }]}>ابدأ</Text>
+      <Text style={[s.playLabel, { color: colors.gold }]}>{t('common.start')}</Text>
     </PressScale>
   );
 }
@@ -74,6 +79,8 @@ export default function AppLayout() {
   const router = useRouter();
   const profile = useProfileStore();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
 
   useEffect(() => {
     detectCountry(profile.setCountry);
@@ -123,6 +130,43 @@ export default function AppLayout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const leagueTab = (
+    <Tabs.Screen
+      key="league"
+      name="league"
+      options={{
+        tabBarIcon: ({ color, size, focused }) => <TabIcon name={focused ? 'trophy' : 'trophy-outline'} color={color} size={size} />,
+        tabBarLabel: t('league.title'),
+      }}
+    />
+  );
+  const quizTab = (
+    <Tabs.Screen
+      key="quiz"
+      name="quiz"
+      options={{
+        tabBarLabel: t('common.start'),
+        tabBarButton: (props) => (
+          <PlayTabButton
+            onPress={props.onPress as (() => void) | undefined}
+            accessibilityState={props.accessibilityState as { selected?: boolean } | undefined}
+            colors={colors}
+          />
+        ),
+      }}
+    />
+  );
+  const meTab = (
+    <Tabs.Screen
+      key="me"
+      name="me"
+      options={{
+        tabBarIcon: ({ color, size, focused }) => <TabIcon name={focused ? 'home' : 'home-outline'} color={color} size={size} />,
+        tabBarLabel: t('common.home'),
+      }}
+    />
+  );
+
   return (
     <Tabs
       screenOptions={{
@@ -142,37 +186,11 @@ export default function AppLayout() {
         headerTitleAlign: 'center',
       }}
     >
-      {/* Declared right-to-left for RTL: the tab bar renders in declaration
-          order (LTR), so listing league → play → me puts ملفي (Me / home)
-          on the right as the landing tab, البطولة on the left, and ابدأ
-          raised in the center. */}
-      <Tabs.Screen
-        name="league"
-        options={{
-          tabBarIcon: ({ color, size, focused }) => <TabIcon name={focused ? 'trophy' : 'trophy-outline'} color={color} size={size} />,
-          tabBarLabel: 'البطولة',
-        }}
-      />
-      <Tabs.Screen
-        name="quiz"
-        options={{
-          tabBarLabel: 'ابدأ',
-          tabBarButton: (props) => (
-            <PlayTabButton
-              onPress={props.onPress as (() => void) | undefined}
-              accessibilityState={props.accessibilityState as { selected?: boolean } | undefined}
-              colors={colors}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
-        name="me"
-        options={{
-          tabBarIcon: ({ color, size, focused }) => <TabIcon name={focused ? 'home' : 'home-outline'} color={color} size={size} />,
-          tabBarLabel: 'الرئيسية',
-        }}
-      />
+      {/* Tab declaration order determines visual LTR tab bar placement because
+          bottom-tabs uses fixed flexDirection: 'row'. In RTL, [league, quiz, me]
+          places 'me' (home) on the right as the landing tab. In LTR, [me, quiz, league]
+          places 'me' (home) on the left. */}
+      {isRTL ? [leagueTab, quizTab, meTab] : [meTab, quizTab, leagueTab]}
       {/* PvP match + the progression map — reached from the Me screen, not the tab bar */}
       <Tabs.Screen name="pvp"      options={{ href: null }} />
       {/* map.tsx renders its own in-page header (title + active-count badge) */}
@@ -185,7 +203,6 @@ export default function AppLayout() {
 
 const s = StyleSheet.create({
   headerLogo: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
   },
