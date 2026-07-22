@@ -107,12 +107,33 @@ injectHoverFix();
 // this deep (see QuranText's own `color: colors.ink` on the wrapping node),
 // so this makes the frame automatically light-on-dark instead of a
 // near-invisible black smear on dark mode's near-black card background.
+//
+// The mask must live on a `::before` overlay, NOT on the line element
+// itself: `mask-image` clips an element's entire rendered box — content and
+// all — not just its background paint layer (unlike `background-image`,
+// which only ever affects the background). The line's own children include
+// the sura-name text div (`.quran-madina-html-sura-start`), so masking the
+// line directly clipped that text away everywhere the SVG's alpha is 0 —
+// i.e. everywhere except the ornamental corners — making the name invisible
+// (regression: the name stopped showing at all, not just losing contrast).
+// The overlay is its own empty box, so masking it only clips itself.
+// `isolation: isolate` on the line scopes the overlay's `z-index: -1` to
+// just this line's own paint order, so it sits behind the in-flow text
+// instead of escaping to interfere with unrelated stacking elsewhere.
 // !important + re-declaring background-image guards against load-order races
 // with the library's own async-fetched stylesheet.
 const QMH_SURA_BORDER_FIX_CSS = `
 quran-madina-html-line:has(.quran-madina-html-sura-start) {
+  position: relative;
+  isolation: isolate;
   background-image: none !important;
-  background-color: currentColor !important;
+}
+quran-madina-html-line:has(.quran-madina-html-sura-start)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: currentColor;
   -webkit-mask-image: url(${MADINA_BASE}assets/img/sura_border_sym4.svg) !important;
   mask-image: url(${MADINA_BASE}assets/img/sura_border_sym4.svg) !important;
   -webkit-mask-size: 95% 100% !important;

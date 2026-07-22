@@ -65,10 +65,27 @@ quran-madina-html-header { display: none !important; }
    background-color: currentColor makes it inherit the ink color set on
    html,body above, so it's light-on-dark instead of a near-invisible black
    smear on a dark-mode card. See QuranText.web.tsx's mirror of this fix for
-   the library-side context (a commented-out WIP left in its own source). */
+   the library-side context (a commented-out WIP left in its own source).
+   The mask must live on a ::before overlay, NOT on the line element itself:
+   mask-image clips an element's entire rendered box — content and all — not
+   just its background paint layer. The line's own children include the
+   sura-name text (the library appends it as a normal child of this same
+   element, per its README), so masking the line directly clipped that text
+   away everywhere the SVG's alpha is 0 — i.e. everywhere except the
+   ornamental corners — making the name invisible instead of just recolored.
+   The overlay is its own empty box, so masking it only clips itself; z-index
+   -1 plus isolation on the line keeps it behind the in-flow text. */
 quran-madina-html-line:has(.quran-madina-html-sura-start) {
+  position: relative;
+  isolation: isolate;
   background-image: none !important;
-  background-color: currentColor !important;
+}
+quran-madina-html-line:has(.quran-madina-html-sura-start)::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-color: currentColor;
   -webkit-mask-image: url(assets/img/sura_border_sym4.svg) !important;
   mask-image: url(assets/img/sura_border_sym4.svg) !important;
   -webkit-mask-size: 95% 100% !important;

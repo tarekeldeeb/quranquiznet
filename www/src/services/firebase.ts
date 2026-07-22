@@ -264,6 +264,17 @@ export function signInFacebook(): Promise<User | null> {
   return socialSignIn(new FacebookAuthProvider(), 'facebook');
 }
 
+/** Races a promise against a timeout so a hung native/network call surfaces as
+ *  a real error instead of leaving the UI silently stuck forever. Clears the
+ *  timer once the race settles so it doesn't linger for the full duration. */
+function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout>;
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), ms);
+  });
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timer));
+}
+
 async function linkOrSignInApple(auth: Auth, current: User, credential: AuthCredential): Promise<User> {
   try {
     return (await linkWithCredential(current, credential)).user;
@@ -298,9 +309,10 @@ export async function signInApple(): Promise<User | null> {
   const { credential, fullName } = result;
 
   const current = auth.currentUser;
-  const user = current?.isAnonymous
-    ? await linkOrSignInApple(auth, current, credential)
-    : (await signInWithCredential(auth, credential)).user;
+  const exchange = current?.isAnonymous
+    ? linkOrSignInApple(auth, current, credential)
+    : signInWithCredential(auth, credential).then((r) => r.user);
+  const user = await withTimeout(exchange, 15000, 'Apple sign-in timed out talking to Firebase.');
 
   // Apple only returns the user's name on their very first authorization, and
   // the identity token itself carries no name claim, so Firebase never sets

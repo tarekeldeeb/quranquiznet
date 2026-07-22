@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "5",
+      "buildNumber": "6",
       "appleTeamId": "FNSP52WBLF",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
