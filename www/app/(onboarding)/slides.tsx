@@ -273,10 +273,13 @@ export default function SlidesScreen() {
         inverted={isRTL}
         pagingEnabled
         showsHorizontalScrollIndicator={false}
-        scrollEnabled={false}
         style={s.list}
         extraData={frameW}
         getItemLayout={(_, index) => ({ length: frameW, offset: frameW * index, index })}
+        onMomentumScrollEnd={(e) => {
+          const idx = Math.round(e.nativeEvent.contentOffset.x / frameW);
+          setCurrent(Math.max(0, Math.min(slides.length - 1, idx)));
+        }}
         renderItem={({ item }) => (
           <View style={[s.slide, { width: frameW }]}>
             <Text style={s.title}>{item.title}</Text>
