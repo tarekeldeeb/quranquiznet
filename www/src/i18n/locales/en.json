@@ -5,6 +5,7 @@
     "homePage": "Home Page",
     "start": "Start",
     "home": "Home",
+    "juzPart": "Juz' {{name}}",
     "consentBanner": {
       "text": "We use cookies to analyze app usage and improve your experience.",
       "privacyPolicy": "Privacy Policy",

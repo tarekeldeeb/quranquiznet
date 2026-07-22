@@ -64,6 +64,29 @@ export const SURA_NAME = [
   'المسد', 'الإخلاص', 'الفلق', 'الناس',
 ];
 
+// English transliterations, sourced from quran.com's `name_simple` field
+// (api.quran.com/api/v4/chapters?language=en) — same order/index as SURA_NAME.
+export const SURA_NAME_EN = [
+  'Al-Fatihah', 'Al-Baqarah', 'Ali \'Imran', 'An-Nisa', 'Al-Ma\'idah', 'Al-An\'am',
+  'Al-A\'raf', 'Al-Anfal', 'At-Tawbah', 'Yunus', 'Hud', 'Yusuf', 'Ar-Ra\'d', 'Ibrahim',
+  'Al-Hijr', 'An-Nahl', 'Al-Isra', 'Al-Kahf', 'Maryam', 'Taha', 'Al-Anbya', 'Al-Hajj',
+  'Al-Mu\'minun', 'An-Nur', 'Al-Furqan', 'Ash-Shu\'ara', 'An-Naml', 'Al-Qasas',
+  'Al-\'Ankabut', 'Ar-Rum', 'Luqman', 'As-Sajdah', 'Al-Ahzab', 'Saba', 'Fatir', 'Ya-Sin',
+  'As-Saffat', 'Sad', 'Az-Zumar', 'Ghafir', 'Fussilat', 'Ash-Shuraa', 'Az-Zukhruf',
+  'Ad-Dukhan', 'Al-Jathiyah', 'Al-Ahqaf', 'Muhammad', 'Al-Fath', 'Al-Hujurat', 'Qaf',
+  'Adh-Dhariyat', 'At-Tur', 'An-Najm', 'Al-Qamar', 'Ar-Rahman', 'Al-Waqi\'ah',
+  'Al-Hadid', 'Al-Mujadila', 'Al-Hashr', 'Al-Mumtahanah', 'As-Saf', 'Al-Jumu\'ah',
+  'Al-Munafiqun', 'At-Taghabun', 'At-Talaq', 'At-Tahrim', 'Al-Mulk', 'Al-Qalam',
+  'Al-Haqqah', 'Al-Ma\'arij', 'Nuh', 'Al-Jinn', 'Al-Muzzammil', 'Al-Muddaththir',
+  'Al-Qiyamah', 'Al-Insan', 'Al-Mursalat', 'An-Naba', 'An-Nazi\'at', '\'Abasa',
+  'At-Takwir', 'Al-Infitar', 'Al-Mutaffifin', 'Al-Inshiqaq', 'Al-Buruj', 'At-Tariq',
+  'Al-A\'la', 'Al-Ghashiyah', 'Al-Fajr', 'Al-Balad', 'Ash-Shams', 'Al-Layl', 'Ad-Duhaa',
+  'Ash-Sharh', 'At-Tin', 'Al-\'Alaq', 'Al-Qadr', 'Al-Bayyinah', 'Az-Zalzalah',
+  'Al-\'Adiyat', 'Al-Qari\'ah', 'At-Takathur', 'Al-\'Asr', 'Al-Humazah', 'Al-Fil',
+  'Quraysh', 'Al-Ma\'un', 'Al-Kawthar', 'Al-Kafirun', 'An-Nasr', 'Al-Masad',
+  'Al-Ikhlas', 'Al-Falaq', 'An-Nas',
+];
+
 export const SURA_AYAS = [
   7, 286, 200, 176, 120, 165, 206, 75, 129, 109, 123, 111, 43, 52, 99, 128, 111, 110,
   98, 135, 112, 78, 118, 64, 77, 227, 93, 88, 69, 60, 34, 30, 73, 54, 45, 83, 182, 88,
@@ -119,6 +142,10 @@ const PAGE_AYA_START = [
 ];
 
 export const LAST5_JUZ_NAME = ['الأحقاف', 'الذاريات', 'قد سمع', 'تبارك', 'عم'];
+// English names for the same 5 traditional juz titles (Juz 26-30). The first
+// two are shared with sura names (Al-Ahqaf, Adh-Dhariyat); the last three are
+// juz-only traditional titles, not sura names.
+export const LAST5_JUZ_NAME_EN = ['Al-Ahqaf', 'Adh-Dhariyat', 'Qad Sami\'a', 'Tabaraka', '\'Amma'];
 // Exclusive upper bounds like SURA_IDX, so the final entry is SURA_IDX[113]
 // (one past the last word) — QURAN_WORDS here would drop the last word.
 export const LAST5_JUZ_IDX = [
@@ -147,6 +174,34 @@ export function modQWords(n: number): number {
 
 export function getSuraTanzil(wordIdx: number): string {
   return SURA_MAKKI[getSuraIdx(wordIdx)] === 1 ? i18n.t('quizCard.meccan') : i18n.t('quizCard.medinan');
+}
+
+/** Sura name (bare, no "Surah"/"سورة" prefix) in the current app language. */
+export function suraNameLocalized(suraIdx: number): string {
+  return i18n.language === 'en' ? SURA_NAME_EN[suraIdx] : SURA_NAME[suraIdx];
+}
+
+const SURA_PREFIX = 'سورة ';
+const JUZ_PREFIX = 'جزء ';
+
+/**
+ * Display-only translation for a study part's stored name (e.g. "سورة البقرة"
+ * or "جزء عم"). The stored `part.name` itself must stay the raw Arabic string
+ * unchanged — it's persisted and used for equality comparisons — so this is
+ * applied only at render sites, never where `part.name` is compared.
+ */
+export function translatePartName(name: string): string {
+  if (i18n.language !== 'en') return name;
+  if (name.startsWith(SURA_PREFIX)) {
+    const arName = name.slice(SURA_PREFIX.length);
+    const idx = SURA_NAME.indexOf(arName);
+    if (idx !== -1) return i18n.t('quizCard.answerOption.sura', { name: SURA_NAME_EN[idx] });
+  } else if (name.startsWith(JUZ_PREFIX)) {
+    const arName = name.slice(JUZ_PREFIX.length);
+    const idx = LAST5_JUZ_NAME.indexOf(arName);
+    if (idx !== -1) return i18n.t('common.juzPart', { name: LAST5_JUZ_NAME_EN[idx] });
+  }
+  return name;
 }
 
 export function formattedAyaMark(ayaNum: number): string {

@@ -3,10 +3,10 @@
 
 import seedrandom, { type PRNG } from 'seedrandom';
 import {
-  QURAN_WORDS, SURA_NAME, SURA_AYAS,
+  QURAN_WORDS, SURA_AYAS,
   DAILYQUIZ_QPERPART_DIST,
   getSuraIdx, modQWords, randperm,
-  ANSWER_LENGTH,
+  ANSWER_LENGTH, suraNameLocalized,
 } from '../models/constants';
 import { Q_TYPE, QuestionObject, makeEmptyQO } from '../models/questionnaire';
 import * as idb from '../db/idb';
@@ -192,7 +192,7 @@ async function fillText() {
       }
     }
   } else if (qo.qType.id === Q_TYPE.SURANAME.id) {
-    for (let l = 0; l < 5; l++) qo.txt.op[0][l] = i18n.t('quizCard.answerOption.sura', { name: SURA_NAME[qo.op[0][l]] });
+    for (let l = 0; l < 5; l++) qo.txt.op[0][l] = i18n.t('quizCard.answerOption.sura', { name: suraNameLocalized(qo.op[0][l]) });
   } else if (qo.qType.id === Q_TYPE.SURAAYACOUNT.id) {
     for (let l = 0; l < 5; l++) qo.txt.op[0][l] = i18n.t('quizCard.answerOption.ayahCount', { count: qo.op[0][l] });
   } else if (qo.qType.id === Q_TYPE.AYANUMBER.id) {

@@ -17,6 +17,7 @@ import KhatamStar from '../../src/components/KhatamStar';
 import PressScale from '../../src/components/PressScale';
 import { useTheme, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
+import { translatePartName } from '../../src/models/constants';
 
 type BulkAction = 'all' | 'good' | 'weak';
 
@@ -170,7 +171,7 @@ export default function MapScreen() {
             >
               <KhatamStar tier={tier} size={38} colors={colors} />
               <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{part.name}</Text>
+                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{translatePartName(part.name)}</Text>
                 <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
                   {questions > 0 ? t('map.correctOf', { correct: localeNum(correct, language), questions: localeNum(questions, language) }) : t('map.notTested')}
                 </Text>

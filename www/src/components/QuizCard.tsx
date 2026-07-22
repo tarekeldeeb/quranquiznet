@@ -10,8 +10,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { QuestionObject, Q_TYPE } from '../models/questionnaire';
 import {
-  removeAyaNum, SURA_NAME, SURA_AYAS, SURA_IDX, QURAN_WORDS, getSuraIdx,
-  getSuraTanzil, getPageURLFromSuraAyah,
+  removeAyaNum, SURA_AYAS, SURA_IDX, QURAN_WORDS, getSuraIdx,
+  getSuraTanzil, getPageURLFromSuraAyah, suraNameLocalized,
 } from '../models/constants';
 import QuranText from './QuranText';
 import PressScale from './PressScale';
@@ -132,7 +132,7 @@ export default function QuizCard({
   const [flipped, setFlipped] = React.useState(false);
 
   const sura     = getSuraIdx(card.qo.startIdx);
-  const suraName = SURA_NAME[sura];
+  const suraName = suraNameLocalized(sura);
   const suraInfo = `${getSuraTanzil(card.qo.startIdx)} · ${t('quizCard.ayahCount', { count: SURA_AYAS[sura] })}`;
   const pageURL  = getPageURLFromSuraAyah(sura, card.answerAya);
 

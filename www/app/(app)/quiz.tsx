@@ -25,7 +25,7 @@ import { requestPermission, scheduleStreakReminder } from '../../src/services/no
 import {
   randperm, shuffleByPerm, deepCopy, countedScore,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
-  DEFAULT_GUEST_NAME,
+  DEFAULT_GUEST_NAME, translatePartName,
 } from '../../src/models/constants';
 import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
@@ -718,7 +718,7 @@ export default function QuizScreen() {
       const afterCorrect = countedScore(partAfter.numCorrect);
       const afterTier = tierFromRatioRange(useProfileStore.getState().getCorrectRatioRange(partIdx));
       const milestones = detectMilestones({
-        partName: partAfter.name, beforeCorrect, afterCorrect, beforeTier, afterTier,
+        partName: translatePartName(partAfter.name), beforeCorrect, afterCorrect, beforeTier, afterTier,
       });
       if (milestones.length > 0) showMilestoneToast(milestones[0].text);
     }
@@ -925,8 +925,8 @@ export default function QuizScreen() {
   const levelText = levelTextKey ? t(levelTextKey) : '';
   const scopeNames =
     scopeMode === 'daily' ? []
-    : scopeMode === 'custom' ? [profile.parts[customPartIndex!]?.name ?? '—']
-    : profile.parts.filter((p) => p.checked).map((p) => p.name);
+    : scopeMode === 'custom' ? [translatePartName(profile.parts[customPartIndex!]?.name ?? '—')]
+    : profile.parts.filter((p) => p.checked).map((p) => translatePartName(p.name));
   const showSettingsBar = !chooserVisible && cards.length > 0;
 
   const sessionAccuracy = sessionAnsweredRef.current > 0
@@ -1009,7 +1009,7 @@ export default function QuizScreen() {
                     onPress={() => startSession({ partIndex: index })}
                   >
                     <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.inkSoft} />
-                    <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{name}</Text>
+                    <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{translatePartName(name)}</Text>
                   </PressScale>
                 ))}
               </View>
@@ -1133,7 +1133,7 @@ export default function QuizScreen() {
             <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center', marginBottom: 16 }]}>{t('quiz.summary.totalPoints')}</Text>
             {weakestPart !== '-' && (
               <Text style={[s.modalBody, { color: colors.goldDeep, textAlign: 'center' }]}>
-                {t('quiz.summary.needsReview', { part: weakestPart })}
+                {t('quiz.summary.needsReview', { part: translatePartName(weakestPart) })}
               </Text>
             )}
             <View style={s.modalRow}>

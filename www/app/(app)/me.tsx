@@ -14,7 +14,7 @@ import {
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
-import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
+import { DEFAULT_GUEST_NAME, translatePartName } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
@@ -478,7 +478,7 @@ export default function MeScreen() {
           onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
         >
           <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.goldDeep} />
-          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{t('me.weakSuraNudge', { sura: weakSura })}</Text>
+          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{t('me.weakSuraNudge', { sura: translatePartName(weakSura) })}</Text>
           <Ionicons name="warning" size={15} color={colors.goldDeep} />
         </PressScale>
       )}

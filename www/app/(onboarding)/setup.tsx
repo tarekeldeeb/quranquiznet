@@ -8,6 +8,7 @@ import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { useTheme } from '../../src/theme/tokens';
 import { useDirection, alignDir } from '../../src/theme/direction';
+import { translatePartName } from '../../src/models/constants';
 
 export default function SetupScreen() {
   const router = useRouter();
@@ -86,7 +87,7 @@ export default function SetupScreen() {
               thumbColor="#fff"
             />
             <Text style={[s.partName, { color: colors.ink, textAlign: alignDir(isRTL) }, index === 0 && { color: colors.goldDeep, fontWeight: '600' }]}>
-              {item.name}
+              {translatePartName(item.name)}
             </Text>
           </View>
         )}
