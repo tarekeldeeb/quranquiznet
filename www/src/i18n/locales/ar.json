@@ -99,7 +99,29 @@
     "version": "الإصدار {{version}}"
   },
   "me": {},
-  "quiz": {},
+  "quiz": {
+    "startQuiz": "ابدأ اختباراً",
+    "scorePoints": "{{count}} نقطة",
+    "streak": "{{count}} متتالية",
+    "randomQuiz": "اختبار عشوائي",
+    "reviewWeakSubtitle": "أو راجع سورة تحتاج تحسيناً:",
+    "dailyEnd": {
+      "title": "شكراً لاشتراكك في اختبار اليوم",
+      "body": "فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.",
+      "share": "شارك النتيجة",
+      "practiceWeak": "تدرّب على أضعف سورة",
+      "ok": "حسناً",
+      "shareMsg": "حصلت على {{score}} نقطة في اختبار اليوم على {{appName}}! جرّب حظك:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "ممتاز!",
+      "body": "أجبت على {{correct}} من {{total}} سؤال بشكل صحيح",
+      "totalPoints": "نقطة إجمالية",
+      "needsReview": "{{part}} تحتاج مراجعة",
+      "home": "الرئيسية",
+      "continue": "واصل"
+    }
+  },
   "pvp": {
     "you": "أنت",
     "theOpponent": "المنافس",

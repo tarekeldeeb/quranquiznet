@@ -99,7 +99,29 @@
     "version": "Version {{version}}"
   },
   "me": {},
-  "quiz": {},
+  "quiz": {
+    "startQuiz": "Start a Quiz",
+    "scorePoints": "{{count}} pts",
+    "streak": "{{count}} in a row",
+    "randomQuiz": "Random Quiz",
+    "reviewWeakSubtitle": "Or review a Surah that needs improvement:",
+    "dailyEnd": {
+      "title": "Thank you for taking today's quiz",
+      "body": "Please review your memorization of the Quran, and you will have a new quiz tomorrow, God willing.",
+      "share": "Share Result",
+      "practiceWeak": "Practice Your Weakest Surah",
+      "ok": "OK",
+      "shareMsg": "I scored {{score}} points on today's quiz on {{appName}}! Try your luck:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Excellent!",
+      "body": "You answered {{correct}} of {{total}} questions correctly",
+      "totalPoints": "Total Points",
+      "needsReview": "{{part}} needs review",
+      "home": "Home",
+      "continue": "Continue"
+    }
+  },
   "pvp": {
     "you": "You",
     "theOpponent": "The opponent",

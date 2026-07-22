@@ -11,10 +11,12 @@ import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import QuizSettingsBar, { ScopeMode } from '../../src/components/QuizSettingsBar';
+import { useTranslation } from 'react-i18next';
+import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
 import Confetti from '../../src/components/Confetti';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, localeNum, radii } from '../../src/theme/tokens';
 import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
@@ -122,6 +124,8 @@ const sessionCache: SessionCache = {
 
 export default function QuizScreen() {
   const params = useLocalSearchParams<{ customPart?: string; dailyMode?: string; nonce?: string; chooser?: string; start?: string; lvl?: string }>();
+  const { t } = useTranslation();
+  const { isRTL, language } = useDirection();
   const profile = useProfileStore();
   const router = useRouter();
   const navigation = useNavigation();
@@ -227,12 +231,12 @@ export default function QuizScreen() {
     navigation.setOptions({
       headerTitle: () => (
         <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>
-          {inRun ? `${arNum(score)} نقطة` : 'ابدأ اختباراً'}
+          {inRun ? t('quiz.scorePoints', { count: localeNum(score, language) }) : t('quiz.startQuiz')}
         </Text>
       ),
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inRun, score]);
+  }, [inRun, score, language, t]);
 
   // Reset all per-session state, then start a fresh run.
   //   { daily: true }        → daily quiz
@@ -848,7 +852,10 @@ export default function QuizScreen() {
   async function shareScoreDaily() {
     try {
       await Share.share({
-        message: `حصلت على ${dailyFinalScore} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
+        message: t('quiz.dailyEnd.shareMsg', {
+          score: dailyFinalScore,
+          appName: t('common.appName'),
+        }),
         url: 'https://quranquiz.net',
       });
     } catch { /* ignore */ }
@@ -938,9 +945,9 @@ export default function QuizScreen() {
           and keep answering the current run undisturbed. Replaces the old
           window.confirm/Alert.alert that used to interrupt the run outright. */}
       {dailyBannerHead && !dailyMode && (
-        <PressScale style={[s.dailyBanner, { backgroundColor: colors.gold }]} onPress={startDailyFromBanner}>
+        <PressScale style={[s.dailyBanner, { backgroundColor: colors.gold, flexDirection: rowDir(isRTL) }]} onPress={startDailyFromBanner}>
           <Ionicons name="star" size={16} color={colors.navy} />
-          <Text style={[s.dailyBannerTxt, { color: colors.navy }]}>اختبار اليوم جاهز</Text>
+          <Text style={[s.dailyBannerTxt, { color: colors.navy, textAlign: alignDir(isRTL) }]}>{t('league.dailyReady')}</Text>
           <PressScale onPress={dismissDailyBanner} hitSlop={8} style={s.dailyBannerClose}>
             <Ionicons name="close" size={16} color={colors.navy} />
           </PressScale>
@@ -961,9 +968,9 @@ export default function QuizScreen() {
       {/* Consecutive-correct combo badge — pure feedback "juice", shown once
           there's an actual streak to brag about (2+); resets silently on a miss. */}
       {combo >= 2 && (
-        <View style={[s.comboBadge, { backgroundColor: colors.gold }]} pointerEvents="none">
+        <View style={[s.comboBadge, { backgroundColor: colors.gold, flexDirection: rowDir(isRTL), [isRTL ? 'right' : 'left']: 14 }]} pointerEvents="none">
           <Ionicons name="flame" size={13} color={colors.navy} />
-          <Text style={[s.comboBadgeTxt, { color: colors.navy }]}>{arNum(combo)} متتالية</Text>
+          <Text style={[s.comboBadgeTxt, { color: colors.navy }]}>{t('quiz.streak', { count: localeNum(combo, language) })}</Text>
         </View>
       )}
 
@@ -982,25 +989,25 @@ export default function QuizScreen() {
           first thing a player sees on this tab when nothing is running. */}
       {chooserVisible ? (
         <ScrollView contentContainerStyle={s.chooserScreen} showsVerticalScrollIndicator={false}>
-          <Text style={[s.chooserTitle, { color: colors.ink }]}>ابدأ اختباراً</Text>
+          <Text style={[s.chooserTitle, { color: colors.ink }]}>{t('quiz.startQuiz')}</Text>
           <PressScale
-            style={[s.chooserPrimary, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]}
+            style={[s.chooserPrimary, { backgroundColor: colors.gold, shadowColor: colors.goldDeep, flexDirection: rowDir(isRTL) }]}
             onPress={() => startSession({})}
           >
             <Ionicons name="shuffle" size={20} color={colors.navy} />
-            <Text style={[s.chooserPrimaryTxt, { color: colors.navy }]}>اختبار عشوائي</Text>
+            <Text style={[s.chooserPrimaryTxt, { color: colors.navy }]}>{t('quiz.randomQuiz')}</Text>
           </PressScale>
           {profile.getWeakCheckedParts(3).length > 0 && (
             <>
-              <Text style={[s.chooserSubtitle, { color: colors.inkSoft }]}>أو راجع سورة تحتاج تحسيناً:</Text>
+              <Text style={[s.chooserSubtitle, { color: colors.inkSoft }]}>{t('quiz.reviewWeakSubtitle')}</Text>
               <View style={s.chooserList}>
                 {profile.getWeakCheckedParts(3).map(({ index, name }) => (
                   <PressScale
                     key={index}
-                    style={[s.chooserOption, { backgroundColor: colors.card, borderColor: colors.line }]}
+                    style={[s.chooserOption, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
                     onPress={() => startSession({ partIndex: index })}
                   >
-                    <Ionicons name="chevron-back" size={16} color={colors.inkSoft} />
+                    <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.inkSoft} />
                     <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{name}</Text>
                   </PressScale>
                 ))}
@@ -1048,21 +1055,21 @@ export default function QuizScreen() {
       <Modal visible={reportVisible} transparent animationType="slide" onRequestClose={() => setReportVisible(false)}>
         <View style={s.modalBg}>
           <View style={[s.modalBox, { backgroundColor: colors.card }]}>
-            <Text style={[s.modalTitle, { color: colors.ink }]}>الإبلاغ عن خطأ</Text>
+            <Text style={[s.modalTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('common.reportModal.title')}</Text>
             <TextInput
-              style={[s.reportInput, { borderColor: colors.line, color: colors.ink }]}
-              placeholder="برجاء توضيح الخطأ ..."
+              style={[s.reportInput, { borderColor: colors.line, color: colors.ink, textAlign: alignDir(isRTL) }]}
+              placeholder={t('common.reportModal.placeholder')}
               placeholderTextColor={colors.inkSoft}
               value={reportMsg}
               onChangeText={setReportMsg}
-              textAlign="right"
+              textAlign={alignDir(isRTL)}
             />
             <View style={s.modalRow}>
               <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => setReportVisible(false)}>
-                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>لا</Text>
+                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>{t('common.reportModal.cancel')}</Text>
               </PressScale>
               <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={submitReport}>
-                <Text style={s.btnConfirmText}>نعم</Text>
+                <Text style={s.btnConfirmText}>{t('common.reportModal.confirm')}</Text>
               </PressScale>
             </View>
           </View>
@@ -1075,21 +1082,21 @@ export default function QuizScreen() {
         <View style={s.sheetBg}>
           <Confetti active={dailyEndVisible && dailyFinalScore >= 80} />
           <View style={[s.sheet, { backgroundColor: colors.card }]}>
-            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>شكراً لاشتراكك في اختبار اليوم</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>{t('quiz.dailyEnd.title')}</Text>
             <View style={s.sheetRingWrap}>
-              <Ring pct={dailyFinalScore} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} size={128} label={`${arNum(Math.round(dailyFinalScore))}`} />
+              <Ring pct={dailyFinalScore} color={colors.gold} trackColor={colors.goldPale} innerColor={colors.card} size={128} label={`${localeNum(Math.round(dailyFinalScore), language)}`} />
             </View>
             {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep }]}>{dailyRankLine}</Text>}
-            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.</Text>
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>{t('quiz.dailyEnd.body')}</Text>
             <View style={s.postWinRow}>
               <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={shareScoreDaily}>
                 <Ionicons name="share-social-outline" size={16} color={colors.goldDeep} />
-                <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>شارك النتيجة</Text>
+                <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>{t('quiz.dailyEnd.share')}</Text>
               </PressScale>
               {profile.getWeakCheckedParts(1).length > 0 && (
                 <PressScale style={[s.postWinBtn, { backgroundColor: colors.goldPale }]} onPress={practiceWeakestSura}>
                   <Ionicons name="book-outline" size={16} color={colors.goldDeep} />
-                  <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>تدرّب على أضعف سورة</Text>
+                  <Text style={[s.postWinBtnTxt, { color: colors.goldDeep }]}>{t('quiz.dailyEnd.practiceWeak')}</Text>
                 </PressScale>
               )}
             </View>
@@ -1098,7 +1105,7 @@ export default function QuizScreen() {
               if (shouldRestoreNormalRunAfterDaily(!!sessionCache.normalSnapshot)) restoreNormalSession();
               router.replace('/(app)/me');
             }}>
-              <Text style={s.btnConfirmText}>حسناً</Text>
+              <Text style={s.btnConfirmText}>{t('quiz.dailyEnd.ok')}</Text>
             </PressScale>
           </View>
         </View>
@@ -1111,26 +1118,29 @@ export default function QuizScreen() {
         <View style={s.sheetBg}>
           <Confetti active={summaryVisible && sessionAccuracy >= 80} />
           <View style={[s.sheet, { backgroundColor: colors.card }]}>
-            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>ممتاز!</Text>
+            <Text style={[s.sheetTitle, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>{t('quiz.summary.title')}</Text>
             <View style={s.sheetRingWrap}>
               <Ring pct={sessionAccuracy} color={colors.correct} trackColor={colors.correctPale} innerColor={colors.card} size={128} />
             </View>
-            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center' }]}>
-              أجبت على {arNum(sessionCorrectRef.current)} من {arNum(sessionAnsweredRef.current)} سؤال بشكل صحيح
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+              {t('quiz.summary.body', {
+                correct: localeNum(sessionCorrectRef.current, language),
+                total: localeNum(sessionAnsweredRef.current, language),
+              })}
             </Text>
-            <Text style={[s.bigScore, { color: colors.ink }]}>{arNum(score)}</Text>
-            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center', marginBottom: 16 }]}>نقطة إجمالية</Text>
+            <Text style={[s.bigScore, { color: colors.ink }]}>{localeNum(score, language)}</Text>
+            <Text style={[s.modalBody, { color: colors.inkSoft, textAlign: 'center', marginBottom: 16 }]}>{t('quiz.summary.totalPoints')}</Text>
             {weakestPart !== '-' && (
               <Text style={[s.modalBody, { color: colors.goldDeep, textAlign: 'center' }]}>
-                {weakestPart} تحتاج مراجعة
+                {t('quiz.summary.needsReview', { part: weakestPart })}
               </Text>
             )}
             <View style={s.modalRow}>
               <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => { setSummaryVisible(false); router.replace('/(app)/me'); }}>
-                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>الرئيسية</Text>
+                <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>{t('quiz.summary.home')}</Text>
               </PressScale>
               <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>
-                <Text style={s.btnConfirmText}>واصل</Text>
+                <Text style={s.btnConfirmText}>{t('quiz.summary.continue')}</Text>
               </PressScale>
             </View>
           </View>
@@ -1145,13 +1155,12 @@ const s = StyleSheet.create({
   listContent: { paddingTop: 8, paddingBottom: 24, alignItems: 'center' },
   loadingOverlay: { ...StyleSheet.absoluteFillObject, justifyContent: 'center', alignItems: 'center', zIndex: 10 },
   dailyBanner: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 8,
     paddingVertical: 10,
     paddingHorizontal: 14,
   },
-  dailyBannerTxt: { flex: 1, fontFamily: 'PlexArabic-Bold', fontSize: 13, textAlign: 'right' },
+  dailyBannerTxt: { flex: 1, fontFamily: 'PlexArabic-Bold', fontSize: 13 },
   dailyBannerClose: { padding: 2 },
   milestoneToast: {
     position: 'absolute',
@@ -1168,9 +1177,7 @@ const s = StyleSheet.create({
   comboBadge: {
     position: 'absolute',
     top: 10,
-    right: 14,
     zIndex: 15,
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 4,
     paddingVertical: 6,
@@ -1185,7 +1192,6 @@ const s = StyleSheet.create({
   chooserScreen: { flexGrow: 1, padding: 20, gap: 12, alignItems: 'stretch', justifyContent: 'center' },
   chooserTitle: { fontSize: 22, fontFamily: 'PlexArabic-Bold', textAlign: 'center', marginBottom: 8 },
   chooserPrimary: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -1200,7 +1206,6 @@ const s = StyleSheet.create({
   chooserSubtitle: { fontSize: 13, textAlign: 'center', marginTop: 16, marginBottom: 4 },
   chooserList: { gap: 8 },
   chooserOption: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 6,
@@ -1213,8 +1218,8 @@ const s = StyleSheet.create({
   // ── Modals / sheets ─────────────────────────────────────────────────────
   modalBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', padding: 24 },
   modalBox: { borderRadius: radii.md, padding: 20, width: '100%', maxWidth: 432 },
-  modalTitle: { fontSize: 17, fontFamily: 'PlexArabic-Bold', textAlign: 'right', marginBottom: 12 },
-  modalBody: { fontSize: 14, textAlign: 'right', marginBottom: 8 },
+  modalTitle: { fontSize: 17, fontFamily: 'PlexArabic-Bold', marginBottom: 12 },
+  modalBody: { fontSize: 14, marginBottom: 8 },
   bigScore: { fontSize: 36, fontFamily: 'PlexArabic-Bold', textAlign: 'center', marginVertical: 4 },
   rankLine: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center', marginBottom: 10 },
   postWinRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
@@ -1229,7 +1234,7 @@ const s = StyleSheet.create({
     borderRadius: radii.sm,
   },
   postWinBtnTxt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center' },
-  reportInput: { borderWidth: 1, borderRadius: radii.sm, padding: 10, marginBottom: 16, textAlign: 'right' },
+  reportInput: { borderWidth: 1, borderRadius: radii.sm, padding: 10, marginBottom: 16 },
   modalRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
   btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: radii.sm },
   btnCancelText: { fontFamily: 'PlexArabic-SemiBold' },
