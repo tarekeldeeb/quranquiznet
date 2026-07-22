@@ -8,8 +8,10 @@ import React, { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import PressScale from './PressScale';
 import { useTheme, radii } from '../theme/tokens';
+import { useDirection, rowDir } from '../theme/direction';
 
 export type ScopeMode = 'random' | 'custom' | 'daily';
 
@@ -34,12 +36,17 @@ const COLLAPSE_THRESHOLD = 3;
 export default function QuizSettingsBar({
   levelText, specialEnabled, scopeNames, scopeMode, dailyCurrent = 0, dailyTotal = 0,
 }: Props) {
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const { colors } = useTheme();
   const [expanded, setExpanded] = useState(false);
 
   const summary = scopeMode === 'daily'
-    ? 'اختبار اليوم النشط'
-    : `${levelText} - الأسئلة الخاصة ${specialEnabled ? 'مُفعّلة' : 'غير مُفعّلة'}`;
+    ? t('common.quizSettingsBar.dailyActive')
+    : t('common.quizSettingsBar.summary', {
+      level: levelText,
+      specialState: t(specialEnabled ? 'common.quizSettingsBar.specialOn' : 'common.quizSettingsBar.specialOff'),
+    });
   const scopeKey = scopeNames.join('|');
 
   // Collapse again whenever the scope changes (new session / mode).
@@ -60,18 +67,24 @@ export default function QuizSettingsBar({
                 <View
                   style={[
                     s.progressFill,
-                    { width: `${Math.min(dailyCurrent / dailyTotal, 1) * 100}%`, backgroundColor: colors.gold },
+                    {
+                      width: `${Math.min(dailyCurrent / dailyTotal, 1) * 100}%`,
+                      backgroundColor: colors.gold,
+                      [isRTL ? 'right' : 'left']: 0,
+                    },
                   ]}
                 />
               </View>
-              <Text style={[s.progressLabel, { color: colors.goldDeep }]}>السؤال {dailyCurrent} من {dailyTotal}</Text>
+              <Text style={[s.progressLabel, { color: colors.goldDeep }]}>
+                {t('common.quizSettingsBar.dailyProgress', { current: dailyCurrent, total: dailyTotal })}
+              </Text>
             </View>
           )}
-          <Text style={[s.note, { color: colors.inkSoft }]}>أسئلة مختارة تلقائياً من نطاق حفظك</Text>
+          <Text style={[s.note, { color: colors.inkSoft }]}>{t('common.quizSettingsBar.dailyNote')}</Text>
         </>
       ) : (
         <>
-          <View style={[s.chips, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
+          <View style={[s.chips, { flexDirection: rowDir(isRTL) }, clamp && { maxHeight: ROW_HEIGHT, overflow: 'hidden' }]}>
             {scopeNames.map((name, i) => (
               <Text key={i} style={[s.chip, { color: colors.ink, backgroundColor: colors.paper }]}>{name}</Text>
             ))}
@@ -79,7 +92,9 @@ export default function QuizSettingsBar({
           {collapsible && (
             <PressScale style={s.toggle} onPress={() => setExpanded((v) => !v)}>
               <Text style={[s.toggleTxt, { color: colors.goldDeep }]}>
-                {expanded ? 'أقل ▴' : `المزيد (${scopeNames.length}) ▾`}
+                {expanded
+                  ? t('common.quizSettingsBar.showLess')
+                  : t('common.quizSettingsBar.showMore', { count: scopeNames.length })}
               </Text>
             </PressScale>
           )}
@@ -116,12 +131,10 @@ const s = StyleSheet.create({
     position: 'absolute',
     top: 0,
     bottom: 0,
-    right: 0,
     borderRadius: 4,
   },
   progressLabel: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold', marginTop: 5 },
   chips: {
-    flexDirection: 'row-reverse',   // RTL: first sura on the right (app convention)
     flexWrap: 'wrap',
     justifyContent: 'center',
     alignSelf: 'stretch',

@@ -7,6 +7,20 @@
       "privacyPolicy": "سياسة الخصوصية",
       "decline": "رفض",
       "accept": "موافق"
+    },
+    "themeToggle": {
+      "light": "فاتح",
+      "dark": "داكن"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - الأسئلة الخاصة {{specialState}}",
+      "specialOn": "مُفعّلة",
+      "specialOff": "غير مُفعّلة",
+      "dailyActive": "اختبار اليوم النشط",
+      "dailyProgress": "السؤال {{current}} من {{total}}",
+      "dailyNote": "أسئلة مختارة تلقائياً من نطاق حفظك",
+      "showLess": "أقل ▴",
+      "showMore": "المزيد ({{count}}) ▾"
     }
   },
   "onboarding": {

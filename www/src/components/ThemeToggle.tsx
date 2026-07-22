@@ -6,13 +6,10 @@
 // state just as easily.
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useTheme, radii, ThemeMode } from '../theme/tokens';
+import { useDirection, rowDir } from '../theme/direction';
 import PressScale from './PressScale';
-
-const OPTIONS: { mode: ThemeMode; label: string; icon: React.ComponentProps<typeof Ionicons>['name'] }[] = [
-  { mode: 'light', label: 'فاتح', icon: 'sunny' },
-  { mode: 'dark', label: 'داكن', icon: 'moon' },
-];
 
 interface Props {
   value: ThemeMode;
@@ -20,22 +17,31 @@ interface Props {
 }
 
 export default function ThemeToggle({ value, onChange }: Props) {
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const { colors } = useTheme();
+
+  const options: { mode: ThemeMode; labelKey: 'common.themeToggle.light' | 'common.themeToggle.dark'; icon: React.ComponentProps<typeof Ionicons>['name'] }[] = [
+    { mode: 'light', labelKey: 'common.themeToggle.light', icon: 'sunny' },
+    { mode: 'dark', labelKey: 'common.themeToggle.dark', icon: 'moon' },
+  ];
+
   return (
-    <View style={[s.wrap, { backgroundColor: colors.goldPale }]}>
-      {OPTIONS.map((opt) => {
+    <View style={[s.wrap, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}>
+      {options.map((opt) => {
         const active = value === opt.mode;
+        const label = t(opt.labelKey);
         return (
           <PressScale
             key={opt.mode}
-            style={[s.btn, active && { backgroundColor: colors.navy }]}
+            style={[s.btn, active && { backgroundColor: colors.navy }, { flexDirection: rowDir(isRTL) }]}
             onPress={() => onChange(opt.mode)}
             accessibilityRole="button"
             accessibilityState={{ selected: active }}
-            accessibilityLabel={opt.label}
+            accessibilityLabel={label}
           >
             <Ionicons name={opt.icon} size={14} color={active ? '#fff' : colors.inkSoft} />
-            <Text style={[s.txt, { color: active ? '#fff' : colors.inkSoft }]}>{opt.label}</Text>
+            <Text style={[s.txt, { color: active ? '#fff' : colors.inkSoft }]}>{label}</Text>
           </PressScale>
         );
       })}
@@ -44,9 +50,9 @@ export default function ThemeToggle({ value, onChange }: Props) {
 }
 
 const s = StyleSheet.create({
-  wrap: { flexDirection: 'row-reverse', borderRadius: radii.md, padding: 3, gap: 3 },
+  wrap: { borderRadius: radii.md, padding: 3, gap: 3 },
   btn: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 5,
+    alignItems: 'center', gap: 5,
     paddingVertical: 7, paddingHorizontal: 12, borderRadius: radii.sm,
   },
   txt: { fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },

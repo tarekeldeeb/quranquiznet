@@ -7,6 +7,20 @@
       "privacyPolicy": "Privacy Policy",
       "decline": "Decline",
       "accept": "Accept"
+    },
+    "themeToggle": {
+      "light": "Light",
+      "dark": "Dark"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Special questions {{specialState}}",
+      "specialOn": "enabled",
+      "specialOff": "disabled",
+      "dailyActive": "Active Daily Challenge",
+      "dailyProgress": "Question {{current}} of {{total}}",
+      "dailyNote": "Questions automatically selected from your memorization scope",
+      "showLess": "Less ▴",
+      "showMore": "More ({{count}}) ▾"
     }
   },
   "onboarding": {
