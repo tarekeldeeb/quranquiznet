@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import {
   View, Text, StyleSheet, Image, Alert, ScrollView, Platform,
 } from 'react-native';
@@ -6,24 +6,13 @@ import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
+import { useTranslation } from 'react-i18next';
 import { signInAnon, signInGoogle, signInFacebook, signInApple, onAuthChange } from '../../src/services/firebase';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, localeNum, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
-
-const FEATURES: { icon: IconName; title: string; body: string; tint: string }[] = [
-  { icon: 'flame', title: 'تحدٍّ يومي', body: 'اختبار جديد كل يوم وحافظ على سلسلة أيامك', tint: '#c8973a' },
-  { icon: 'git-compare', title: 'أسئلة المتشابهات', body: 'اختبر تمييزك بين الآيات المتشابهة', tint: '#2980b9' },
-  { icon: 'trophy', title: 'البطولة', body: 'نافس القرّاء على لوحة الصدارة', tint: '#c0a02c' },
-  { icon: 'cloud-done', title: 'مزامنة سحابية', body: 'احفظ تقدمك وزامنه بين كل أجهزتك', tint: '#2f7d5d' },
-];
-
-const STATS = [
-  { value: arNum(114), label: 'سورة' },
-  { value: arNum(77878), label: 'كلمة' },
-  { value: '∞', label: 'أسئلة' },
-];
 
 function notify(title: string, msg: string) {
   if (Platform.OS === 'web') {
@@ -36,6 +25,27 @@ function notify(title: string, msg: string) {
 export default function AuthScreen() {
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { language, isRTL } = useDirection();
+
+  const features = useMemo(
+    () => [
+      { icon: 'flame' as IconName, title: t('auth.features.daily.title'), body: t('auth.features.daily.body'), tint: '#c8973a' },
+      { icon: 'git-compare' as IconName, title: t('auth.features.similar.title'), body: t('auth.features.similar.body'), tint: '#2980b9' },
+      { icon: 'trophy' as IconName, title: t('auth.features.leaderboard.title'), body: t('auth.features.leaderboard.body'), tint: '#c0a02c' },
+      { icon: 'cloud-done' as IconName, title: t('auth.features.sync.title'), body: t('auth.features.sync.body'), tint: '#2f7d5d' },
+    ],
+    [t]
+  );
+
+  const stats = useMemo(
+    () => [
+      { value: localeNum(114, language), label: t('auth.stats.surahs') },
+      { value: localeNum(77878, language), label: t('auth.stats.words') },
+      { value: '∞', label: t('auth.stats.questions') },
+    ],
+    [t, language]
+  );
 
   useEffect(() => {
     const unsub = onAuthChange((user) => {
@@ -53,7 +63,7 @@ export default function AuthScreen() {
     try {
       await signInGoogle();
     } catch {
-      notify('خطأ', 'تعذر تسجيل الدخول بجوجل');
+      notify(t('auth.errorTitle'), t('auth.errorGoogle'));
     }
   }
 
@@ -61,7 +71,7 @@ export default function AuthScreen() {
     try {
       await signInFacebook();
     } catch {
-      notify('خطأ', 'تعذر تسجيل الدخول بفيسبوك');
+      notify(t('auth.errorTitle'), t('auth.errorFacebook'));
     }
   }
 
@@ -72,7 +82,7 @@ export default function AuthScreen() {
       // A slight delay avoids a real iOS timing issue: presenting Alert.alert
       // immediately after the native Apple auth sheet dismisses can silently
       // fail to show if the dismiss animation hasn't finished yet.
-      setTimeout(() => notify('خطأ', 'تعذر تسجيل الدخول بحساب Apple'), 400);
+      setTimeout(() => notify(t('auth.errorTitle'), t('auth.errorApple')), 400);
     }
   }
 
@@ -93,32 +103,32 @@ export default function AuthScreen() {
           <View style={s.logoRing}>
             <Image source={require('../../assets/images/app-icon.png')} style={s.logo} resizeMode="contain" />
           </View>
-          <Text style={s.title}>شبكة اختبار القرآن</Text>
-          <Text style={[s.tagline, { color: colors.navySoft }]}>اختبر حفظك ونافس أهل القرآن</Text>
+          <Text style={s.title}>{t('auth.heroTitle')}</Text>
+          <Text style={[s.tagline, { color: colors.navySoft }]}>{t('auth.heroTagline')}</Text>
         </View>
 
         {/* ── Stats strip ── */}
-        <View style={s.statsRow}>
-          {STATS.map((st, i) => (
+        <View style={[s.statsRow, { flexDirection: rowDir(isRTL) }]}>
+          {stats.map((st, i) => (
             <View key={st.label} style={s.statItem}>
               <Text style={[s.statValue, { color: colors.gold }]}>{st.value}</Text>
               <Text style={[s.statLabel, { color: colors.navySoft }]}>{st.label}</Text>
-              {i < STATS.length - 1 && <View style={s.statDivider} />}
+              {i < stats.length - 1 && <View style={[s.statDivider, { [isRTL ? 'left' : 'right']: 0 }]} />}
             </View>
           ))}
         </View>
 
         {/* ── Primary CTA: play now, no sign-in required ── */}
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <PressScale style={[s.playBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep }]} onPress={handleAnonymous}>
+          <PressScale style={[s.playBtn, { backgroundColor: colors.gold, shadowColor: colors.goldDeep, flexDirection: rowDir(isRTL) }]} onPress={handleAnonymous}>
             <Ionicons name="play" size={22} color={colors.navy} />
-            <Text style={[s.playBtnTxt, { color: colors.navy }]}>ابدأ الآن</Text>
+            <Text style={[s.playBtnTxt, { color: colors.navy }]}>{t('auth.playBtn')}</Text>
           </PressScale>
-          <Text style={[s.playHint, { color: colors.inkSoft }]}>بلا تسجيل — أول سؤال خلال ثوانٍ</Text>
+          <Text style={[s.playHint, { color: colors.inkSoft }]}>{t('auth.playHint')}</Text>
 
-          <View style={s.dividerRow}>
+          <View style={[s.dividerRow, { flexDirection: rowDir(isRTL) }]}>
             <View style={[s.dividerLine, { backgroundColor: colors.line }]} />
-            <Text style={[s.dividerTxt, { color: colors.inkSoft }]}>أو سجّل دخولك لحفظ تقدمك</Text>
+            <Text style={[s.dividerTxt, { color: colors.inkSoft }]}>{t('auth.divider')}</Text>
             <View style={[s.dividerLine, { backgroundColor: colors.line }]} />
           </View>
 
@@ -140,36 +150,36 @@ export default function AuthScreen() {
               regardless of app theme (brand requirement, not themeable) — was
               using colors.ink, which flips to a light color in dark mode and
               washed out against the always-white background. */}
-          <PressScale style={[s.socialBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#dadce0' }]} onPress={handleGoogle}>
+          <PressScale style={[s.socialBtn, { backgroundColor: '#fff', borderWidth: 1, borderColor: '#dadce0', flexDirection: rowDir(isRTL) }]} onPress={handleGoogle}>
             <Ionicons name="logo-google" size={18} color="#4285F4" />
-            <Text style={[s.socialBtnTxt, { color: '#3c4043' }]}>المتابعة بحساب جوجل</Text>
+            <Text style={[s.socialBtnTxt, { color: '#3c4043' }]}>{t('auth.continueGoogle')}</Text>
           </PressScale>
 
-          <PressScale style={[s.socialBtn, { backgroundColor: '#1877F2' }]} onPress={handleFacebook}>
+          <PressScale style={[s.socialBtn, { backgroundColor: '#1877F2', flexDirection: rowDir(isRTL) }]} onPress={handleFacebook}>
             <Ionicons name="logo-facebook" size={18} color="#fff" />
-            <Text style={[s.socialBtnTxt, { color: '#fff' }]}>المتابعة بحساب فيسبوك</Text>
+            <Text style={[s.socialBtnTxt, { color: '#fff' }]}>{t('auth.continueFacebook')}</Text>
           </PressScale>
         </View>
 
         {/* ── Why join (2×2 grid) ── */}
-        <View style={s.featuresGrid}>
-          {FEATURES.map((f) => (
-            <View key={f.title} style={s.featureTile}>
+        <View style={[s.featuresGrid, { flexDirection: rowDir(isRTL) }]}>
+          {features.map((f) => (
+            <View key={f.title} style={[s.featureTile, { flexDirection: rowDir(isRTL) }]}>
               <View style={[s.featureIcon, { backgroundColor: `${f.tint}26` }]}>
                 <Ionicons name={f.icon} size={18} color={f.tint} />
               </View>
-              <View style={s.featureText}>
-                <Text style={s.featureTitle}>{f.title}</Text>
-                <Text style={[s.featureBody, { color: colors.navySoft }]} numberOfLines={2}>{f.body}</Text>
+              <View style={[s.featureText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.featureTitle, { textAlign: alignDir(isRTL) }]}>{f.title}</Text>
+                <Text style={[s.featureBody, { color: colors.navySoft, textAlign: alignDir(isRTL) }]} numberOfLines={2}>{f.body}</Text>
               </View>
             </View>
           ))}
         </View>
 
         <Text style={[s.footer, { color: 'rgba(255,255,255,0.45)' }]}>
-          بالمتابعة فأنت توافق على{' '}
+          {t('auth.termsNotice')}
           <Text style={[s.footerLink, { color: colors.navySoft }]} onPress={() => router.push('/(auth)/privacy')}>
-            الشروط وسياسة الخصوصية
+            {t('privacy.title')}
           </Text>
         </Text>
 
@@ -201,7 +211,6 @@ const s = StyleSheet.create({
 
   // Stats
   statsRow: {
-    flexDirection: 'row-reverse',
     backgroundColor: 'rgba(255,255,255,0.06)',
     borderRadius: radii.lg,
     paddingVertical: 10,
@@ -212,7 +221,7 @@ const s = StyleSheet.create({
   statValue: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
   statLabel: { fontSize: 11 },
   statDivider: {
-    position: 'absolute', left: 0, top: '15%', height: '70%',
+    position: 'absolute', top: '15%', height: '70%',
     width: 1, backgroundColor: 'rgba(255,255,255,0.12)',
   },
 
@@ -222,7 +231,6 @@ const s = StyleSheet.create({
     boxShadow: '0px 4px 16px rgba(0,0,0,0.25)', elevation: 5,
   },
   playBtn: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 8,
@@ -235,16 +243,15 @@ const s = StyleSheet.create({
   },
   playBtnTxt: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
   playHint: { fontSize: 11, textAlign: 'center' },
-  dividerRow: { flexDirection: 'row-reverse', alignItems: 'center', gap: 8, marginVertical: 4 },
+  dividerRow: { alignItems: 'center', gap: 8, marginVertical: 4 },
   dividerLine: { flex: 1, height: 1 },
   dividerTxt: { fontSize: 11 },
 
   // Features (2×2 grid)
-  featuresGrid: { flexDirection: 'row-reverse', flexWrap: 'wrap', gap: 10 },
+  featuresGrid: { flexWrap: 'wrap', gap: 10 },
   featureTile: {
     width: '47%',
     flexGrow: 1,
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 9,
     backgroundColor: 'rgba(255,255,255,0.06)',
@@ -255,13 +262,12 @@ const s = StyleSheet.create({
     borderColor: 'rgba(255,255,255,0.1)',
   },
   featureIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
-  featureText: { flex: 1, alignItems: 'flex-end' },
-  featureTitle: { color: '#fff', fontSize: 13, fontFamily: 'PlexArabic-Bold', textAlign: 'right' },
-  featureBody: { fontSize: 11, textAlign: 'right', marginTop: 1, lineHeight: 15 },
+  featureText: { flex: 1 },
+  featureTitle: { color: '#fff', fontSize: 13, fontFamily: 'PlexArabic-Bold' },
+  featureBody: { fontSize: 11, marginTop: 1, lineHeight: 15 },
 
   appleBtn: { width: '100%', height: 46 },
   socialBtn: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'center',
     gap: 10,
