@@ -41,7 +41,7 @@ export default function LanguagePicker({ value, onChange }: Props) {
         accessibilityLabel={selectedOption.label}
       >
         <Ionicons name="globe-outline" size={18} color={colors.inkSoft} />
-        <Text style={[s.triggerText, { color: colors.ink }]}>{selectedOption.label}</Text>
+        <Text style={[s.triggerText, { color: colors.ink }]} numberOfLines={1}>{selectedOption.label}</Text>
         <Ionicons
           name={open ? 'chevron-up' : 'chevron-down'}
           size={16}
@@ -81,6 +81,7 @@ export default function LanguagePicker({ value, onChange }: Props) {
                     { color: active ? colors.navy : colors.ink },
                     active && s.optionTextActive,
                   ]}
+                  numberOfLines={1}
                 >
                   {opt.label}
                 </Text>
@@ -103,6 +104,7 @@ const s = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    minWidth: 108,
     paddingVertical: 10,
     paddingHorizontal: 14,
     borderRadius: radii.md,
@@ -110,12 +112,12 @@ const s = StyleSheet.create({
     gap: 8,
   },
   triggerText: {
-    flex: 1,
     fontSize: 14,
     fontFamily: 'PlexArabic-SemiBold',
   },
   dropdown: {
     marginTop: 4,
+    minWidth: 108,
     borderRadius: radii.md,
     borderWidth: 1,
     overflow: 'hidden',

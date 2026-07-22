@@ -42,6 +42,14 @@
       "daily": "Daily Challenge",
       "leaderboard": "Leaderboard"
     },
+    "quizPreview": {
+      "correctFeedback": "Well done! This is what the questions look like 🎉",
+      "wrongFeedback": "Close — the correct answer: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 timed questions — answer quickly and accurately",
+      "secondsUnit": "s"
+    },
     "slides": {
       "s1": {
         "title": "Test Your Memorization",

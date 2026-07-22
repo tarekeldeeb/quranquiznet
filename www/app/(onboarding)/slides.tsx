@@ -7,7 +7,7 @@ import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, writingDir, mirror } from '../../src/theme/direction';
 import { useProfileStore } from '../../src/stores/profileStore';
 import PressScale from '../../src/components/PressScale';
@@ -31,6 +31,8 @@ const QURAN_FONT = Platform.OS === 'web' ? 'UthmanTN' : undefined;
 // quiz card uses, then continue.
 function QuizPreview() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
   const options = ['ٱلْعَٰلَمِينَ', 'ٱلنَّاسِ', 'ٱلْمَلِكِ', 'ٱلرَّحِيمِ', 'ٱلْكَرِيمِ'];
   const correctIndex = 0;
   const [picked, setPicked] = useState<number | null>(null);
@@ -38,9 +40,9 @@ function QuizPreview() {
 
   return (
     <View style={[p.card, { backgroundColor: colors.card }]}>
-      <View style={[p.topBar, { backgroundColor: colors.paper, borderColor: colors.line }]}>
-        <Text style={[p.instruction, { color: colors.inkSoft }]}>اختر الكلمة التالية</Text>
-        <View style={p.dotsRow}>
+      <View style={[p.topBar, { backgroundColor: colors.paper, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
+        <Text style={[p.instruction, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('quizCard.instructionNotSpecial')}</Text>
+        <View style={[p.dotsRow, { flexDirection: rowDir(isRTL) }]}>
           {[0, 1, 2, 3, 4].map((i) => (
             <View
               key={i}
@@ -83,14 +85,16 @@ function QuizPreview() {
           </View>
           <View style={p.skipBtn}>
             <Ionicons name="remove-circle-outline" size={16} color={colors.wrong} />
-            <Text style={[p.skipText, { color: colors.wrong }]}>لا أعلم</Text>
+            <Text style={[p.skipText, { color: colors.wrong }]}>{t('quizCard.skip')}</Text>
           </View>
         </View>
       </View>
 
       {picked != null && (
         <Text style={[p.feedbackTxt, { color: isCorrect ? colors.correct : colors.goldDeep, borderColor: colors.line }]}>
-          {isCorrect ? 'أحسنت! هكذا تبدو الأسئلة 🎉' : 'قريب — الصحيحة: ٱلْعَٰلَمِينَ'}
+          {isCorrect
+            ? t('onboarding.quizPreview.correctFeedback')
+            : t('onboarding.quizPreview.wrongFeedback', { answer: 'ٱلْعَٰلَمِينَ' })}
         </Text>
       )}
     </View>
@@ -100,18 +104,20 @@ function QuizPreview() {
 // Mini daily-challenge card — mirrors app/(app)/daily.tsx "available" state.
 function DailyPreview() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL, language } = useDirection();
   return (
     <View style={[p.dailyCard, { backgroundColor: colors.card }]}>
-      <View style={p.dailyTimer}>
-        <Text style={[p.dailyTimerNum, { color: colors.wrong }]}>٨</Text>
-        <Text style={[p.dailyTimerUnit, { color: colors.wrong }]}>ث</Text>
+      <View style={[p.dailyTimer, { flexDirection: rowDir(isRTL), [isRTL ? 'right' : 'left']: 12 }]}>
+        <Text style={[p.dailyTimerNum, { color: colors.wrong }]}>{localeNum(8, language)}</Text>
+        <Text style={[p.dailyTimerUnit, { color: colors.wrong }]}>{t('onboarding.dailyPreview.secondsUnit')}</Text>
       </View>
       <Ionicons name="star" size={34} color={colors.gold} />
-      <Text style={[p.dailyTitle, { color: colors.ink }]}>اختبار اليوم جاهز!</Text>
-      <Text style={[p.dailyBody, { color: colors.inkSoft }]}>١٠ أسئلة بمؤقّت — أجب بسرعة ودقّة</Text>
-      <View style={[p.dailyStartBtn, { backgroundColor: colors.navy }]}>
+      <Text style={[p.dailyTitle, { color: colors.ink }]}>{t('league.dailyReady')}</Text>
+      <Text style={[p.dailyBody, { color: colors.inkSoft }]}>{t('onboarding.dailyPreview.body')}</Text>
+      <View style={[p.dailyStartBtn, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]}>
         <Ionicons name="play" size={16} color="#fff" />
-        <Text style={p.dailyStartTxt}> ابدأ الاختبار</Text>
+        <Text style={p.dailyStartTxt}> {t('league.dailyStart')}</Text>
       </View>
     </View>
   );
@@ -120,21 +126,23 @@ function DailyPreview() {
 // Mini leaderboard — mirrors app/(app)/league.tsx rows.
 function LeaguePreview() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL, language } = useDirection();
   const rows = [
     { medal: '🥇', flag: '🇸🇦', name: 'أبو محمد', score: 980, me: false },
     { medal: '🥈', flag: '🇪🇬', name: 'حفصة', score: 940, me: false },
     { medal: '🥉', flag: '🇲🇦', name: 'يوسف', score: 910, me: false },
-    { medal: '٤', flag: '🇩🇿', name: 'أنت', score: 870, me: true },
+    { medal: localeNum(4, language), flag: '🇩🇿', name: t('pvp.you'), score: 870, me: true },
   ];
   return (
     <View style={[p.boardCard, { backgroundColor: colors.card }]}>
-      <Text style={[p.boardTitle, { color: colors.ink, borderColor: colors.line }]}>المتصدّرون اليوم</Text>
+      <Text style={[p.boardTitle, { color: colors.ink, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>{t('league.cardTitles.today')}</Text>
       {rows.map((r, i) => (
-        <View key={i} style={[p.boardRow, { borderColor: colors.line }, r.me && { backgroundColor: colors.goldPale }]}>
+        <View key={i} style={[p.boardRow, { borderColor: colors.line, flexDirection: rowDir(isRTL) }, r.me && { backgroundColor: colors.goldPale }]}>
           <Text style={p.boardMedal}>{r.medal}</Text>
           <Text style={p.boardFlag}>{r.flag}</Text>
-          <Text style={[p.boardName, { color: colors.ink }, r.me && { color: colors.goldDeep, fontFamily: 'PlexArabic-Bold' }]} numberOfLines={1}>{r.name}</Text>
-          <Text style={[p.boardScore, { color: colors.ink }, r.me && { color: colors.goldDeep }]}>{arNum(r.score)}</Text>
+          <Text style={[p.boardName, { color: colors.ink, textAlign: alignDir(isRTL) }, r.me && { color: colors.goldDeep, fontFamily: 'PlexArabic-Bold' }]} numberOfLines={1}>{r.name}</Text>
+          <Text style={[p.boardScore, { color: colors.ink, textAlign: isRTL ? 'left' : 'right' }, r.me && { color: colors.goldDeep }]}>{localeNum(r.score, language)}</Text>
         </View>
       ))}
     </View>
@@ -377,7 +385,6 @@ const p = StyleSheet.create({
     elevation: 3,
   },
   topBar: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 10,
@@ -386,8 +393,8 @@ const p = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: '#e0e6ed',
   },
-  instruction: { fontSize: 10, color: '#7f8c8d', textAlign: 'right' },
-  dotsRow: { flexDirection: 'row-reverse', gap: 3 },
+  instruction: { fontSize: 10, color: '#7f8c8d' },
+  dotsRow: { gap: 3 },
   qDot: { width: 6, height: 6, borderRadius: 3 },
   qDotDone: { backgroundColor: '#2f7d5d' },
   qDotCurrent: { backgroundColor: '#0d2d4e' },
@@ -457,8 +464,6 @@ const p = StyleSheet.create({
   dailyTimer: {
     position: 'absolute',
     top: 10,
-    left: 12,
-    flexDirection: 'row-reverse',
     alignItems: 'baseline',
     gap: 1,
   },
@@ -467,7 +472,6 @@ const p = StyleSheet.create({
   dailyTitle: { fontSize: 17, fontWeight: '700', color: '#0d2d4e', textAlign: 'center' },
   dailyBody: { fontSize: 12, color: '#666', textAlign: 'center' },
   dailyStartBtn: {
-    flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#0d2d4e',
     paddingHorizontal: 20,
@@ -490,14 +494,12 @@ const p = StyleSheet.create({
     fontSize: 12,
     fontWeight: '700',
     color: '#0d2d4e',
-    textAlign: 'right',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderColor: '#f0f0f0',
   },
   boardRow: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 8,
@@ -508,9 +510,9 @@ const p = StyleSheet.create({
   boardRowMe: { backgroundColor: '#d8e8f2' },
   boardMedal: { width: 24, fontSize: 14, textAlign: 'center' },
   boardFlag: { fontSize: 15, width: 22, textAlign: 'center' },
-  boardName: { flex: 1, fontSize: 13, color: '#333', textAlign: 'right' },
+  boardName: { flex: 1, fontSize: 13, color: '#333' },
   boardNameMe: { fontWeight: '700', color: '#0d2d4e' },
-  boardScore: { fontSize: 14, fontWeight: '700', color: '#0d2d4e', minWidth: 38, textAlign: 'left' },
+  boardScore: { fontSize: 14, fontWeight: '700', color: '#0d2d4e', minWidth: 38 },
   boardScoreMe: { color: '#c8973a' },
 
   // ── Welcome feature badges ───────────────────────────────────────────────────

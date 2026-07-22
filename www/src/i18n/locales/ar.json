@@ -42,6 +42,14 @@
       "daily": "تحدٍّ يومي",
       "leaderboard": "ترتيب"
     },
+    "quizPreview": {
+      "correctFeedback": "أحسنت! هكذا تبدو الأسئلة 🎉",
+      "wrongFeedback": "قريب — الصحيحة: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "١٠ أسئلة بمؤقّت — أجب بسرعة ودقّة",
+      "secondsUnit": "ث"
+    },
     "slides": {
       "s1": {
         "title": "اختبر حفظك",
