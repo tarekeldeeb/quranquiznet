@@ -134,7 +134,6 @@ export default function RootLayout() {
   // WebView needs (see src/services/madinaAssets.ts); a no-op resolved promise on web.
   const [madinaReady, setMadinaReady] = useState(Platform.OS === 'web');
   const loadProfile = useProfileStore((s) => s.load);
-  const language = useProfileStore((s) => s.language);
 
   const [fontsLoaded] = useFonts({
     // UI face — buttons, tabs, labels, body text; legible at 11-13px where
@@ -198,7 +197,7 @@ export default function RootLayout() {
       <Analytics />
       <WebFrame>
         <I18nextProvider i18n={i18n}>
-          <Stack key={language} screenOptions={{ headerShown: false }} />
+          <Stack screenOptions={{ headerShown: false }} />
         </I18nextProvider>
       </WebFrame>
       <ConsentBanner />
