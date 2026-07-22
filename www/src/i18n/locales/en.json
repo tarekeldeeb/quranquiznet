@@ -43,8 +43,8 @@
       "title": "What Have You Memorized?",
       "subtitle": "Select the Surahs and Juz' you have memorized",
       "all": "All",
-      "none": "None",
-      "recent": "Recent",
+      "none": "Clear All",
+      "recent": "Last 5 Juz'",
       "confirm": "Confirm & Continue"
     }
   },
