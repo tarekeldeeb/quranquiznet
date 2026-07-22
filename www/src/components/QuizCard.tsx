@@ -266,9 +266,9 @@ export default function QuizCard({
         {/* Instruction + progress dots — colors.card (not paper) so this
             reads as the card's own header, not a strip that blends into the
             page background sitting behind the card. */}
-        <View style={[s.topBar, { backgroundColor: colors.card, borderColor: colors.line }]}>
-          <Text style={[s.instruction, { color: colors.inkSoft }]}>{t(card.qo.qType.txt)}</Text>
-          <View style={s.dotsRow}>
+        <View style={[s.topBar, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
+          <Text style={[s.instruction, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t(card.qo.qType.txt)}</Text>
+          <View style={[s.dotsRow, { flexDirection: rowDir(isRTL) }]}>
             {Array.from({ length: totalRounds }, (_, i) => (
               <View
                 key={i}
@@ -448,7 +448,6 @@ const s = StyleSheet.create({
 
   // ── FRONT ────────────────────────────────────────────────────────────────
   topBar: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     justifyContent: 'space-between',
     paddingHorizontal: 12,
@@ -457,11 +456,9 @@ const s = StyleSheet.create({
   },
   instruction: {
     fontSize: 11,
-    textAlign: 'right',
     flexShrink: 1,
   },
   dotsRow: {
-    flexDirection: 'row-reverse',
     gap: 4,
     flexWrap: 'wrap',
     justifyContent: 'flex-start',
