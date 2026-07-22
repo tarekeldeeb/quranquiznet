@@ -285,8 +285,8 @@ export default function SlidesScreen() {
               <View style={s.points}>
                 {item.points.map((pt: string, i: number) => (
                   <View key={i} style={[s.pointRow, { flexDirection: rowDir(isRTL) }]}>
-                    <Text style={[s.pointText, { textAlign: alignDir(isRTL) }]}>{pt}</Text>
                     <Ionicons name="checkmark-circle" size={18} color={colors.gold} />
+                    <Text style={[s.pointText, { textAlign: alignDir(isRTL) }]}>{pt}</Text>
                   </View>
                 ))}
               </View>
