@@ -6,6 +6,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import {
   getDailyHead, subscribeYesterdayReport, subscribeMonthlyTopReport, subscribeTodayStandings,
   type DailyHead, type LeaderboardEntry,
@@ -14,7 +15,8 @@ import { findOwnRank, type RankedEntry } from '../../src/models/dailyRank';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { flagEmoji } from '../../src/models/constants';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, localeNum, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
 type Tab = 'today' | 'yesterday' | 'month';
@@ -34,6 +36,8 @@ function InitialAvatar({ name, size, tint, colors }: { name: string; size: numbe
 }
 
 export default function LeagueScreen() {
+  const { t } = useTranslation();
+  const { isRTL, language } = useDirection();
   const router = useRouter();
   const navigation = useNavigation();
   const { colors } = useTheme();
@@ -96,11 +100,11 @@ export default function LeagueScreen() {
 
   // Reclaim the header: the month name instead of the app's repeated name.
   useEffect(() => {
-    const monthName = new Date().toLocaleDateString('ar-EG', { month: 'long' });
+    const monthName = new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { month: 'long' });
     navigation.setOptions({
-      headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>البطولة · {monthName}</Text>,
+      headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{t('league.title')} · {monthName}</Text>,
     });
-  }, [navigation]);
+  }, [navigation, language, t]);
 
   function startDaily() {
     if (!head) return;
@@ -109,15 +113,16 @@ export default function LeagueScreen() {
       QS.initDailyQuiz(head.daily_random, profile.parts, weights);
       router.push({ pathname: '/(app)/quiz', params: { dailyMode: '1' } });
     };
-    const msg = 'الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع';
+    const title = t('league.startDialog.title');
+    const msg = t('league.startDialog.msg');
     // RN Alert is a no-op on react-native-web, so use the browser confirm there.
     if (Platform.OS === 'web') {
-      if (typeof window === 'undefined' || window.confirm(`اختبار اليوم\n\n${msg}`)) begin();
+      if (typeof window === 'undefined' || window.confirm(`${title}\n\n${msg}`)) begin();
       return;
     }
-    Alert.alert('اختبار اليوم', msg, [
-      { text: 'لا', style: 'cancel' },
-      { text: 'ابدأ', onPress: begin },
+    Alert.alert(title, msg, [
+      { text: t('league.startDialog.no'), style: 'cancel' },
+      { text: t('league.startDialog.start'), onPress: begin },
     ]);
   }
 
@@ -151,16 +156,16 @@ export default function LeagueScreen() {
     const flag = flagEmoji(item.country);
     const delta = movementFor(item, rank);
     return (
-      <View style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
-        <Text style={[s.rank, { color: colors.inkSoft }]}>{arNum(rank)}</Text>
+      <View style={[s.row, { flexDirection: rowDir(isRTL) }, isMe && { backgroundColor: colors.goldPale }]}>
+        <Text style={[s.rank, { color: colors.inkSoft }]}>{localeNum(rank, language)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
+        <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? t('common.guestName')}</Text>
         {delta != null && delta !== 0 && (
           <Text style={[s.delta, delta > 0 ? { color: colors.correct } : { color: colors.wrong }]}>
-            {delta > 0 ? `▲${arNum(delta)}` : `▼${arNum(Math.abs(delta))}`}
+            {delta > 0 ? `▲${localeNum(delta, language)}` : `▼${localeNum(Math.abs(delta), language)}`}
           </Text>
         )}
-        <Text style={[s.rowScore, { color: colors.ink }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
+        <Text style={[s.rowScore, { color: colors.ink, textAlign: isRTL ? 'left' : 'right' }, isMe && { color: colors.goldDeep }]}>{localeNum(item.score, language)}</Text>
       </View>
     );
   }
@@ -170,11 +175,11 @@ export default function LeagueScreen() {
   function renderNeighborRow(item: RankedEntry, isMe: boolean) {
     const flag = flagEmoji(item.country);
     return (
-      <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, isMe && { backgroundColor: colors.goldPale }]}>
-        <Text style={[s.rank, { color: colors.inkSoft }]}>{item.rank <= 3 ? MEDAL[item.rank - 1] : arNum(item.rank)}</Text>
+      <View key={`${item.rank}-${item.uid ?? item.name}`} style={[s.row, { flexDirection: rowDir(isRTL) }, isMe && { backgroundColor: colors.goldPale }]}>
+        <Text style={[s.rank, { color: colors.inkSoft }]}>{item.rank <= 3 ? MEDAL[item.rank - 1] : localeNum(item.rank, language)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
-        <Text style={[s.rowName, { color: colors.ink }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? 'زائر(ة)'}</Text>
-        <Text style={[s.rowScore, { color: colors.ink }, isMe && { color: colors.goldDeep }]}>{arNum(item.score)}</Text>
+        <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? t('common.guestName')}</Text>
+        <Text style={[s.rowScore, { color: colors.ink, textAlign: isRTL ? 'left' : 'right' }, isMe && { color: colors.goldDeep }]}>{localeNum(item.score, language)}</Text>
       </View>
     );
   }
@@ -186,30 +191,30 @@ export default function LeagueScreen() {
         {/* Compact daily challenge strip */}
         {status === 'available' && (
           dailyDone ? (
-            <View style={[s.dailyStrip, { backgroundColor: colors.correctPale, borderWidth: 1.5, borderColor: colors.correct }]}>
+            <View style={[s.dailyStrip, { backgroundColor: colors.correctPale, borderWidth: 1.5, borderColor: colors.correct, flexDirection: rowDir(isRTL) }]}>
               <Ionicons name="checkmark-circle" size={18} color={colors.correct} />
-              <Text style={[s.dailyStripTxt, { color: colors.correct }]}>أكملت اختبار اليوم ✓</Text>
+              <Text style={[s.dailyStripTxt, { color: colors.correct, textAlign: alignDir(isRTL) }]}>{t('league.dailyCompleted')}</Text>
             </View>
           ) : (
-            <PressScale style={[s.dailyStrip, { backgroundColor: colors.card }]} onPress={startDaily}>
+            <PressScale style={[s.dailyStrip, { backgroundColor: colors.card, flexDirection: rowDir(isRTL) }]} onPress={startDaily}>
               <Ionicons name="star" size={18} color={colors.gold} />
-              <Text style={[s.dailyStripTxt, { color: colors.ink }]}>اختبار اليوم جاهز</Text>
+              <Text style={[s.dailyStripTxt, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('league.dailyReady')}</Text>
               <View style={[s.dailyStripBtn, { backgroundColor: colors.navy }]}>
-                <Text style={s.dailyStripBtnTxt}>ابدأ</Text>
+                <Text style={s.dailyStripBtnTxt}>{t('league.dailyStart')}</Text>
               </View>
             </PressScale>
           )
         )}
         {status === 'loading' && (
-          <View style={[s.dailyStrip, { backgroundColor: colors.card }]}>
+          <View style={[s.dailyStrip, { backgroundColor: colors.card, flexDirection: rowDir(isRTL) }]}>
             <ActivityIndicator size="small" color={colors.ink} />
-            <Text style={[s.dailyStripTxt, { color: colors.ink }]}>جارٍ التحقق...</Text>
+            <Text style={[s.dailyStripTxt, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('league.dailyChecking')}</Text>
           </View>
         )}
         {status === 'error' && (
-          <PressScale style={[s.dailyStrip, { backgroundColor: colors.wrongPale }]} onPress={checkDaily}>
+          <PressScale style={[s.dailyStrip, { backgroundColor: colors.wrongPale, flexDirection: rowDir(isRTL) }]} onPress={checkDaily}>
             <Ionicons name="refresh" size={16} color={colors.wrong} />
-            <Text style={[s.dailyStripTxt, { color: colors.wrong }]}>تعذر الاتصال — إعادة المحاولة</Text>
+            <Text style={[s.dailyStripTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>{t('league.dailyError')}</Text>
           </PressScale>
         )}
 
@@ -218,7 +223,9 @@ export default function LeagueScreen() {
             user has a submission in today's live standings. */}
         {ownRank && (
           <View style={[s.card, { backgroundColor: colors.card }]}>
-            <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line }]}>ترتيبك اليوم: #{arNum(ownRank.rank)}</Text>
+            <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+              {t('league.ownRank', { rank: localeNum(ownRank.rank, language) })}
+            </Text>
             {ownRank.above.map((e) => renderNeighborRow(e, false))}
             {renderNeighborRow(ownRank.entry, true)}
             {ownRank.below.map((e) => renderNeighborRow(e, false))}
@@ -226,8 +233,8 @@ export default function LeagueScreen() {
         )}
 
         {/* Inner tab bar */}
-        <View style={[s.tabBar, { backgroundColor: colors.goldPale }]}>
-          {([['today', 'اليوم'], ['yesterday', 'أمس'], ['month', 'الشهر']] as [Tab, string][]).map(([key, label]) => (
+        <View style={[s.tabBar, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}>
+          {(([ ['today', t('league.tabs.today')], ['yesterday', t('league.tabs.yesterday')], ['month', t('league.tabs.month')] ]) as [Tab, string][]).map(([key, label]) => (
             <PressScale
               key={key}
               style={[s.tabBtn, tab === key && { backgroundColor: colors.navy }]}
@@ -239,25 +246,27 @@ export default function LeagueScreen() {
         </View>
 
         <View style={[s.card, { backgroundColor: colors.card }]}>
-          <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line }]}>
-            {tab === 'today' ? 'المتصدّرون اليوم' : tab === 'yesterday' ? 'أفضل نتائج الأمس' : 'أفضل نتائج هذا الشهر'}
+          <Text style={[s.cardTitle, { color: colors.ink, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {tab === 'today' ? t('league.cardTitles.today') : tab === 'yesterday' ? t('league.cardTitles.yesterday') : t('league.cardTitles.month')}
           </Text>
           {reportsLoading ? (
             <ActivityIndicator color={colors.ink} style={{ marginVertical: 16 }} />
           ) : listData.length === 0 ? (
             <View style={s.emptyWrap}>
               <Ionicons name="trophy-outline" size={30} color={colors.inkSoft} />
-              <Text style={[s.emptyTitle, { color: colors.ink }]}>كن أول المتصدرين {tab === 'month' ? 'هذا الشهر' : 'اليوم'}</Text>
+              <Text style={[s.emptyTitle, { color: colors.ink }]}>
+                {t('league.emptyTitle', { timeframe: tab === 'month' ? t('league.timeframes.month') : t('league.timeframes.today') })}
+              </Text>
               {/* Only daily-quiz scores feed the league, so the CTA starts
                   today's quiz whenever it's startable; a plain practice quiz
                   is the fallback (daily done, unpublished, or still loading). */}
               {status === 'available' && !dailyDone ? (
                 <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={startDaily}>
-                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختبار اليوم</Text>
+                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>{t('league.emptyBtnDaily')}</Text>
                 </PressScale>
               ) : (
                 <PressScale style={[s.emptyBtn, { backgroundColor: colors.gold }]} onPress={startDaily}>
-                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>ابدأ اختباراً</Text>
+                  <Text style={[s.emptyBtnTxt, { color: colors.navy }]}>{t('league.emptyBtnGeneric')}</Text>
                 </PressScale>
               )}
             </View>
@@ -272,8 +281,8 @@ export default function LeagueScreen() {
                     return (
                       <View key={i} style={s.podCol}>
                         <InitialAvatar name={e.name ?? '؟'} size={i === 0 ? 52 : 44} tint={PODIUM_TINTS[i]} colors={colors} />
-                        <Text style={[s.podName, { color: colors.ink }]} numberOfLines={1}>{e.name ?? 'زائر(ة)'}</Text>
-                        <Text style={[s.podScore, { color: colors.goldDeep }]}>{arNum(e.score)}</Text>
+                        <Text style={[s.podName, { color: colors.ink }]} numberOfLines={1}>{e.name ?? t('common.guestName')}</Text>
+                        <Text style={[s.podScore, { color: colors.goldDeep }]}>{localeNum(e.score, language)}</Text>
                         <View style={[s.podBase, { height: heights[i], backgroundColor: PODIUM_TINTS[i] }]}>
                           <Text style={s.podBaseTxt}>{MEDAL[i]}</Text>
                         </View>
@@ -309,7 +318,6 @@ const s = StyleSheet.create({
 
   dailyStrip: {
     borderRadius: radii.md,
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
@@ -317,11 +325,11 @@ const s = StyleSheet.create({
     boxShadow: '0px 0px 4px rgba(0,0,0,0.06)',
     elevation: 2,
   },
-  dailyStripTxt: { flex: 1, fontSize: 14, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
+  dailyStripTxt: { flex: 1, fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
   dailyStripBtn: { paddingHorizontal: 16, paddingVertical: 7, borderRadius: radii.sm },
   dailyStripBtnTxt: { color: '#fff', fontFamily: 'PlexArabic-Bold', fontSize: 13 },
 
-  tabBar: { flexDirection: 'row-reverse', borderRadius: radii.md, padding: 3, gap: 3 },
+  tabBar: { borderRadius: radii.md, padding: 3, gap: 3 },
   tabBtn: { flex: 1, paddingVertical: 9, borderRadius: radii.sm, alignItems: 'center' },
   tabBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
 
@@ -334,7 +342,6 @@ const s = StyleSheet.create({
   cardTitle: {
     fontSize: 13,
     fontFamily: 'PlexArabic-Bold',
-    textAlign: 'right',
     padding: 14,
     borderBottomWidth: 1,
   },
@@ -356,7 +363,6 @@ const s = StyleSheet.create({
 
   center: { padding: 24, alignItems: 'center' },
   row: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     paddingHorizontal: 14,
     paddingVertical: 12,
@@ -365,8 +371,8 @@ const s = StyleSheet.create({
   rank: { width: 26, fontSize: 13, fontFamily: 'PlexArabic-SemiBold', textAlign: 'center' },
   rowFlag: { fontSize: 18, width: 28, textAlign: 'center' },
   rowFlagPlaceholder: { width: 28 },
-  rowName: { flex: 1, fontSize: 14, textAlign: 'right' },
+  rowName: { flex: 1, fontSize: 14 },
   delta: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
-  rowScore: { fontSize: 15, fontFamily: 'PlexArabic-Bold', minWidth: 42, textAlign: 'left' },
+  rowScore: { fontSize: 15, fontFamily: 'PlexArabic-Bold', minWidth: 42 },
   sep: { height: 1, marginHorizontal: 14 },
 });

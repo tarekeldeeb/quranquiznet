@@ -95,8 +95,46 @@
   "me": {},
   "quiz": {},
   "pvp": {},
-  "league": {},
-  "map": {},
+  "league": {
+    "title": "Leaderboard",
+    "dailyCompleted": "Completed today's challenge ✓",
+    "dailyReady": "Today's quiz is ready",
+    "dailyStart": "Start",
+    "dailyChecking": "Checking...",
+    "dailyError": "Connection failed — Retry",
+    "ownRank": "Your rank today: #{{rank}}",
+    "tabs": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "month": "Month"
+    },
+    "cardTitles": {
+      "today": "Today's Leaderboard",
+      "yesterday": "Yesterday's Top Results",
+      "month": "Top Results This Month"
+    },
+    "emptyTitle": "Be the first on the leaderboard {{timeframe}}",
+    "timeframes": {
+      "today": "today",
+      "month": "this month"
+    },
+    "emptyBtnDaily": "Start Today's Quiz",
+    "emptyBtnGeneric": "Start a Quiz",
+    "startDialog": {
+      "title": "Today's Quiz",
+      "msg": "The quiz consists of 10 questions within your memorization scope. Answer correctly and quickly.",
+      "no": "No",
+      "start": "Start"
+    }
+  },
+  "map": {
+    "title": "Memorization Map",
+    "filterAll": "All",
+    "filterGood": "Good",
+    "filterWeak": "Weak",
+    "correctOf": "{{correct}} correct of {{questions}}",
+    "notTested": "Not yet tested"
+  },
   "auth": {
     "heroTitle": "Quran Quiz Net",
     "heroTagline": "Test your memorization and compete with people of Quran",

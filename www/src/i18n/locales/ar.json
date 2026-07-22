@@ -95,8 +95,46 @@
   "me": {},
   "quiz": {},
   "pvp": {},
-  "league": {},
-  "map": {},
+  "league": {
+    "title": "البطولة",
+    "dailyCompleted": "أكملت اختبار اليوم ✓",
+    "dailyReady": "اختبار اليوم جاهز",
+    "dailyStart": "ابدأ",
+    "dailyChecking": "جارٍ التحقق...",
+    "dailyError": "تعذر الاتصال — إعادة المحاولة",
+    "ownRank": "ترتيبك اليوم: #{{rank}}",
+    "tabs": {
+      "today": "اليوم",
+      "yesterday": "أمس",
+      "month": "الشهر"
+    },
+    "cardTitles": {
+      "today": "المتصدّرون اليوم",
+      "yesterday": "أفضل نتائج الأمس",
+      "month": "أفضل نتائج هذا الشهر"
+    },
+    "emptyTitle": "كن أول المتصدرين {{timeframe}}",
+    "timeframes": {
+      "today": "اليوم",
+      "month": "هذا الشهر"
+    },
+    "emptyBtnDaily": "ابدأ اختبار اليوم",
+    "emptyBtnGeneric": "ابدأ اختباراً",
+    "startDialog": {
+      "title": "اختبار اليوم",
+      "msg": "الاختبار يتكون من 10 أسئلة في نطاق حفظك وعليك الإجابة بشكل صحيح وسريع",
+      "no": "لا",
+      "start": "ابدأ"
+    }
+  },
+  "map": {
+    "title": "خريطة الحفظ",
+    "filterAll": "الكل",
+    "filterGood": "الجيد",
+    "filterWeak": "الضعيف",
+    "correctOf": "{{correct}} صحيحة من {{questions}}",
+    "notTested": "لم يُختبر بعد"
+  },
   "auth": {
     "heroTitle": "شبكة اختبار القرآن",
     "heroTagline": "اختبر حفظك ونافس أهل القرآن",

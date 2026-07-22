@@ -11,10 +11,12 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useTranslation } from 'react-i18next';
 import { useProfileStore, CORRECT_RATIO_RANGE, tierFromRatioRange } from '../../src/stores/profileStore';
 import KhatamStar from '../../src/components/KhatamStar';
 import PressScale from '../../src/components/PressScale';
-import { useTheme, arNum, radii } from '../../src/theme/tokens';
+import { useTheme, localeNum, radii } from '../../src/theme/tokens';
+import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 
 type BulkAction = 'all' | 'good' | 'weak';
 
@@ -45,6 +47,7 @@ function playBell() {
 
 /** Active-parts counter that tweens up/down, with a bell that rings on increase. */
 function ActiveCountBadge({ value, color, bg }: { value: number; color: string; bg: string }) {
+  const { isRTL, language } = useDirection();
   const [display, setDisplay] = useState(value);
   const fromRef = useRef(value);
   const prevRef = useRef(value);
@@ -83,16 +86,18 @@ function ActiveCountBadge({ value, color, bg }: { value: number; color: string; 
   const rotate = shake.interpolate({ inputRange: [-1, 1], outputRange: ['-22deg', '22deg'] });
 
   return (
-    <View style={[s.countBadge, { backgroundColor: bg }]}>
+    <View style={[s.countBadge, { backgroundColor: bg, flexDirection: rowDir(isRTL) }]}>
       <Animated.View style={{ transform: [{ rotate }] }}>
         <Ionicons name="notifications" size={15} color={color} />
       </Animated.View>
-      <Text style={[s.countNum, { color }]}>{arNum(display)}</Text>
+      <Text style={[s.countNum, { color }]}>{localeNum(display, language)}</Text>
     </View>
   );
 }
 
 export default function MapScreen() {
+  const { t } = useTranslation();
+  const { isRTL, language } = useDirection();
   const { colors } = useTheme();
   const router = useRouter();
   const profile = useProfileStore();
@@ -128,16 +133,16 @@ export default function MapScreen() {
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
-      <View style={[s.header, { borderColor: colors.line }]}>
+      <View style={[s.header, { borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
         <PressScale onPress={() => router.back()} hitSlop={10} style={s.backBtn}>
-          <Ionicons name="chevron-forward" size={22} color={colors.ink} />
+          <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={22} color={colors.ink} />
         </PressScale>
-        <Text style={[s.title, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>خريطة الحفظ</Text>
+        <Text style={[s.title, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>{t('map.title')}</Text>
         <ActiveCountBadge value={activeParts} color={colors.goldDeep} bg={colors.goldPale} />
       </View>
 
-      <View style={s.filterRow}>
-        {([['all', 'الكل'], ['good', 'الجيد'], ['weak', 'الضعيف']] as [BulkAction, string][]).map(([action, label]) => (
+      <View style={[s.filterRow, { flexDirection: rowDir(isRTL) }]}>
+        {(([ ['all', t('map.filterAll')], ['good', t('map.filterGood')], ['weak', t('map.filterWeak')] ]) as [BulkAction, string][]).map(([action, label]) => (
           <PressScale
             key={action}
             style={[s.filterBtn, { backgroundColor: colors.card, borderColor: colors.line }]}
@@ -160,14 +165,14 @@ export default function MapScreen() {
           const questions = part.numQuestions[1] + part.numQuestions[2] + part.numQuestions[3] + (part.numQuestions[4] ?? 0);
           return (
             <PressScale
-              style={[s.row, { backgroundColor: colors.card, opacity: part.checked ? 1 : 0.6 }]}
+              style={[s.row, { backgroundColor: colors.card, opacity: part.checked ? 1 : 0.6, flexDirection: rowDir(isRTL) }]}
               onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(index), nonce: String(Date.now()) } })}
             >
               <KhatamStar tier={tier} size={38} colors={colors} />
-              <View style={s.rowInfo}>
-                <Text style={[s.rowName, { color: colors.ink }]} numberOfLines={1}>{part.name}</Text>
-                <Text style={[s.rowSub, { color: colors.inkSoft }]}>
-                  {questions > 0 ? `${arNum(correct)} صحيحة من ${arNum(questions)}` : 'لم يُختبر بعد'}
+              <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{part.name}</Text>
+                <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+                  {questions > 0 ? t('map.correctOf', { correct: localeNum(correct, language), questions: localeNum(questions, language) }) : t('map.notTested')}
                 </Text>
               </View>
               <Switch
@@ -188,7 +193,6 @@ export default function MapScreen() {
 const s = StyleSheet.create({
   container: { flex: 1 },
   header: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     padding: 16,
     gap: 8,
@@ -197,7 +201,6 @@ const s = StyleSheet.create({
   backBtn: { padding: 2 },
   title: { flex: 1, fontSize: 20, fontWeight: '700', textAlign: 'center' },
   countBadge: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 5,
     paddingHorizontal: 10,
@@ -205,18 +208,17 @@ const s = StyleSheet.create({
     borderRadius: radii.pill,
   },
   countNum: { fontSize: 14, fontFamily: 'PlexArabic-Bold', minWidth: 14, textAlign: 'center' },
-  filterRow: { flexDirection: 'row-reverse', padding: 12, gap: 8 },
+  filterRow: { padding: 12, gap: 8 },
   filterBtn: { flex: 1, paddingVertical: 9, borderRadius: radii.md, alignItems: 'center', borderWidth: 1 },
   filterBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
   list: { paddingHorizontal: 12, paddingBottom: 24 },
   row: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     gap: 10,
     padding: 10,
     borderRadius: radii.md,
   },
-  rowInfo: { flex: 1, alignItems: 'flex-end' },
-  rowName: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold', textAlign: 'right' },
-  rowSub: { fontSize: 11, textAlign: 'right', marginTop: 1 },
+  rowInfo: { flex: 1 },
+  rowName: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
+  rowSub: { fontSize: 11, marginTop: 1 },
 });
