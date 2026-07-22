@@ -69,7 +69,10 @@ export default function AuthScreen() {
     try {
       await signInApple();
     } catch {
-      notify('خطأ', 'تعذر تسجيل الدخول بحساب Apple');
+      // A slight delay avoids a real iOS timing issue: presenting Alert.alert
+      // immediately after the native Apple auth sheet dismisses can silently
+      // fail to show if the dismiss animation hasn't finished yet.
+      setTimeout(() => notify('خطأ', 'تعذر تسجيل الدخول بحساب Apple'), 400);
     }
   }
 
