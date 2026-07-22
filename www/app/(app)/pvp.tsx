@@ -11,6 +11,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
+import { useTranslation } from 'react-i18next';
+import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
@@ -63,8 +65,9 @@ const EMPTY_BOT_VIEW: BotProgress = {
 
 /** Ten-segment progress strip; green = correct, red = wrong, grey = pending. */
 function ProgressStrip({ results, current, colors }: { results: (boolean | null)[]; current: number; colors: ThemeColors }) {
+  const { isRTL } = useDirection();
   return (
-    <View style={s.strip}>
+    <View style={[s.strip, { flexDirection: rowDir(isRTL) }]}>
       {Array.from({ length: PVP_QUESTIONS }, (_, i) => (
         <View
           key={i}
@@ -85,6 +88,8 @@ export default function PvpScreen() {
   const profile = useProfileStore();
   const router = useRouter();
   const { colors } = useTheme();
+  const { t } = useTranslation();
+  const { isRTL } = useDirection();
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [countdown, setCountdown] = useState(3);
@@ -332,7 +337,7 @@ export default function PvpScreen() {
     };
 
     attemptJoin(uid, {
-      name: profile.social.displayName?.split(' ')[0] || 'أنت',
+      name: profile.social.displayName?.split(' ')[0] || t('pvp.you'),
       photoURL: profile.social.photoURL,
       country: profile.country || undefined,
       level: profile.level,
@@ -441,7 +446,7 @@ export default function PvpScreen() {
     planRef.current = makeMatchPlan(meta.seed, meta.level, meta.scope);
 
     FB.writeMyPvpState(matchId, profile.uid, {
-      name: profile.social.displayName?.split(' ')[0] || 'أنت',
+      name: profile.social.displayName?.split(' ')[0] || t('pvp.you'),
       photoURL: profile.social.photoURL,
       country: profile.country || undefined,
       qIndex: 0, correct: 0, finished: false,
@@ -749,19 +754,19 @@ export default function PvpScreen() {
   }
 
   // ── render ──────────────────────────────────────────────────────────────────
-  const playerName = profile.social.displayName?.split(' ')[0] || 'أنت';
+  const playerName = profile.social.displayName?.split(' ')[0] || t('pvp.you');
   const avatarUri = profile.social.photoURL || undefined;
   const playing = phase === 'playing' || phase === 'done';
 
-  const opponentLabel = opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? 'المنافس');
+  const opponentLabel = opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? t('pvp.theOpponent'));
   const outcomeTitle =
-    outcome === 'win' ? 'فزت! 🏆'
-    : outcome === 'loss' ? `فاز ${opponentLabel} هذه المرة`
-    : 'تعادل!';
+    outcome === 'win' ? t('pvp.outcome.winTitle')
+    : outcome === 'loss' ? t('pvp.outcome.lossTitle', { name: opponentLabel })
+    : t('pvp.outcome.drawTitle');
   const outcomeSub =
-    outcome === 'win' ? `أحسنت — تغلبت على ${opponentLabel}. حافظ على المستوى!`
-    : outcome === 'loss' ? 'راجع محفوظك وأعد المحاولة — النتيجة قريبة بإذن الله.'
-    : 'مباراة متكافئة! جولة أخرى تحسم النتيجة.';
+    outcome === 'win' ? t('pvp.outcome.winSub', { name: opponentLabel })
+    : outcome === 'loss' ? t('pvp.outcome.lossSub')
+    : t('pvp.outcome.drawSub');
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
@@ -772,28 +777,27 @@ export default function PvpScreen() {
           <View style={[s.idleIconRing, { backgroundColor: colors.goldPale }]}>
             <Ionicons name="flash" size={40} color={colors.gold} />
           </View>
-          <Text style={[s.idleTitle, { color: colors.ink }]}>منافسة مباشرة</Text>
+          <Text style={[s.idleTitle, { color: colors.ink }]}>{t('pvp.idleTitle')}</Text>
           <Text style={[s.idleSub, { color: colors.inkSoft }]}>
-            {PVP_QUESTIONS} أسئلة من سور حفظك — سنبحث عن منافس حقيقي أولاً، وإن لم نجد
-            سيتولى {BOT_NAME} {BOT_EMOJI} التحدي
+            {t('pvp.idleSub', { count: PVP_QUESTIONS, botName: BOT_NAME, botEmoji: BOT_EMOJI })}
           </Text>
-          <View style={s.recordRow}>
+          <View style={[s.recordRow, { flexDirection: rowDir(isRTL) }]}>
             <View style={s.recordCell}>
               <Text style={[s.recordNum, { color: colors.correct }]}>{profile.pvp.wins}</Text>
-              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>فوز</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>{t('pvp.wins')}</Text>
             </View>
             <View style={s.recordCell}>
               <Text style={[s.recordNum, { color: colors.inkSoft }]}>{profile.pvp.draws}</Text>
-              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>تعادل</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>{t('pvp.draws')}</Text>
             </View>
             <View style={s.recordCell}>
               <Text style={[s.recordNum, { color: colors.wrong }]}>{profile.pvp.losses}</Text>
-              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>خسارة</Text>
+              <Text style={[s.recordLbl, { color: colors.inkSoft }]}>{t('pvp.losses')}</Text>
             </View>
           </View>
-          <TouchableOpacity style={[s.startBtn, { backgroundColor: colors.navy }]} onPress={startMatch} activeOpacity={0.85}>
+          <TouchableOpacity style={[s.startBtn, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={startMatch} activeOpacity={0.85}>
             <Ionicons name="flash" size={20} color="#fff" />
-            <Text style={s.startBtnTxt}>ابدأ المنافسة</Text>
+            <Text style={s.startBtnTxt}>{t('pvp.startBtn')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -802,10 +806,10 @@ export default function PvpScreen() {
       {phase === 'searching' && (
         <View style={s.countWrap}>
           <ActivityIndicator size="large" color={colors.ink} />
-          <Text style={[s.countBotLine, { color: colors.ink }]}>جارٍ البحث عن منافس...</Text>
+          <Text style={[s.countBotLine, { color: colors.ink }]}>{t('pvp.searching')}</Text>
           <Text style={[s.searchSeconds, { color: colors.ink }]}>{searchSecondsLeft}</Text>
           <TouchableOpacity style={s.homeBtn} onPress={cancelSearch}>
-            <Text style={[s.homeTxt, { color: colors.inkSoft }]}>إلغاء</Text>
+            <Text style={[s.homeTxt, { color: colors.inkSoft }]}>{t('pvp.cancel')}</Text>
           </TouchableOpacity>
         </View>
       )}
@@ -814,9 +818,7 @@ export default function PvpScreen() {
       {phase === 'countdown' && (
         <View style={s.countWrap}>
           <Text style={[s.countBotLine, { color: colors.ink }]}>
-            {opponentKind === 'bot'
-              ? `${BOT_NAME}: هل أنت مستعد؟`
-              : `${humanOpponent?.name ?? 'المنافس'}: هل أنت مستعد؟`}
+            {t('pvp.readyQuestion', { name: opponentLabel })}
           </Text>
           <Text style={[s.countNum, { color: colors.gold }]}>{countdown}</Text>
         </View>
@@ -824,19 +826,19 @@ export default function PvpScreen() {
 
       {/* ── Versus header ── */}
       {playing && (
-        <View style={[s.vsBar, { backgroundColor: colors.card }]}>
-          {/* RTL: player on the right, opponent on the left */}
+        <View style={[s.vsBar, { backgroundColor: colors.card, flexDirection: rowDir(isRTL) }]}>
+          {/* Player vs opponent header */}
           <View style={s.vsSide}>
-            <View style={s.vsIdent}>
+            <View style={[s.vsIdent, { flexDirection: rowDir(isRTL) }]}>
               <Avatar uri={avatarUri} fallback={APP_ICON} style={[s.vsAvatar, { backgroundColor: colors.goldPale }]} />
               <Text style={[s.vsName, { color: colors.ink }]} numberOfLines={1}>{playerName}</Text>
             </View>
             <Text style={[s.vsScore, { color: colors.ink }]}>{playerCorrectRef.current}</Text>
             <ProgressStrip results={playerResults} current={qIndexRef.current} colors={colors} />
           </View>
-          <Text style={[s.vsMid, { color: colors.inkSoft }]}>ضد</Text>
+          <Text style={[s.vsMid, { color: colors.inkSoft }]}>{t('pvp.vs')}</Text>
           <View style={s.vsSide}>
-            <View style={s.vsIdent}>
+            <View style={[s.vsIdent, { flexDirection: rowDir(isRTL) }]}>
               {opponentKind === 'bot' ? (
                 <View style={[s.botAvatar, { backgroundColor: colors.goldPale }]}><Ionicons name="hardware-chip-outline" size={18} color={colors.goldDeep} /></View>
               ) : (
@@ -844,7 +846,7 @@ export default function PvpScreen() {
               )}
               <Text style={[s.vsName, { color: colors.ink }]} numberOfLines={1}>
                 {opponentKind === 'human' && humanOpponent?.country ? `${flagEmoji(humanOpponent.country)} ` : ''}
-                {opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? 'منافس')}
+                {opponentKind === 'bot' ? BOT_NAME : (humanOpponent?.name ?? t('pvp.opponent'))}
               </Text>
             </View>
             <Text style={[s.vsScore, { color: colors.ink }]}>{botView.correct}</Text>
@@ -855,9 +857,9 @@ export default function PvpScreen() {
 
       {/* ── Opponent disconnected — grace period banner ── */}
       {oppDisconnected && playing && !outcome && (
-        <View style={[s.disconnectBanner, { backgroundColor: colors.wrongPale }]}>
+        <View style={[s.disconnectBanner, { backgroundColor: colors.wrongPale, flexDirection: rowDir(isRTL) }]}>
           <Ionicons name="warning-outline" size={15} color={colors.wrong} />
-          <Text style={[s.disconnectTxt, { color: colors.wrong }]}>انقطع الاتصال بالمنافس… في انتظار عودته</Text>
+          <Text style={[s.disconnectTxt, { color: colors.wrong }]}>{t('pvp.disconnectBanner')}</Text>
         </View>
       )}
 
@@ -893,7 +895,7 @@ export default function PvpScreen() {
         <View style={s.cardArea}>
           <ActivityIndicator size="large" color={colors.ink} />
           {opponentKind === 'human' && !outcome && (
-            <Text style={[s.waitingTxt, { color: colors.inkSoft }]}>بانتظار انتهاء المنافس...</Text>
+            <Text style={[s.waitingTxt, { color: colors.inkSoft }]}>{t('pvp.waitingForOpponent')}</Text>
           )}
         </View>
       )}
@@ -903,7 +905,7 @@ export default function PvpScreen() {
         <View style={s.modalBg}>
           <View style={[s.modalBox, { backgroundColor: colors.card }]}>
             <Text style={[s.resultTitle, { color: colors.ink }]}>{outcomeTitle}</Text>
-            <View style={s.resultScores}>
+            <View style={[s.resultScores, { flexDirection: rowDir(isRTL) }]}>
               <View style={s.resultCell}>
                 <Text style={[s.resultName, { color: colors.inkSoft }]}>{playerName}</Text>
                 <Text style={[s.resultNum, { color: colors.ink }, outcome === 'win' && { color: colors.correct }]}>
@@ -921,12 +923,12 @@ export default function PvpScreen() {
               </View>
             </View>
             <Text style={[s.resultSub, { color: colors.inkSoft }]}>{outcomeSub}</Text>
-            <TouchableOpacity style={[s.rematchBtn, { backgroundColor: colors.navy }]} onPress={() => { setOutcome(null); startMatch(); }}>
+            <TouchableOpacity style={[s.rematchBtn, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={() => { setOutcome(null); startMatch(); }}>
               <Ionicons name="refresh" size={18} color="#fff" />
-              <Text style={s.rematchTxt}>جولة جديدة</Text>
+              <Text style={s.rematchTxt}>{t('pvp.rematch')}</Text>
             </TouchableOpacity>
             <TouchableOpacity style={s.homeBtn} onPress={exitToHome}>
-              <Text style={[s.homeTxt, { color: colors.inkSoft }]}>الرئيسية</Text>
+              <Text style={[s.homeTxt, { color: colors.inkSoft }]}>{t('pvp.home')}</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -936,21 +938,21 @@ export default function PvpScreen() {
       <Modal visible={reportVisible} transparent animationType="slide" onRequestClose={() => setReportVisible(false)}>
         <View style={s.modalBg}>
           <View style={[s.modalBox, { backgroundColor: colors.card }]}>
-            <Text style={[s.reportTitle, { color: colors.ink }]}>الإبلاغ عن خطأ</Text>
+            <Text style={[s.reportTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('common.reportModal.title')}</Text>
             <TextInput
               style={[s.reportInput, { borderColor: colors.line, color: colors.ink }]}
-              placeholder="برجاء توضيح الخطأ ..."
+              placeholder={t('common.reportModal.placeholder')}
               placeholderTextColor={colors.inkSoft}
               value={reportMsg}
               onChangeText={setReportMsg}
-              textAlign="right"
+              textAlign={alignDir(isRTL)}
             />
-            <View style={s.reportRow}>
+            <View style={[s.reportRow, { justifyContent: isRTL ? 'flex-end' : 'flex-start' }]}>
               <TouchableOpacity style={[s.btnCancel, { backgroundColor: colors.line }]} onPress={() => setReportVisible(false)}>
-                <Text style={[s.btnCancelTxt, { color: colors.ink }]}>لا</Text>
+                <Text style={[s.btnCancelTxt, { color: colors.ink }]}>{t('common.reportModal.cancel')}</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={submitReport}>
-                <Text style={s.btnConfirmTxt}>نعم</Text>
+                <Text style={s.btnConfirmTxt}>{t('common.reportModal.confirm')}</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -971,12 +973,12 @@ const s = StyleSheet.create({
   },
   idleTitle: { fontSize: 24, fontWeight: '800' },
   idleSub: { fontSize: 14, textAlign: 'center' },
-  recordRow: { flexDirection: 'row-reverse', gap: 24, marginVertical: 14 },
+  recordRow: { gap: 24, marginVertical: 14 },
   recordCell: { alignItems: 'center', gap: 2 },
   recordNum: { fontSize: 22, fontWeight: '800' },
   recordLbl: { fontSize: 12 },
   startBtn: {
-    flexDirection: 'row-reverse', alignItems: 'center', gap: 8,
+    alignItems: 'center', gap: 8,
     paddingVertical: 14, paddingHorizontal: 36, borderRadius: 14,
   },
   startBtnTxt: { color: '#fff', fontSize: 17, fontWeight: '800' },
@@ -989,7 +991,7 @@ const s = StyleSheet.create({
 
   // Disconnect banner
   disconnectBanner: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 6,
+    alignItems: 'center', justifyContent: 'center', gap: 6,
     marginHorizontal: 12, marginTop: 8,
     borderRadius: 10, paddingVertical: 8, paddingHorizontal: 12,
   },
@@ -998,7 +1000,6 @@ const s = StyleSheet.create({
 
   // Versus header
   vsBar: {
-    flexDirection: 'row-reverse',
     alignItems: 'center',
     marginHorizontal: 12,
     marginTop: 10,
@@ -1009,7 +1010,7 @@ const s = StyleSheet.create({
     elevation: 2,
   },
   vsSide: { flex: 1, alignItems: 'center', gap: 4 },
-  vsIdent: { flexDirection: 'row-reverse', alignItems: 'center', gap: 6, maxWidth: '100%' },
+  vsIdent: { alignItems: 'center', gap: 6, maxWidth: '100%' },
   vsAvatar: { width: 26, height: 26, borderRadius: 13 },
   botAvatar: {
     width: 26, height: 26, borderRadius: 13,
@@ -1019,7 +1020,7 @@ const s = StyleSheet.create({
   vsScore: { fontSize: 20, fontWeight: '800' },
   vsMid: { fontSize: 12, fontWeight: '800' },
 
-  strip: { flexDirection: 'row-reverse', gap: 2 },
+  strip: { gap: 2 },
   stripSeg: { width: 9, height: 6, borderRadius: 2 },
 
   // Card area
@@ -1030,23 +1031,23 @@ const s = StyleSheet.create({
   modalBox: { borderRadius: 14, padding: 22, width: '100%', maxWidth: 400 },
 
   resultTitle: { fontSize: 22, fontWeight: '800', textAlign: 'center', marginBottom: 14 },
-  resultScores: { flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 12 },
+  resultScores: { alignItems: 'center', justifyContent: 'center', gap: 18, marginBottom: 12 },
   resultCell: { alignItems: 'center', gap: 4 },
   resultName: { fontSize: 13, fontWeight: '700' },
   resultNum: { fontSize: 34, fontWeight: '800' },
   resultDash: { fontSize: 20 },
   resultSub: { fontSize: 13, textAlign: 'center', marginBottom: 16 },
   rematchBtn: {
-    flexDirection: 'row-reverse', alignItems: 'center', justifyContent: 'center', gap: 8,
+    alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 13, borderRadius: 12,
   },
   rematchTxt: { color: '#fff', fontSize: 15, fontWeight: '800' },
   homeBtn: { alignItems: 'center', paddingVertical: 12, marginTop: 4 },
   homeTxt: { fontSize: 14, fontWeight: '700' },
 
-  reportTitle: { fontSize: 17, fontWeight: '700', textAlign: 'right', marginBottom: 12 },
-  reportInput: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 16, textAlign: 'right' },
-  reportRow: { flexDirection: 'row', gap: 10, justifyContent: 'flex-end' },
+  reportTitle: { fontSize: 17, fontWeight: '700', marginBottom: 12 },
+  reportInput: { borderWidth: 1, borderRadius: 8, padding: 10, marginBottom: 16 },
+  reportRow: { flexDirection: 'row', gap: 10 },
   btnCancel: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },
   btnCancelTxt: { fontWeight: '600' },
   btnConfirm: { paddingVertical: 10, paddingHorizontal: 20, borderRadius: 8 },

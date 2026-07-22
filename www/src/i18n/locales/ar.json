@@ -21,6 +21,12 @@
       "dailyNote": "أسئلة مختارة تلقائياً من نطاق حفظك",
       "showLess": "أقل ▴",
       "showMore": "المزيد ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "الإبلاغ عن خطأ",
+      "placeholder": "برجاء توضيح الخطأ ...",
+      "cancel": "لا",
+      "confirm": "نعم"
     }
   },
   "onboarding": {
@@ -94,7 +100,33 @@
   },
   "me": {},
   "quiz": {},
-  "pvp": {},
+  "pvp": {
+    "you": "أنت",
+    "theOpponent": "المنافس",
+    "opponent": "منافس",
+    "idleTitle": "منافسة مباشرة",
+    "idleSub": "{{count}} أسئلة من سور حفظك — سنبحث عن منافس حقيقي أولاً، وإن لم نجد سيتولى {{botName}} {{botEmoji}} التحدي",
+    "wins": "فوز",
+    "draws": "تعادل",
+    "losses": "خسارة",
+    "startBtn": "ابدأ المنافسة",
+    "searching": "جارٍ البحث عن منافس...",
+    "cancel": "إلغاء",
+    "readyQuestion": "{{name}}: هل أنت مستعد؟",
+    "vs": "ضد",
+    "disconnectBanner": "انقطع الاتصال بالمنافس… في انتظار عودته",
+    "waitingForOpponent": "بانتظار انتهاء المنافس...",
+    "outcome": {
+      "winTitle": "فزت! 🏆",
+      "lossTitle": "فاز {{name}} هذه المرة",
+      "drawTitle": "تعادل!",
+      "winSub": "أحسنت — تغلبت على {{name}}. حافظ على المستوى!",
+      "lossSub": "راجع محفوظك وأعد المحاولة — النتيجة قريبة بإذن الله.",
+      "drawSub": "مباراة متكافئة! جولة أخرى تحسم النتيجة."
+    },
+    "rematch": "جولة جديدة",
+    "home": "الرئيسية"
+  },
   "league": {
     "title": "البطولة",
     "dailyCompleted": "أكملت اختبار اليوم ✓",

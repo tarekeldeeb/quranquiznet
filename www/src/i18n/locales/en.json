@@ -21,6 +21,12 @@
       "dailyNote": "Questions automatically selected from your memorization scope",
       "showLess": "Less ▴",
       "showMore": "More ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Report an Error",
+      "placeholder": "Please describe the error...",
+      "cancel": "No",
+      "confirm": "Yes"
     }
   },
   "onboarding": {
@@ -94,7 +100,33 @@
   },
   "me": {},
   "quiz": {},
-  "pvp": {},
+  "pvp": {
+    "you": "You",
+    "theOpponent": "The opponent",
+    "opponent": "Opponent",
+    "idleTitle": "Live Competition",
+    "idleSub": "{{count}} questions from your memorized Surahs — we'll search for a real opponent first, and if none is found, {{botName}} {{botEmoji}} will take on the challenge",
+    "wins": "Wins",
+    "draws": "Draws",
+    "losses": "Losses",
+    "startBtn": "Start Match",
+    "searching": "Searching for an opponent...",
+    "cancel": "Cancel",
+    "readyQuestion": "{{name}}: Are you ready?",
+    "vs": "vs",
+    "disconnectBanner": "Connection lost with opponent… waiting for their return",
+    "waitingForOpponent": "Waiting for opponent to finish...",
+    "outcome": {
+      "winTitle": "You won! 🏆",
+      "lossTitle": "{{name}} won this time",
+      "drawTitle": "It's a draw!",
+      "winSub": "Well done — you defeated {{name}}. Keep it up!",
+      "lossSub": "Review your memorization and try again — victory is close, God willing.",
+      "drawSub": "An even match! Another round will decide the outcome."
+    },
+    "rematch": "New Round",
+    "home": "Home"
+  },
   "league": {
     "title": "Leaderboard",
     "dailyCompleted": "Completed today's challenge ✓",
