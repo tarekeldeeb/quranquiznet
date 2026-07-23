@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "6",
+      "buildNumber": "7",
       "appleTeamId": "FNSP52WBLF",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
@@ -22,7 +22,7 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 13
+      "versionCode": 14
     },
     "web": {
       "bundler": "metro",
