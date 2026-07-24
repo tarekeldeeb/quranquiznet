@@ -133,7 +133,7 @@ export default function MapScreen() {
   const activeParts = profile.parts.filter((p) => p.checked).length;
 
   return (
-    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
+    <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['top', 'bottom']}>
       <View style={[s.header, { borderColor: colors.line, flexDirection: rowDir(isRTL) }]}>
         <PressScale onPress={() => router.back()} hitSlop={10} style={s.backBtn}>
           <Ionicons name={mirror(isRTL, 'chevron-back', 'chevron-forward')} size={22} color={colors.ink} />
