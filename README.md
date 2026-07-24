@@ -13,7 +13,7 @@ and generates questions from *only* those parts, with deliberately confusable
 doesn't work. It's free, works anonymously, and supports online daily quizzes,
 a leaderboard, and live 1-on-1 matches.
 
-![Quiz](https://raw.githubusercontent.com/tarekeldeeb/quranquiznet/master/www/public/og-image.png)
+![Quiz](https://raw.githubusercontent.com/tarekeldeeb/quranquiznet/master/resources/feature.png)
 
 Quran Quiz Network is still in beta and constantly under development.
 
