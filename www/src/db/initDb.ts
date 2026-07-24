@@ -1,4 +1,5 @@
 import * as SQLite from 'expo-sqlite';
+import { QURAN_WORDS } from '../models/constants';
 
 let _db: SQLite.SQLiteDatabase | null = null;
 
@@ -32,12 +33,19 @@ export async function initDb(
   const row = await db.getFirstAsync<{ cnt: number }>(
     'SELECT COUNT(*) as cnt FROM q',
   );
-  if (row && row.cnt > 0) {
+  if (row && row.cnt >= QURAN_WORDS) {
     onProgress?.(1);
     return;
   }
+  // A previous import that never reached QURAN_WORDS rows (interrupted by a
+  // crash/kill) would otherwise be mistaken for "done" forever, permanently
+  // stranding quiz generation on the fragment it did import. Clear it and
+  // reimport from scratch rather than trying to resume/dedupe partial rows.
+  if (row && row.cnt > 0) {
+    await db.execAsync('DELETE FROM q;');
+  }
 
-  // First-run: import q.json bundled asset
+  // First-run (or a repair of a partial import): import q.json bundled asset
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const qData = require('../../assets/q.json') as {
     objects: [{ rows: (string | number | null)[][] }];
