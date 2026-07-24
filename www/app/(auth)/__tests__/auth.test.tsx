@@ -1,5 +1,8 @@
-// Integration: the redesigned login/auth screen. Verifies the why-join content,
-// the icon login buttons, guest entry, and the privacy subpage link.
+// Integration: the redesigned login/auth screen. Verifies the hero/stats content,
+// the icon login buttons, guest entry, and the privacy subpage link. The native
+// app-store links section is web-only (Platform.OS === 'web') and, like the
+// equivalent section in settings.test.tsx, isn't covered here since this jest
+// environment's Platform.OS is 'ios' (see the Apple-button test below).
 jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
@@ -44,11 +47,9 @@ beforeEach(() => {
 });
 
 describe('Auth screen', () => {
-  it('renders the title, why-join features and login options', () => {
+  it('renders the title, stats and login options', () => {
     const { getByText } = renderAuth();
     expect(getByText('شبكة اختبار القرآن')).toBeTruthy();
-    expect(getByText('تحدٍّ يومي')).toBeTruthy();       // a why-join feature tile
-    expect(getByText('مزامنة سحابية')).toBeTruthy();
     // Guest play is the primary, inverted-funnel CTA; social sign-in is secondary.
     expect(getByText('ابدأ الآن')).toBeTruthy();
     expect(getByText('المتابعة بحساب جوجل')).toBeTruthy();

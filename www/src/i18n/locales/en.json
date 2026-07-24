@@ -291,24 +291,6 @@
     "divider": "Or sign in to save your progress",
     "continueGoogle": "Continue with Google",
     "continueFacebook": "Continue with Facebook",
-    "features": {
-      "daily": {
-        "title": "Daily Challenge",
-        "body": "New quiz every day to maintain your streak"
-      },
-      "similar": {
-        "title": "Similar Verses",
-        "body": "Test your ability to distinguish similar verses"
-      },
-      "leaderboard": {
-        "title": "Leaderboard",
-        "body": "Compete with reciters on the leaderboard"
-      },
-      "sync": {
-        "title": "Cloud Sync",
-        "body": "Save and sync your progress across all your devices"
-      }
-    },
     "termsNotice": "By continuing, you agree to the ",
     "errorTitle": "Error",
     "errorGoogle": "Could not sign in with Google",

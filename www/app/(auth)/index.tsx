@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react';
 import {
-  View, Text, StyleSheet, Image, Alert, ScrollView, Platform,
+  View, Text, StyleSheet, Image, Alert, ScrollView, Platform, Linking,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -13,6 +13,25 @@ import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
+
+// Native app store links, shown on web only (no point advertising the app to
+// someone already inside it). Keep in sync with settings.tsx's STORE_LINKS.
+const STORE_LINKS = [
+  {
+    key: 'ios',
+    icon: 'logo-apple' as IconName,
+    name: 'App Store',
+    hintKey: 'settings.storeLinks.iosHint',
+    url: 'https://apps.apple.com/app/id6790435986',
+  },
+  {
+    key: 'android',
+    icon: 'logo-google-playstore' as IconName,
+    name: 'Google Play',
+    hintKey: 'settings.storeLinks.androidHint',
+    url: 'https://play.google.com/store/apps/details?id=net.quranquiz',
+  },
+];
 
 function notify(title: string, msg: string) {
   if (Platform.OS === 'web') {
@@ -27,16 +46,6 @@ export default function AuthScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { language, isRTL } = useDirection();
-
-  const features = useMemo(
-    () => [
-      { icon: 'flame' as IconName, title: t('auth.features.daily.title'), body: t('auth.features.daily.body'), tint: '#c8973a' },
-      { icon: 'git-compare' as IconName, title: t('auth.features.similar.title'), body: t('auth.features.similar.body'), tint: '#2980b9' },
-      { icon: 'trophy' as IconName, title: t('auth.features.leaderboard.title'), body: t('auth.features.leaderboard.body'), tint: '#c0a02c' },
-      { icon: 'cloud-done' as IconName, title: t('auth.features.sync.title'), body: t('auth.features.sync.body'), tint: '#2f7d5d' },
-    ],
-    [t]
-  );
 
   const stats = useMemo(
     () => [
@@ -161,20 +170,30 @@ export default function AuthScreen() {
           </PressScale>
         </View>
 
-        {/* ── Why join (2×2 grid) ── */}
-        <View style={[s.featuresGrid, { flexDirection: rowDir(isRTL) }]}>
-          {features.map((f) => (
-            <View key={f.title} style={[s.featureTile, { flexDirection: rowDir(isRTL) }]}>
-              <View style={[s.featureIcon, { backgroundColor: `${f.tint}26` }]}>
-                <Ionicons name={f.icon} size={18} color={f.tint} />
-              </View>
-              <View style={[s.featureText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[s.featureTitle, { textAlign: alignDir(isRTL) }]}>{f.title}</Text>
-                <Text style={[s.featureBody, { color: colors.navySoft, textAlign: alignDir(isRTL) }]} numberOfLines={2}>{f.body}</Text>
-              </View>
-            </View>
-          ))}
-        </View>
+        {/* ── Get the app (native store links, web only) ── */}
+        {Platform.OS === 'web' && (
+          <View style={s.storeSection}>
+            <Text style={[s.storeHeader, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>
+              {t('settings.mobileAppHeader')}
+            </Text>
+            {STORE_LINKS.map((store) => (
+              <PressScale
+                key={store.key}
+                style={[s.storeRow, { flexDirection: rowDir(isRTL) }]}
+                onPress={() => Linking.openURL(store.url)}
+              >
+                <View style={s.featureIcon}>
+                  <Ionicons name={store.icon} size={18} color="#fff" />
+                </View>
+                <View style={[s.featureText, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <Text style={[s.featureTitle, { textAlign: alignDir(isRTL) }]}>{store.name}</Text>
+                  <Text style={[s.featureBody, { color: colors.navySoft, textAlign: alignDir(isRTL) }]} numberOfLines={2}>{t(store.hintKey)}</Text>
+                </View>
+                <Ionicons name="open-outline" size={16} color={colors.navySoft} />
+              </PressScale>
+            ))}
+          </View>
+        )}
 
         <Text style={[s.footer, { color: 'rgba(255,255,255,0.45)' }]}>
           {t('auth.termsNotice')}
@@ -247,11 +266,10 @@ const s = StyleSheet.create({
   dividerLine: { flex: 1, height: 1 },
   dividerTxt: { fontSize: 11 },
 
-  // Features (2×2 grid)
-  featuresGrid: { flexWrap: 'wrap', gap: 10 },
-  featureTile: {
-    width: '47%',
-    flexGrow: 1,
+  // Get the app (store links)
+  storeSection: { gap: 10 },
+  storeHeader: { fontSize: 11, fontFamily: 'PlexArabic-SemiBold', marginBottom: -2 },
+  storeRow: {
     alignItems: 'center',
     gap: 9,
     backgroundColor: 'rgba(255,255,255,0.06)',
@@ -261,7 +279,10 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: 'rgba(255,255,255,0.1)',
   },
-  featureIcon: { width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  featureIcon: {
+    width: 34, height: 34, borderRadius: 10, alignItems: 'center', justifyContent: 'center',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+  },
   featureText: { flex: 1 },
   featureTitle: { color: '#fff', fontSize: 13, fontFamily: 'PlexArabic-Bold' },
   featureBody: { fontSize: 11, marginTop: 1, lineHeight: 15 },
