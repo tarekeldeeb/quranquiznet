@@ -45,7 +45,7 @@ export function scopeFromParts(parts: StudyPart[]): MatchScopePart[] {
 }
 
 /** Map an offset within the concatenated scope to an absolute word index. */
-function wordAtScopeOffset(scope: MatchScopePart[], offset: number): number {
+export function wordAtScopeOffset(scope: MatchScopePart[], offset: number): number {
   let acc = 0;
   for (const p of scope) {
     if (offset < acc + p.length) return p.start + (offset - acc);

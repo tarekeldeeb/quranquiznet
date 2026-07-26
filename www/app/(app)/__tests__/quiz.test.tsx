@@ -93,6 +93,23 @@ describe('Quiz entry — chooser', () => {
     expect(await findByText('البقرة')).toBeTruthy();
   });
 
+  it('shows the combined weak review button when at least 2 weak parts exist', async () => {
+    const { findByText } = renderQuiz();
+    expect(await findByText('مراجعة جميع مواضع الضعف')).toBeTruthy();
+  });
+
+  it('hides the combined weak review button when only 1 checked part exists', async () => {
+    useProfileStore.setState({
+      parts: [
+        part('الفاتحة', false, 5, 5), // unchecked
+        part('البقرة', true, 1, 10),  // only 1 checked part
+      ],
+    });
+    const { findByText, queryByText } = renderQuiz();
+    expect(await findByText('البقرة')).toBeTruthy();
+    expect(queryByText('مراجعة جميع مواضع الضعف')).toBeNull();
+  });
+
   it('does not navigate away on entry', async () => {
     renderQuiz();
     await waitFor(() => {}, { timeout: 50 }).catch(() => {});

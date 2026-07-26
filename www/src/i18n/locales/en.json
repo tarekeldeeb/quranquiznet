@@ -193,6 +193,7 @@
     "streak": "{{count}} in a row",
     "randomQuiz": "Random Quiz",
     "reviewWeakSubtitle": "Or review a Surah that needs improvement:",
+    "reviewAllWeakBtn": "Review all weak spots",
     "dailyEnd": {
       "title": "Thank you for taking today's quiz",
       "body": "Please review your memorization of the Quran, and you will have a new quiz tomorrow, God willing.",
