@@ -2,6 +2,8 @@
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 require('./push.js');
+const { streaksched } = require('./streak.js');
+exports.streaksched = streaksched;
 
 // The Firebase Admin SDK to access the Realtime Database.
 const admin = require('firebase-admin');

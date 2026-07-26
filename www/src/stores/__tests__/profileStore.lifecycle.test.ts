@@ -80,3 +80,70 @@ describe('syncTo: restore a remote profile on login', () => {
     expect(store().level).toBe(1); // local is newer ⇒ kept
   });
 });
+
+describe('streak freeze tokens', () => {
+  it('awards a streak freeze token in recordPlay on 7-day multiples', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    useProfileStore.setState({
+      streak: 6,
+      bestStreak: 6,
+      lastPlayDate: yesterday,
+      pvp: { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 0 },
+    });
+
+    store().recordPlay();
+
+    expect(store().streak).toBe(7);
+    expect(store().lastPlayDate).toBe(today());
+    expect(store().pvp.streakFreezeTokens).toBe(1);
+  });
+
+  it('does not award a streak freeze token in recordPlay on non-multiple of 7 days', () => {
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
+    useProfileStore.setState({
+      streak: 5,
+      bestStreak: 5,
+      lastPlayDate: yesterday,
+      pvp: { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 0 },
+    });
+
+    store().recordPlay();
+
+    expect(store().streak).toBe(6);
+    expect(store().lastPlayDate).toBe(today());
+    expect(store().pvp.streakFreezeTokens).toBe(0);
+  });
+
+  it('useStreakFreeze decrements token and sets lastPlayDate without changing streak', () => {
+    useProfileStore.setState({
+      streak: 10,
+      bestStreak: 10,
+      lastPlayDate: '2026-01-01',
+      pvp: { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 2 },
+    });
+
+    const res = store().useStreakFreeze();
+
+    expect(res).toBe(true);
+    expect(store().pvp.streakFreezeTokens).toBe(1);
+    expect(store().lastPlayDate).toBe(today());
+    expect(store().streak).toBe(10);
+    expect(store().bestStreak).toBe(10);
+  });
+
+  it('useStreakFreeze returns false and changes nothing if no tokens available', () => {
+    useProfileStore.setState({
+      streak: 5,
+      bestStreak: 5,
+      lastPlayDate: '2026-01-01',
+      pvp: { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 0 },
+    });
+
+    const res = store().useStreakFreeze();
+
+    expect(res).toBe(false);
+    expect(store().pvp.streakFreezeTokens).toBe(0);
+    expect(store().lastPlayDate).toBe('2026-01-01');
+    expect(store().streak).toBe(5);
+  });
+});

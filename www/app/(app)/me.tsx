@@ -127,9 +127,13 @@ function StreakSheet({
   visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors'];
   streak: number; bestStreak: number; scores: { date: number; score: number }[]; playedToday: boolean;
 }) {
+  const profile = useProfileStore();
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
   const lang = i18n.language as 'ar' | 'en';
+  const today = new Date().toISOString().split('T')[0];
+  const isPlayedToday = playedToday || profile.lastPlayDate === today;
+  const freezeTokens = profile.pvp.streakFreezeTokens ?? 0;
   const DOW = [
     t('me.dow.sun'), t('me.dow.mon'), t('me.dow.tue'), t('me.dow.wed'),
     t('me.dow.thu'), t('me.dow.fri'), t('me.dow.sat'),
@@ -138,10 +142,10 @@ function StreakSheet({
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const key = d.toISOString().split('T')[0];
-    const played = scores.some((sc) => new Date(sc.date).toISOString().split('T')[0] === key);
+    const played = (i === 6 && isPlayedToday) || scores.some((sc) => new Date(sc.date).toISOString().split('T')[0] === key);
     return { label: DOW[d.getDay()], played, isToday: i === 6 };
   });
-  const atRisk = !playedToday && new Date().getHours() >= EVENING_HOUR && streak > 0;
+  const atRisk = !isPlayedToday && new Date().getHours() >= EVENING_HOUR && streak > 0;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -185,11 +189,26 @@ function StreakSheet({
           </View>
 
           {atRisk && (
-            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale, flexDirection: rowDir(isRTL) }]}>
-              <Ionicons name="warning-outline" size={16} color={colors.wrong} />
-              <Text style={[s.riskTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>
-                {t('me.streakSheet.riskBanner')}
-              </Text>
+            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale, flexDirection: 'column', gap: 10 }]}>
+              <View style={{ flexDirection: rowDir(isRTL), alignItems: 'center', gap: 8 }}>
+                <Ionicons name="warning-outline" size={16} color={colors.wrong} />
+                <Text style={[s.riskTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>
+                  {t('me.streakSheet.riskBanner')}
+                </Text>
+              </View>
+              {freezeTokens > 0 && (
+                <PressScale
+                  style={[s.freezeBtn, { backgroundColor: colors.gold }]}
+                  onPress={() => {
+                    profile.useStreakFreeze();
+                  }}
+                >
+                  <Ionicons name="snow-outline" size={16} color={colors.navy} />
+                  <Text style={[s.freezeBtnTxt, { color: colors.navy }]}>
+                    {t('me.streakSheet.useFreezeBtn')}
+                  </Text>
+                </PressScale>
+              )}
             </View>
           )}
         </View>
@@ -924,6 +943,17 @@ const s = StyleSheet.create({
   streakStatTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
   riskBanner: { alignItems: 'center', gap: 8, padding: 12, borderRadius: radii.md, marginTop: 14 },
   riskTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
+  freezeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: radii.pill,
+    alignSelf: 'stretch',
+  },
+  freezeBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-Bold' },
 
   // Guest nickname modal
   nickOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },

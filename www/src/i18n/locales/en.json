@@ -137,7 +137,8 @@
       "title": "Your Streak",
       "daysInRow": "days in a row",
       "bestStreak": "Best streak: {{count}} days",
-      "riskBanner": "Your streak is at risk tonight — play a quiz before midnight!"
+      "riskBanner": "Your streak is at risk tonight — play a quiz before midnight!",
+      "useFreezeBtn": "Use a freeze token to save your streak"
     },
     "dow": {
       "sun": "Sun",

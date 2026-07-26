@@ -119,6 +119,9 @@ export default function AppLayout() {
           specialEnabled: s.specialEnabled,
           scores: s.scores,
           parts: s.parts,
+          streak: s.streak,
+          lastPlayDate: s.lastPlayDate,
+          pvp: s.pvp,
         });
       } else {
         // Preserve a guest's own custom nickname across re-auth events (e.g. app

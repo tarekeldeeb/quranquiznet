@@ -208,6 +208,7 @@ interface ProfileState {
   addCorrect(qo: QORef): Promise<void>;
   addIncorrect(qo: QORef): Promise<void>;
   recordPlay(): void;
+  useStreakFreeze(): boolean;
   markDailyCompleted(score?: number): void;
   setPendingDailySubmit(payload: DailySubmitPayload | null): void;
   setCountry(code: string): void;
@@ -451,15 +452,37 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   recordPlay() {
     const today = new Date().toISOString().split('T')[0];
-    const { lastPlayDate, streak, bestStreak } = get();
+    const { lastPlayDate, streak, bestStreak, pvp: curPvp } = get();
     if (lastPlayDate === today) return;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     const newStreak = lastPlayDate === yesterday ? streak + 1 : 1;
     const newBest = Math.max(bestStreak, newStreak);
-    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today });
+    const pvpEarned = newStreak > 0 && newStreak % 7 === 0;
+    const pvp: PvpRecord = pvpEarned
+      ? { ...curPvp, streakFreezeTokens: (curPvp.streakFreezeTokens ?? 0) + 1 }
+      : curPvp;
+    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today, pvp });
     saveKey(KEYS.streak, newStreak);
     saveKey(KEYS.bestStreak, newBest);
     saveKey(KEYS.lastPlayDate, today);
+    if (pvpEarned) {
+      saveKey(KEYS.pvp, pvp);
+    }
+  },
+
+  useStreakFreeze(): boolean {
+    const { pvp: curPvp } = get();
+    const tokens = curPvp?.streakFreezeTokens ?? 0;
+    if (tokens <= 0) return false;
+    const today = new Date().toISOString().split('T')[0];
+    const pvp: PvpRecord = {
+      ...curPvp,
+      streakFreezeTokens: tokens - 1,
+    };
+    set({ lastPlayDate: today, pvp });
+    saveKey(KEYS.lastPlayDate, today);
+    saveKey(KEYS.pvp, pvp);
+    return true;
   },
 
   markDailyCompleted(score?: number) {
