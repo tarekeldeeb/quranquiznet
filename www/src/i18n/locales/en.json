@@ -90,6 +90,15 @@
     "specialHeader": "Special Questions",
     "specialLabel": "Enable questions about Surah name and Verse number",
     "specialHint": "Secondary level and above",
+    "notifPrefs": {
+      "header": "Notifications",
+      "invitesLabel": "PvP Duel Invites",
+      "invitesHint": "Notify when a friend challenges you to a duel",
+      "friendRequestsLabel": "Friend Requests",
+      "friendRequestsHint": "Notify when you receive a new friend request",
+      "streakAlertsLabel": "Streak Alerts",
+      "streakAlertsHint": "Evening reminder if your streak is at risk"
+    },
     "mobileAppHeader": "Mobile App",
     "storeLinks": {
       "iosHint": "For iPhone and iPad",
@@ -137,7 +146,8 @@
       "title": "Your Streak",
       "daysInRow": "days in a row",
       "bestStreak": "Best streak: {{count}} days",
-      "riskBanner": "Your streak is at risk tonight — play a quiz before midnight!"
+      "riskBanner": "Your streak is at risk tonight — play a quiz before midnight!",
+      "useFreezeBtn": "Use a freeze token to save your streak"
     },
     "dow": {
       "sun": "Sun",
@@ -193,6 +203,7 @@
     "streak": "{{count}} in a row",
     "randomQuiz": "Random Quiz",
     "reviewWeakSubtitle": "Or review a Surah that needs improvement:",
+    "reviewAllWeakBtn": "Review all weak spots",
     "dailyEnd": {
       "title": "Thank you for taking today's quiz",
       "body": "Please review your memorization of the Quran, and you will have a new quiz tomorrow, God willing.",
@@ -236,7 +247,43 @@
       "drawSub": "An even match! Another round will decide the outcome."
     },
     "rematch": "New Round",
-    "home": "Home"
+    "home": "Home",
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "hafizGold": "Hafiz Gold"
+    }
+  },
+  "pvpJourney": {
+    "title": "PvP Journey",
+    "pointsGained": "+{{count}} points",
+    "toNextCity": "{{count}} points to {{cityName}}",
+    "complete": "You've reached Marrakech! Journey complete 🏁",
+    "here": "You're here",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Baghdad",
+      "mecca": "Mecca",
+      "medina": "Medina",
+      "damascus": "Damascus",
+      "jerusalem": "Jerusalem",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Cairo",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Algiers",
+      "marrakech": "Marrakech"
+    }
   },
   "league": {
     "title": "Leaderboard",
@@ -406,5 +453,41 @@
       "text": "Advanced Level",
       "comment": "More than one correct answer, and increases your score by 30"
     }
+  },
+  "friends": {
+    "title": "Friends",
+    "myCodeTitle": "Your Quiz Code",
+    "shareBtn": "Share Code",
+    "shareMessage": "Add me on Quran Quiz Net! My Quiz Code is: {{code}}\nhttps://quranquiz.net",
+    "addFriendTitle": "Add Friend by Quiz Code",
+    "placeholderCode": "Enter code (e.g. ABCD1234)",
+    "addBtn": "Add",
+    "incomingRequests": "Incoming Friend Requests",
+    "noRequests": "No pending friend requests",
+    "accept": "Accept",
+    "decline": "Decline",
+    "friendList": "Friends List",
+    "noFriends": "No friends added yet. Share your code or add a friend with theirs!",
+    "invalidCode": "Invalid Quiz Code",
+    "invalidCodeSub": "Please check the code and try again.",
+    "selfCode": "That's your own Quiz Code!",
+    "selfCodeSub": "Share this code with your friends so they can add you.",
+    "requestSent": "Friend Request Sent!",
+    "requestSentSub": "Your request will appear in your friend's inbox to accept.",
+    "sending": "Sending...",
+    "resolving": "Checking code...",
+    "errorOccurred": "An error occurred while sending",
+    "back": "Back",
+    "goToFriends": "View Friends",
+    "challenge": "Challenge"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Friend Duel",
+    "waitingFor": "Waiting for {{name}} to accept...",
+    "cancel": "Cancel Challenge",
+    "bannerTitle": "Duel Challenge!",
+    "bannerMessage": "{{name}} challenges you to a duel",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }

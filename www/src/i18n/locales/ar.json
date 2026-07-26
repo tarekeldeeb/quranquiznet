@@ -90,6 +90,15 @@
     "specialHeader": "الأسئلة الخاصة",
     "specialLabel": "تفعيل الأسئلة عن اسم السورة ورقم الآية",
     "specialHint": "من المستوى الثانوي فأعلى",
+    "notifPrefs": {
+      "header": "الإشعارات",
+      "invitesLabel": "تحديات المبارزة",
+      "invitesHint": "إشعار عند تلقي دعوة مبارزة من صديق",
+      "friendRequestsLabel": "طلبات الصداقة",
+      "friendRequestsHint": "إشعار عند تلقي طلب صداقة جديد",
+      "streakAlertsLabel": "تنبيهات السلسلة",
+      "streakAlertsHint": "تنبيه مساءً إذا كانت سلسلتك في خطر"
+    },
     "mobileAppHeader": "تطبيق الجوال",
     "storeLinks": {
       "iosHint": "لأجهزة iPhone و iPad",
@@ -137,7 +146,8 @@
       "title": "سلسلتك",
       "daysInRow": "يوماً متتالياً",
       "bestStreak": "أفضل سلسلة: {{count}} يوماً",
-      "riskBanner": "سلسلتك في خطر الليلة — العب اختباراً قبل منتصف الليل!"
+      "riskBanner": "سلسلتك في خطر الليلة — العب اختباراً قبل منتصف الليل!",
+      "useFreezeBtn": "استخدم تجميد السلسلة للحفاظ على سلسلتك"
     },
     "dow": {
       "sun": "أحد",
@@ -193,6 +203,7 @@
     "streak": "{{count}} متتالية",
     "randomQuiz": "اختبار عشوائي",
     "reviewWeakSubtitle": "أو راجع سورة تحتاج تحسيناً:",
+    "reviewAllWeakBtn": "مراجعة جميع مواضع الضعف",
     "dailyEnd": {
       "title": "شكراً لاشتراكك في اختبار اليوم",
       "body": "فضلاً قم بمراجعة محفوظك من القرآن وسيكون لديك اختبار جديد غداً بمشيئة الله.",
@@ -236,7 +247,43 @@
       "drawSub": "مباراة متكافئة! جولة أخرى تحسم النتيجة."
     },
     "rematch": "جولة جديدة",
-    "home": "الرئيسية"
+    "home": "الرئيسية",
+    "tier": {
+      "bronze": "برونزي",
+      "silver": "فضي",
+      "gold": "ذهبي",
+      "platinum": "بلاتيني",
+      "hafizGold": "حافظ ذهبي"
+    }
+  },
+  "pvpJourney": {
+    "title": "رحلة المبارزات",
+    "pointsGained": "+{{count}} نقطة",
+    "toNextCity": "{{count}} نقطة إلى {{cityName}}",
+    "complete": "بلغت مراكش! أتممت الرحلة 🏁",
+    "here": "أنت هنا",
+    "city": {
+      "jakarta": "جاكرتا",
+      "kualaLumpur": "كوالالمبور",
+      "dhaka": "دكا",
+      "delhi": "دلهي",
+      "lahore": "لاهور",
+      "kabul": "كابل",
+      "tashkent": "طشقند",
+      "tehran": "طهران",
+      "baghdad": "بغداد",
+      "mecca": "مكة المكرمة",
+      "medina": "المدينة المنورة",
+      "damascus": "دمشق",
+      "jerusalem": "القدس",
+      "istanbul": "إسطنبول",
+      "sarajevo": "سراييفو",
+      "cairo": "القاهرة",
+      "tripoli": "طرابلس",
+      "tunis": "تونس",
+      "algiers": "الجزائر",
+      "marrakech": "مراكش"
+    }
   },
   "league": {
     "title": "البطولة",
@@ -406,5 +453,41 @@
       "text": "مستوى متقدم",
       "comment": "أكثر من اجابة صحيحة، يزيد النقاط بثلاثين"
     }
+  },
+  "friends": {
+    "title": "الأصدقاء",
+    "myCodeTitle": "رمز الاختبار الخاص بك",
+    "shareBtn": "مشاركة الرمز",
+    "shareMessage": "أضفني على شبكة اختبار القرآن! رمز الاختبار الخاص بي: {{code}}\nhttps://quranquiz.net",
+    "addFriendTitle": "إضافة صديق برمز الاختبار",
+    "placeholderCode": "أدخل الرمز (مثال: ABCD1234)",
+    "addBtn": "إضافة",
+    "incomingRequests": "طلبات الصداقة الواردة",
+    "noRequests": "لا توجد طلبات صداقة حالياً",
+    "accept": "قبول",
+    "decline": "رفض",
+    "friendList": "قائمة الأصدقاء",
+    "noFriends": "لم تضف أصدقاء بعد. شارك رمزك أو أضف صديقاً بالرمز!",
+    "invalidCode": "رمز الاختبار غير صحيح",
+    "invalidCodeSub": "تأكّد من الرمز وأعد المحاولة.",
+    "selfCode": "هذا هو رمزك الخاص!",
+    "selfCodeSub": "يمكنك مشاركة هذا الرمز مع أصدقائك ليضيفوك.",
+    "requestSent": "تم إرسال طلب الصداقة!",
+    "requestSentSub": "سيظهر طلبك لدى الصديق ليقوم بقبوله.",
+    "sending": "جارٍ الإرسال...",
+    "resolving": "جارٍ التحقق من الرمز...",
+    "errorOccurred": "حدث خطأ أثناء الإرسال",
+    "back": "رجوع",
+    "goToFriends": "عرض الأصدقاء",
+    "challenge": "تحدٍ"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "تحدي صديق",
+    "waitingFor": "بانتظار قبول {{name}} للتحدي...",
+    "cancel": "إلغاء التحدي",
+    "bannerTitle": "تحدي مبارزة!",
+    "bannerMessage": "يتحداك {{name}} في مبارزة",
+    "accept": "قبول",
+    "decline": "رفض"
   }
 }

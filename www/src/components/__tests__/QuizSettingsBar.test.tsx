@@ -49,4 +49,17 @@ describe('QuizSettingsBar — daily progress', () => {
     );
     expect(queryByText(/السؤال/)).toBeNull();
   });
+
+  it('renders chips for weakReview scopeMode', () => {
+    const { getByText } = render(
+      <QuizSettingsBar
+        levelText="مستوى أولي"
+        specialEnabled={false}
+        scopeNames={['البقرة', 'آل عمران']}
+        scopeMode="weakReview"
+      />,
+    );
+    expect(getByText('البقرة')).toBeTruthy();
+    expect(getByText('آل عمران')).toBeTruthy();
+  });
 });

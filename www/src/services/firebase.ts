@@ -20,8 +20,9 @@ import {
   onValue, onDisconnect, runTransaction, serverTimestamp, Database,
 } from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
-import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult } from './pvpService';
+import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult, MatchScopePart } from './pvpService';
 import { useProfileStore } from '../stores/profileStore';
+import { quizCodeOf } from '../models/quizCode';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
 // values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
@@ -369,6 +370,24 @@ export async function pushProfile(uid: string, profile: unknown): Promise<void> 
   }
 }
 
+export async function savePushToken(
+  uid: string,
+  token: string,
+  platform: string,
+  tz: string,
+): Promise<void> {
+  try {
+    await set(ref(getFirebaseDb(), `/pushTokens/${uid}`), {
+      token,
+      platform,
+      tz,
+      updatedAt: Date.now(),
+    });
+  } catch (e) {
+    console.error('savePushToken error:', e);
+  }
+}
+
 // ─── Daily quiz ───────────────────────────────────────────────────────────────
 
 export interface DailyHead {
@@ -668,3 +687,311 @@ export async function writePvpResult(matchId: string, result: PvpMatchResult): P
 export function watchPvpResult(matchId: string, cb: (result: PvpMatchResult | null) => void): () => void {
   return onValue(pvpMatchResultRef(matchId), (snap) => cb(snap.val() as PvpMatchResult | null));
 }
+
+// ─── Quiz Codes & Friends ───────────────────────────────────────────────────
+
+export interface FriendRequestEntry {
+  ts: number;
+  fromName: string;
+  fromPhotoURL?: string;
+}
+
+export interface FriendEntry {
+  since: number;
+  name?: string;
+  photoURL?: string;
+}
+
+/**
+ * Computes and registers a deterministic Quiz Code for a signed-in profile.
+ * Performs a best-effort write to `/quizCodes/{code}`.
+ */
+export async function registerQuizCode(uid: string): Promise<string> {
+  const code = quizCodeOf(uid);
+  try {
+    await set(ref(getFirebaseDb(), `/quizCodes/${code}`), uid);
+  } catch (e) {
+    console.error('registerQuizCode error:', e);
+  }
+  return code;
+}
+
+/**
+ * Resolves a Quiz Code to a target user UID. Returns null if not found.
+ */
+export async function resolveQuizCode(code: string): Promise<string | null> {
+  try {
+    const snap = await dbGet(ref(getFirebaseDb(), `/quizCodes/${code.toUpperCase()}`));
+    return (snap.val() as string) ?? null;
+  } catch (e) {
+    console.error('resolveQuizCode error:', e);
+    return null;
+  }
+}
+
+/**
+ * Writes a friend request to `/friendRequests/{targetUid}/{myUid}` using
+ * my own profile display fields.
+ */
+export async function sendFriendRequest(
+  targetUid: string,
+  myUid: string,
+  fromName: string,
+  fromPhotoURL?: string,
+): Promise<boolean> {
+  try {
+    const payload: Record<string, unknown> = {
+      ts: Date.now(),
+      fromName,
+    };
+    if (fromPhotoURL) payload.fromPhotoURL = fromPhotoURL;
+    await set(ref(getFirebaseDb(), `/friendRequests/${targetUid}/${myUid}`), payload);
+    return true;
+  } catch (e) {
+    console.error('sendFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Listens for incoming friend requests at `/friendRequests/{myUid}`.
+ */
+export function watchFriendRequests(
+  myUid: string,
+  cb: (requests: Record<string, FriendRequestEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/friendRequests/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, FriendRequestEntry>) ?? {});
+  });
+}
+
+/**
+ * Accepts an incoming friend request from `fromUid`.
+ *
+ * CRITICAL WRITE ORDER REQUIRED BY RTDB RULES:
+ * (a) write /friends/{fromUid}/{myUid} FIRST (their side of mirror; only writable while pending request exists)
+ * (b) write /friends/{myUid}/{fromUid} (my own side)
+ * (c) remove /friendRequests/{myUid}/{fromUid}
+ */
+export async function acceptFriendRequest(
+  fromUid: string,
+  myUid: string,
+  myName: string,
+  myPhotoURL?: string,
+  fromName?: string,
+  fromPhotoURL?: string,
+): Promise<boolean> {
+  try {
+    const dbInstance = getFirebaseDb();
+    const now = Date.now();
+
+    // (a) Write to /friends/{fromUid}/{myUid} FIRST
+    const targetFriendPayload: Record<string, unknown> = { since: now, name: myName };
+    if (myPhotoURL) targetFriendPayload.photoURL = myPhotoURL;
+    await set(ref(dbInstance, `/friends/${fromUid}/${myUid}`), targetFriendPayload);
+
+    // (b) Write to /friends/{myUid}/{fromUid}
+    const myFriendPayload: Record<string, unknown> = { since: now };
+    if (fromName) myFriendPayload.name = fromName;
+    if (fromPhotoURL) myFriendPayload.photoURL = fromPhotoURL;
+    await set(ref(dbInstance, `/friends/${myUid}/${fromUid}`), myFriendPayload);
+
+    // (c) Remove /friendRequests/{myUid}/{fromUid}
+    await remove(ref(dbInstance, `/friendRequests/${myUid}/${fromUid}`));
+
+    return true;
+  } catch (e) {
+    console.error('acceptFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Declines an incoming friend request by removing `/friendRequests/{myUid}/{fromUid}`.
+ */
+export async function declineFriendRequest(fromUid: string, myUid: string): Promise<boolean> {
+  try {
+    await remove(ref(getFirebaseDb(), `/friendRequests/${myUid}/${fromUid}`));
+    return true;
+  } catch (e) {
+    console.error('declineFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Listens for active friends at `/friends/{myUid}`.
+ */
+export function watchFriends(
+  myUid: string,
+  cb: (friends: Record<string, FriendEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/friends/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, FriendEntry>) ?? {});
+  });
+}
+
+// ─── PvP Invites ─────────────────────────────────────────────────────────────
+
+export interface PvpInviteEntry {
+  ts?: number;
+  status: 'pending' | 'accepted';
+  level?: number;
+  scope?: MatchScopePart[];
+  fromName?: string;
+  fromPhotoURL?: string;
+  matchId?: string;
+}
+
+export async function sendPvpInvite(
+  recipientUid: string,
+  myUid: string,
+  myName: string,
+  myPhotoURL: string | undefined,
+  level: number,
+  scope: MatchScopePart[],
+): Promise<boolean> {
+  try {
+    const payload: Record<string, unknown> = {
+      ts: Date.now(),
+      status: 'pending',
+      level,
+      scope,
+      fromName: myName,
+    };
+    if (myPhotoURL) payload.fromPhotoURL = myPhotoURL;
+    await set(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${myUid}`), payload);
+    return true;
+  } catch (e) {
+    console.error('sendPvpInvite error:', e);
+    return false;
+  }
+}
+
+export function watchPvpInvite(
+  recipientUid: string,
+  fromUid: string,
+  cb: (invite: PvpInviteEntry | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`), (snap) => {
+    cb((snap.val() as PvpInviteEntry | null) ?? null);
+  });
+}
+
+export function watchIncomingPvpInvites(
+  myUid: string,
+  cb: (invites: Record<string, PvpInviteEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/pvp/invites/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, PvpInviteEntry>) ?? {});
+  });
+}
+
+export async function acceptPvpInvite(
+  recipientUid: string,
+  fromUid: string,
+  matchId: string,
+): Promise<boolean> {
+  try {
+    await set(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`), {
+      status: 'accepted',
+      matchId,
+    });
+    return true;
+  } catch (e) {
+    console.error('acceptPvpInvite error:', e);
+    return false;
+  }
+}
+
+export async function declinePvpInvite(recipientUid: string, fromUid: string): Promise<boolean> {
+  try {
+    await remove(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`));
+    return true;
+  } catch (e) {
+    console.error('declinePvpInvite error:', e);
+    return false;
+  }
+}
+
+// ─── Presence ────────────────────────────────────────────────────────────────
+
+export interface PresenceState {
+  online?: boolean;
+  lastSeen?: number;
+}
+
+export async function armPresence(uid: string): Promise<void> {
+  try {
+    const presenceRef = ref(getFirebaseDb(), `/presence/${uid}`);
+    await onDisconnect(presenceRef).set({
+      online: false,
+      lastSeen: serverTimestamp(),
+    });
+    await set(presenceRef, {
+      online: true,
+      lastSeen: serverTimestamp(),
+    });
+  } catch (e) {
+    console.error('armPresence error:', e);
+  }
+}
+
+export function watchPresence(
+  uid: string,
+  cb: (state: PresenceState | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/presence/${uid}`), (snap) => {
+    cb((snap.val() as PresenceState | null) ?? null);
+  });
+}
+
+// ─── Notification Preferences ────────────────────────────────────────────────
+
+export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts';
+
+export type NotifPrefs = Record<NotifCategory, boolean>;
+
+export async function getNotifPrefs(uid: string): Promise<NotifPrefs> {
+  try {
+    const snap = await dbGet(ref(getFirebaseDb(), `/notifPrefs/${uid}`));
+    const val = snap.val() as Record<string, boolean> | null;
+    return {
+      invites: val?.invites !== false,
+      friendRequests: val?.friendRequests !== false,
+      streakAlerts: val?.streakAlerts !== false,
+    };
+  } catch (e) {
+    console.error('getNotifPrefs error:', e);
+    return { invites: true, friendRequests: true, streakAlerts: true };
+  }
+}
+
+export async function setNotifPref(
+  uid: string,
+  category: NotifCategory,
+  enabled: boolean,
+): Promise<void> {
+  try {
+    await set(ref(getFirebaseDb(), `/notifPrefs/${uid}/${category}`), enabled);
+  } catch (e) {
+    console.error('setNotifPref error:', e);
+  }
+}
+
+export function watchNotifPrefs(
+  uid: string,
+  cb: (prefs: NotifPrefs) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/notifPrefs/${uid}`), (snap) => {
+    const val = snap.val() as Record<string, boolean> | null;
+    cb({
+      invites: val?.invites !== false,
+      friendRequests: val?.friendRequests !== false,
+      streakAlerts: val?.streakAlerts !== false,
+    });
+  });
+}
+
+
+

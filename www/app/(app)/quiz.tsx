@@ -21,7 +21,7 @@ import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileSto
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
-import { requestPermission, scheduleStreakReminder } from '../../src/services/notifications';
+import { requestPermission, scheduleStreakReminder, registerPushToken } from '../../src/services/notifications';
 import {
   randperm, shuffleByPerm, deepCopy, countedScore,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
@@ -37,6 +37,7 @@ import { describeLiveRank } from '../../src/models/dailyRank';
 import { detectMilestones } from '../../src/models/milestones';
 import { hapticCorrect, hapticIncorrect } from '../../src/services/haptics';
 import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
+import { wordAtScopeOffset, MatchScopePart } from '../../src/services/pvpService';
 
 interface ActiveCard {
   round: number;
@@ -76,7 +77,10 @@ async function maybeRequestNotificationPermission() {
     if (shown) return;
     await AsyncStorage.setItem(NOTIF_PROMPT_KEY, '1');
     const granted = await requestPermission();
-    if (granted) scheduleStreakReminder(useProfileStore.getState().streak);
+    if (granted) {
+      scheduleStreakReminder(useProfileStore.getState().streak);
+      registerPushToken(useProfileStore.getState().uid);
+    }
   } catch { /* permission prompt is best-effort */ }
 }
 
@@ -99,6 +103,7 @@ interface SessionCache {
   lastNonce: string | undefined;   // consumed deep-link nonce (survives remount)
   lastStart: string | undefined;   // consumed ?start=<wordIdx> deep-link (shared question)
   customPart: number | null;       // selected sura/juz part index, or null = whole profile
+  weakReviewParts: number[] | null; // snapshotted weak parts for weakReview mode
   // A normal (non-daily) session suspended while a daily quiz runs. The daily
   // quiz uses its own empty card stack; this lets the normal run reappear after.
   normalSnapshot: NormalSnapshot | null;
@@ -112,6 +117,7 @@ interface NormalSnapshot {
   sessionCorrect: number;
   sessionAnswered: number;
   customPart: number | null;
+  weakReviewParts: number[] | null;
   qo: QuestionObject;   // the live question when the normal run was suspended
   seed: number;         // questionnaire seed at suspension (= active question idx)
 }
@@ -119,7 +125,7 @@ const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
   cards: [], activeCard: null, score: 0,
   cardCounter: 0, sessionCorrect: 0, sessionAnswered: 0, combo: 0, dailyScore: 0, dailyTime: 0,
-  lastNonce: undefined, lastStart: undefined, customPart: null, normalSnapshot: null,
+  lastNonce: undefined, lastStart: undefined, customPart: null, weakReviewParts: null, normalSnapshot: null,
 };
 
 export default function QuizScreen() {
@@ -167,6 +173,7 @@ export default function QuizScreen() {
   // Mirror of customPartRef as state, so the read-only settings strip re-renders
   // when the active scope changes (refs alone don't trigger a render).
   const [customPartIndex, setCustomPartIndex] = useState<number | null>(() => sessionCache.customPart);
+  const [weakReviewParts, setWeakReviewParts] = useState<number[] | null>(() => sessionCache.weakReviewParts);
 
   const listRef = useRef<FlatList>(null);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -209,6 +216,7 @@ export default function QuizScreen() {
   // profile's enabled parts. When set, questions are drawn at random from within
   // this single part's word range only (bypassing the profile's part selection).
   const customPartRef = useRef<number | null>(sessionCache.customPart);
+  const weakReviewPartsRef = useRef<number[] | null>(sessionCache.weakReviewParts);
 
   // Mirror the visible session into the module cache so it survives a remount.
   useEffect(() => {
@@ -244,7 +252,7 @@ export default function QuizScreen() {
   //   { startIdx: w,         → shared question: first question starts at word w
   //     startLevel: n }        (at level n, if given), then random thereafter
   //   {}                     → random across the profile's enabled parts
-  function startSession(opts: { daily?: boolean; partIndex?: number | null; startIdx?: number; startLevel?: number }) {
+  function startSession(opts: { daily?: boolean; partIndex?: number | null; startIdx?: number; startLevel?: number; weakReview?: boolean }) {
     const daily = !!opts.daily;
     if (daily) {
       // Entering the daily quiz: if a normal run is live, suspend it (with its
@@ -257,6 +265,7 @@ export default function QuizScreen() {
           sessionCorrect: sessionCorrectRef.current,
           sessionAnswered: sessionAnsweredRef.current,
           customPart: customPartRef.current,
+          weakReviewParts: weakReviewPartsRef.current,
           qo: deepCopy(QS.qo),
           seed: profile.lastSeed,
         };
@@ -272,8 +281,13 @@ export default function QuizScreen() {
     setDailyMode(daily);
     dailyModeRef.current = daily;
     setDailyBannerHead(null); // no point advertising "today's quiz is ready" once it's started (or a fresh run begins)
-    customPartRef.current = opts.partIndex ?? null;
-    setCustomPartIndex(opts.partIndex ?? null);
+    const weakParts = opts.weakReview
+      ? profile.getWeakCheckedParts(5).map((p) => p.index)
+      : null;
+    weakReviewPartsRef.current = weakParts;
+    setWeakReviewParts(weakParts);
+    customPartRef.current = opts.weakReview ? null : (opts.partIndex ?? null);
+    setCustomPartIndex(opts.weakReview ? null : (opts.partIndex ?? null));
     // A shared question forces the first question's start word (and level);
     // cleared after use.
     pendingStartIdxRef.current = opts.startIdx ?? null;
@@ -288,7 +302,7 @@ export default function QuizScreen() {
     dailyEndedRef.current = false;
     syncCacheFlags();
     trackEvent('quiz_start', {
-      mode: daily ? 'daily' : opts.startIdx != null ? 'shared' : opts.partIndex != null ? 'custom' : 'random',
+      mode: daily ? 'daily' : opts.weakReview ? 'weak_review' : opts.startIdx != null ? 'shared' : opts.partIndex != null ? 'custom' : 'random',
       level: profile.level,
       part: opts.partIndex ?? undefined,
     });
@@ -349,6 +363,8 @@ export default function QuizScreen() {
     setCombo(0);
     customPartRef.current = null;
     setCustomPartIndex(null);
+    weakReviewPartsRef.current = null;
+    setWeakReviewParts(null);
     sessionActiveRef.current = false;
     dailyEndedRef.current = false;
     syncCacheFlags();
@@ -358,7 +374,7 @@ export default function QuizScreen() {
 
   // Bring back a normal run that was suspended for a daily quiz. Restores its
   // card stack and the engine state (active question + seed) so the user can
-  // keep answering. Returns true if a suspended run existed.
+  // keep answering where it left off. Returns true if a suspended run existed.
   function restoreNormalSession(): boolean {
     const snap = sessionCache.normalSnapshot;
     if (!snap) return false;
@@ -371,6 +387,7 @@ export default function QuizScreen() {
 
     dailyModeRef.current = false;
     customPartRef.current = snap.customPart;
+    weakReviewPartsRef.current = snap.weakReviewParts ?? null;
     sessionActiveRef.current = true;
     dailyEndedRef.current = false;
     cardCounterRef.current = snap.cardCounter;
@@ -381,6 +398,7 @@ export default function QuizScreen() {
 
     setDailyMode(false);
     setCustomPartIndex(snap.customPart);
+    setWeakReviewParts(snap.weakReviewParts ?? null);
     setCards(snap.cards);
     setActive(snap.active);
     setScore(profile.getScore());
@@ -388,13 +406,6 @@ export default function QuizScreen() {
     // quiz that just ran had its own combo anyway, so start the resumed run's
     // combo fresh rather than pretending to reconstruct the pre-suspend value.
     setCombo(0);
-
-    // Write through to the cache so a remount (web tab unmount) restores it too.
-    sessionCache.cards = snap.cards;
-    sessionCache.activeCard = snap.active;
-    sessionCache.score = profile.getScore();
-    sessionCache.dailyMode = false;
-    sessionCache.combo = 0;
     syncCacheFlags();
     return true;
   }
@@ -411,6 +422,7 @@ export default function QuizScreen() {
     sessionCache.dailyScore = dailyScoreRef.current;
     sessionCache.dailyTime = dailyTimeRef.current;
     sessionCache.customPart = customPartRef.current;
+    sessionCache.weakReviewParts = weakReviewPartsRef.current;
   }
 
   // ── on focus: decide what to show every time the screen is entered ─────────
@@ -528,6 +540,31 @@ export default function QuizScreen() {
           await endDailyQuiz();
           return;
         }
+      } else if (weakReviewPartsRef.current != null && weakReviewPartsRef.current.length > 0) {
+        // Weak Review: draw a random word from across all snapshotted weak parts combined.
+        const weakIndices = weakReviewPartsRef.current;
+        const scope: MatchScopePart[] = weakIndices.map((i) => ({
+          start: profile.parts[i].start,
+          length: profile.parts[i].length,
+          partIndex: i,
+        }));
+        const totalLen = scope.reduce((acc, p) => acc + p.length, 0);
+        const sparsePoint = (n: number) => {
+          const offset = totalLen > 0 ? (n - 1) % totalLen : 0;
+          const idx = wordAtScopeOffset(scope, offset);
+          const part = profile.getPartIndexOf(idx);
+          return { idx, part };
+        };
+        const total = () => totalLen;
+        await QS.createNextQ(
+          undefined,
+          sparsePoint,
+          total,
+          profile.level,
+          profile.specialEnabled,
+          profile.isSurasSpecialQuestionEligible(),
+          profile.getPartIndexOf.bind(profile),
+        );
       } else if (customPartRef.current != null) {
         // Custom Sura/Juz: draw a random word from within this part's range only.
         const pi = customPartRef.current;
@@ -665,7 +702,7 @@ export default function QuizScreen() {
     if (shouldShowSummary(sessionAnsweredRef.current, dailyMode)) {
       profile.updateScoreRecord();
       trackEvent('quiz_complete', {
-        mode: customPartRef.current != null ? 'custom' : 'random',
+        mode: weakReviewPartsRef.current != null ? 'weak_review' : customPartRef.current != null ? 'custom' : 'random',
         correct: sessionCorrectRef.current,
         answered: sessionAnsweredRef.current,
         score: profile.getScore(),
@@ -920,11 +957,12 @@ export default function QuizScreen() {
 
   // ── render ────────────────────────────────────────────────────────────────
   // Read-only summary of the settings driving the current run.
-  const scopeMode: ScopeMode = dailyMode ? 'daily' : customPartIndex != null ? 'custom' : 'random';
+  const scopeMode: ScopeMode = dailyMode ? 'daily' : weakReviewParts != null ? 'weakReview' : customPartIndex != null ? 'custom' : 'random';
   const levelTextKey = profile.levels.find((l) => l.value === profile.level)?.text;
   const levelText = levelTextKey ? t(levelTextKey) : '';
   const scopeNames =
     scopeMode === 'daily' ? []
+    : scopeMode === 'weakReview' ? (weakReviewParts ?? []).map((i) => translatePartName(profile.parts[i]?.name ?? '—'))
     : scopeMode === 'custom' ? [translatePartName(profile.parts[customPartIndex!]?.name ?? '—')]
     : profile.parts.filter((p) => p.checked).map((p) => translatePartName(p.name));
   const showSettingsBar = !chooserVisible && cards.length > 0;
@@ -1002,6 +1040,15 @@ export default function QuizScreen() {
             <>
               <Text style={[s.chooserSubtitle, { color: colors.inkSoft }]}>{t('quiz.reviewWeakSubtitle')}</Text>
               <View style={s.chooserList}>
+                {profile.getWeakCheckedParts(2).length >= 2 && (
+                  <PressScale
+                    style={[s.chooserOption, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
+                    onPress={() => startSession({ weakReview: true })}
+                  >
+                    <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.inkSoft} />
+                    <Text style={[s.chooserOptionTxt, { color: colors.ink }]}>{t('quiz.reviewAllWeakBtn')}</Text>
+                  </PressScale>
+                )}
                 {profile.getWeakCheckedParts(3).map(({ index, name }) => (
                   <PressScale
                     key={index}

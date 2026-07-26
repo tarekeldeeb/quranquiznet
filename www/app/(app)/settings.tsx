@@ -1,7 +1,7 @@
 // Settings screen — level, special questions, version, sign-out. Reached from
 // Home via the gear icon in the header (see (app)/me.tsx) instead of living
 // inline on Home, which used to do five jobs at once.
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { View, Text, Switch, Alert, Modal, ActivityIndicator, StyleSheet, ScrollView, Platform, Linking } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -9,7 +9,9 @@ import { Ionicons } from '@expo/vector-icons';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
-import { signOut, deleteAccount } from '../../src/services/firebase';
+import {
+  signOut, deleteAccount, watchNotifPrefs, setNotifPref, type NotifCategory, type NotifPrefs,
+} from '../../src/services/firebase';
 import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -93,6 +95,25 @@ export default function SettingsScreen() {
   const [signingOut, setSigningOut] = useState(false);
   const [deleteSheetOpen, setDeleteSheetOpen] = useState(false);
   const [deletingAccount, setDeletingAccount] = useState(false);
+
+  const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>({
+    invites: true,
+    friendRequests: true,
+    streakAlerts: true,
+  });
+
+  useEffect(() => {
+    if (!social.uid) return;
+    const unsub = watchNotifPrefs(social.uid, setNotifPrefs);
+    return unsub;
+  }, [social.uid]);
+
+  function handleToggleNotifPref(category: NotifCategory, value: boolean) {
+    setNotifPrefs((prev) => ({ ...prev, [category]: value }));
+    if (social.uid) {
+      setNotifPref(social.uid, category, value);
+    }
+  }
 
   const SPECIAL_MIN_LEVEL = 2;
   const specialEditable = profile.level >= SPECIAL_MIN_LEVEL;
@@ -224,6 +245,49 @@ export default function SettingsScreen() {
               value={specialEditable && profile.specialEnabled}
               onValueChange={toggleSpecial}
               disabled={!specialEditable}
+              trackColor={{ false: colors.line, true: colors.gold }}
+              thumbColor="#fff"
+            />
+          </View>
+        </View>
+
+        {/* Notification preferences */}
+        <View style={[s.section, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+            {t('settings.notifPrefs.header')}
+          </Text>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL) }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.invitesLabel')}</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.invitesHint')}</Text>
+            </View>
+            <Switch
+              value={notifPrefs.invites}
+              onValueChange={(v) => handleToggleNotifPref('invites', v)}
+              trackColor={{ false: colors.line, true: colors.gold }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL), borderTopWidth: 1, borderTopColor: colors.line }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.friendRequestsLabel')}</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.friendRequestsHint')}</Text>
+            </View>
+            <Switch
+              value={notifPrefs.friendRequests}
+              onValueChange={(v) => handleToggleNotifPref('friendRequests', v)}
+              trackColor={{ false: colors.line, true: colors.gold }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL), borderTopWidth: 1, borderTopColor: colors.line }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.streakAlertsLabel')}</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.streakAlertsHint')}</Text>
+            </View>
+            <Switch
+              value={notifPrefs.streakAlerts}
+              onValueChange={(v) => handleToggleNotifPref('streakAlerts', v)}
               trackColor={{ false: colors.line, true: colors.gold }}
               thumbColor="#fff"
             />

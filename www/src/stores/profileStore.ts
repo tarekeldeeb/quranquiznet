@@ -13,6 +13,7 @@ import {
 } from '../models/constants';
 import * as Localization from 'expo-localization';
 import { MasteryTier } from '../models/milestones';
+import { pointsForWin, STREAK_FREEZE_EVERY_N_WINS } from '../models/pvpTiers';
 import type { ThemeMode } from '../theme/tokens';
 import { changeLanguage } from '../i18n';
 
@@ -54,6 +55,14 @@ export interface PvpRecord {
   wins: number;
   losses: number;
   draws: number;
+  // Journey-map progress (see models/pvpTiers.ts) — one-way: only a win adds
+  // points, a loss/draw never subtracts, so the avatar never retreats.
+  points: number;
+  // Consecutive wins; resets to 0 on a loss/draw. Feeds pointsForWin()'s bonus.
+  winStreak: number;
+  // Earned every STREAK_FREEZE_EVERY_N_WINS wins; spent by the (not yet built)
+  // streak-alert flow to save a dying daily streak.
+  streakFreezeTokens: number;
 }
 
 // A daily-quiz submission that reached endDailyQuiz() but hasn't yet been
@@ -199,6 +208,7 @@ interface ProfileState {
   addCorrect(qo: QORef): Promise<void>;
   addIncorrect(qo: QORef): Promise<void>;
   recordPlay(): void;
+  useStreakFreeze(): boolean;
   markDailyCompleted(score?: number): void;
   setPendingDailySubmit(payload: DailySubmitPayload | null): void;
   setCountry(code: string): void;
@@ -253,7 +263,7 @@ const THEME_KEY = 'prf_themeMode';
 // Deliberately outside KEYS: device preference that survives sign-out/delete.
 const LANGUAGE_KEY = 'prf_language';
 
-const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0 };
+const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 0 };
 
 // `?lang=ar` / `?lang=en` on a web URL (e.g. a shared/campaign link) should
 // override both the persisted preference and the device locale, and stick
@@ -361,7 +371,12 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       ]);
     set({
       uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
-      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit, loaded: true, themeMode, language,
+      streak, bestStreak: Math.max(bestStreak, streak), lastPlayDate, lastDailyCompletedDate,
+      // Merge over EMPTY_PVP: an older saved profile's pvp record predates the
+      // points/winStreak/streakFreezeTokens fields, so a raw load would leave
+      // them undefined.
+      pvp: { ...EMPTY_PVP, ...pvp },
+      lastDailyScore, pendingDailySubmit, loaded: true, themeMode, language,
     });
     return true;
   },
@@ -437,15 +452,37 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   recordPlay() {
     const today = new Date().toISOString().split('T')[0];
-    const { lastPlayDate, streak, bestStreak } = get();
+    const { lastPlayDate, streak, bestStreak, pvp: curPvp } = get();
     if (lastPlayDate === today) return;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     const newStreak = lastPlayDate === yesterday ? streak + 1 : 1;
     const newBest = Math.max(bestStreak, newStreak);
-    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today });
+    const pvpEarned = newStreak > 0 && newStreak % 7 === 0;
+    const pvp: PvpRecord = pvpEarned
+      ? { ...curPvp, streakFreezeTokens: (curPvp.streakFreezeTokens ?? 0) + 1 }
+      : curPvp;
+    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today, pvp });
     saveKey(KEYS.streak, newStreak);
     saveKey(KEYS.bestStreak, newBest);
     saveKey(KEYS.lastPlayDate, today);
+    if (pvpEarned) {
+      saveKey(KEYS.pvp, pvp);
+    }
+  },
+
+  useStreakFreeze(): boolean {
+    const { pvp: curPvp } = get();
+    const tokens = curPvp?.streakFreezeTokens ?? 0;
+    if (tokens <= 0) return false;
+    const today = new Date().toISOString().split('T')[0];
+    const pvp: PvpRecord = {
+      ...curPvp,
+      streakFreezeTokens: tokens - 1,
+    };
+    set({ lastPlayDate: today, pvp });
+    saveKey(KEYS.lastPlayDate, today);
+    saveKey(KEYS.pvp, pvp);
+    return true;
   },
 
   markDailyCompleted(score?: number) {
@@ -479,10 +516,17 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
   addPvpResult(outcome) {
     const cur = get().pvp;
+    const winStreak = outcome === 'win' ? cur.winStreak + 1 : 0;
+    const wins = cur.wins + (outcome === 'win' ? 1 : 0);
     const pvp: PvpRecord = {
-      wins:   cur.wins   + (outcome === 'win'  ? 1 : 0),
+      wins,
       losses: cur.losses + (outcome === 'loss' ? 1 : 0),
       draws:  cur.draws  + (outcome === 'draw' ? 1 : 0),
+      // One-way journey progress: only a win ever adds points (see pvpTiers.ts).
+      points: cur.points + (outcome === 'win' ? pointsForWin(winStreak) : 0),
+      winStreak,
+      streakFreezeTokens: cur.streakFreezeTokens
+        + (outcome === 'win' && wins % STREAK_FREEZE_EVERY_N_WINS === 0 ? 1 : 0),
     };
     set({ pvp });
     saveKey(KEYS.pvp, pvp);

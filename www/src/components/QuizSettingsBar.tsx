@@ -13,7 +13,7 @@ import PressScale from './PressScale';
 import { useTheme, radii } from '../theme/tokens';
 import { useDirection, rowDir } from '../theme/direction';
 
-export type ScopeMode = 'random' | 'custom' | 'daily';
+export type ScopeMode = 'random' | 'custom' | 'daily' | 'weakReview';
 
 interface Props {
   levelText: string;       // e.g. "مستوى أولي"

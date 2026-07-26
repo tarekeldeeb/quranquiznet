@@ -19,6 +19,7 @@ import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
+import { getPvpTierInfo } from '../../src/models/pvpTiers';
 import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -30,6 +31,10 @@ const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
 const EVENING_HOUR = 19;
 
 const APP_ICON = require('../../assets/images/app-icon.png');
+
+const TIER_EMOJI: Record<string, string> = {
+  bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎', hafizGold: '🏆',
+};
 
 /** Small brand mark for the header's right slot — icon + app name, sitting
  * beside the personalized greeting (headerTitle, centered) rather than
@@ -122,9 +127,13 @@ function StreakSheet({
   visible: boolean; onClose: () => void; colors: ReturnType<typeof useTheme>['colors'];
   streak: number; bestStreak: number; scores: { date: number; score: number }[]; playedToday: boolean;
 }) {
+  const profile = useProfileStore();
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
   const lang = i18n.language as 'ar' | 'en';
+  const today = new Date().toISOString().split('T')[0];
+  const isPlayedToday = playedToday || profile.lastPlayDate === today;
+  const freezeTokens = profile.pvp.streakFreezeTokens ?? 0;
   const DOW = [
     t('me.dow.sun'), t('me.dow.mon'), t('me.dow.tue'), t('me.dow.wed'),
     t('me.dow.thu'), t('me.dow.fri'), t('me.dow.sat'),
@@ -133,10 +142,10 @@ function StreakSheet({
     const d = new Date();
     d.setDate(d.getDate() - (6 - i));
     const key = d.toISOString().split('T')[0];
-    const played = scores.some((sc) => new Date(sc.date).toISOString().split('T')[0] === key);
+    const played = (i === 6 && isPlayedToday) || scores.some((sc) => new Date(sc.date).toISOString().split('T')[0] === key);
     return { label: DOW[d.getDay()], played, isToday: i === 6 };
   });
-  const atRisk = !playedToday && new Date().getHours() >= EVENING_HOUR && streak > 0;
+  const atRisk = !isPlayedToday && new Date().getHours() >= EVENING_HOUR && streak > 0;
 
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -180,11 +189,26 @@ function StreakSheet({
           </View>
 
           {atRisk && (
-            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale, flexDirection: rowDir(isRTL) }]}>
-              <Ionicons name="warning-outline" size={16} color={colors.wrong} />
-              <Text style={[s.riskTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>
-                {t('me.streakSheet.riskBanner')}
-              </Text>
+            <View style={[s.riskBanner, { backgroundColor: colors.wrongPale, flexDirection: 'column', gap: 10 }]}>
+              <View style={{ flexDirection: rowDir(isRTL), alignItems: 'center', gap: 8 }}>
+                <Ionicons name="warning-outline" size={16} color={colors.wrong} />
+                <Text style={[s.riskTxt, { color: colors.wrong, textAlign: alignDir(isRTL) }]}>
+                  {t('me.streakSheet.riskBanner')}
+                </Text>
+              </View>
+              {freezeTokens > 0 && (
+                <PressScale
+                  style={[s.freezeBtn, { backgroundColor: colors.gold }]}
+                  onPress={() => {
+                    profile.useStreakFreeze();
+                  }}
+                >
+                  <Ionicons name="snow-outline" size={16} color={colors.navy} />
+                  <Text style={[s.freezeBtnTxt, { color: colors.navy }]}>
+                    {t('me.streakSheet.useFreezeBtn')}
+                  </Text>
+                </PressScale>
+              )}
             </View>
           )}
         </View>
@@ -419,6 +443,7 @@ export default function MeScreen() {
     : 0;
   const trend = score - yesterday;
   const rank = getRankInfo(score);
+  const pvpTier = getPvpTierInfo(profile.pvp.points);
 
   const today = new Date().toISOString().split('T')[0];
   // Treat an unconfirmed submission from today the same as completed — the
@@ -528,6 +553,14 @@ export default function MeScreen() {
             <Ionicons name="flame" size={16} color={colors.goldDeep} />
             <Text style={[s.streakTxt, { color: colors.goldDeep }]}>{localeNum(profile.streak, lang)}</Text>
           </PressScale>
+          <PressScale
+            style={[s.friendsBadge, { backgroundColor: colors.goldPale, borderColor: colors.gold }]}
+            onPress={() => router.push('/(app)/friends')}
+            accessibilityRole="button"
+            accessibilityLabel={t('friends.title')}
+          >
+            <Ionicons name="people" size={16} color={colors.goldDeep} />
+          </PressScale>
         </View>
 
         {/* ── Give the score a destination: badge + rank title + progress to
@@ -553,6 +586,31 @@ export default function MeScreen() {
               </View>
               <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
                 <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold, [isRTL ? 'right' : 'left']: 0 }]} />
+              </View>
+            </View>
+          </View>
+        </PressScale>
+
+        {/* ── PvP journey: the world-map counterpart of the rank card above —
+            city name + tier badge instead of a score title, tap opens the
+            full-screen map instead of a sheet (a map deserves the room). ── */}
+        <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => router.push('/(app)/pvp-journey')}>
+          <View style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]}>
+            <View style={[s.rankBadgeSmall, { backgroundColor: colors.goldPale }]}>
+              <Text style={{ fontSize: 18 }}>{TIER_EMOJI[pvpTier.tier]}</Text>
+            </View>
+            <View style={s.rankColumn}>
+              <View style={[s.rankRow, { flexDirection: rowDir(isRTL) }]}>
+                <View style={[s.rankTitleRow, { flexDirection: rowDir(isRTL) }]}>
+                  <Text style={[s.rankTitle, { color: colors.ink }]}>{pvpTier.cityName}</Text>
+                  <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={14} color={colors.inkSoft} />
+                </View>
+                <Text style={[s.rankNext, { color: colors.inkSoft, textAlign: isRTL ? 'left' : 'right' }]}>
+                  {pvpTier.tierTitle}
+                </Text>
+              </View>
+              <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
+                <View style={[s.rankFill, { width: `${pvpTier.progress * 100}%`, backgroundColor: colors.gold, [isRTL ? 'right' : 'left']: 0 }]} />
               </View>
             </View>
           </View>
@@ -754,6 +812,14 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   streakTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold' },
+  friendsBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+  },
 
   // Bento primitives
   bentoFull: { borderRadius: radii.lg, ...CARD_SHADOW },
@@ -877,6 +943,17 @@ const s = StyleSheet.create({
   streakStatTxt: { fontSize: 13, fontFamily: 'PlexArabic-SemiBold' },
   riskBanner: { alignItems: 'center', gap: 8, padding: 12, borderRadius: radii.md, marginTop: 14 },
   riskTxt: { flex: 1, fontSize: 12, fontFamily: 'PlexArabic-SemiBold' },
+  freezeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    borderRadius: radii.pill,
+    alignSelf: 'stretch',
+  },
+  freezeBtnTxt: { fontSize: 13, fontFamily: 'PlexArabic-Bold' },
 
   // Guest nickname modal
   nickOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'center', alignItems: 'center', padding: 24 },
