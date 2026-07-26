@@ -1,55 +1,47 @@
-// Google Analytics 4 (gtag.js) helpers.
+// Firebase Analytics (GA4) helpers — native implementation (iOS/Android), via
+// @react-native-firebase/analytics. The native Firebase app is auto-configured
+// from GoogleService-Info.plist / google-services.json (see app.json's
+// googleServicesFile fields + the "@react-native-firebase/app" plugin), so no
+// manual initializeApp() call is needed here.
 //
-// gtag.js itself is loaded once in the web <head> (see app/+html.tsx) with
-// automatic page_view disabled (`send_page_view: false`), because Expo Router is
-// a single-page app: the browser only loads once, so we must send a page_view
-// ourselves on every client-side route change (see src/components/Analytics.tsx).
-//
-// All functions are safe no-ops on native (no gtag there) and before the
-// gtag.js script has loaded.
-import { Platform } from 'react-native';
+// Metro picks this file on iOS/Android; src/services/analytics.web.ts (gtag.js)
+// is used on web — same split as src/db/idb.ts / idb.web.ts.
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {
+  getAnalytics,
+  logEvent,
+  logScreenView,
+  setAnalyticsCollectionEnabled,
+  setConsent,
+} from '@react-native-firebase/analytics';
 
-// Keep this in sync with the literal hard-coded in app/+html.tsx.
-export const GA_MEASUREMENT_ID = 'G-KBJMQL8WT5';
+const analytics = getAnalytics();
 
-type GtagFn = (...args: unknown[]) => void;
+// Collection starts disabled until the user grants consent — mirrors gtag's
+// default-DENIED Consent Mode on web (see analytics.web.ts / app/+html.tsx).
+void setAnalyticsCollectionEnabled(analytics, false);
 
-function getGtag(): GtagFn | undefined {
-  if (Platform.OS !== 'web' || typeof window === 'undefined') return undefined;
-  return (window as unknown as { gtag?: GtagFn }).gtag;
-}
-
-/** Send a manual page_view for the current route. */
+/** Send a manual screen_view for the current route. */
 export function trackPageView(path: string, title?: string): void {
-  const gtag = getGtag();
-  if (!gtag) return;
-  gtag('event', 'page_view', {
-    page_path: path,
-    page_location: window.location.href,
-    page_title: title ?? document.title,
-  });
+  void logScreenView(analytics, { screen_name: path, screen_class: title ?? path });
 }
 
 /** Send a custom GA4 event. */
 export function trackEvent(name: string, params?: Record<string, unknown>): void {
-  const gtag = getGtag();
-  if (!gtag) return;
-  gtag('event', name, params);
+  void logEvent(analytics, name, params);
 }
 
 // ── Consent (GDPR) ──────────────────────────────────────────────────────────
-// We use Google Consent Mode v2. gtag.js is initialized with consent defaulted
-// to DENIED (see app/+html.tsx), so until the user accepts, GA only sends
-// cookieless pings (no analytics cookies / identifiers). The user's choice is
-// remembered in localStorage so the banner shows only once.
+// The user's choice is remembered in AsyncStorage so the banner shows only once,
+// same key as the web implementation for continuity of intent (the two stores
+// are independent per-platform, not actually shared).
 const CONSENT_KEY = 'qqn_analytics_consent';
 
 export type ConsentChoice = 'granted' | 'denied';
 
 /** The user's previously stored consent choice, or null if not yet asked. */
-export function getStoredConsent(): ConsentChoice | null {
-  if (Platform.OS !== 'web' || typeof localStorage === 'undefined') return null;
-  const v = localStorage.getItem(CONSENT_KEY);
+export async function getStoredConsent(): Promise<ConsentChoice | null> {
+  const v = await AsyncStorage.getItem(CONSENT_KEY);
   return v === 'granted' || v === 'denied' ? v : null;
 }
 
@@ -57,14 +49,13 @@ export function getStoredConsent(): ConsentChoice | null {
  * Persist and apply the analytics consent choice. We only ever toggle
  * `analytics_storage` — this app runs no ads, so ad_* consent stays denied.
  */
-export function setAnalyticsConsent(choice: ConsentChoice): void {
-  if (Platform.OS !== 'web') return;
+export async function setAnalyticsConsent(choice: ConsentChoice): Promise<void> {
   try {
-    localStorage.setItem(CONSENT_KEY, choice);
+    await AsyncStorage.setItem(CONSENT_KEY, choice);
   } catch {
-    // localStorage can throw in private mode / when storage is full — ignore.
+    // AsyncStorage can throw when storage is full — ignore.
   }
-  const gtag = getGtag();
-  if (!gtag) return;
-  gtag('consent', 'update', { analytics_storage: choice });
+  const granted = choice === 'granted';
+  await setConsent(analytics, { analytics_storage: granted });
+  await setAnalyticsCollectionEnabled(analytics, granted);
 }

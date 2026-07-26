@@ -1,8 +1,8 @@
-// Cookie/analytics consent banner (GDPR). Web-only — renders nothing on native.
-// Shown once until the user chooses; the choice is stored and re-applied on
-// return visits. See src/services/analytics.ts for the consent mechanics.
+// Cookie/analytics consent banner (GDPR). Shown once until the user chooses,
+// on every platform; the choice is stored and re-applied on return visits.
+// See src/services/analytics.ts / analytics.web.ts for the consent mechanics.
 import { useEffect, useState } from 'react';
-import { Platform, View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useDirection, alignDir } from '../theme/direction';
@@ -15,19 +15,20 @@ export function ConsentBanner(): React.ReactElement | null {
   const { isRTL } = useDirection();
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-    const stored = getStoredConsent();
-    if (stored) {
-      setAnalyticsConsent(stored); // re-apply the returning user's choice
-    } else {
-      setVisible(true);
-    }
+    (async () => {
+      const stored = await getStoredConsent();
+      if (stored) {
+        void setAnalyticsConsent(stored); // re-apply the returning user's choice
+      } else {
+        setVisible(true);
+      }
+    })();
   }, []);
 
   if (!visible) return null;
 
   const choose = (c: ConsentChoice) => {
-    setAnalyticsConsent(c);
+    void setAnalyticsConsent(c);
     setVisible(false);
   };
 
