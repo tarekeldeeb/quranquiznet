@@ -8,7 +8,7 @@ import {
   Modal, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect, useRouter } from 'expo-router';
+import { useFocusEffect, useLocalSearchParams, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTranslation } from 'react-i18next';
@@ -96,6 +96,15 @@ export default function PvpScreen() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { isRTL } = useDirection();
+  // Entry from a friend-invite lobby (see (app)/pvp-lobby.tsx): the match doc
+  // already exists (both sides agreed and one of them created it) — skip the
+  // idle/queue-search UI entirely and join it directly. `nonce` gates this to
+  // fire once per lobby hand-off, the same pattern quiz.tsx uses for its own
+  // deep-link params.
+  const inviteParams = useLocalSearchParams<{
+    matchId?: string; opponentUid?: string; opponentName?: string; opponentPhoto?: string; opponentCountry?: string; nonce?: string;
+  }>();
+  const consumedInviteNonceRef = useRef<string | undefined>(undefined);
 
   const [phase, setPhase] = useState<Phase>('idle');
   const [countdown, setCountdown] = useState(3);
@@ -218,6 +227,19 @@ export default function PvpScreen() {
   // proactively forfeits to the opponent rather than leaving them stuck. Always
   // land back on the idle challenge screen; a match only starts on an explicit tap.
   useFocusEffect(useCallback(() => {
+    if (
+      inviteParams.matchId && inviteParams.opponentUid && inviteParams.nonce
+      && inviteParams.nonce !== consumedInviteNonceRef.current
+    ) {
+      consumedInviteNonceRef.current = inviteParams.nonce;
+      enterFromInvite(
+        inviteParams.matchId,
+        inviteParams.opponentUid,
+        inviteParams.opponentName
+          ? { name: inviteParams.opponentName, photoURL: inviteParams.opponentPhoto, country: inviteParams.opponentCountry }
+          : null,
+      );
+    }
     return () => {
       clearAllTimers();
       cleanupPvpNetwork(true);
@@ -228,7 +250,7 @@ export default function PvpScreen() {
       setActive(null);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []));
+  }, [inviteParams.matchId, inviteParams.opponentUid, inviteParams.nonce]));
 
   function startMatch() {
     clearAllTimers();
@@ -442,6 +464,40 @@ export default function PvpScreen() {
     // Opponent identity isn't in meta — it arrives moments later via the first
     // watchPvpPlayer update below, same as for the claimer (kept symmetric).
     enterLiveMatch(matchId, meta.creator, null, meta);
+  }
+
+  /** Entry from a friend-invite lobby: the match doc already exists (see
+   *  inviteParams above) — reset the same session state startMatch() would
+   *  before a queue search, then join directly instead of searching. Unlike
+   *  joinClaimedMatch(), the opponent is known up front (whoever the lobby
+   *  wasn't me), not derived from meta.creator — a lobby entrant can BE the
+   *  creator, so meta.creator would sometimes resolve to "myself". */
+  async function enterFromInvite(matchId: string, opponentUid: string, identity: OpponentIdentity | null) {
+    clearAllTimers();
+    cleanupPvpNetwork(false);
+    if (!savedEngineRef.current) {
+      savedEngineRef.current = { qo: deepCopy(QS.qo), seed: profile.lastSeed };
+    }
+    qIndexRef.current = 0;
+    playerCorrectRef.current = 0;
+    playerFinishMsRef.current = 0;
+    settledRef.current = false;
+    playerResultsRef.current = new Array(PVP_QUESTIONS).fill(null);
+    setPlayerResults(playerResultsRef.current);
+    setBotView(EMPTY_BOT_VIEW);
+    setOutcome(null);
+    setCard(null);
+    setActive(null);
+    setOppDisconnected(false);
+    opponentStateRef.current = null;
+    opponentSeenRef.current = false;
+    myFinishedRef.current = false;
+    resultHandledRef.current = false;
+    pointsBeforeRef.current = profile.pvp.points;
+    profile.recordPlay();
+    const meta = await FB.getPvpMatchMeta(matchId).catch(() => null);
+    if (!meta) { startBotMatch(); return; } // match doc vanished — fall back rather than strand the screen
+    enterLiveMatch(matchId, opponentUid, identity, meta);
   }
 
   function enterLiveMatch(
