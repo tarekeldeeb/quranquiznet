@@ -12,6 +12,8 @@
 
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
+import Constants from 'expo-constants';
+import { savePushToken } from './firebase';
 
 const STREAK_ID = 'qqn-streak';
 const DAILY_ID = 'qqn-daily';
@@ -131,3 +133,22 @@ export async function scheduleDailyReminder(atMs: number): Promise<void> {
     );
   } catch { /* scheduling is non-critical */ }
 }
+
+/**
+ * Register the device's Expo push token in Firebase RTDB for push notifications.
+ * No-op on web or if registration fails.
+ */
+export async function registerPushToken(uid: string): Promise<void> {
+  if (!isNative) return;
+  try {
+    const projectId = Constants.expoConfig?.extra?.eas?.projectId;
+    const tokenData = await Notifications.getExpoPushTokenAsync({ projectId });
+    const token = tokenData.data;
+    const platform = Platform.OS;
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    await savePushToken(uid, token, platform, tz);
+  } catch {
+    /* push token registration is non-critical / best-effort */
+  }
+}
+

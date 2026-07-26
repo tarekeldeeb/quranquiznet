@@ -369,6 +369,24 @@ export async function pushProfile(uid: string, profile: unknown): Promise<void> 
   }
 }
 
+export async function savePushToken(
+  uid: string,
+  token: string,
+  platform: string,
+  tz: string,
+): Promise<void> {
+  try {
+    await set(ref(getFirebaseDb(), `/pushTokens/${uid}`), {
+      token,
+      platform,
+      tz,
+      updatedAt: Date.now(),
+    });
+  } catch (e) {
+    console.error('savePushToken error:', e);
+  }
+}
+
 // ─── Daily quiz ───────────────────────────────────────────────────────────────
 
 export interface DailyHead {

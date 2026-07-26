@@ -21,7 +21,7 @@ import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileSto
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
-import { requestPermission, scheduleStreakReminder } from '../../src/services/notifications';
+import { requestPermission, scheduleStreakReminder, registerPushToken } from '../../src/services/notifications';
 import {
   randperm, shuffleByPerm, deepCopy, countedScore,
   DAILYQUIZ_CHECKEVERY, DAILYQUIZ_CHECKAFTER, DAILYQUIZ_QPERPART_COUNT,
@@ -77,7 +77,10 @@ async function maybeRequestNotificationPermission() {
     if (shown) return;
     await AsyncStorage.setItem(NOTIF_PROMPT_KEY, '1');
     const granted = await requestPermission();
-    if (granted) scheduleStreakReminder(useProfileStore.getState().streak);
+    if (granted) {
+      scheduleStreakReminder(useProfileStore.getState().streak);
+      registerPushToken(useProfileStore.getState().uid);
+    }
   } catch { /* permission prompt is best-effort */ }
 }
 

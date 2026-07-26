@@ -46,6 +46,11 @@
 	      "result":  { ".write": "auth != null && !data.exists()" }
 	    }
       }
-    }
+    },
+	"pushTokens": {
+	  "$uid": {
+	    ".write": "auth != null && auth.uid === $uid"
+	  }
+	}
   }
 }

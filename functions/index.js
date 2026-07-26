@@ -1,6 +1,7 @@
 // Cloud Functions for Firebase SDK (2nd gen).
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
+require('./push.js');
 
 // The Firebase Admin SDK to access the Realtime Database.
 const admin = require('firebase-admin');
