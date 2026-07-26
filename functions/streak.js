@@ -1,7 +1,7 @@
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
-const { sendPush } = require('./push.js');
+const { sendPush, isCategoryEnabled } = require('./push.js');
 
 function getLocalDateAndHour(tz) {
   const now = new Date();
@@ -39,6 +39,9 @@ exports.streaksched = onSchedule('every 1 hours', async () => {
       const { hour, localDate } = getLocalDateAndHour(tokenData.tz);
       if (hour !== 19) continue;
       if (tokenData.lastStreakAlertDate === localDate) continue;
+
+      const enabled = await isCategoryEnabled(uid, 'streakAlerts');
+      if (!enabled) continue;
 
       const userSnap = await admin.database().ref(`users/${uid}`).once('value');
       const userData = userSnap.val();

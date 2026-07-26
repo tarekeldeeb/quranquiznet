@@ -90,6 +90,15 @@
     "specialHeader": "الأسئلة الخاصة",
     "specialLabel": "تفعيل الأسئلة عن اسم السورة ورقم الآية",
     "specialHint": "من المستوى الثانوي فأعلى",
+    "notifPrefs": {
+      "header": "الإشعارات",
+      "invitesLabel": "تحديات المبارزة",
+      "invitesHint": "إشعار عند تلقي دعوة مبارزة من صديق",
+      "friendRequestsLabel": "طلبات الصداقة",
+      "friendRequestsHint": "إشعار عند تلقي طلب صداقة جديد",
+      "streakAlertsLabel": "تنبيهات السلسلة",
+      "streakAlertsHint": "تنبيه مساءً إذا كانت سلسلتك في خطر"
+    },
     "mobileAppHeader": "تطبيق الجوال",
     "storeLinks": {
       "iosHint": "لأجهزة iPhone و iPad",

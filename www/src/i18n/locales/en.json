@@ -90,6 +90,15 @@
     "specialHeader": "Special Questions",
     "specialLabel": "Enable questions about Surah name and Verse number",
     "specialHint": "Secondary level and above",
+    "notifPrefs": {
+      "header": "Notifications",
+      "invitesLabel": "PvP Duel Invites",
+      "invitesHint": "Notify when a friend challenges you to a duel",
+      "friendRequestsLabel": "Friend Requests",
+      "friendRequestsHint": "Notify when you receive a new friend request",
+      "streakAlertsLabel": "Streak Alerts",
+      "streakAlertsHint": "Evening reminder if your streak is at risk"
+    },
     "mobileAppHeader": "Mobile App",
     "storeLinks": {
       "iosHint": "For iPhone and iPad",

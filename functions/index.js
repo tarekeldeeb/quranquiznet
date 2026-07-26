@@ -1,13 +1,52 @@
 // Cloud Functions for Firebase SDK (2nd gen).
 const { onSchedule } = require('firebase-functions/v2/scheduler');
+const { onValueCreated } = require('firebase-functions/v2/database');
 const logger = require('firebase-functions/logger');
-require('./push.js');
+const { sendPush, isCategoryEnabled } = require('./push.js');
 const { streaksched } = require('./streak.js');
 exports.streaksched = streaksched;
 
 // The Firebase Admin SDK to access the Realtime Database.
 const admin = require('firebase-admin');
 admin.initializeApp();
+
+exports.onpvpinvite = onValueCreated('/pvp/invites/{uid}/{fromUid}', async (event) => {
+  try {
+    const { uid, fromUid } = event.params;
+    const invite = event.data.val();
+    if (!invite) return;
+
+    const enabled = await isCategoryEnabled(uid, 'invites');
+    if (!enabled) return;
+
+    const challengerName = invite.fromName || 'أحد الأصدقاء';
+    const title = '⚔️ تحدٍّ جديد!';
+    const body = `تحداك ${challengerName} في مبارزة قرآنية! افتح التطبيق لقبول التحدي.`;
+
+    await sendPush(uid, title, body, { type: 'pvp_invite', fromUid });
+  } catch (err) {
+    logger.error(`Error sending PvP invite push to user ${event.params?.uid}:`, err);
+  }
+});
+
+exports.onfriendrequest = onValueCreated('/friendRequests/{uid}/{fromUid}', async (event) => {
+  try {
+    const { uid, fromUid } = event.params;
+    const req = event.data.val();
+    if (!req) return;
+
+    const enabled = await isCategoryEnabled(uid, 'friendRequests');
+    if (!enabled) return;
+
+    const senderName = req.fromName || 'أحد الحفّاظ';
+    const title = '👥 طلب صداقة جديد';
+    const body = `أرسل لك ${senderName} طلب صداقة على شبكة اختبار القرآن.`;
+
+    await sendPush(uid, title, body, { type: 'friend_request' });
+  } catch (err) {
+    logger.error(`Error sending friend request push to user ${event.params?.uid}:`, err);
+  }
+});
 
 const promisePool = require('es6-promise-pool');
 const PromisePool = promisePool.PromisePool;

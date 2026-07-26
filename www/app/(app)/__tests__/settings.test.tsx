@@ -13,9 +13,17 @@ jest.mock('expo-router', () => ({
 
 const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
 const mockDeleteAccount = jest.fn((..._a: unknown[]) => Promise.resolve());
+const mockWatchNotifPrefs = jest.fn((_uid: string, cb: (prefs: unknown) => void) => {
+  cb({ invites: true, friendRequests: true, streakAlerts: true });
+  return jest.fn();
+});
+const mockSetNotifPref = jest.fn((..._a: unknown[]) => Promise.resolve());
+
 jest.mock('../../../src/services/firebase', () => ({
   signOut: (...a: unknown[]) => mockSignOut(...a),
   deleteAccount: (...a: unknown[]) => mockDeleteAccount(...a),
+  watchNotifPrefs: (uid: string, cb: (prefs: unknown) => void) => mockWatchNotifPrefs(uid, cb),
+  setNotifPref: (...a: unknown[]) => mockSetNotifPref(...a),
 }));
 
 import React from 'react';

@@ -4,9 +4,10 @@ import { useEffect, useState } from 'react';
 import { Image, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  onAuthChange, fetchRemoteProfile, pushProfile,
+  onAuthChange, fetchRemoteProfile, pushProfile, armPresence,
   watchIncomingPvpInvites, acceptPvpInvite, declinePvpInvite, createPvpMatch, type PvpInviteEntry,
 } from '../../src/services/firebase';
+
 import {
   scopeFromParts, commonLevel, intersectScope, newMatchSeed, PVP_ROUNDS, type PvpMatchMeta,
 } from '../../src/services/pvpService';
@@ -94,6 +95,8 @@ export default function AppLayout() {
         router.replace('/(auth)');
         return;
       }
+
+      armPresence(user.uid);
 
       // Sync auth identity + remote profile immediately, regardless of active tab
       if (!user.isAnonymous) {

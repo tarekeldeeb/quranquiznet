@@ -23,4 +23,17 @@ async function sendPush(uid, title, body, data) {
   }
 }
 
+async function isCategoryEnabled(uid, category) {
+  try {
+    const snap = await admin.database().ref(`notifPrefs/${uid}/${category}`).once('value');
+    const val = snap.val();
+    return val !== false;
+  } catch (err) {
+    logger.error(`Error checking notification preference for ${uid}/${category}:`, err);
+    return true;
+  }
+}
+
 exports.sendPush = sendPush;
+exports.isCategoryEnabled = isCategoryEnabled;
+

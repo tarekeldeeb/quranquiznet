@@ -82,6 +82,18 @@
 	      ".write": "auth != null && (auth.uid === $uid || (auth.uid === $friendUid && root.child('friendRequests').child($friendUid).child($uid).exists()))"
 	    }
 	  }
+	},
+	"presence": {
+	  "$uid": {
+	    ".read": "auth != null",
+	    ".write": "auth != null && auth.uid === $uid"
+	  }
+	},
+	"notifPrefs": {
+	  "$uid": {
+	    ".read": "auth != null && auth.uid === $uid",
+	    ".write": "auth != null && auth.uid === $uid"
+	  }
 	}
   }
 }

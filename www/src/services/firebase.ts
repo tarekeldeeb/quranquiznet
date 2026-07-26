@@ -914,4 +914,84 @@ export async function declinePvpInvite(recipientUid: string, fromUid: string): P
   }
 }
 
+// ─── Presence ────────────────────────────────────────────────────────────────
+
+export interface PresenceState {
+  online?: boolean;
+  lastSeen?: number;
+}
+
+export async function armPresence(uid: string): Promise<void> {
+  try {
+    const presenceRef = ref(getFirebaseDb(), `/presence/${uid}`);
+    await onDisconnect(presenceRef).set({
+      online: false,
+      lastSeen: serverTimestamp(),
+    });
+    await set(presenceRef, {
+      online: true,
+      lastSeen: serverTimestamp(),
+    });
+  } catch (e) {
+    console.error('armPresence error:', e);
+  }
+}
+
+export function watchPresence(
+  uid: string,
+  cb: (state: PresenceState | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/presence/${uid}`), (snap) => {
+    cb((snap.val() as PresenceState | null) ?? null);
+  });
+}
+
+// ─── Notification Preferences ────────────────────────────────────────────────
+
+export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts';
+
+export type NotifPrefs = Record<NotifCategory, boolean>;
+
+export async function getNotifPrefs(uid: string): Promise<NotifPrefs> {
+  try {
+    const snap = await dbGet(ref(getFirebaseDb(), `/notifPrefs/${uid}`));
+    const val = snap.val() as Record<string, boolean> | null;
+    return {
+      invites: val?.invites !== false,
+      friendRequests: val?.friendRequests !== false,
+      streakAlerts: val?.streakAlerts !== false,
+    };
+  } catch (e) {
+    console.error('getNotifPrefs error:', e);
+    return { invites: true, friendRequests: true, streakAlerts: true };
+  }
+}
+
+export async function setNotifPref(
+  uid: string,
+  category: NotifCategory,
+  enabled: boolean,
+): Promise<void> {
+  try {
+    await set(ref(getFirebaseDb(), `/notifPrefs/${uid}/${category}`), enabled);
+  } catch (e) {
+    console.error('setNotifPref error:', e);
+  }
+}
+
+export function watchNotifPrefs(
+  uid: string,
+  cb: (prefs: NotifPrefs) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/notifPrefs/${uid}`), (snap) => {
+    const val = snap.val() as Record<string, boolean> | null;
+    cb({
+      invites: val?.invites !== false,
+      friendRequests: val?.friendRequests !== false,
+      streakAlerts: val?.streakAlerts !== false,
+    });
+  });
+}
+
+
 

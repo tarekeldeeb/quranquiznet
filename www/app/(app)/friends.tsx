@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   registerQuizCode, watchFriendRequests, watchFriends, acceptFriendRequest,
-  declineFriendRequest, sendPvpInvite, type FriendRequestEntry, type FriendEntry,
+  declineFriendRequest, sendPvpInvite, watchPresence, type FriendRequestEntry, type FriendEntry,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
@@ -18,6 +18,62 @@ import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/directio
 import PressScale from '../../src/components/PressScale';
 
 import { scopeFromParts } from '../../src/services/pvpService';
+
+function FriendRow({
+  friendUid,
+  friend,
+  isRTL,
+  colors,
+  t,
+  onChallenge,
+}: {
+  friendUid: string;
+  friend: FriendEntry;
+  isRTL: boolean;
+  colors: ReturnType<typeof useTheme>['colors'];
+  t: (key: string) => string;
+  onChallenge: (uid: string, friend: FriendEntry) => void;
+}) {
+  const [online, setOnline] = useState(false);
+
+  useEffect(() => {
+    const unsub = watchPresence(friendUid, (presence) => {
+      setOnline(!!presence?.online);
+    });
+    return unsub;
+  }, [friendUid]);
+
+  return (
+    <View
+      style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
+    >
+      <View style={s.avatarContainer}>
+        <Avatar
+          uri={friend.photoURL}
+          fallback={require('../../assets/images/app-icon.png')}
+          style={s.rowAvatar}
+        />
+        {online && (
+          <View style={[s.onlineDot, { backgroundColor: colors.correct, borderColor: colors.card }]} />
+        )}
+      </View>
+      <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+        <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
+          {friend.name || t('common.guestName')}
+        </Text>
+      </View>
+      <View style={[s.actionRow, { flexDirection: rowDir(isRTL) }]}>
+        <PressScale
+          style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
+          onPress={() => onChallenge(friendUid, friend)}
+        >
+          <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
+          <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
+        </PressScale>
+      </View>
+    </View>
+  );
+}
 
 export default function FriendsScreen() {
   const { t } = useTranslation();
@@ -240,32 +296,18 @@ export default function FriendsScreen() {
           </View>
         ) : (
           friendEntries.map(([friendUid, friend]) => (
-            <View
+            <FriendRow
               key={friendUid}
-              style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
-            >
-              <Avatar
-                uri={friend.photoURL}
-                fallback={require('../../assets/images/app-icon.png')}
-                style={s.rowAvatar}
-              />
-              <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
-                  {friend.name || t('common.guestName')}
-                </Text>
-              </View>
-              <View style={[s.actionRow, { flexDirection: rowDir(isRTL) }]}>
-                <PressScale
-                  style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
-                  onPress={() => handleChallenge(friendUid, friend)}
-                >
-                  <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
-                  <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
-                </PressScale>
-              </View>
-            </View>
+              friendUid={friendUid}
+              friend={friend}
+              isRTL={isRTL}
+              colors={colors}
+              t={t}
+              onChallenge={handleChallenge}
+            />
           ))
         )}
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -378,6 +420,18 @@ const s = StyleSheet.create({
     padding: 12,
     alignItems: 'center',
     gap: 12,
+  },
+  avatarContainer: {
+    position: 'relative',
+  },
+  onlineDot: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    borderWidth: 2,
   },
   rowAvatar: {
     width: 40,
