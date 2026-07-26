@@ -7,7 +7,7 @@
 // do. The background is a stylized route + soft landmass tint, not literal
 // country borders — real coastline data is a lot of hand-drawn path points to
 // maintain for a feature this is (a progress indicator, not an atlas).
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Svg, { Polyline, Circle, Ellipse } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
