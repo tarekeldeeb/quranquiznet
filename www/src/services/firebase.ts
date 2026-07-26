@@ -20,7 +20,7 @@ import {
   onValue, onDisconnect, runTransaction, serverTimestamp, Database,
 } from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
-import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult } from './pvpService';
+import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult, MatchScopePart } from './pvpService';
 import { useProfileStore } from '../stores/profileStore';
 import { quizCodeOf } from '../models/quizCode';
 
@@ -830,4 +830,88 @@ export function watchFriends(
     cb((snap.val() as Record<string, FriendEntry>) ?? {});
   });
 }
+
+// ─── PvP Invites ─────────────────────────────────────────────────────────────
+
+export interface PvpInviteEntry {
+  ts?: number;
+  status: 'pending' | 'accepted';
+  level?: number;
+  scope?: MatchScopePart[];
+  fromName?: string;
+  fromPhotoURL?: string;
+  matchId?: string;
+}
+
+export async function sendPvpInvite(
+  recipientUid: string,
+  myUid: string,
+  myName: string,
+  myPhotoURL: string | undefined,
+  level: number,
+  scope: MatchScopePart[],
+): Promise<boolean> {
+  try {
+    const payload: Record<string, unknown> = {
+      ts: Date.now(),
+      status: 'pending',
+      level,
+      scope,
+      fromName: myName,
+    };
+    if (myPhotoURL) payload.fromPhotoURL = myPhotoURL;
+    await set(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${myUid}`), payload);
+    return true;
+  } catch (e) {
+    console.error('sendPvpInvite error:', e);
+    return false;
+  }
+}
+
+export function watchPvpInvite(
+  recipientUid: string,
+  fromUid: string,
+  cb: (invite: PvpInviteEntry | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`), (snap) => {
+    cb((snap.val() as PvpInviteEntry | null) ?? null);
+  });
+}
+
+export function watchIncomingPvpInvites(
+  myUid: string,
+  cb: (invites: Record<string, PvpInviteEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/pvp/invites/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, PvpInviteEntry>) ?? {});
+  });
+}
+
+export async function acceptPvpInvite(
+  recipientUid: string,
+  fromUid: string,
+  matchId: string,
+): Promise<boolean> {
+  try {
+    await set(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`), {
+      status: 'accepted',
+      matchId,
+    });
+    return true;
+  } catch (e) {
+    console.error('acceptPvpInvite error:', e);
+    return false;
+  }
+}
+
+export async function declinePvpInvite(recipientUid: string, fromUid: string): Promise<boolean> {
+  try {
+    await remove(ref(getFirebaseDb(), `/pvp/invites/${recipientUid}/${fromUid}`));
+    return true;
+  } catch (e) {
+    console.error('declinePvpInvite error:', e);
+    return false;
+  }
+}
+
 

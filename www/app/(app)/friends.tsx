@@ -8,7 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   registerQuizCode, watchFriendRequests, watchFriends, acceptFriendRequest,
-  declineFriendRequest, type FriendRequestEntry, type FriendEntry,
+  declineFriendRequest, sendPvpInvite, type FriendRequestEntry, type FriendEntry,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
@@ -17,12 +17,16 @@ import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
+import { scopeFromParts } from '../../src/services/pvpService';
+
 export default function FriendsScreen() {
   const { t } = useTranslation();
   const { isRTL } = useDirection();
   const { colors } = useTheme();
   const router = useRouter();
   const social = useProfileStore((s) => s.social);
+  const parts = useProfileStore((s) => s.parts);
+  const level = useProfileStore((s) => s.level);
 
   const [myCode, setMyCode] = useState<string | null>(null);
   const [inputCode, setInputCode] = useState('');
@@ -87,6 +91,22 @@ export default function FriendsScreen() {
   async function handleDecline(fromUid: string) {
     if (!social.uid) return;
     await declineFriendRequest(fromUid, social.uid);
+  }
+
+  async function handleChallenge(friendUid: string, friend: FriendEntry) {
+    if (!social.uid) return;
+    const scope = scopeFromParts(parts);
+    const myName = social.displayName || DEFAULT_GUEST_NAME;
+    await sendPvpInvite(friendUid, social.uid, myName, social.photoURL, level, scope);
+    router.push({
+      pathname: '/(app)/pvp-lobby',
+      params: {
+        recipientUid: friendUid,
+        role: 'challenger',
+        opponentName: friend.name ?? '',
+        opponentPhoto: friend.photoURL ?? '',
+      },
+    });
   }
 
   const requestEntries = Object.entries(requests);
@@ -233,6 +253,15 @@ export default function FriendsScreen() {
                 <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
                   {friend.name || t('common.guestName')}
                 </Text>
+              </View>
+              <View style={[s.actionRow, { flexDirection: rowDir(isRTL) }]}>
+                <PressScale
+                  style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
+                  onPress={() => handleChallenge(friendUid, friend)}
+                >
+                  <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
+                  <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
+                </PressScale>
               </View>
             </View>
           ))

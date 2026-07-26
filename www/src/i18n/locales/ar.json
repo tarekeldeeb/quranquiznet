@@ -468,6 +468,16 @@
     "resolving": "جارٍ التحقق من الرمز...",
     "errorOccurred": "حدث خطأ أثناء الإرسال",
     "back": "رجوع",
-    "goToFriends": "عرض الأصدقاء"
+    "goToFriends": "عرض الأصدقاء",
+    "challenge": "تحدٍ"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "تحدي صديق",
+    "waitingFor": "بانتظار قبول {{name}} للتحدي...",
+    "cancel": "إلغاء التحدي",
+    "bannerTitle": "تحدي مبارزة!",
+    "bannerMessage": "يتحداك {{name}} في مبارزة",
+    "accept": "قبول",
+    "decline": "رفض"
   }
 }

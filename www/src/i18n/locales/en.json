@@ -468,6 +468,16 @@
     "resolving": "Checking code...",
     "errorOccurred": "An error occurred while sending",
     "back": "Back",
-    "goToFriends": "View Friends"
+    "goToFriends": "View Friends",
+    "challenge": "Challenge"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Friend Duel",
+    "waitingFor": "Waiting for {{name}} to accept...",
+    "cancel": "Cancel Challenge",
+    "bannerTitle": "Duel Challenge!",
+    "bannerMessage": "{{name}} challenges you to a duel",
+    "accept": "Accept",
+    "decline": "Decline"
   }
 }

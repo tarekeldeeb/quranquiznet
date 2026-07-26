@@ -45,7 +45,16 @@
 	      },
 	      "result":  { ".write": "auth != null && !data.exists()" }
 	    }
-      }
+      },
+	  "invites": {
+	    "$uid": {
+	      ".read": "auth != null && auth.uid === $uid",
+	      "$fromUid": {
+	        ".read": "auth != null && (auth.uid === $uid || auth.uid === $fromUid)",
+	        ".write": "auth != null && (auth.uid === $fromUid || auth.uid === $uid) && (auth.uid !== $fromUid || root.child('friends').child($uid).child($fromUid).exists())"
+	      }
+	    }
+	  }
     },
 	"pushTokens": {
 	  "$uid": {

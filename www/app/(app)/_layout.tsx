@@ -1,15 +1,20 @@
 // Bottom-tab navigator — mirrors the side-menu in www/templates/menu.html
 import { Tabs, useRouter } from 'expo-router';
-import { useEffect } from 'react';
-import { Image, Text, View, StyleSheet, TouchableOpacity } from 'react-native';
+import { useEffect, useState } from 'react';
+import { Image, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
   onAuthChange, fetchRemoteProfile, pushProfile,
+  watchIncomingPvpInvites, acceptPvpInvite, declinePvpInvite, createPvpMatch, type PvpInviteEntry,
 } from '../../src/services/firebase';
+import {
+  scopeFromParts, commonLevel, intersectScope, newMatchSeed, PVP_ROUNDS, type PvpMatchMeta,
+} from '../../src/services/pvpService';
+import { Avatar } from '../../src/components/Avatar';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Ionicons } from '@expo/vector-icons';
-import { useTheme } from '../../src/theme/tokens';
+import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 
@@ -130,6 +135,66 @@ export default function AppLayout() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const [pendingInvite, setPendingInvite] = useState<{ fromUid: string; invite: PvpInviteEntry } | null>(null);
+
+  useEffect(() => {
+    const uid = profile.social.uid;
+    if (!uid) {
+      setPendingInvite(null);
+      return;
+    }
+    const unsub = watchIncomingPvpInvites(uid, (invites) => {
+      const pending = Object.entries(invites).find(([_, inv]) => inv?.status === 'pending');
+      if (pending) {
+        setPendingInvite({ fromUid: pending[0], invite: pending[1] });
+      } else {
+        setPendingInvite(null);
+      }
+    });
+    return unsub;
+  }, [profile.social.uid]);
+
+  async function handleAcceptInvite() {
+    if (!pendingInvite || !profile.social.uid) return;
+    const { fromUid, invite } = pendingInvite;
+    setPendingInvite(null);
+
+    const myUid = profile.social.uid;
+    const level = commonLevel(profile.level, invite.level ?? 1);
+    const scope = intersectScope(scopeFromParts(profile.parts), invite.scope ?? []);
+    const seed = newMatchSeed();
+    const meta: PvpMatchMeta = {
+      seed,
+      level,
+      scope,
+      rounds: PVP_ROUNDS,
+      createdAt: Date.now(),
+      creator: myUid,
+    };
+    const matchId = `${fromUid}_${myUid}_${Date.now()}`;
+
+    await createPvpMatch(matchId, meta);
+    await acceptPvpInvite(myUid, fromUid, matchId);
+
+    router.push({
+      pathname: '/(app)/pvp',
+      params: {
+        matchId,
+        opponentUid: fromUid,
+        opponentName: invite.fromName ?? '',
+        opponentPhoto: invite.fromPhotoURL ?? '',
+        nonce: String(Date.now()),
+      },
+    });
+  }
+
+  async function handleDeclineInvite() {
+    if (!pendingInvite || !profile.social.uid) return;
+    const { fromUid } = pendingInvite;
+    setPendingInvite(null);
+    await declinePvpInvite(profile.social.uid, fromUid);
+  }
+
   const leagueTab = (
     <Tabs.Screen
       key="league"
@@ -168,7 +233,8 @@ export default function AppLayout() {
   );
 
   return (
-    <Tabs
+    <>
+      <Tabs
       screenOptions={{
         headerStyle: { backgroundColor: colors.navy },
         headerTintColor: '#fff',
@@ -193,6 +259,7 @@ export default function AppLayout() {
       {isRTL ? [leagueTab, quizTab, meTab] : [meTab, quizTab, leagueTab]}
       {/* PvP match + the progression map — reached from the Me screen, not the tab bar */}
       <Tabs.Screen name="pvp"      options={{ href: null }} />
+      <Tabs.Screen name="pvp-lobby" options={{ href: null, headerShown: false }} />
       {/* map.tsx renders its own in-page header (title + active-count badge) */}
       <Tabs.Screen name="map"      options={{ href: null, headerShown: false }} />
       {/* pvp-journey.tsx renders its own in-page header, same as map.tsx */}
@@ -202,6 +269,49 @@ export default function AppLayout() {
       <Tabs.Screen name="home"     options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>
+
+    {pendingInvite && (
+      <Modal
+        visible={true}
+        transparent
+        animationType="fade"
+        onRequestClose={handleDeclineInvite}
+      >
+        <View style={s.modalOverlay}>
+          <View style={[s.modalCard, { backgroundColor: colors.card, borderColor: colors.line }]}>
+            <Avatar
+              uri={pendingInvite.invite.fromPhotoURL}
+              fallback={appIcon}
+              style={s.modalAvatar}
+            />
+            <Text style={[s.modalTitle, { color: colors.ink }]}>
+              {t('pvpInvite.bannerTitle')}
+            </Text>
+            <Text style={[s.modalMessage, { color: colors.inkSoft }]}>
+              {t('pvpInvite.bannerMessage', { name: pendingInvite.invite.fromName || t('common.guestName') })}
+            </Text>
+
+            <View style={[s.modalActions, { flexDirection: rowDir(isRTL) }]}>
+              <PressScale
+                style={[s.modalBtn, { backgroundColor: colors.correct }]}
+                onPress={handleAcceptInvite}
+              >
+                <Ionicons name="checkmark" size={18} color="#fff" />
+                <Text style={s.modalBtnTxt}>{t('pvpInvite.accept')}</Text>
+              </PressScale>
+              <PressScale
+                style={[s.modalBtn, { backgroundColor: colors.wrongPale }]}
+                onPress={handleDeclineInvite}
+              >
+                <Ionicons name="close" size={18} color={colors.wrong} />
+                <Text style={[s.modalBtnTxt, { color: colors.wrong }]}>{t('pvpInvite.decline')}</Text>
+              </PressScale>
+            </View>
+          </View>
+        </View>
+      </Modal>
+    )}
+    </>
   );
 }
 
@@ -244,5 +354,55 @@ const s = StyleSheet.create({
     fontSize: 11,
     fontFamily: 'PlexArabic-Bold',
     marginTop: 2,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  modalCard: {
+    width: '100%',
+    maxWidth: 340,
+    borderRadius: radii.lg,
+    borderWidth: 1,
+    padding: 24,
+    alignItems: 'center',
+    gap: 12,
+  },
+  modalAvatar: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontFamily: 'PlexArabic-Bold',
+  },
+  modalMessage: {
+    fontSize: 14,
+    fontFamily: 'PlexArabic-Regular',
+    textAlign: 'center',
+  },
+  modalActions: {
+    gap: 12,
+    marginTop: 8,
+    width: '100%',
+    justifyContent: 'center',
+  },
+  modalBtn: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 10,
+    borderRadius: radii.pill,
+  },
+  modalBtnTxt: {
+    color: '#fff',
+    fontSize: 14,
+    fontFamily: 'PlexArabic-Bold',
   },
 });
