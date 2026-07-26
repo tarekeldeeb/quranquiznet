@@ -257,10 +257,10 @@
     }
   },
   "pvpJourney": {
-    "title": "رحلة المبارزات",
+    "title": "رحلة المبارزة",
     "pointsGained": "+{{count}} نقطة",
-    "toNextCity": "{{count}} نقطة إلى {{cityName}}",
-    "complete": "بلغت مراكش! أتممت الرحلة 🏁",
+    "toNextCity": "{{count}} نقطة تفصلك عن {{cityName}}",
+    "complete": "وصلت إلى مراكش! أكملت رحلتك 🏁",
     "here": "أنت هنا",
     "city": {
       "jakarta": "جاكرتا",
