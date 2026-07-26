@@ -22,6 +22,7 @@ import {
 import type { SocialKind } from './nativeOAuth';
 import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult } from './pvpService';
 import { useProfileStore } from '../stores/profileStore';
+import { quizCodeOf } from '../models/quizCode';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
 // values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
@@ -686,3 +687,147 @@ export async function writePvpResult(matchId: string, result: PvpMatchResult): P
 export function watchPvpResult(matchId: string, cb: (result: PvpMatchResult | null) => void): () => void {
   return onValue(pvpMatchResultRef(matchId), (snap) => cb(snap.val() as PvpMatchResult | null));
 }
+
+// ─── Quiz Codes & Friends ───────────────────────────────────────────────────
+
+export interface FriendRequestEntry {
+  ts: number;
+  fromName: string;
+  fromPhotoURL?: string;
+}
+
+export interface FriendEntry {
+  since: number;
+  name?: string;
+  photoURL?: string;
+}
+
+/**
+ * Computes and registers a deterministic Quiz Code for a signed-in profile.
+ * Performs a best-effort write to `/quizCodes/{code}`.
+ */
+export async function registerQuizCode(uid: string): Promise<string> {
+  const code = quizCodeOf(uid);
+  try {
+    await set(ref(getFirebaseDb(), `/quizCodes/${code}`), uid);
+  } catch (e) {
+    console.error('registerQuizCode error:', e);
+  }
+  return code;
+}
+
+/**
+ * Resolves a Quiz Code to a target user UID. Returns null if not found.
+ */
+export async function resolveQuizCode(code: string): Promise<string | null> {
+  try {
+    const snap = await dbGet(ref(getFirebaseDb(), `/quizCodes/${code.toUpperCase()}`));
+    return (snap.val() as string) ?? null;
+  } catch (e) {
+    console.error('resolveQuizCode error:', e);
+    return null;
+  }
+}
+
+/**
+ * Writes a friend request to `/friendRequests/{targetUid}/{myUid}` using
+ * my own profile display fields.
+ */
+export async function sendFriendRequest(
+  targetUid: string,
+  myUid: string,
+  fromName: string,
+  fromPhotoURL?: string,
+): Promise<boolean> {
+  try {
+    const payload: Record<string, unknown> = {
+      ts: Date.now(),
+      fromName,
+    };
+    if (fromPhotoURL) payload.fromPhotoURL = fromPhotoURL;
+    await set(ref(getFirebaseDb(), `/friendRequests/${targetUid}/${myUid}`), payload);
+    return true;
+  } catch (e) {
+    console.error('sendFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Listens for incoming friend requests at `/friendRequests/{myUid}`.
+ */
+export function watchFriendRequests(
+  myUid: string,
+  cb: (requests: Record<string, FriendRequestEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/friendRequests/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, FriendRequestEntry>) ?? {});
+  });
+}
+
+/**
+ * Accepts an incoming friend request from `fromUid`.
+ *
+ * CRITICAL WRITE ORDER REQUIRED BY RTDB RULES:
+ * (a) write /friends/{fromUid}/{myUid} FIRST (their side of mirror; only writable while pending request exists)
+ * (b) write /friends/{myUid}/{fromUid} (my own side)
+ * (c) remove /friendRequests/{myUid}/{fromUid}
+ */
+export async function acceptFriendRequest(
+  fromUid: string,
+  myUid: string,
+  myName: string,
+  myPhotoURL?: string,
+  fromName?: string,
+  fromPhotoURL?: string,
+): Promise<boolean> {
+  try {
+    const dbInstance = getFirebaseDb();
+    const now = Date.now();
+
+    // (a) Write to /friends/{fromUid}/{myUid} FIRST
+    const targetFriendPayload: Record<string, unknown> = { since: now, name: myName };
+    if (myPhotoURL) targetFriendPayload.photoURL = myPhotoURL;
+    await set(ref(dbInstance, `/friends/${fromUid}/${myUid}`), targetFriendPayload);
+
+    // (b) Write to /friends/{myUid}/{fromUid}
+    const myFriendPayload: Record<string, unknown> = { since: now };
+    if (fromName) myFriendPayload.name = fromName;
+    if (fromPhotoURL) myFriendPayload.photoURL = fromPhotoURL;
+    await set(ref(dbInstance, `/friends/${myUid}/${fromUid}`), myFriendPayload);
+
+    // (c) Remove /friendRequests/{myUid}/{fromUid}
+    await remove(ref(dbInstance, `/friendRequests/${myUid}/${fromUid}`));
+
+    return true;
+  } catch (e) {
+    console.error('acceptFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Declines an incoming friend request by removing `/friendRequests/{myUid}/{fromUid}`.
+ */
+export async function declineFriendRequest(fromUid: string, myUid: string): Promise<boolean> {
+  try {
+    await remove(ref(getFirebaseDb(), `/friendRequests/${myUid}/${fromUid}`));
+    return true;
+  } catch (e) {
+    console.error('declineFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Listens for active friends at `/friends/{myUid}`.
+ */
+export function watchFriends(
+  myUid: string,
+  cb: (friends: Record<string, FriendEntry>) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/friends/${myUid}`), (snap) => {
+    cb((snap.val() as Record<string, FriendEntry>) ?? {});
+  });
+}
+

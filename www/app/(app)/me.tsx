@@ -534,6 +534,14 @@ export default function MeScreen() {
             <Ionicons name="flame" size={16} color={colors.goldDeep} />
             <Text style={[s.streakTxt, { color: colors.goldDeep }]}>{localeNum(profile.streak, lang)}</Text>
           </PressScale>
+          <PressScale
+            style={[s.friendsBadge, { backgroundColor: colors.goldPale, borderColor: colors.gold }]}
+            onPress={() => router.push('/(app)/friends')}
+            accessibilityRole="button"
+            accessibilityLabel={t('friends.title')}
+          >
+            <Ionicons name="people" size={16} color={colors.goldDeep} />
+          </PressScale>
         </View>
 
         {/* ── Give the score a destination: badge + rank title + progress to
@@ -785,6 +793,14 @@ const s = StyleSheet.create({
     borderWidth: 1,
   },
   streakTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold' },
+  friendsBadge: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+  },
 
   // Bento primitives
   bentoFull: { borderRadius: radii.lg, ...CARD_SHADOW },

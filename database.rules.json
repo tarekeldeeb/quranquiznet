@@ -51,6 +51,28 @@
 	  "$uid": {
 	    ".write": "auth != null && auth.uid === $uid"
 	  }
+	},
+	"quizCodes": {
+	  "$code": {
+	    ".read": "auth != null",
+	    ".write": "auth != null && newData.val() === auth.uid && (!data.exists() || data.val() === auth.uid)"
+	  }
+	},
+	"friendRequests": {
+	  "$uid": {
+	    "$fromUid": {
+	      ".read": "auth != null && auth.uid === $uid",
+	      ".write": "auth != null && (auth.uid === $fromUid || auth.uid === $uid)"
+	    }
+	  }
+	},
+	"friends": {
+	  "$uid": {
+	    "$friendUid": {
+	      ".read": "auth != null && auth.uid === $uid",
+	      ".write": "auth != null && (auth.uid === $uid || (auth.uid === $friendUid && root.child('friendRequests').child($friendUid).child($uid).exists()))"
+	    }
+	  }
 	}
   }
 }

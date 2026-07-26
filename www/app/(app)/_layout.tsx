@@ -197,6 +197,8 @@ export default function AppLayout() {
       <Tabs.Screen name="map"      options={{ href: null, headerShown: false }} />
       {/* pvp-journey.tsx renders its own in-page header, same as map.tsx */}
       <Tabs.Screen name="pvp-journey" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="add/[code]" options={{ href: null, headerShown: false }} />
+      <Tabs.Screen name="friends"    options={{ href: null, headerShown: false }} />
       <Tabs.Screen name="home"     options={{ href: null }} />
       <Tabs.Screen name="settings" options={{ href: null }} />
     </Tabs>

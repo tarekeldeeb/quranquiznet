@@ -443,5 +443,31 @@
       "text": "Advanced Level",
       "comment": "More than one correct answer, and increases your score by 30"
     }
+  },
+  "friends": {
+    "title": "Friends",
+    "myCodeTitle": "Your Quiz Code",
+    "shareBtn": "Share Code",
+    "shareMessage": "Add me on Quran Quiz Net! My Quiz Code is: {{code}}\nhttps://quranquiz.net",
+    "addFriendTitle": "Add Friend by Quiz Code",
+    "placeholderCode": "Enter code (e.g. ABCD1234)",
+    "addBtn": "Add",
+    "incomingRequests": "Incoming Friend Requests",
+    "noRequests": "No pending friend requests",
+    "accept": "Accept",
+    "decline": "Decline",
+    "friendList": "Friends List",
+    "noFriends": "No friends added yet. Share your code or add a friend with theirs!",
+    "invalidCode": "Invalid Quiz Code",
+    "invalidCodeSub": "Please check the code and try again.",
+    "selfCode": "That's your own Quiz Code!",
+    "selfCodeSub": "Share this code with your friends so they can add you.",
+    "requestSent": "Friend Request Sent!",
+    "requestSentSub": "Your request will appear in your friend's inbox to accept.",
+    "sending": "Sending...",
+    "resolving": "Checking code...",
+    "errorOccurred": "An error occurred while sending",
+    "back": "Back",
+    "goToFriends": "View Friends"
   }
 }
