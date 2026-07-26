@@ -12,9 +12,11 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 
 import { useTranslation } from 'react-i18next';
-import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
+import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import QuizCard, { CardData } from '../../src/components/QuizCard';
+import PressScale from '../../src/components/PressScale';
 import { useProfileStore } from '../../src/stores/profileStore';
+import { getPvpTierInfo, cityName as pvpCityName } from '../../src/models/pvpTiers';
 import * as QS from '../../src/services/questionnaireService';
 import * as FB from '../../src/services/firebase';
 import { trackEvent } from '../../src/services/analytics';
@@ -35,6 +37,10 @@ import { useTheme, ThemeColors } from '../../src/theme/tokens';
 import { playCorrectSound, playIncorrectSound } from '../../src/services/sound';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
+
+const TIER_EMOJI: Record<string, string> = {
+  bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎', hafizGold: '🏆',
+};
 
 type Phase = 'idle' | 'searching' | 'countdown' | 'playing' | 'done';
 type OpponentIdentity = { name: string; photoURL?: string; country?: string };
@@ -146,6 +152,10 @@ export default function PvpScreen() {
   const opponentSeenRef = useRef(false);
   const myFinishedRef = useRef(false);
   const resultHandledRef = useRef(false);
+  // journey-map points snapshot at match start, so the result modal can show
+  // "+N points" — addPvpResult() has already mutated profile.pvp by the time
+  // the modal renders, so the delta has to be captured before that happens.
+  const pointsBeforeRef = useRef(0);
 
   function setOpponentKind(kind: 'bot' | 'human') {
     opponentKindRef.current = kind;
@@ -245,6 +255,7 @@ export default function PvpScreen() {
     opponentSeenRef.current = false;
     myFinishedRef.current = false;
     resultHandledRef.current = false;
+    pointsBeforeRef.current = profile.pvp.points;
     profile.recordPlay();
 
     startSearch();
@@ -923,6 +934,26 @@ export default function PvpScreen() {
               </View>
             </View>
             <Text style={[s.resultSub, { color: colors.inkSoft }]}>{outcomeSub}</Text>
+            {outcome !== null && (() => {
+              const tierInfo = getPvpTierInfo(profile.pvp.points);
+              const pointsGained = outcome === 'win' ? profile.pvp.points - pointsBeforeRef.current : 0;
+              const nextCityLabel = tierInfo.nextCity ? pvpCityName(tierInfo.nextCity.id) : null;
+              return (
+                <PressScale
+                  style={[s.journeyStrip, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}
+                  onPress={() => { setOutcome(null); router.push('/(app)/pvp-journey'); }}
+                >
+                  <Text style={s.journeyEmoji}>{TIER_EMOJI[tierInfo.tier]}</Text>
+                  <Text style={[s.journeyTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]} numberOfLines={1}>
+                    {pointsGained > 0 ? t('pvpJourney.pointsGained', { count: pointsGained }) + ' · ' : ''}
+                    {tierInfo.journeyComplete || !nextCityLabel
+                      ? t('pvpJourney.complete')
+                      : t('pvpJourney.toNextCity', { count: tierInfo.pointsToNextCity, cityName: nextCityLabel })}
+                  </Text>
+                  <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.goldDeep} />
+                </PressScale>
+              );
+            })()}
             <TouchableOpacity style={[s.rematchBtn, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={() => { setOutcome(null); startMatch(); }}>
               <Ionicons name="refresh" size={18} color="#fff" />
               <Text style={s.rematchTxt}>{t('pvp.rematch')}</Text>
@@ -1037,6 +1068,13 @@ const s = StyleSheet.create({
   resultNum: { fontSize: 34, fontWeight: '800' },
   resultDash: { fontSize: 20 },
   resultSub: { fontSize: 13, textAlign: 'center', marginBottom: 16 },
+  journeyStrip: {
+    alignItems: 'center', gap: 8,
+    paddingVertical: 10, paddingHorizontal: 12,
+    borderRadius: 10, marginBottom: 14,
+  },
+  journeyEmoji: { fontSize: 18 },
+  journeyTxt: { flex: 1, fontSize: 12.5, fontWeight: '700' },
   rematchBtn: {
     alignItems: 'center', justifyContent: 'center', gap: 8,
     paddingVertical: 13, borderRadius: 12,

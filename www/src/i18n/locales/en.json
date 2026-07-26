@@ -236,7 +236,43 @@
       "drawSub": "An even match! Another round will decide the outcome."
     },
     "rematch": "New Round",
-    "home": "Home"
+    "home": "Home",
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Silver",
+      "gold": "Gold",
+      "platinum": "Platinum",
+      "hafizGold": "Hafiz Gold"
+    }
+  },
+  "pvpJourney": {
+    "title": "PvP Journey",
+    "pointsGained": "+{{count}} points",
+    "toNextCity": "{{count}} points to {{cityName}}",
+    "complete": "You've reached Marrakech! Journey complete 🏁",
+    "here": "You're here",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Baghdad",
+      "mecca": "Mecca",
+      "medina": "Medina",
+      "damascus": "Damascus",
+      "jerusalem": "Jerusalem",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Cairo",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Algiers",
+      "marrakech": "Marrakech"
+    }
   },
   "league": {
     "title": "Leaderboard",
