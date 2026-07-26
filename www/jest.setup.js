@@ -40,3 +40,14 @@ jest.mock('expo-audio', () => ({
 jest.mock('expo-localization', () => ({
   getLocales: () => [{ languageCode: 'ar', languageTag: 'ar-SA', textDirection: 'rtl' }],
 }));
+
+// @react-native-firebase/analytics's native module isn't available in the Jest
+// environment either (src/services/analytics.ts uses it for GA4 event/screen
+// tracking on iOS/Android) — stub just the modular API surface actually used.
+jest.mock('@react-native-firebase/analytics', () => ({
+  getAnalytics: jest.fn(() => ({})),
+  logEvent: jest.fn().mockResolvedValue(undefined),
+  logScreenView: jest.fn().mockResolvedValue(undefined),
+  setAnalyticsCollectionEnabled: jest.fn().mockResolvedValue(undefined),
+  setConsent: jest.fn().mockResolvedValue(undefined),
+}));

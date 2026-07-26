@@ -12,6 +12,7 @@
       "bundleIdentifier": "net.quranquiz",
       "buildNumber": "8",
       "appleTeamId": "FNSP52WBLF",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -22,7 +23,8 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 14
+      "versionCode": 14,
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -33,6 +35,8 @@
       "expo-router",
       "expo-apple-authentication",
       "expo-localization",
+      "@react-native-firebase/app",
+      "@react-native-firebase/analytics",
       [
         "expo-font",
         {
@@ -61,6 +65,9 @@
             "compileSdkVersion": 36,
             "targetSdkVersion": 36,
             "ndkVersion": "28.2.13676358"
+          },
+          "ios": {
+            "useFrameworks": "static"
           }
         }
       ],
