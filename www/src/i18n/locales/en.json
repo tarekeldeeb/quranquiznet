@@ -458,7 +458,7 @@
     "title": "Friends",
     "myCodeTitle": "Your Quiz Code",
     "shareBtn": "Share Code",
-    "shareMessage": "Add me on Quran Quiz Net! My Quiz Code is: {{code}}\nhttps://quranquiz.net",
+    "shareMessage": "Add me on Quran Quiz Net! Tap the link to add me instantly:\n{{link}}",
     "addFriendTitle": "Add Friend by Quiz Code",
     "placeholderCode": "Enter code (e.g. ABCD1234)",
     "addBtn": "Add",

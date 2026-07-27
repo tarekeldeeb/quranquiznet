@@ -123,10 +123,14 @@ export default function FriendsScreen() {
 
   async function handleShareCode() {
     if (!myCode) return;
+    // A real link (not just the bare code as text) so tapping it on the
+    // recipient's end resolves and sends the request automatically — see
+    // (app)/add/[code].tsx, which this path already routes to.
+    const link = `https://quranquiz.net/add/${myCode}`;
     try {
       await Share.share({
-        message: t('friends.shareMessage', { code: myCode }),
-        url: 'https://quranquiz.net',
+        message: t('friends.shareMessage', { code: myCode, link }),
+        url: link,
       });
     } catch { /* ignore */ }
   }

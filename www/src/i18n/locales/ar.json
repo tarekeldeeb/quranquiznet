@@ -458,7 +458,7 @@
     "title": "الأصدقاء",
     "myCodeTitle": "رمز الاختبار الخاص بك",
     "shareBtn": "مشاركة الرمز",
-    "shareMessage": "أضفني على شبكة اختبار القرآن! رمز الاختبار الخاص بي: {{code}}\nhttps://quranquiz.net",
+    "shareMessage": "أضفني على شبكة اختبار القرآن! اضغط على الرابط لإضافتي مباشرة:\n{{link}}",
     "addFriendTitle": "إضافة صديق برمز الاختبار",
     "placeholderCode": "أدخل الرمز (مثال: ABCD1234)",
     "addBtn": "إضافة",
