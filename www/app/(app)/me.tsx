@@ -19,7 +19,7 @@ import { Avatar } from '../../src/components/Avatar';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
-import { getPvpTierInfo } from '../../src/models/pvpTiers';
+import { getPvpTierInfo, PVP_TIER_COLOR } from '../../src/models/pvpTiers';
 import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -475,43 +475,8 @@ export default function MeScreen() {
 
   const avatarUri = social.photoURL && !avatarError ? social.photoURL : undefined;
 
-  // "Ways to play" — quick play + PvP as a 2-up row, with the weak-sura nudge
-  // folded in as a third option, instead of three competing full-width blocks.
-  const waysToPlay = (
-    <View style={s.waysWrap}>
-      <View style={[s.waysRow, { flexDirection: rowDir(isRTL) }]}>
-        <PressScale
-          style={[s.wayTile, { backgroundColor: colors.navy }]}
-          onPress={() => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } })}
-        >
-          <Ionicons name="play" size={22} color="#fff" />
-          <Text style={s.wayTileTxt}>{t('quiz.startQuiz')}</Text>
-        </PressScale>
-        <PressScale
-          style={[s.wayTile, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold }]}
-          onPress={() => router.push('/(app)/pvp')}
-        >
-          <Ionicons name="flash" size={22} color={colors.goldDeep} />
-          <Text style={[s.wayTileTxt, { color: colors.goldDeep }]}>{t('pvp.idleTitle')}</Text>
-          {pvpTotal > 0 && (
-            <View style={[s.wayBadge, { backgroundColor: colors.goldPale, [isRTL ? 'left' : 'right']: 8 }]}>
-              <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{t('me.pvpWinsBadge', { count: localeNum(profile.pvp.wins, lang) })}</Text>
-            </View>
-          )}
-        </PressScale>
-      </View>
-      {weakPartIndex >= 0 && (
-        <PressScale
-          style={[s.wayNudge, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}
-          onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
-        >
-          <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.goldDeep} />
-          <Text style={[s.wayNudgeTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{t('me.weakSuraNudge', { sura: translatePartName(weakSura) })}</Text>
-          <Ionicons name="warning" size={15} color={colors.goldDeep} />
-        </PressScale>
-      )}
-    </View>
-  );
+  const startQuiz = () => router.push({ pathname: '/(app)/quiz', params: { chooser: '1', nonce: String(Date.now()) } });
+  const startPvp = () => router.push('/(app)/pvp');
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
@@ -563,12 +528,14 @@ export default function MeScreen() {
           </PressScale>
         </View>
 
-        {/* ── Give the score a destination: badge + rank title + progress to
-            next rank — tap opens the full ladder (all ranks + how to reach
-            each one). Same badge icon set as the ladder sheet, so the current
-            rank reads as one continuous idea between the two. ── */}
-        <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => setRankSheetOpen(true)}>
-          <View style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]}>
+        {/* ── Study rank section: a heading names the system, the bar shows
+            where the score sits (tap opens the full ladder), and the action
+            row is the one thing that actually moves this specific bar —
+            answering quiz questions — so the driving action sits right under
+            the progress it drives instead of in a separate generic row. ── */}
+        <View style={[s.bentoFull, s.progressSection, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('me.rankSheet.title')}</Text>
+          <PressScale style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]} onPress={() => setRankSheetOpen(true)}>
             <View style={[s.rankBadgeSmall, { backgroundColor: colors.gold }]}>
               <Ionicons name={RANK_ICONS[rank.index]} size={18} color={colors.navy} />
             </View>
@@ -588,14 +555,30 @@ export default function MeScreen() {
                 <View style={[s.rankFill, { width: `${rank.progress * 100}%`, backgroundColor: colors.gold, [isRTL ? 'right' : 'left']: 0 }]} />
               </View>
             </View>
-          </View>
-        </PressScale>
+          </PressScale>
+          <PressScale style={[s.sectionActionBtn, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={startQuiz}>
+            <Ionicons name="play" size={18} color="#fff" />
+            <Text style={s.sectionActionTxt}>{t('quiz.startQuiz')}</Text>
+          </PressScale>
+          {weakPartIndex >= 0 && (
+            <PressScale
+              style={[s.wayNudge, { backgroundColor: colors.goldPale, flexDirection: rowDir(isRTL) }]}
+              onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(weakPartIndex), nonce: String(Date.now()) } })}
+            >
+              <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={16} color={colors.goldDeep} />
+              <Text style={[s.wayNudgeTxt, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{t('me.weakSuraNudge', { sura: translatePartName(weakSura) })}</Text>
+              <Ionicons name="warning" size={15} color={colors.goldDeep} />
+            </PressScale>
+          )}
+        </View>
 
-        {/* ── PvP journey: the world-map counterpart of the rank card above —
-            city name + tier badge instead of a score title, tap opens the
-            full-screen map instead of a sheet (a map deserves the room). ── */}
-        <PressScale style={[s.bentoFull, s.rankCard, { backgroundColor: colors.card }]} onPress={() => router.push('/(app)/pvp-journey')}>
-          <View style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]}>
+        {/* ── PvP journey section: same shape as the study section above, but
+            its own tier color (not the shared rank gold) and its own action
+            — starting a live 1v1 match, the only thing that moves this bar —
+            so the two sections read as separate systems instead of twins. ── */}
+        <View style={[s.bentoFull, s.progressSection, { backgroundColor: colors.card }]}>
+          <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('pvpJourney.title')}</Text>
+          <PressScale style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/pvp-journey')}>
             <View style={[s.rankBadgeSmall, { backgroundColor: colors.goldPale }]}>
               <Text style={{ fontSize: 18 }}>{TIER_EMOJI[pvpTier.tier]}</Text>
             </View>
@@ -610,11 +593,23 @@ export default function MeScreen() {
                 </Text>
               </View>
               <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
-                <View style={[s.rankFill, { width: `${pvpTier.progress * 100}%`, backgroundColor: colors.gold, [isRTL ? 'right' : 'left']: 0 }]} />
+                <View style={[s.rankFill, { width: `${pvpTier.progress * 100}%`, backgroundColor: PVP_TIER_COLOR[pvpTier.tier], [isRTL ? 'right' : 'left']: 0 }]} />
               </View>
             </View>
-          </View>
-        </PressScale>
+          </PressScale>
+          <PressScale
+            style={[s.sectionActionBtn, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold, flexDirection: rowDir(isRTL) }]}
+            onPress={startPvp}
+          >
+            <Ionicons name="flash" size={18} color={colors.goldDeep} />
+            <Text style={[s.sectionActionTxt, { color: colors.goldDeep }]}>{t('pvp.idleTitle')}</Text>
+            {pvpTotal > 0 && (
+              <View style={[s.sectionBadge, { backgroundColor: colors.goldPale }]}>
+                <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{t('me.pvpWinsBadge', { count: localeNum(profile.pvp.wins, lang) })}</Text>
+              </View>
+            )}
+          </PressScale>
+        </View>
 
         {/* ── One hero at a time: the daily card until completed ── */}
         {dailyHead === 'loading' ? (
@@ -656,9 +651,6 @@ export default function MeScreen() {
             </View>
           </View>
         )}
-
-        {/* ── Ways to play — promoted once the daily is done, present either way ── */}
-        {waysToPlay}
 
         {/* ── BENTO: 2× progress ring tiles + sparkline ── */}
         <View style={[s.bentoRow, { flexDirection: rowDir(isRTL) }]}>
@@ -826,8 +818,10 @@ const s = StyleSheet.create({
   bentoRow: { gap: 12 },
   bentoHalf: { flex: 1, borderRadius: radii.lg, ...CARD_SHADOW },
 
-  // Rank card
-  rankCard: { padding: 14 },
+  // Progress section wrapper — pairs a labeled progress bar with the one
+  // action that actually drives it (study rank / PvP journey each get one).
+  progressSection: { padding: 14, gap: 12 },
+  sectionLabel: { fontSize: 12, fontFamily: 'PlexArabic-Bold' },
   rankHeaderRow: { alignItems: 'flex-start', gap: 10 },
   rankBadgeSmall: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   rankColumn: { flex: 1, gap: 8 },
@@ -878,19 +872,13 @@ const s = StyleSheet.create({
   dailyUnavailTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
   dailyUnavailSub: { fontSize: 12, marginTop: 2 },
 
-  // Ways to play
-  waysWrap: { gap: 8 },
-  waysRow: { gap: 10 },
-  wayTile: {
-    flex: 1,
-    borderRadius: radii.lg,
-    paddingVertical: 18,
-    alignItems: 'center',
-    gap: 6,
-    ...CARD_SHADOW,
+  // Progress section action row (the "driving action" paired with each bar)
+  sectionActionBtn: {
+    alignItems: 'center', justifyContent: 'center', gap: 8,
+    paddingVertical: 12, borderRadius: radii.md,
   },
-  wayTileTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold', color: '#fff' },
-  wayBadge: { position: 'absolute', top: 8, paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
+  sectionActionTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold', color: '#fff' },
+  sectionBadge: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
   wayBadgeTxt: { fontSize: 10, fontFamily: 'PlexArabic-Bold' },
   wayNudge: {
     alignItems: 'center', gap: 6, padding: 10, borderRadius: radii.md,
