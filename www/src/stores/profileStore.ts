@@ -731,11 +731,13 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   // Enabled (checked) study parts only, ordered worst-quality first (lowest
   // correct ratio), capped to `limit`. Drives the quiz chooser so the user is
   // nudged toward the suras that most need review. Unattempted parts (ratio 0)
-  // sort to the top as "needs practice".
+  // sort to the top as "needs practice". Index 0 (Al-Fatiha, see
+  // makeDefaultParts) is always excluded — it's too short to make a good
+  // review quiz.
   getWeakCheckedParts(limit: number) {
     return get().parts
       .map((p, index) => ({ index, name: p.name, checked: p.checked, ratio: getCorrectRatio(p) }))
-      .filter((o) => o.checked)
+      .filter((o) => o.checked && o.index !== 0)
       .sort((a, b) => a.ratio - b.ratio)
       .slice(0, limit)
       .map(({ index, name }) => ({ index, name }));

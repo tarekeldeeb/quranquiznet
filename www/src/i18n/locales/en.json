@@ -257,7 +257,7 @@
     }
   },
   "pvpJourney": {
-    "title": "PvP Journey",
+    "title": "Competition Journey",
     "pointsGained": "+{{count}} points",
     "toNextCity": "{{count}} points to {{cityName}}",
     "complete": "You've reached Marrakech! Journey complete 🏁",
@@ -283,6 +283,37 @@
       "tunis": "Tunis",
       "algiers": "Algiers",
       "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "Founded",
+      "population": "Country Population",
+      "muslimPopulation": "Muslim population",
+      "muslimPercent": "% Muslim",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} BCE",
+      "million": "{{value}}M",
+      "thousand": "{{value}}K"
+    },
+    "country": {
+      "indonesia": "Indonesia",
+      "malaysia": "Malaysia",
+      "bangladesh": "Bangladesh",
+      "india": "India",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afghanistan",
+      "uzbekistan": "Uzbekistan",
+      "iran": "Iran",
+      "iraq": "Iraq",
+      "saudiArabia": "Saudi Arabia",
+      "syria": "Syria",
+      "palestine": "Palestine",
+      "turkey": "Turkey",
+      "bosnia": "Bosnia and Herzegovina",
+      "egypt": "Egypt",
+      "libya": "Libya",
+      "tunisia": "Tunisia",
+      "algeria": "Algeria",
+      "morocco": "Morocco"
     }
   },
   "league": {

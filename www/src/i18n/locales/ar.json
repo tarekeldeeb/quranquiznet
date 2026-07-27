@@ -257,7 +257,7 @@
     }
   },
   "pvpJourney": {
-    "title": "رحلة المبارزة",
+    "title": "رحلة المنافسة",
     "pointsGained": "+{{count}} نقطة",
     "toNextCity": "{{count}} نقطة تفصلك عن {{cityName}}",
     "complete": "وصلت إلى مراكش! أكملت رحلتك 🏁",
@@ -283,6 +283,37 @@
       "tunis": "تونس",
       "algiers": "الجزائر",
       "marrakech": "مراكش"
+    },
+    "cityCard": {
+      "founded": "التأسيس",
+      "population": "عدد سكان الدولة",
+      "muslimPopulation": "عدد المسلمين",
+      "muslimPercent": "نسبة المسلمين",
+      "location": "{{city}}، {{country}}",
+      "bce": "{{value}} ق.م",
+      "million": "{{value}} مليون",
+      "thousand": "{{value}} ألف"
+    },
+    "country": {
+      "indonesia": "إندونيسيا",
+      "malaysia": "ماليزيا",
+      "bangladesh": "بنغلاديش",
+      "india": "الهند",
+      "pakistan": "باكستان",
+      "afghanistan": "أفغانستان",
+      "uzbekistan": "أوزبكستان",
+      "iran": "إيران",
+      "iraq": "العراق",
+      "saudiArabia": "السعودية",
+      "syria": "سوريا",
+      "palestine": "فلسطين",
+      "turkey": "تركيا",
+      "bosnia": "البوسنة والهرسك",
+      "egypt": "مصر",
+      "libya": "ليبيا",
+      "tunisia": "تونس",
+      "algeria": "الجزائر",
+      "morocco": "المغرب"
     }
   },
   "league": {

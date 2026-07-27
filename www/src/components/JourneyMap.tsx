@@ -9,13 +9,15 @@
 // still springs city-to-city within that panning layer, same "node-to-node"
 // approach as before (see pvpTiers.ts's CityDef comment) — no path-tracing.
 import { useEffect, useRef } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import Svg, { Polyline } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
+import { useTranslation } from 'react-i18next';
 import { Avatar } from './Avatar';
 import {
   CITIES, JOURNEY_MAP_IMAGE_ASPECT, JOURNEY_VIEWPORT_ASPECT, PVP_TIER_COLOR, cityName, type PvpCity,
 } from '../models/pvpTiers';
+import { CITY_FACTS, formatFoundedYear } from '../models/cityFacts';
 import type { ThemeColors } from '../theme/tokens';
 
 const APP_ICON = require('../../assets/images/app-icon.png');
@@ -49,10 +51,13 @@ interface Props {
   currentIndex: number;   // CITIES[currentIndex] — the reached city
   avatarUri?: string;
   colors: Pick<ThemeColors, 'card' | 'line' | 'ink' | 'inkSoft' | 'paper' | 'gold'>;
+  onPressCurrentCity?: () => void;
 }
 
-export default function JourneyMap({ currentIndex, avatarUri, colors }: Props) {
+export default function JourneyMap({ currentIndex, avatarUri, colors, onPressCurrentCity }: Props) {
+  const { t } = useTranslation();
   const current = CITIES[currentIndex] ?? CITIES[0];
+  const currentFacts = CITY_FACTS[current.id];
 
   const pan = useSharedValue(panLeftPercentForCity(current));
   const avatarX = useSharedValue(current.xFrac * 100);
@@ -111,13 +116,20 @@ export default function JourneyMap({ currentIndex, avatarUri, colors }: Props) {
           );
         })}
 
-        <Animated.View style={[s.avatarMarker, avatarStyle]} pointerEvents="none">
+        <Animated.View style={[s.avatarMarker, avatarStyle]}>
           <View style={[s.avatarGlow, { borderColor: colors.gold, backgroundColor: colors.card }]}>
             <Avatar uri={avatarUri} fallback={APP_ICON} style={s.avatarImg} />
           </View>
-          <Text style={[s.avatarLabel, { color: colors.ink, backgroundColor: colors.card, borderColor: colors.line }]} numberOfLines={1}>
-            {cityName(current.id)}
-          </Text>
+          <Pressable onPress={onPressCurrentCity} hitSlop={6}>
+            <View style={[s.avatarLabel, { backgroundColor: colors.card, borderColor: colors.line }]}>
+              <Text style={[s.avatarLabelName, { color: colors.ink }]} numberOfLines={1}>
+                {cityName(current.id)}
+              </Text>
+              <Text style={[s.avatarLabelSub, { color: colors.inkSoft }]} numberOfLines={1}>
+                {t(`pvpJourney.country.${currentFacts.country}`)} · {formatFoundedYear(currentFacts.foundedYear)}
+              </Text>
+            </View>
+          </Pressable>
         </Animated.View>
       </Animated.View>
     </View>
@@ -143,8 +155,10 @@ const s = StyleSheet.create({
   },
   avatarImg: { width: 32, height: 32, borderRadius: 16 },
   avatarLabel: {
-    marginTop: 4, fontSize: 10, fontWeight: '700',
-    paddingHorizontal: 6, paddingVertical: 2, borderRadius: 6, borderWidth: 1,
-    overflow: 'hidden',
+    marginTop: 4, alignItems: 'center',
+    paddingHorizontal: 7, paddingVertical: 3, borderRadius: 7, borderWidth: 1,
+    overflow: 'hidden', minWidth: 64,
   },
+  avatarLabelName: { fontSize: 10, fontWeight: '700' },
+  avatarLabelSub: { fontSize: 8, marginTop: 1 },
 });

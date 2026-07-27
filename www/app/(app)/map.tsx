@@ -165,17 +165,19 @@ export default function MapScreen() {
           const correct = part.numCorrect[1] + part.numCorrect[2] + part.numCorrect[3] + (part.numCorrect[4] ?? 0);
           const questions = part.numQuestions[1] + part.numQuestions[2] + part.numQuestions[3] + (part.numQuestions[4] ?? 0);
           return (
-            <PressScale
-              style={[s.row, { backgroundColor: colors.card, opacity: part.checked ? 1 : 0.6, flexDirection: rowDir(isRTL) }]}
-              onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(index), nonce: String(Date.now()) } })}
-            >
-              <KhatamStar tier={tier} size={38} colors={colors} />
-              <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{translatePartName(part.name)}</Text>
-                <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
-                  {questions > 0 ? t('map.correctOf', { correct: localeNum(correct, language), questions: localeNum(questions, language) }) : t('map.notTested')}
-                </Text>
-              </View>
+            <View style={[s.row, { backgroundColor: colors.card, opacity: part.checked ? 1 : 0.6, flexDirection: rowDir(isRTL) }]}>
+              <PressScale
+                style={[s.rowMain, { flexDirection: rowDir(isRTL) }]}
+                onPress={() => router.push({ pathname: '/(app)/quiz', params: { customPart: String(index), nonce: String(Date.now()) } })}
+              >
+                <KhatamStar tier={tier} size={38} colors={colors} />
+                <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                  <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>{translatePartName(part.name)}</Text>
+                  <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+                    {questions > 0 ? t('map.correctOf', { correct: localeNum(correct, language), questions: localeNum(questions, language) }) : t('map.notTested')}
+                  </Text>
+                </View>
+              </PressScale>
               <Switch
                 value={part.checked}
                 onValueChange={() => togglePart(index)}
@@ -183,7 +185,7 @@ export default function MapScreen() {
                 trackColor={{ false: colors.line, true: colors.gold }}
                 thumbColor="#fff"
               />
-            </PressScale>
+            </View>
           );
         }}
       />
@@ -218,6 +220,11 @@ const s = StyleSheet.create({
     gap: 10,
     padding: 10,
     borderRadius: radii.md,
+  },
+  rowMain: {
+    flex: 1,
+    alignItems: 'center',
+    gap: 10,
   },
   rowInfo: { flex: 1 },
   rowName: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },

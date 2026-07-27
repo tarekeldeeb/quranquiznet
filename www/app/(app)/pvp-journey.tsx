@@ -2,18 +2,37 @@
 // rank ladder (RankSheet): profile.pvp.points → current city on the map →
 // the full 20-city ladder below it. One-way progress (see pvpTiers.ts) — a
 // loss never moves the avatar back.
-import { useMemo } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { useMemo, useState } from 'react';
+import { View, Text, Image, FlatList, StyleSheet } from 'react-native';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import JourneyMap from '../../src/components/JourneyMap';
+import CityCard from '../../src/components/CityCard';
 import PressScale from '../../src/components/PressScale';
 import { useProfileStore } from '../../src/stores/profileStore';
-import { getPvpTierInfo, getCityLadder, cityName, type PvpCityLadderEntry } from '../../src/models/pvpTiers';
+import { getPvpTierInfo, getCityLadder, cityName, type PvpCity, type PvpCityLadderEntry } from '../../src/models/pvpTiers';
+import { CITY_IMAGES, CITY_IMAGE_ASPECT } from '../../src/models/cityImages';
 import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
+
+// Row background photo fade: fully opaque (hides the image, protects text
+// legibility) near the name/tier text, fully transparent (image shows
+// through) at the row's trailing end — mirrored for RTL since the SVG
+// overlay itself isn't flipped by flexDirection the way the row's children are.
+function rowFadeStops(isRTL: boolean) {
+  return isRTL
+    ? [
+        { offset: '0%', opacity: 0 }, { offset: '15%', opacity: 0 },
+        { offset: '55%', opacity: 1 }, { offset: '100%', opacity: 1 },
+      ]
+    : [
+        { offset: '0%', opacity: 1 }, { offset: '45%', opacity: 1 },
+        { offset: '85%', opacity: 0 }, { offset: '100%', opacity: 0 },
+      ];
+}
 
 const TIER_EMOJI: Record<string, string> = {
   bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎', hafizGold: '🏆',
@@ -25,11 +44,17 @@ export default function PvpJourneyScreen() {
   const { colors } = useTheme();
   const router = useRouter();
   const profile = useProfileStore();
+  const [cityCardTarget, setCityCardTarget] = useState<PvpCity | null>(null);
 
   const points = profile.pvp.points;
-  const tierInfo = useMemo(() => getPvpTierInfo(points), [points]);
-  const ladder = useMemo(() => getCityLadder(points), [points]);
+  // getPvpTierInfo/getCityLadder call i18n.t() internally (cityName,
+  // pvpTierTitle) — `t` must be a dep too, or a language switch with no
+  // `points` change leaves these memoized in the previous language (t's
+  // reference changes per language, see (auth)/index.tsx's `stats` memo).
+  const tierInfo = useMemo(() => getPvpTierInfo(points), [points, t]);
+  const ladder = useMemo(() => getCityLadder(points), [points, t]);
   const nextCityLabel = tierInfo.nextCity ? cityName(tierInfo.nextCity.id) : null;
+  const fadeStops = useMemo(() => rowFadeStops(isRTL), [isRTL]);
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['top', 'bottom']}>
@@ -40,29 +65,6 @@ export default function PvpJourneyScreen() {
         <Text style={[s.title, { color: colors.ink, fontFamily: 'Amiri-Regular' }]}>{t('pvpJourney.title')}</Text>
         <Text style={s.headerEmoji}>{TIER_EMOJI[tierInfo.tier]}</Text>
       </View>
-
-      {__DEV__ && (
-        <View style={[s.debugRow, { flexDirection: rowDir(isRTL) }]}>
-          <PressScale
-            style={[s.debugBtn, { backgroundColor: colors.wrongPale, borderColor: colors.wrong }]}
-            onPress={() => profile.addPvpResult('win')}
-          >
-            <Ionicons name="bug-outline" size={14} color={colors.wrong} />
-            <Text style={[s.debugBtnTxt, { color: colors.wrong }]}>
-              +win ({profile.pvp.points} pts, city {tierInfo.city.index + 1}/20)
-            </Text>
-          </PressScale>
-          <PressScale
-            style={[s.debugBtn, { backgroundColor: colors.wrongPale, borderColor: colors.wrong }]}
-            onPress={() => useProfileStore.setState({
-              pvp: { ...profile.pvp, points: 0, winStreak: 0 },
-            })}
-          >
-            <Ionicons name="refresh-outline" size={14} color={colors.wrong} />
-            <Text style={[s.debugBtnTxt, { color: colors.wrong }]}>reset (Jakarta)</Text>
-          </PressScale>
-        </View>
-      )}
 
       <FlatList
         data={ladder}
@@ -75,6 +77,7 @@ export default function PvpJourneyScreen() {
               currentIndex={tierInfo.city.index}
               avatarUri={profile.social.photoURL}
               colors={colors}
+              onPressCurrentCity={() => setCityCardTarget(tierInfo.city)}
             />
             <View style={[s.summaryCard, { backgroundColor: colors.card, borderColor: colors.line }]}>
               <Text style={[s.summaryTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
@@ -92,28 +95,69 @@ export default function PvpJourneyScreen() {
           </View>
         }
         renderItem={({ item }: { item: PvpCityLadderEntry }) => (
-          <View
+          <PressScale
+            onPress={() => setCityCardTarget(item.city)}
             style={[
               s.row,
-              { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) },
+              { backgroundColor: colors.card, borderColor: colors.line },
               !item.reached && { opacity: 0.55 },
               item.current && { borderColor: colors.gold, borderWidth: 1.5 },
             ]}
           >
-            <Text style={s.rowEmoji}>{TIER_EMOJI[item.city.tier]}</Text>
-            <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-              <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{item.cityName}</Text>
-              <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{item.tierTitle}</Text>
+            <View style={[StyleSheet.absoluteFill, s.photoClip]}>
+              <Image
+                source={CITY_IMAGES[item.city.id]}
+                style={{ width: '100%', aspectRatio: CITY_IMAGE_ASPECT[item.city.id] }}
+              />
             </View>
-            {item.current ? (
-              <View style={[s.nowBadge, { backgroundColor: colors.gold }]}>
-                <Text style={[s.nowTxt, { color: colors.navy }]}>{t('pvpJourney.here')}</Text>
+            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+              <Defs>
+                <LinearGradient id={`rowFade-${item.city.id}`} x1="0" y1="0" x2="1" y2="0">
+                  {fadeStops.map((stop) => (
+                    <Stop key={stop.offset} offset={stop.offset} stopColor={colors.card} stopOpacity={stop.opacity} />
+                  ))}
+                </LinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill={`url(#rowFade-${item.city.id})`} />
+            </Svg>
+
+            <View style={[s.rowContent, { flexDirection: rowDir(isRTL) }]}>
+              <Text style={s.rowEmoji}>{TIER_EMOJI[item.city.tier]}</Text>
+              <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{item.cityName}</Text>
+                <Text style={[s.rowSub, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{item.tierTitle}</Text>
               </View>
-            ) : item.reached ? (
-              <Ionicons name="checkmark-circle" size={18} color={colors.gold} />
-            ) : null}
-          </View>
+              {item.current ? (
+                <View
+                  style={[
+                    s.nowBadge,
+                    { backgroundColor: colors.gold },
+                    isRTL ? { marginLeft: 6 } : { marginRight: 6 },
+                  ]}
+                >
+                  <Text style={[s.nowTxt, { color: colors.navy }]}>{t('pvpJourney.here')}</Text>
+                </View>
+              ) : item.reached ? (
+                <View
+                  style={[
+                    s.checkBadge,
+                    { backgroundColor: colors.card },
+                    isRTL ? { marginLeft: 6 } : { marginRight: 6 },
+                  ]}
+                >
+                  <Ionicons name="checkmark-circle" size={18} color={colors.gold} />
+                </View>
+              ) : null}
+            </View>
+          </PressScale>
         )}
+      />
+
+      <CityCard
+        city={cityCardTarget}
+        visible={cityCardTarget !== null}
+        onClose={() => setCityCardTarget(null)}
+        colors={colors}
       />
     </SafeAreaView>
   );
@@ -127,12 +171,6 @@ const s = StyleSheet.create({
   backBtn: { padding: 2 },
   title: { flex: 1, fontSize: 20, fontWeight: '700', textAlign: 'center' },
   headerEmoji: { fontSize: 20 },
-  debugRow: { gap: 8, marginHorizontal: 12, marginTop: 10 },
-  debugBtn: {
-    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
-    paddingVertical: 8, borderRadius: radii.md, borderWidth: 1,
-  },
-  debugBtnTxt: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
   list: { padding: 12 },
   mapSection: { gap: 12, marginBottom: 16 },
   summaryCard: { borderRadius: 12, borderWidth: 1, padding: 12, gap: 6 },
@@ -141,7 +179,11 @@ const s = StyleSheet.create({
   track: { height: 6, borderRadius: 3, overflow: 'hidden', position: 'relative' },
   fill: { position: 'absolute', top: 0, bottom: 0, borderRadius: 3 },
   row: {
-    alignItems: 'center', gap: 10, padding: 10, borderRadius: radii.md, borderWidth: 1,
+    height: 84, borderRadius: radii.md, borderWidth: 1, overflow: 'hidden',
+  },
+  photoClip: { justifyContent: 'center' },
+  rowContent: {
+    flex: 1, alignItems: 'center', gap: 10, padding: 10,
   },
   rowEmoji: { fontSize: 18 },
   rowInfo: { flex: 1 },
@@ -149,4 +191,7 @@ const s = StyleSheet.create({
   rowSub: { fontSize: 11, marginTop: 1 },
   nowBadge: { paddingHorizontal: 9, paddingVertical: 4, borderRadius: radii.pill },
   nowTxt: { fontSize: 10.5, fontFamily: 'PlexArabic-Bold' },
+  checkBadge: {
+    width: 26, height: 26, borderRadius: 13, alignItems: 'center', justifyContent: 'center',
+  },
 });

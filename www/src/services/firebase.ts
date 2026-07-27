@@ -921,19 +921,34 @@ export interface PresenceState {
   lastSeen?: number;
 }
 
-export async function armPresence(uid: string): Promise<void> {
-  try {
-    const presenceRef = ref(getFirebaseDb(), `/presence/${uid}`);
-    await onDisconnect(presenceRef).set({
-      online: false,
-      lastSeen: serverTimestamp(),
-    });
-    await set(presenceRef, {
-      online: true,
-      lastSeen: serverTimestamp(),
-    });
-  } catch (e) {
-    console.error('armPresence error:', e);
+/**
+ * Called from the auth-state listener right as a user signs in, which can
+ * race the RTDB socket's own auth handshake (it re-authenticates off a
+ * separate internal token listener a beat behind `onAuthStateChanged`,
+ * especially right after `signInWithCredential` swaps in a different uid).
+ * That shows up as a transient PERMISSION_DENIED on the very first write, so
+ * one retry after a short delay is given before treating it as a real error.
+ */
+export async function armPresence(uid: string, attempts = 2): Promise<void> {
+  const presenceRef = ref(getFirebaseDb(), `/presence/${uid}`);
+  for (let i = 0; i < attempts; i++) {
+    try {
+      await onDisconnect(presenceRef).set({
+        online: false,
+        lastSeen: serverTimestamp(),
+      });
+      await set(presenceRef, {
+        online: true,
+        lastSeen: serverTimestamp(),
+      });
+      return;
+    } catch (e) {
+      if (i < attempts - 1) {
+        await delay(800);
+        continue;
+      }
+      console.error('armPresence error:', e);
+    }
   }
 }
 

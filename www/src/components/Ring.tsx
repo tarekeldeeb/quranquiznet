@@ -44,8 +44,7 @@ export default function Ring({ pct, color, trackColor = '#e8edf2', innerColor = 
           strokeLinecap="butt"
           strokeDasharray={`${circumference} ${circumference}`}
           strokeDashoffset={circumference * (1 - clamped / 100)}
-          rotation={-90}
-          origin={`${size / 2}, ${size / 2}`}
+          transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </Svg>
       <View style={[s.inner, { width: innerSize, height: innerSize, borderRadius: innerSize / 2, backgroundColor: innerColor }]}>

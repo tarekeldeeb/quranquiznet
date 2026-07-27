@@ -27,12 +27,15 @@ export const PVP_TIER_COLOR: Record<PvpTierId, string> = {
 
 // Points required to advance one city *within* each tier (index-aligned with
 // TIER_IDS) — a gentle ramp so Hafiz Gold cities are a bigger ask than Bronze ones.
+// 3x'd from the original 20/30/40/55/70 (2026-07-27): at those costs the whole
+// 840-point journey was clearable in ~42 wins (a single session, maxed streak),
+// which felt too easy for a 20-city journey. Total is now 2520.
 const TIER_STEP_COST: Record<PvpTierId, number> = {
-  bronze: 20,
-  silver: 30,
-  gold: 40,
-  platinum: 55,
-  hafizGold: 70,
+  bronze: 60,
+  silver: 90,
+  gold: 120,
+  platinum: 165,
+  hafizGold: 210,
 };
 
 export function pvpTierTitle(tier: PvpTierId): string {
@@ -57,26 +60,26 @@ interface CityDef {
 // Baghdad → Mecca dips south before Damascus goes back north) mirrors real
 // geography. Easy to edit — this is content, not architecture.
 const CITY_DEFS: CityDef[] = [
-  { id: 'jakarta', xFrac: 0.892, yFrac: 0.719 },
-  { id: 'kualaLumpur', xFrac: 0.840, yFrac: 0.612 },
-  { id: 'dhaka', xFrac: 0.768, yFrac: 0.327 },
-  { id: 'delhi', xFrac: 0.715, yFrac: 0.200 },
-  { id: 'lahore', xFrac: 0.720, yFrac: 0.235 },
-  { id: 'kabul', xFrac: 0.700, yFrac: 0.184 },
-  { id: 'tashkent', xFrac: 0.690, yFrac: 0.092 },
-  { id: 'tehran', xFrac: 0.645, yFrac: 0.153 },
+  { id: 'jakarta', xFrac: 0.807, yFrac: 0.805 },
+  { id: 'kualaLumpur', xFrac: 0.792, yFrac: 0.637 },
+  { id: 'dhaka', xFrac: 0.748, yFrac: 0.357 },
+  { id: 'delhi', xFrac: 0.701, yFrac: 0.232 },
+  { id: 'lahore', xFrac: 0.690, yFrac: 0.163 },
+  { id: 'kabul', xFrac: 0.675, yFrac: 0.158 },
+  { id: 'tashkent', xFrac: 0.678, yFrac: 0.088 },
+  { id: 'tehran', xFrac: 0.622, yFrac: 0.162 },
   { id: 'baghdad', xFrac: 0.592, yFrac: 0.201 },
   { id: 'mecca', xFrac: 0.598, yFrac: 0.393 },
   { id: 'medina', xFrac: 0.585, yFrac: 0.334 },
-  { id: 'damascus', xFrac: 0.578, yFrac: 0.162 },
-  { id: 'jerusalem', xFrac: 0.577, yFrac: 0.197 },
-  { id: 'istanbul', xFrac: 0.598, yFrac: 0.071 },
-  { id: 'sarajevo', xFrac: 0.565, yFrac: 0.08 },
-  { id: 'cairo', xFrac: 0.573, yFrac: 0.231 },
-  { id: 'tripoli', xFrac: 0.525, yFrac: 0.224 },
-  { id: 'tunis', xFrac: 0.499, yFrac: 0.247 },
-  { id: 'algiers', xFrac: 0.473, yFrac: 0.245 },
-  { id: 'marrakech', xFrac: 0.435, yFrac: 0.224 },
+  { id: 'damascus', xFrac: 0.574, yFrac: 0.174 },
+  { id: 'jerusalem', xFrac: 0.567, yFrac: 0.224 },
+  { id: 'istanbul', xFrac: 0.546, yFrac: 0.077 },
+  { id: 'sarajevo', xFrac: 0.521, yFrac: 0.031 },
+  { id: 'cairo', xFrac: 0.553, yFrac: 0.259 },
+  { id: 'tripoli', xFrac: 0.505, yFrac: 0.212 },
+  { id: 'tunis', xFrac: 0.490, yFrac: 0.146 },
+  { id: 'algiers', xFrac: 0.467, yFrac: 0.150 },
+  { id: 'marrakech', xFrac: 0.430, yFrac: 0.225 },
 ];
 
 // assets/images/green-map.png's own pixel dimensions, and the journey card's
