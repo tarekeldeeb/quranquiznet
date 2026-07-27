@@ -10,12 +10,13 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "8",
+      "buildNumber": "9",
       "appleTeamId": "FNSP52WBLF",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
-      }
+      },
+      "associatedDomains": ["applinks:quranquiz.net"]
     },
     "android": {
       "adaptiveIcon": {
@@ -23,8 +24,22 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 14,
-      "googleServicesFile": "./google-services.json"
+      "versionCode": 15,
+      "googleServicesFile": "./google-services.json",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "quranquiz.net",
+              "pathPrefix": "/add"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "bundler": "metro",

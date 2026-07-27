@@ -8,7 +8,8 @@
   "hosting": {
     "public": "www/dist",
     "_comment": "Do NOT ignore **/node_modules/** here: Expo's web export ships vendored icon fonts under assets/node_modules/@expo/vector-icons/, and ignoring them breaks all Ionicons on the deployed site.",
-    "ignore": ["firebase.json", "**/.*"],
+    "_comment2": "**/.* also matches the .well-known dot-directory (Universal/App Links verification files) — un-ignore it explicitly.",
+    "ignore": ["firebase.json", "**/.*", "!.well-known/**"],
     "rewrites": [
       {
         "source": "**",
@@ -16,6 +17,18 @@
       }
     ],
     "headers": [
+      {
+        "source": "/.well-known/apple-app-site-association",
+        "headers": [
+          { "key": "Content-Type", "value": "application/json" }
+        ]
+      },
+      {
+        "source": "/.well-known/assetlinks.json",
+        "headers": [
+          { "key": "Content-Type", "value": "application/json" }
+        ]
+      },
       {
         "source": "/sw.js",
         "headers": [

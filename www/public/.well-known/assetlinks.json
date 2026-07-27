@@ -1,0 +1,12 @@
+[
+  {
+    "relation": ["delegate_permission/common.handle_all_urls"],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "net.quranquiz",
+      "sha256_cert_fingerprints": [
+        "D8:12:CC:B0:6E:04:95:20:8E:82:11:87:80:4C:02:0C:86:DC:4E:82:BD:7A:58:F4:20:73:19:8C:63:3F:4F:02"
+      ]
+    }
+  }
+]

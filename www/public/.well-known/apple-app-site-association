@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "FNSP52WBLF.net.quranquiz",
+        "paths": ["/add/*"]
+      }
+    ]
+  }
+}
