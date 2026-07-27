@@ -14,7 +14,7 @@ import Svg, { Polyline } from 'react-native-svg';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import { Avatar } from './Avatar';
 import {
-  CITIES, JOURNEY_MAP_IMAGE_ASPECT, JOURNEY_VIEWPORT_ASPECT, cityName, type PvpCity,
+  CITIES, JOURNEY_MAP_IMAGE_ASPECT, JOURNEY_VIEWPORT_ASPECT, PVP_TIER_COLOR, cityName, type PvpCity,
 } from '../models/pvpTiers';
 import type { ThemeColors } from '../theme/tokens';
 
@@ -40,14 +40,6 @@ function panLeftPercentForCity(city: PvpCity): number {
   const centered = -(city.xFrac * ZOOM - 0.5) * 100;
   return Math.max(PAN_MIN, Math.min(PAN_MAX, centered));
 }
-
-const TIER_DOT_COLOR: Record<PvpCity['tier'], string> = {
-  bronze: '#B08D57',
-  silver: '#9AA5B1',
-  gold: '#D4AF37',
-  platinum: '#8FD3D9',
-  hafizGold: '#2E9E6D',
-};
 
 function pct(v: number): `${number}%` {
   return `${v}%`;
@@ -108,7 +100,7 @@ export default function JourneyMap({ currentIndex, avatarUri, colors }: Props) {
                 {
                   left: pct(c.xFrac * 100),
                   top: pct(c.yFrac * 100),
-                  backgroundColor: reached ? TIER_DOT_COLOR[c.tier] : colors.card,
+                  backgroundColor: reached ? PVP_TIER_COLOR[c.tier] : colors.card,
                   borderColor: c.index === currentIndex ? colors.gold : colors.line,
                   borderWidth: c.index === currentIndex ? 2.5 : 1.5,
                   opacity: reached ? 1 : 0.6,

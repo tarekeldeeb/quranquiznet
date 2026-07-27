@@ -14,6 +14,17 @@ export type PvpTierId = 'bronze' | 'silver' | 'gold' | 'platinum' | 'hafizGold';
 export const CITIES_PER_TIER = 4;
 export const TIER_IDS: PvpTierId[] = ['bronze', 'silver', 'gold', 'platinum', 'hafizGold'];
 
+// Single source of truth for tier color — used by JourneyMap's city dots and
+// by the PvP progress bar on me.tsx, so the bar's fill always matches the
+// tier the player is actually in instead of a flat shared gold.
+export const PVP_TIER_COLOR: Record<PvpTierId, string> = {
+  bronze: '#B08D57',
+  silver: '#9AA5B1',
+  gold: '#D4AF37',
+  platinum: '#8FD3D9',
+  hafizGold: '#2E9E6D',
+};
+
 // Points required to advance one city *within* each tier (index-aligned with
 // TIER_IDS) — a gentle ramp so Hafiz Gold cities are a bigger ask than Bronze ones.
 const TIER_STEP_COST: Record<PvpTierId, number> = {
