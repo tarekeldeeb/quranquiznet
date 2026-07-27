@@ -10,7 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTranslation } from 'react-i18next';
 import {
-  signInGoogle, signInFacebook, signInApple, getDailyHead, getTodayStandings, type DailyHead,
+  signInGoogle, signInFacebook, signInApple, getDailyHead, getTodayStandings, pushCurrentProfile, type DailyHead,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
@@ -200,7 +200,7 @@ function StreakSheet({
                 <PressScale
                   style={[s.freezeBtn, { backgroundColor: colors.gold }]}
                   onPress={() => {
-                    profile.useStreakFreeze();
+                    if (profile.useStreakFreeze()) void pushCurrentProfile();
                   }}
                 >
                   <Ionicons name="snow-outline" size={16} color={colors.navy} />
@@ -386,6 +386,10 @@ export default function MeScreen() {
   async function saveNickname() {
     const trimmed = nicknameInput.trim().slice(0, 20);
     if (trimmed) {
+      // Nickname editing is only reachable for anonymous guests (see the
+      // social.isAnonymous branch below) — guest progress deliberately stays
+      // local-only until upgrade (pushCurrentProfile() no-ops for them), so
+      // there's nothing to push to Firebase here.
       await profile.setSocial({ ...social, displayName: trimmed });
     }
     setNicknameModalOpen(false);

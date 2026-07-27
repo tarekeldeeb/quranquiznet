@@ -278,7 +278,7 @@ export default function PvpScreen() {
     myFinishedRef.current = false;
     resultHandledRef.current = false;
     pointsBeforeRef.current = profile.pvp.points;
-    profile.recordPlay();
+    if (profile.recordPlay()) void FB.pushCurrentProfile();
 
     startSearch();
   }
@@ -494,7 +494,7 @@ export default function PvpScreen() {
     myFinishedRef.current = false;
     resultHandledRef.current = false;
     pointsBeforeRef.current = profile.pvp.points;
-    profile.recordPlay();
+    if (profile.recordPlay()) void FB.pushCurrentProfile();
     const meta = await FB.getPvpMatchMeta(matchId).catch(() => null);
     if (!meta) { startBotMatch(); return; } // match doc vanished — fall back rather than strand the screen
     enterLiveMatch(matchId, opponentUid, identity, meta);
@@ -595,6 +595,7 @@ export default function PvpScreen() {
     const outcomeVal: PvpOutcome =
       result.winnerUid === null ? 'draw' : result.winnerUid === myUid ? 'win' : 'loss';
     profile.addPvpResult(outcomeVal);
+    void FB.pushCurrentProfile();
     trackEvent('pvp_end', {
       outcome: outcomeVal,
       correct: playerCorrectRef.current,
@@ -782,6 +783,7 @@ export default function PvpScreen() {
       bot.final,
     );
     profile.addPvpResult(result);
+    void FB.pushCurrentProfile();
     trackEvent('pvp_end', {
       outcome: result,
       correct: playerCorrectRef.current,

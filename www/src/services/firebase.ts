@@ -370,6 +370,47 @@ export async function pushProfile(uid: string, profile: unknown): Promise<void> 
   }
 }
 
+/**
+ * Pushes the full local profile store up to /users/{uid} for whichever user
+ * is currently signed in. No-op for anonymous guests (and when signed out) —
+ * guest progress deliberately stays local-only until they upgrade to a real
+ * account (see app/(app)/_layout.tsx's onAuthChange handler).
+ *
+ * This is the single source of truth for what "the synced profile" contains —
+ * every call site (auth sign-in, a PvP match ending, a streak update, a daily
+ * quiz completing, a nickname/theme/language change) should push through here
+ * rather than hand-building the payload, so profileStore.syncTo()'s merge
+ * logic always has a matching field to read back.
+ */
+export async function pushCurrentProfile(): Promise<void> {
+  const user = getFirebaseAuth().currentUser;
+  if (!user || user.isAnonymous) return;
+  const s = useProfileStore.getState();
+  await pushProfile(user.uid, {
+    uid: s.uid,
+    lastSeed: s.lastSeed,
+    lastUpdate: s.lastUpdate,
+    lastSync: Date.now(),
+    level: s.level,
+    specialEnabled: s.specialEnabled,
+    scores: s.scores,
+    parts: s.parts,
+    streak: s.streak,
+    bestStreak: s.bestStreak,
+    lastPlayDate: s.lastPlayDate,
+    lastDailyCompletedDate: s.lastDailyCompletedDate,
+    lastDailyScore: s.lastDailyScore,
+    pvp: s.pvp,
+    themeMode: s.themeMode,
+    language: s.language,
+    // Only the editable nickname, not the whole social object — uid/photoURL/
+    // email/isAnonymous are already authoritative from Firebase Auth itself,
+    // and re-mirroring them into RTDB risks a stale copy overwriting Auth's
+    // current values on some other device's next syncTo().
+    social: { displayName: s.social.displayName },
+  });
+}
+
 export async function savePushToken(
   uid: string,
   token: string,
@@ -470,6 +511,7 @@ export async function flushPendingDailySubmit(): Promise<void> {
   if (ok) {
     profile.markDailyCompleted(pending.score);
     profile.setPendingDailySubmit(null);
+    void pushCurrentProfile();
   }
 }
 

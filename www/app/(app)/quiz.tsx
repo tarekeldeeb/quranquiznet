@@ -306,7 +306,7 @@ export default function QuizScreen() {
       level: profile.level,
       part: opts.partIndex ?? undefined,
     });
-    profile.recordPlay();
+    if (profile.recordPlay()) void FB.pushCurrentProfile();
     // Re-arm the "don't lose your streak" reminder for tomorrow evening now that
     // today's play is recorded (no-op without permission, cleared if streak is 0).
     scheduleStreakReminder(useProfileStore.getState().streak);
@@ -875,6 +875,7 @@ export default function QuizScreen() {
     const confirmed = await FB.submitDailyResultWithRetry(payload);
     if (confirmed) {
       profile.markDailyCompleted(finalScore);
+      void FB.pushCurrentProfile();
     } else {
       profile.setPendingDailySubmit({ ...payload, date: today });
     }

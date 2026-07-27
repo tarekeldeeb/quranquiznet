@@ -10,7 +10,7 @@ import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useProfileStore } from '../../src/stores/profileStore';
 import {
-  signOut, deleteAccount, watchNotifPrefs, setNotifPref, type NotifCategory, type NotifPrefs,
+  signOut, deleteAccount, watchNotifPrefs, setNotifPref, pushCurrentProfile, type NotifCategory, type NotifPrefs,
 } from '../../src/services/firebase';
 import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
@@ -115,6 +115,16 @@ export default function SettingsScreen() {
     }
   }
 
+  function handleThemeChange(mode: Parameters<typeof profile.setThemeMode>[0]) {
+    profile.setThemeMode(mode);
+    void pushCurrentProfile();
+  }
+
+  function handleLanguageChange(lang: Parameters<typeof profile.setLanguage>[0]) {
+    profile.setLanguage(lang);
+    void pushCurrentProfile();
+  }
+
   const SPECIAL_MIN_LEVEL = 2;
   const specialEditable = profile.level >= SPECIAL_MIN_LEVEL;
 
@@ -187,7 +197,7 @@ export default function SettingsScreen() {
               <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.themeLabel')}</Text>
               <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.themeHint')}</Text>
             </View>
-            <ThemeToggle value={profile.themeMode} onChange={profile.setThemeMode} />
+            <ThemeToggle value={profile.themeMode} onChange={handleThemeChange} />
           </View>
         </View>
 
@@ -200,7 +210,7 @@ export default function SettingsScreen() {
             <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
               <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.languageLabel')}</Text>
             </View>
-            <LanguagePicker value={profile.language} onChange={profile.setLanguage} />
+            <LanguagePicker value={profile.language} onChange={handleLanguageChange} />
           </View>
         </View>
 

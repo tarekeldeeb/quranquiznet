@@ -40,6 +40,7 @@ jest.mock('../../../src/services/firebase', () => ({
   getTodayStandings: jest.fn(() => Promise.resolve([])),
   flushPendingDailySubmit: jest.fn(() => Promise.resolve()),
   reportQuestion: jest.fn(() => Promise.resolve()),
+  pushCurrentProfile: jest.fn(() => Promise.resolve()),
 }));
 
 jest.mock('../../../src/db/idb', () => ({ ayaNumberOf: jest.fn(() => Promise.resolve(1)) }));

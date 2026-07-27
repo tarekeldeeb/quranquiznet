@@ -18,12 +18,14 @@ const mockWatchNotifPrefs = jest.fn((_uid: string, cb: (prefs: unknown) => void)
   return jest.fn();
 });
 const mockSetNotifPref = jest.fn((..._a: unknown[]) => Promise.resolve());
+const mockPushCurrentProfile = jest.fn((..._a: unknown[]) => Promise.resolve());
 
 jest.mock('../../../src/services/firebase', () => ({
   signOut: (...a: unknown[]) => mockSignOut(...a),
   deleteAccount: (...a: unknown[]) => mockDeleteAccount(...a),
   watchNotifPrefs: (uid: string, cb: (prefs: unknown) => void) => mockWatchNotifPrefs(uid, cb),
   setNotifPref: (...a: unknown[]) => mockSetNotifPref(...a),
+  pushCurrentProfile: (...a: unknown[]) => mockPushCurrentProfile(...a),
 }));
 
 import React from 'react';
@@ -40,10 +42,13 @@ beforeEach(() => {
   mockPush.mockClear(); mockReplace.mockClear();
   mockSignOut.mockReset(); mockSignOut.mockResolvedValue(undefined);
   mockDeleteAccount.mockReset(); mockDeleteAccount.mockResolvedValue(undefined);
+  mockPushCurrentProfile.mockClear();
   useProfileStore.setState({
     social: { uid: 'u1', displayName: 'طارق الديب', isAnonymous: false },
     level: 1,
     specialEnabled: false,
+    themeMode: 'dark',
+    language: 'ar',
     loaded: true,
   });
 });
@@ -137,5 +142,22 @@ describe('Settings — delete account', () => {
     );
 
     alertSpy.mockRestore();
+  });
+});
+
+describe('Appearance & language — push the change to the signed-in account', () => {
+  it('pushes the profile after switching theme', async () => {
+    const { findByText } = renderSettings();
+    fireEvent.press(await findByText('فاتح'));
+    expect(useProfileStore.getState().themeMode).toBe('light');
+    expect(mockPushCurrentProfile).toHaveBeenCalled();
+  });
+
+  it('pushes the profile after switching language', async () => {
+    const { findByText } = renderSettings();
+    fireEvent.press(await findByText('العربية')); // open the dropdown
+    fireEvent.press(await findByText('English'));
+    expect(useProfileStore.getState().language).toBe('en');
+    expect(mockPushCurrentProfile).toHaveBeenCalled();
   });
 });

@@ -169,7 +169,7 @@ function getCorrectRatio(p: StudyPart | undefined): number {
   return questions === 0 ? 0 : correct / questions;
 }
 
-interface ProfileState {
+export interface ProfileState {
   // Data
   uid: string;
   lastUpdate: number;
@@ -207,7 +207,10 @@ interface ProfileState {
   setLastSeed(seed: number): void;
   addCorrect(qo: QORef): Promise<void>;
   addIncorrect(qo: QORef): Promise<void>;
-  recordPlay(): void;
+  // Returns true iff it actually recorded a new day's play (false the second
+  // time it's called on the same day) — callers use this to decide whether a
+  // fresh push to Firebase is worth doing.
+  recordPlay(): boolean;
   useStreakFreeze(): boolean;
   markDailyCompleted(score?: number): void;
   setPendingDailySubmit(payload: DailySubmitPayload | null): void;
@@ -450,10 +453,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveKey(KEYS.lastSeed, seed);
   },
 
-  recordPlay() {
+  recordPlay(): boolean {
     const today = new Date().toISOString().split('T')[0];
     const { lastPlayDate, streak, bestStreak, pvp: curPvp } = get();
-    if (lastPlayDate === today) return;
+    if (lastPlayDate === today) return false;
     const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
     const newStreak = lastPlayDate === yesterday ? streak + 1 : 1;
     const newBest = Math.max(bestStreak, newStreak);
@@ -461,13 +464,16 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     const pvp: PvpRecord = pvpEarned
       ? { ...curPvp, streakFreezeTokens: (curPvp.streakFreezeTokens ?? 0) + 1 }
       : curPvp;
-    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today, pvp });
+    const now = Date.now();
+    set({ streak: newStreak, bestStreak: newBest, lastPlayDate: today, pvp, lastUpdate: now });
     saveKey(KEYS.streak, newStreak);
     saveKey(KEYS.bestStreak, newBest);
     saveKey(KEYS.lastPlayDate, today);
+    saveKey(KEYS.lastUpdate, now);
     if (pvpEarned) {
       saveKey(KEYS.pvp, pvp);
     }
+    return true;
   },
 
   useStreakFreeze(): boolean {
@@ -479,18 +485,23 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       ...curPvp,
       streakFreezeTokens: tokens - 1,
     };
-    set({ lastPlayDate: today, pvp });
+    const now = Date.now();
+    set({ lastPlayDate: today, pvp, lastUpdate: now });
     saveKey(KEYS.lastPlayDate, today);
     saveKey(KEYS.pvp, pvp);
+    saveKey(KEYS.lastUpdate, now);
     return true;
   },
 
   markDailyCompleted(score?: number) {
     const today = new Date().toISOString().split('T')[0];
-    const patch: { lastDailyCompletedDate: string; lastDailyScore?: number } = { lastDailyCompletedDate: today };
+    const now = Date.now();
+    const patch: { lastDailyCompletedDate: string; lastDailyScore?: number; lastUpdate: number } =
+      { lastDailyCompletedDate: today, lastUpdate: now };
     if (score !== undefined) patch.lastDailyScore = score;
     set(patch);
     saveKey(KEYS.lastDailyCompletedDate, today);
+    saveKey(KEYS.lastUpdate, now);
     if (score !== undefined) saveKey(KEYS.lastDailyScore, score);
   },
 
@@ -504,13 +515,24 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   },
 
   setThemeMode(mode: ThemeMode) {
-    set({ themeMode: mode });
+    // Bumping lastUpdate (in addition to the standalone THEME_KEY) lets this
+    // preference ride the same syncTo()/pushProfile() freshness comparison as
+    // the rest of the profile, so it also follows the signed-in account
+    // across devices — see syncTo() below. Only ever called from an explicit
+    // settings toggle, never from routine auth-identity mirroring, so it's
+    // safe to treat every call as a genuinely fresh local edit.
+    const now = Date.now();
+    set({ themeMode: mode, lastUpdate: now });
     saveKey(THEME_KEY, mode);
+    saveKey(KEYS.lastUpdate, now);
   },
 
   setLanguage(lang: 'ar' | 'en') {
-    set({ language: lang });
+    // See setThemeMode's comment — same reasoning for syncing this preference.
+    const now = Date.now();
+    set({ language: lang, lastUpdate: now });
     saveKey(LANGUAGE_KEY, lang);
+    saveKey(KEYS.lastUpdate, now);
     changeLanguage(lang);
   },
 
@@ -528,8 +550,10 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       streakFreezeTokens: cur.streakFreezeTokens
         + (outcome === 'win' && wins % STREAK_FREEZE_EVERY_N_WINS === 0 ? 1 : 0),
     };
-    set({ pvp });
+    const now = Date.now();
+    set({ pvp, lastUpdate: now });
     saveKey(KEYS.pvp, pvp);
+    saveKey(KEYS.lastUpdate, now);
   },
 
   async addCorrect(qo: QORef) {
@@ -791,15 +815,39 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     // the older Firebase copy when the app restarts before the next push.
     if (get().lastSync === 0 || remoteUpdate > localUpdate) {
       const now = Date.now();
+      const cur = get();
+      const nextThemeMode = remote.themeMode ?? cur.themeMode;
+      const nextLanguage = remote.language ?? cur.language;
       set({
         lastUpdate: remoteUpdate, lastSync: now,
-        lastSeed: remote.lastSeed ?? get().lastSeed,
-        level: remote.level ?? get().level,
-        specialEnabled: remote.specialEnabled ?? get().specialEnabled,
-        scores: remote.scores ?? get().scores,
-        parts: remote.parts ?? get().parts,
+        lastSeed: remote.lastSeed ?? cur.lastSeed,
+        level: remote.level ?? cur.level,
+        specialEnabled: remote.specialEnabled ?? cur.specialEnabled,
+        scores: remote.scores ?? cur.scores,
+        parts: remote.parts ?? cur.parts,
+        // Everything below rounds out the fields pushProfile() actually writes
+        // (see firebase.ts pushCurrentProfile) — without this a second device
+        // or a reinstall only recovered quiz progress, never PvP trophies,
+        // streak, daily-quiz state, or the nickname/theme/language prefs.
+        streak: remote.streak ?? cur.streak,
+        bestStreak: Math.max(cur.bestStreak, remote.bestStreak ?? 0, remote.streak ?? 0),
+        lastPlayDate: remote.lastPlayDate ?? cur.lastPlayDate,
+        lastDailyCompletedDate: remote.lastDailyCompletedDate ?? cur.lastDailyCompletedDate,
+        lastDailyScore: remote.lastDailyScore ?? cur.lastDailyScore,
+        pvp: remote.pvp ? { ...EMPTY_PVP, ...remote.pvp } : cur.pvp,
+        themeMode: nextThemeMode,
+        language: nextLanguage,
+        social: remote.social?.displayName
+          ? { ...cur.social, displayName: remote.social.displayName }
+          : cur.social,
       });
       await get().saveAll();
+      // THEME_KEY/LANGUAGE_KEY live outside saveAll()'s KEYS map (see their
+      // declaration above) — persist them explicitly, and re-apply the
+      // language to i18next if it changed.
+      await saveKey(THEME_KEY, nextThemeMode);
+      await saveKey(LANGUAGE_KEY, nextLanguage);
+      if (nextLanguage !== cur.language) changeLanguage(nextLanguage);
     }
   },
 }));

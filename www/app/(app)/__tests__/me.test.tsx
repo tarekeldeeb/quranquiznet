@@ -19,6 +19,7 @@ const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
 const mockSignInGoogle = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'g1' }));
 const mockSignInFacebook = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'f1' }));
 const mockSignInApple = jest.fn((..._a: unknown[]) => Promise.resolve({ uid: 'a1' }));
+const mockPushCurrentProfile = jest.fn((..._a: unknown[]) => Promise.resolve());
 jest.mock('../../../src/services/firebase', () => ({
   getDailyHead: (...a: unknown[]) => mockGetDailyHead(...a),
   getTodayStandings: jest.fn(() => Promise.resolve([])),
@@ -26,6 +27,7 @@ jest.mock('../../../src/services/firebase', () => ({
   signInGoogle: (...a: unknown[]) => mockSignInGoogle(...a),
   signInFacebook: (...a: unknown[]) => mockSignInFacebook(...a),
   signInApple: (...a: unknown[]) => mockSignInApple(...a),
+  pushCurrentProfile: (...a: unknown[]) => mockPushCurrentProfile(...a),
 }));
 
 const mockInitDailyQuiz = jest.fn();
@@ -67,6 +69,7 @@ beforeEach(() => {
   mockSignInGoogle.mockReset(); mockSignInGoogle.mockResolvedValue({ uid: 'g1' });
   mockSignInFacebook.mockReset(); mockSignInFacebook.mockResolvedValue({ uid: 'f1' });
   mockSignInApple.mockReset(); mockSignInApple.mockResolvedValue({ uid: 'a1' });
+  mockPushCurrentProfile.mockClear();
   // Full 50-part profile (45 suras + 5 juz), as in production — the daily-weights
   // computation indexes every part.
   const parts = Array.from({ length: 50 }, (_, i) => part(`جزء/سورة ${i}`, i < 3));

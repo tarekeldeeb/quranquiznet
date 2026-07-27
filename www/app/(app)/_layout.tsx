@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { Image, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import {
-  onAuthChange, fetchRemoteProfile, pushProfile, armPresence,
+  onAuthChange, fetchRemoteProfile, pushCurrentProfile, armPresence,
   watchIncomingPvpInvites, acceptPvpInvite, declinePvpInvite, createPvpMatch, type PvpInviteEntry,
 } from '../../src/services/firebase';
 
@@ -112,20 +112,7 @@ export default function AppLayout() {
           await profile.syncTo(remote as Parameters<typeof profile.syncTo>[0]);
         }
         // Push local profile up (after sync so we write the merged result)
-        const s = useProfileStore.getState();
-        await pushProfile(user.uid, {
-          uid: s.uid,
-          lastSeed: s.lastSeed,
-          lastUpdate: s.lastUpdate,
-          lastSync: Date.now(),
-          level: s.level,
-          specialEnabled: s.specialEnabled,
-          scores: s.scores,
-          parts: s.parts,
-          streak: s.streak,
-          lastPlayDate: s.lastPlayDate,
-          pvp: s.pvp,
-        });
+        await pushCurrentProfile();
       } else {
         // Preserve a guest's own custom nickname across re-auth events (e.g. app
         // restart) instead of stomping it back to the default every time — only

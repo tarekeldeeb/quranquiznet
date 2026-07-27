@@ -79,6 +79,58 @@ describe('syncTo: restore a remote profile on login', () => {
     await store().syncTo({ uid: 'u1', lastUpdate: 1_000_000, level: 2 });
     expect(store().level).toBe(1); // local is newer ⇒ kept
   });
+
+  // Everything pushCurrentProfile() (firebase.ts) writes must round-trip back
+  // down here on a fresh device/reinstall — not just quiz progress.
+  it('restores streak, PvP, daily-quiz state, theme, language and nickname from a newer remote copy', async () => {
+    useProfileStore.setState({
+      uid: 'u1', lastSync: 0, lastUpdate: 0,
+      streak: 0, bestStreak: 0, lastPlayDate: '',
+      lastDailyCompletedDate: '', lastDailyScore: 0,
+      pvp: { wins: 0, losses: 0, draws: 0, points: 0, winStreak: 0, streakFreezeTokens: 0 },
+      themeMode: 'dark', language: 'ar',
+      social: { uid: 'u1', displayName: 'Old Name', isAnonymous: false },
+    });
+    await store().syncTo({
+      uid: 'u1',
+      lastUpdate: 1_000_000,
+      streak: 9,
+      bestStreak: 12,
+      lastPlayDate: '2026-07-20',
+      lastDailyCompletedDate: '2026-07-20',
+      lastDailyScore: 88,
+      pvp: { wins: 3, losses: 1, draws: 0, points: 40, winStreak: 2, streakFreezeTokens: 1 },
+      themeMode: 'light',
+      language: 'en',
+      social: { displayName: 'New Name' },
+    });
+    expect(store().streak).toBe(9);
+    expect(store().bestStreak).toBe(12);
+    expect(store().lastPlayDate).toBe('2026-07-20');
+    expect(store().lastDailyCompletedDate).toBe('2026-07-20');
+    expect(store().lastDailyScore).toBe(88);
+    expect(store().pvp).toEqual({ wins: 3, losses: 1, draws: 0, points: 40, winStreak: 2, streakFreezeTokens: 1 });
+    expect(store().themeMode).toBe('light');
+    expect(store().language).toBe('en');
+    // uid/isAnonymous stay authoritative from Firebase Auth's own mirror, not RTDB.
+    expect(store().social).toEqual({ uid: 'u1', displayName: 'New Name', isAnonymous: false });
+  });
+
+  it('keeps the higher bestStreak even if remote never recorded one (older saved profile)', async () => {
+    useProfileStore.setState({
+      uid: 'u1', lastSync: 0, lastUpdate: 0, bestStreak: 5,
+    });
+    await store().syncTo({ uid: 'u1', lastUpdate: 1_000_000, streak: 3 });
+    expect(store().bestStreak).toBe(5);
+  });
+});
+
+describe('recordPlay(): return value signals whether a push is worth doing', () => {
+  it('returns true the first time today, false on a second call the same day', () => {
+    useProfileStore.setState({ lastPlayDate: '', streak: 0, bestStreak: 0 });
+    expect(store().recordPlay()).toBe(true);
+    expect(store().recordPlay()).toBe(false);
+  });
 });
 
 describe('streak freeze tokens', () => {
