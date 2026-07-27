@@ -41,6 +41,29 @@ export default function PvpJourneyScreen() {
         <Text style={s.headerEmoji}>{TIER_EMOJI[tierInfo.tier]}</Text>
       </View>
 
+      {__DEV__ && (
+        <View style={[s.debugRow, { flexDirection: rowDir(isRTL) }]}>
+          <PressScale
+            style={[s.debugBtn, { backgroundColor: colors.wrongPale, borderColor: colors.wrong }]}
+            onPress={() => profile.addPvpResult('win')}
+          >
+            <Ionicons name="bug-outline" size={14} color={colors.wrong} />
+            <Text style={[s.debugBtnTxt, { color: colors.wrong }]}>
+              +win ({profile.pvp.points} pts, city {tierInfo.city.index + 1}/20)
+            </Text>
+          </PressScale>
+          <PressScale
+            style={[s.debugBtn, { backgroundColor: colors.wrongPale, borderColor: colors.wrong }]}
+            onPress={() => useProfileStore.setState({
+              pvp: { ...profile.pvp, points: 0, winStreak: 0 },
+            })}
+          >
+            <Ionicons name="refresh-outline" size={14} color={colors.wrong} />
+            <Text style={[s.debugBtnTxt, { color: colors.wrong }]}>reset (Jakarta)</Text>
+          </PressScale>
+        </View>
+      )}
+
       <FlatList
         data={ladder}
         keyExtractor={(item) => item.city.id}
@@ -104,6 +127,12 @@ const s = StyleSheet.create({
   backBtn: { padding: 2 },
   title: { flex: 1, fontSize: 20, fontWeight: '700', textAlign: 'center' },
   headerEmoji: { fontSize: 20 },
+  debugRow: { gap: 8, marginHorizontal: 12, marginTop: 10 },
+  debugBtn: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    paddingVertical: 8, borderRadius: radii.md, borderWidth: 1,
+  },
+  debugBtnTxt: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
   list: { padding: 12 },
   mapSection: { gap: 12, marginBottom: 16 },
   summaryCard: { borderRadius: 12, borderWidth: 1, padding: 12, gap: 6 },

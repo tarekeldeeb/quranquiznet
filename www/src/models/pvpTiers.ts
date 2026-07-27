@@ -30,65 +30,58 @@ export function pvpTierTitle(tier: PvpTierId): string {
 
 interface CityDef {
   id: string;
-  lon: number;
-  lat: number;
+  // Position as a fraction (0..1) of assets/images/green-map.png — the real,
+  // bordered world map JourneyMap.tsx renders zoomed-in and pans across,
+  // not an abstract projection. Estimated by eye against that image (it
+  // conveniently already shades this exact Jakarta→Marrakech corridor in a
+  // darker green), not computed from real lon/lat — good enough for a
+  // panning background, not survey-accurate. Nudge these if the map image
+  // ever changes.
+  xFrac: number;
+  yFrac: number;
 }
 
 // East (Indonesia) → west (Morocco), through South/Central Asia, the Middle
-// East, the Balkans ("east Europe"), and North Africa — real-world
-// coordinates, so the route naturally zigzags a little (e.g. Baghdad → Mecca
-// dips south before Damascus goes back north) instead of being a straight
-// line. Easy to edit — this is content, not architecture.
+// East, the Balkans ("east Europe"), and North Africa — the zigzag (e.g.
+// Baghdad → Mecca dips south before Damascus goes back north) mirrors real
+// geography. Easy to edit — this is content, not architecture.
 const CITY_DEFS: CityDef[] = [
-  { id: 'jakarta', lon: 106.8, lat: -6.2 },
-  { id: 'kualaLumpur', lon: 101.7, lat: 3.1 },
-  { id: 'dhaka', lon: 90.4, lat: 23.8 },
-  { id: 'delhi', lon: 77.2, lat: 28.6 },
-  { id: 'lahore', lon: 74.3, lat: 31.5 },
-  { id: 'kabul', lon: 69.2, lat: 34.5 },
-  { id: 'tashkent', lon: 69.2, lat: 41.3 },
-  { id: 'tehran', lon: 51.4, lat: 35.7 },
-  { id: 'baghdad', lon: 44.4, lat: 33.3 },
-  { id: 'mecca', lon: 39.8, lat: 21.4 },
-  { id: 'medina', lon: 39.6, lat: 24.5 },
-  { id: 'damascus', lon: 36.3, lat: 33.5 },
-  { id: 'jerusalem', lon: 35.2, lat: 31.8 },
-  { id: 'istanbul', lon: 28.9, lat: 41.0 },
-  { id: 'sarajevo', lon: 18.4, lat: 43.9 },
-  { id: 'cairo', lon: 31.2, lat: 30.0 },
-  { id: 'tripoli', lon: 13.2, lat: 32.9 },
-  { id: 'tunis', lon: 10.2, lat: 36.8 },
-  { id: 'algiers', lon: 3.1, lat: 36.8 },
-  { id: 'marrakech', lon: -8.0, lat: 31.6 },
+  { id: 'jakarta', xFrac: 0.892, yFrac: 0.719 },
+  { id: 'kualaLumpur', xFrac: 0.840, yFrac: 0.612 },
+  { id: 'dhaka', xFrac: 0.768, yFrac: 0.327 },
+  { id: 'delhi', xFrac: 0.715, yFrac: 0.200 },
+  { id: 'lahore', xFrac: 0.720, yFrac: 0.235 },
+  { id: 'kabul', xFrac: 0.700, yFrac: 0.184 },
+  { id: 'tashkent', xFrac: 0.690, yFrac: 0.092 },
+  { id: 'tehran', xFrac: 0.645, yFrac: 0.153 },
+  { id: 'baghdad', xFrac: 0.592, yFrac: 0.201 },
+  { id: 'mecca', xFrac: 0.598, yFrac: 0.393 },
+  { id: 'medina', xFrac: 0.585, yFrac: 0.334 },
+  { id: 'damascus', xFrac: 0.578, yFrac: 0.162 },
+  { id: 'jerusalem', xFrac: 0.577, yFrac: 0.197 },
+  { id: 'istanbul', xFrac: 0.598, yFrac: 0.071 },
+  { id: 'sarajevo', xFrac: 0.565, yFrac: 0.08 },
+  { id: 'cairo', xFrac: 0.573, yFrac: 0.231 },
+  { id: 'tripoli', xFrac: 0.525, yFrac: 0.224 },
+  { id: 'tunis', xFrac: 0.499, yFrac: 0.247 },
+  { id: 'algiers', xFrac: 0.473, yFrac: 0.245 },
+  { id: 'marrakech', xFrac: 0.435, yFrac: 0.224 },
 ];
 
-// Projection bounds, baked from the dataset above (not recomputed at runtime,
-// so map layout is deterministic even if a city is nudged later).
-const LON_MIN = -8, LON_MAX = 106.8;
-const LAT_MIN = -6.2, LAT_MAX = 43.9;
-// padding keeps every city (and the avatar label rendered below it) clear of
-// the map card's rounded, overflow:hidden edge — the extremes of the route
-// (Jakarta east, Marrakech west) would otherwise sit close enough to the
-// corner that the label gets clipped.
-export const MAP_VIEWBOX = { width: 1000, height: 520, padding: 130 };
-
-/** Equirectangular projection into MAP_VIEWBOX — north up, east right (standard
- *  map convention). Deliberately NOT mirrored for RTL: it's a real map, not UI
- *  chrome. As a bonus, Jakarta (east/start) landing on the right and Marrakech
- *  (west/finish) on the left reads naturally alongside Arabic's right-to-left flow. */
-export function projectCity(lon: number, lat: number): { x: number; y: number } {
-  const { width, height, padding } = MAP_VIEWBOX;
-  const x = padding + ((lon - LON_MIN) / (LON_MAX - LON_MIN)) * (width - 2 * padding);
-  const y = padding + ((LAT_MAX - lat) / (LAT_MAX - LAT_MIN)) * (height - 2 * padding);
-  return { x, y };
-}
+// assets/images/green-map.png's own pixel dimensions, and the journey card's
+// (wider-than-the-viewport) aspect ratio — JourneyMap.tsx renders the image
+// at full viewport height, so it naturally overflows horizontally by
+// (imageAspect / viewportAspect)×, which is exactly the "zoomed in" look
+// asked for, no separate zoom constant to tune.
+export const JOURNEY_MAP_IMAGE_ASPECT = 2443 / 598;
+export const JOURNEY_VIEWPORT_ASPECT = 1.9;
 
 export interface PvpCity {
   index: number;       // 0..19, position along the route
   id: string;           // translation-key fragment, e.g. "jakarta"
   tier: PvpTierId;
-  x: number;
-  y: number;
+  xFrac: number;
+  yFrac: number;
   threshold: number;    // cumulative points required to have reached this city
 }
 
@@ -101,8 +94,7 @@ export const CITIES: PvpCity[] = (() => {
   return CITY_DEFS.map((def, index) => {
     const tier = tierForIndex(index);
     if (index > 0) cumulative += TIER_STEP_COST[tier];
-    const { x, y } = projectCity(def.lon, def.lat);
-    return { index, id: def.id, tier, x, y, threshold: cumulative };
+    return { index, id: def.id, tier, xFrac: def.xFrac, yFrac: def.yFrac, threshold: cumulative };
   });
 })();
 
