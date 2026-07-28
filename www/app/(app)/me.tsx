@@ -4,6 +4,7 @@ import {
   Alert, ActivityIndicator, Modal, Platform, Share, TextInput,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Stop, Rect } from 'react-native-svg';
 import { useRouter, useNavigation } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -20,6 +21,7 @@ import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
 import { getPvpTierInfo, PVP_TIER_COLOR } from '../../src/models/pvpTiers';
+import { CITY_IMAGES, CITY_IMAGE_ASPECT } from '../../src/models/cityImages';
 import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -35,6 +37,23 @@ const APP_ICON = require('../../assets/images/app-icon.png');
 const TIER_EMOJI: Record<string, string> = {
   bronze: '🥉', silver: '🥈', gold: '🥇', platinum: '💎', hafizGold: '🏆',
 };
+
+// Current city's photo as a soft backdrop for the PvP journey card — same
+// "fade in from the trailing edge" treatment as pvp-journey.tsx's city
+// ladder rows (see rowFadeStops there), just softened at both ends (never
+// fully opaque, never fully bare) so it reads as a semi-transparent photo
+// behind the whole card rather than a hard reveal in one corner.
+function pvpCardFadeStops(isRTL: boolean) {
+  return isRTL
+    ? [
+        { offset: '0%', opacity: 0.35 }, { offset: '15%', opacity: 0.35 },
+        { offset: '55%', opacity: 0.95 }, { offset: '100%', opacity: 0.95 },
+      ]
+    : [
+        { offset: '0%', opacity: 0.95 }, { offset: '45%', opacity: 0.95 },
+        { offset: '85%', opacity: 0.35 }, { offset: '100%', opacity: 0.35 },
+      ];
+}
 
 /** Small brand mark for the header's right slot — icon + app name, sitting
  * beside the personalized greeting (headerTitle, centered) rather than
@@ -448,6 +467,7 @@ export default function MeScreen() {
   const trend = score - yesterday;
   const rank = getRankInfo(score);
   const pvpTier = getPvpTierInfo(profile.pvp.points);
+  const pvpFadeStops = pvpCardFadeStops(isRTL);
 
   const today = new Date().toISOString().split('T')[0];
   // Treat an unconfirmed submission from today the same as completed — the
@@ -579,40 +599,65 @@ export default function MeScreen() {
         {/* ── PvP journey section: same shape as the study section above, but
             its own tier color (not the shared rank gold) and its own action
             — starting a live 1v1 match, the only thing that moves this bar —
-            so the two sections read as separate systems instead of twins. ── */}
-        <View style={[s.bentoFull, s.progressSection, { backgroundColor: colors.card }]}>
-          <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('pvpJourney.title')}</Text>
-          <PressScale style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/pvp-journey')}>
-            <View style={[s.rankBadgeSmall, { backgroundColor: colors.goldPale }]}>
-              <Text style={{ fontSize: 18 }}>{TIER_EMOJI[pvpTier.tier]}</Text>
+            so the two sections read as separate systems instead of twins.
+            The current city's photo sits behind it all as a semi-transparent
+            backdrop, faded the same way as pvp-journey.tsx's city rows (see
+            pvpCardFadeStops) — clipped in its own inner view so overflow:
+            hidden never eats the outer view's shadow. ── */}
+        <View style={s.bentoFull}>
+          <View style={[s.progressSection, s.pvpSection, { backgroundColor: colors.card }]}>
+            <View style={[StyleSheet.absoluteFill, s.pvpPhotoClip]}>
+              <Image
+                source={CITY_IMAGES[pvpTier.city.id]}
+                style={{ width: '100%', aspectRatio: CITY_IMAGE_ASPECT[pvpTier.city.id] }}
+              />
             </View>
-            <View style={s.rankColumn}>
-              <View style={[s.rankRow, { flexDirection: rowDir(isRTL) }]}>
-                <View style={[s.rankTitleRow, { flexDirection: rowDir(isRTL) }]}>
-                  <Text style={[s.rankTitle, { color: colors.ink }]}>{pvpTier.cityName}</Text>
-                  <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={14} color={colors.inkSoft} />
+            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+              <Defs>
+                <LinearGradient id="pvpCardFade" x1="0" y1="0" x2="1" y2="0">
+                  {pvpFadeStops.map((stop) => (
+                    <Stop key={stop.offset} offset={stop.offset} stopColor={colors.card} stopOpacity={stop.opacity} />
+                  ))}
+                </LinearGradient>
+              </Defs>
+              <Rect x="0" y="0" width="100%" height="100%" fill="url(#pvpCardFade)" />
+            </Svg>
+
+            <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('pvpJourney.title')}</Text>
+            <PressScale style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/pvp-journey')}>
+              <View style={[s.rankBadgeSmall, { backgroundColor: colors.goldPale }]}>
+                <Text style={{ fontSize: 18 }}>{TIER_EMOJI[pvpTier.tier]}</Text>
+              </View>
+              <View style={s.rankColumn}>
+                <View style={[s.rankRow, { flexDirection: rowDir(isRTL) }]}>
+                  <View style={[s.rankTitleRow, { flexDirection: rowDir(isRTL) }]}>
+                    <Text style={[s.rankTitle, { color: colors.ink }]}>{pvpTier.cityName}</Text>
+                    <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={14} color={colors.inkSoft} />
+                  </View>
+                  <View style={[s.pvpTierChip, { backgroundColor: colors.card }]}>
+                    <Text style={[s.rankNext, { color: colors.inkSoft, textAlign: isRTL ? 'left' : 'right' }]}>
+                      {pvpTier.tierTitle}
+                    </Text>
+                  </View>
                 </View>
-                <Text style={[s.rankNext, { color: colors.inkSoft, textAlign: isRTL ? 'left' : 'right' }]}>
-                  {pvpTier.tierTitle}
-                </Text>
+                <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
+                  <View style={[s.rankFill, { width: `${pvpTier.progress * 100}%`, backgroundColor: PVP_TIER_COLOR[pvpTier.tier], [isRTL ? 'right' : 'left']: 0 }]} />
+                </View>
               </View>
-              <View style={[s.rankTrack, { backgroundColor: colors.goldPale }]}>
-                <View style={[s.rankFill, { width: `${pvpTier.progress * 100}%`, backgroundColor: PVP_TIER_COLOR[pvpTier.tier], [isRTL ? 'right' : 'left']: 0 }]} />
-              </View>
-            </View>
-          </PressScale>
-          <PressScale
-            style={[s.sectionActionBtn, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold, flexDirection: rowDir(isRTL) }]}
-            onPress={startPvp}
-          >
-            <Ionicons name="flash" size={18} color={colors.goldDeep} />
-            <Text style={[s.sectionActionTxt, { color: colors.goldDeep }]}>{t('pvp.idleTitle')}</Text>
-            {pvpTotal > 0 && (
-              <View style={[s.sectionBadge, { backgroundColor: colors.goldPale }]}>
-                <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{t('me.pvpWinsBadge', { count: localeNum(profile.pvp.wins, lang) })}</Text>
-              </View>
-            )}
-          </PressScale>
+            </PressScale>
+            <PressScale
+              style={[s.sectionActionBtn, { backgroundColor: colors.card, borderWidth: 1.5, borderColor: colors.gold, flexDirection: rowDir(isRTL) }]}
+              onPress={startPvp}
+            >
+              <Ionicons name="flash" size={18} color={colors.goldDeep} />
+              <Text style={[s.sectionActionTxt, { color: colors.goldDeep }]}>{t('pvp.idleTitle')}</Text>
+              {pvpTotal > 0 && (
+                <View style={[s.sectionBadge, { backgroundColor: colors.goldPale }]}>
+                  <Text style={[s.wayBadgeTxt, { color: colors.goldDeep }]}>{t('me.pvpWinsBadge', { count: localeNum(profile.pvp.wins, lang) })}</Text>
+                </View>
+              )}
+            </PressScale>
+          </View>
         </View>
 
         {/* ── One hero at a time: the daily card until completed ── */}
@@ -825,6 +870,16 @@ const s = StyleSheet.create({
   // Progress section wrapper — pairs a labeled progress bar with the one
   // action that actually drives it (study rank / PvP journey each get one).
   progressSection: { padding: 14, gap: 12 },
+  // Own borderRadius (not just bentoFull's, on its bentoFull parent) so
+  // overflow: hidden clips the city-photo backdrop to the card's rounded
+  // corners without also clipping the parent's box shadow.
+  pvpSection: { borderRadius: radii.lg, overflow: 'hidden' },
+  // Same treatment as pvp-journey.tsx's city rows: full width at the photo's
+  // own aspect ratio (never stretched/cropped horizontally), centered
+  // vertically so only the top/bottom — never the sides — get clipped by
+  // pvpSection's overflow: hidden.
+  pvpPhotoClip: { justifyContent: 'center' },
+  pvpTierChip: { paddingHorizontal: 7, paddingVertical: 2, borderRadius: radii.pill },
   sectionLabel: { fontSize: 12, fontFamily: 'PlexArabic-Bold' },
   rankHeaderRow: { alignItems: 'flex-start', gap: 10 },
   rankBadgeSmall: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
