@@ -104,6 +104,10 @@
       "iosHint": "لأجهزة iPhone و iPad",
       "androidHint": "لأجهزة أندرويد"
     },
+    "rateAppHeader": "هل يعجبك التطبيق؟",
+    "rateAppLabelIos": "قيّم التطبيق على App Store",
+    "rateAppLabelAndroid": "قيّم التطبيق على Google Play",
+    "rateAppHint": "تقييمك يساعد الآخرين على اكتشاف تطبيق كويز القرآن",
     "signOut": "تسجيل الخروج",
     "signOutConfirmMsg": "سيتم مسح بيانات التطبيق المحلية. هل تريد المتابعة؟",
     "no": "لا",

@@ -39,6 +39,15 @@ const STORE_LINKS = [
   },
 ];
 
+// Store URL for rating the app, per platform — iOS opens straight into the
+// write-review flow; Android has no such deep link, so it lands on the
+// listing page where the rating prompt sits at the top.
+const RATE_APP_URL = Platform.select({
+  ios: 'itms-apps://apps.apple.com/app/id6790435986?action=write-review',
+  android: 'market://details?id=net.quranquiz',
+  default: '',
+});
+
 function notify(title: string, msg: string) {
   if (Platform.OS === 'web') {
     if (typeof window !== 'undefined') window.alert(`${title}\n\n${msg}`);
@@ -123,6 +132,14 @@ export default function SettingsScreen() {
   function handleLanguageChange(lang: Parameters<typeof profile.setLanguage>[0]) {
     profile.setLanguage(lang);
     void pushCurrentProfile();
+  }
+
+  function handleRateApp() {
+    if (!RATE_APP_URL) return;
+    const fallback = Platform.OS === 'android'
+      ? 'https://play.google.com/store/apps/details?id=net.quranquiz'
+      : 'https://apps.apple.com/app/id6790435986';
+    Linking.openURL(RATE_APP_URL).catch(() => Linking.openURL(fallback));
   }
 
   const SPECIAL_MIN_LEVEL = 2;
@@ -303,6 +320,28 @@ export default function SettingsScreen() {
             />
           </View>
         </View>
+
+        {/* Rate the app — native only */}
+        {Platform.OS !== 'web' && (
+          <View style={[s.section, { backgroundColor: colors.card }]}>
+            <Text style={[s.sectionHeader, { color: colors.ink, backgroundColor: colors.paper, borderColor: colors.line, textAlign: alignDir(isRTL) }]}>
+              {t('settings.rateAppHeader')}
+            </Text>
+            <PressScale
+              style={[s.storeRow, { borderColor: colors.line, flexDirection: rowDir(isRTL), borderBottomWidth: 0 }]}
+              onPress={handleRateApp}
+            >
+              <Ionicons name="star" size={22} color={colors.gold} />
+              <View style={[s.storeInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+                <Text style={[s.storeName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
+                  {t(Platform.OS === 'ios' ? 'settings.rateAppLabelIos' : 'settings.rateAppLabelAndroid')}
+                </Text>
+                <Text style={[s.storeHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.rateAppHint')}</Text>
+              </View>
+              <Ionicons name="open-outline" size={16} color={colors.inkSoft} />
+            </PressScale>
+          </View>
+        )}
 
         {/* Native app store links — web only */}
         {Platform.OS === 'web' && (

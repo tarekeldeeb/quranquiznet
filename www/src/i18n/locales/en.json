@@ -104,6 +104,10 @@
       "iosHint": "For iPhone and iPad",
       "androidHint": "For Android devices"
     },
+    "rateAppHeader": "Enjoying the App?",
+    "rateAppLabelIos": "Rate on the App Store",
+    "rateAppLabelAndroid": "Rate on Google Play",
+    "rateAppHint": "Your review helps others discover Quran Quiz Net",
     "signOut": "Sign Out",
     "signOutConfirmMsg": "Local app data will be cleared. Do you want to continue?",
     "no": "No",
