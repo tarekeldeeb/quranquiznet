@@ -161,15 +161,22 @@ PLIST
 
   EXPORT_ARGS=(-exportArchive -archivePath "$ARCHIVE_PATH" -exportPath "$EXPORT_DIR" -exportOptionsPlist "$EXPORT_OPTIONS" -allowProvisioningUpdates)
   if [[ "$UPLOAD_IOS" == "1" ]]; then
-    ASC_KEY="/Users/tarek/.appstoreconnect/private_keys/AuthKey_L2PLHJ565P.p8"
-    [[ -f "$ASC_KEY" ]] || { echo "release.sh: ASC API key not found at $ASC_KEY (needed to upload; pass --no-upload to skip)" >&2; exit 1; }
-    EXPORT_ARGS+=(-authenticationKeyPath "$ASC_KEY" -authenticationKeyID L2PLHJ565P -authenticationKeyIssuerID 8864d41f-f7d9-474a-bdc4-289d262d4bf2)
+    # Reuse the same ASC API key already configured for `eas submit` in
+    # eas.json (submit.production.ios) rather than duplicating it here.
+    eval "$(node -e "const c=require('./eas.json').submit.production.ios; console.log('ASC_KEY_PATH='+c.ascApiKeyPath); console.log('ASC_KEY_ID='+c.ascApiKeyId); console.log('ASC_KEY_ISSUER_ID='+c.ascApiKeyIssuerId);")"
+    [[ -f "$ASC_KEY_PATH" ]] || { echo "release.sh: ASC API key not found at $ASC_KEY_PATH (needed to upload; pass --no-upload to skip)" >&2; exit 1; }
+    EXPORT_ARGS+=(-authenticationKeyPath "$ASC_KEY_PATH" -authenticationKeyID "$ASC_KEY_ID" -authenticationKeyIssuerID "$ASC_KEY_ISSUER_ID")
   fi
   echo "==> [iOS] xcodebuild -exportArchive (destination=$DESTINATION)"
   xcodebuild "${EXPORT_ARGS[@]}"
 
-  IOS_IPA="$(find "$EXPORT_DIR" -maxdepth 1 -name '*.ipa' | head -n1)"
-  [[ "$UPLOAD_IOS" == "1" ]] && echo "==> [iOS] uploaded build $RELEASE_VERSION ($RELEASE_IOS_BUILD) to App Store Connect"
+  if [[ "$UPLOAD_IOS" == "1" ]]; then
+    # destination=upload sends the ipa straight to App Store Connect and
+    # doesn't leave a local copy in $EXPORT_DIR — nothing to find.
+    echo "==> [iOS] uploaded build $RELEASE_VERSION ($RELEASE_IOS_BUILD) to App Store Connect"
+  else
+    IOS_IPA="$(find "$EXPORT_DIR" -maxdepth 1 -name '*.ipa' | head -n1)"
+  fi
 fi
 
 if [[ "$DO_ANDROID" == "1" ]]; then
@@ -221,9 +228,9 @@ fi
 
 echo
 echo "==> Done — version=$RELEASE_VERSION  ios.buildNumber=$RELEASE_IOS_BUILD  android.versionCode=$RELEASE_ANDROID_VERSION_CODE"
-if [[ -n "$IOS_IPA" ]]; then
+if [[ "$DO_IOS" == "1" ]]; then
   if [[ "$UPLOAD_IOS" == "1" ]]; then
-    echo "    iOS ipa:     $IOS_IPA (uploaded to App Store Connect)"
+    echo "    iOS:         uploaded to App Store Connect (build $RELEASE_IOS_BUILD) — no local .ipa kept"
   else
     echo "    iOS ipa:     $IOS_IPA (not uploaded — rerun without --no-upload, or upload manually)"
   fi
