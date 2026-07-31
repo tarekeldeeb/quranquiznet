@@ -7,8 +7,8 @@ jest.mock('@expo/vector-icons', () => ({ Ionicons: () => null }));
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 
 import React from 'react';
-import { StyleSheet } from 'react-native';
-import { render, act } from '@testing-library/react-native';
+import { StyleSheet, Share } from 'react-native';
+import { render, act, fireEvent } from '@testing-library/react-native';
 import QuizCard, { CardData, reachesNewSuraContent } from '../QuizCard';
 import { makeEmptyQO } from '../../models/questionnaire';
 import { SURA_IDX, QURAN_WORDS } from '../../models/constants';
@@ -113,6 +113,31 @@ describe('QuizCard flip face', () => {
     // Fix: the card returns to its front face (front back in flow).
     expect(isAbsolute(view.getByTestId('quiz-card-front'))).toBe(false);
     expect(isAbsolute(view.getByTestId('quiz-card-back'))).toBe(true);
+    jest.useRealTimers();
+  });
+});
+
+// Regression: sharing "compete with me" duplicated the link. Share.share()
+// was given the link both embedded in `message` and again as a separate `url`
+// field — share targets that surface both (e.g. iMessage) pasted it twice.
+// The fix drops the redundant `url` field.
+describe('QuizCard — compete share', () => {
+  it('shares the compete message with the link only once, not also as a separate `url`', async () => {
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+    // The compete button lives on the back face, which only becomes
+    // interactive (pointerEvents: 'auto') once the reveal+flip animation
+    // settles — same setup as the "resets to front" flip test above.
+    jest.useFakeTimers();
+    const view = render(<QuizCard {...props(2)} />);
+    act(() => { jest.advanceTimersByTime(1200); });
+
+    fireEvent.press(view.getByText(/نافس/));
+
+    expect(shareSpy).toHaveBeenCalled();
+    const arg = shareSpy.mock.calls[0][0] as { message?: string; url?: string };
+    expect(arg.message).toContain(makeCard().socialURL);
+    expect(arg.url).toBeUndefined();
+    shareSpy.mockRestore();
     jest.useRealTimers();
   });
 });

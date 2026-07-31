@@ -20,16 +20,22 @@ jest.mock('expo-router', () => {
   };
 });
 
+const mockCreateNextDailyQ = jest.fn((..._a: unknown[]) => Promise.resolve(true));
+// A plain data property copied onto the module's mock object would get
+// snapshotted by each file's own `import *` interop wrapper — mutating it from
+// the test wouldn't be visible to quiz.tsx's separately-wrapped copy. A getter
+// backed by this closure variable stays live across both.
+let mockPendingDailyStart = false;
 jest.mock('../../../src/services/questionnaireService', () => {
   const { makeEmptyQO } = require('../../../src/models/questionnaire');
   return {
     qo: makeEmptyQO(),
-    pendingDailyStart: false,
+    get pendingDailyStart() { return mockPendingDailyStart; },
     clearPendingDailyStart: jest.fn(),
     initQuestionnaire: jest.fn(),
     initDailyQuiz: jest.fn(),
     createNextQ: jest.fn(() => Promise.resolve()),
-    createNextDailyQ: jest.fn(() => Promise.resolve(true)),
+    createNextDailyQ: (...a: unknown[]) => mockCreateNextDailyQ(...a),
     getUpScore: jest.fn(() => 10),
   };
 });
@@ -56,7 +62,8 @@ jest.mock('../../../src/services/notifications', () => ({
 }));
 
 import React from 'react';
-import { render, waitFor } from '@testing-library/react-native';
+import { Share } from 'react-native';
+import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import QuizScreen from '../quiz';
 import { useProfileStore, StudyPart } from '../../../src/stores/profileStore';
@@ -70,6 +77,8 @@ function part(name: string, checked: boolean, correct = 1, questions = 5): Study
 
 beforeEach(() => {
   mockPush.mockClear(); mockReplace.mockClear();
+  mockCreateNextDailyQ.mockReset(); mockCreateNextDailyQ.mockResolvedValue(true);
+  mockPendingDailyStart = false;
   useProfileStore.setState({
     parts: [
       part('الفاتحة', true, 5, 5),
@@ -115,5 +124,29 @@ describe('Quiz entry — chooser', () => {
     renderQuiz();
     await waitFor(() => {}, { timeout: 50 }).catch(() => {});
     expect(mockReplace).not.toHaveBeenCalled();
+  });
+});
+
+// Regression: sharing the daily-quiz result duplicated the link. Share.share()
+// was given the link both embedded in `message` and again as a separate `url`
+// field — share targets that surface both (e.g. iMessage) pasted it twice.
+// The fix drops the redundant `url` field.
+describe('Quiz — daily end share', () => {
+  it('shares the daily score with the link only once, not also as a separate `url`', async () => {
+    // A daily session that ends on its very first question (no more questions
+    // to draw) is enough to reach the daily-end modal without answering any.
+    mockCreateNextDailyQ.mockResolvedValueOnce(false);
+    mockPendingDailyStart = true;
+
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+    const { findByText } = renderQuiz();
+
+    fireEvent.press(await findByText('شارك النتيجة'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+    const arg = shareSpy.mock.calls[0][0] as { message?: string; url?: string };
+    expect(arg.message).toContain('https://quranquiz.net');
+    expect(arg.url).toBeUndefined();
+    shareSpy.mockRestore();
   });
 });

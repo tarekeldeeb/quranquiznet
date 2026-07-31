@@ -46,7 +46,7 @@ jest.mock('../../../src/services/notifications', () => ({
 }));
 
 import React from 'react';
-import { Alert } from 'react-native';
+import { Alert, Share } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import MeScreen from '../me';
@@ -156,5 +156,26 @@ describe('Me dashboard — guest upgrade [bug #3]', () => {
     await waitFor(() => expect(mockSignInGoogle).toHaveBeenCalled());
     await waitFor(() => expect(alertSpy).toHaveBeenCalledWith('خطأ', expect.any(String)));
     alertSpy.mockRestore();
+  });
+});
+
+// Regression: sharing the daily score duplicated the link. Share.share() was
+// given the link both embedded in `message` and again as a separate `url`
+// field — share targets that surface both (e.g. iMessage) pasted it twice.
+// The fix drops the redundant `url` field.
+describe('Me dashboard — daily score share', () => {
+  it('shares the score with the link only once, not also as a separate `url`', async () => {
+    useProfileStore.setState({ lastDailyCompletedDate: today(), lastDailyScore: 42 });
+    mockGetDailyHead.mockResolvedValue(head());
+    const shareSpy = jest.spyOn(Share, 'share').mockResolvedValue({ action: Share.sharedAction });
+
+    const { findByTestId } = renderMe();
+    fireEvent.press(await findByTestId('daily-score-share-button'));
+
+    await waitFor(() => expect(shareSpy).toHaveBeenCalled());
+    const arg = shareSpy.mock.calls[0][0] as { message?: string; url?: string };
+    expect(arg.message).toContain('https://quranquiz.net');
+    expect(arg.url).toBeUndefined();
+    shareSpy.mockRestore();
   });
 });

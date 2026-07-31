@@ -675,7 +675,7 @@ export default function MeScreen() {
               </Text>
               {dailyRankLine && <Text style={[s.rankLine, { color: colors.goldDeep, textAlign: alignDir(isRTL) }]}>{dailyRankLine}</Text>}
             </View>
-            <PressScale onPress={shareScore} hitSlop={6}>
+            <PressScale onPress={shareScore} hitSlop={6} testID="daily-score-share-button">
               <Ionicons name="share-social-outline" size={18} color={colors.correct} />
             </PressScale>
           </View>
