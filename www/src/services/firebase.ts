@@ -458,7 +458,16 @@ export async function submitDailyResult(score: {
   try {
     const head = await getDailyHead();
     if (!head) return false;
-    await push(ref(getFirebaseDb(), `/daily/${head.submit_to_ref}`), score);
+    // Same undefined-value hazard as joinPvpQueue/writeMyPvpState — country
+    // (geo-detection may not have resolved yet) is frequently absent, and the
+    // RTDB SDK throws synchronously on any undefined nested value, which was
+    // silently and *permanently* failing the submission (retries hit the same
+    // undefined every time — no amount of network reliability fixes this).
+    const clean: Record<string, unknown> = { ...score };
+    for (const key of Object.keys(clean)) {
+      if (clean[key] === undefined) delete clean[key];
+    }
+    await push(ref(getFirebaseDb(), `/daily/${head.submit_to_ref}`), clean);
     return true;
   } catch (e) {
     console.error('submitDailyResult error:', e);

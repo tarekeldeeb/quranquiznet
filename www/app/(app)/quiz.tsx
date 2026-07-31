@@ -869,15 +869,21 @@ export default function QuizScreen() {
       uid: profile.uid,
       country: profile.country || undefined,
     };
+    // Persist the pending submission *before* attempting the write, not just
+    // on failure — the result screen above is already shown, so a user who
+    // closes/backgrounds the app during the retry+backoff window (several
+    // seconds on a bad connection) must not lose the completion with no
+    // trace: flushPendingDailySubmit (app start + checkForDailyQuiz) can only
+    // recover what was actually saved to disk before that happened.
+    profile.setPendingDailySubmit({ ...payload, date: today });
     // Only mark the quiz "completed" once the write is actually confirmed —
     // a completion that never reaches /daily/head_submit shouldn't block a
     // retry (see checkForDailyQuiz + profileStore.flushPendingDailySubmit).
     const confirmed = await FB.submitDailyResultWithRetry(payload);
     if (confirmed) {
       profile.markDailyCompleted(finalScore);
+      profile.setPendingDailySubmit(null);
       void FB.pushCurrentProfile();
-    } else {
-      profile.setPendingDailySubmit({ ...payload, date: today });
     }
     // Best-effort rank comparison against today's live standings — read after
     // the score post so the fresh submission is included; falls back gracefully
