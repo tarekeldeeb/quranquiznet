@@ -103,6 +103,7 @@ module.exports = ({ config }) => {
     plugins: [
       ...(config.plugins || []),
       './plugins/withFmtConstevalFix',
+      './plugins/withAndroidReleaseSigning',
     ],
     ios: {
       ...config.ios,

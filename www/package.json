@@ -1,6 +1,6 @@
 {
   "name": "quranquiznet",
-  "version": "2.3.0",
+  "version": "2.3.1",
   "main": "expo-router/entry",
   "scripts": {
     "start": "expo start --dev-client",
@@ -9,6 +9,7 @@
     "web": "expo start --web",
     "build:web": "expo export --platform web --clear",
     "sync:madina": "node scripts/sync-madina-assets.mjs",
+    "release": "bash scripts/release.sh",
     "test": "jest --watchAll",
     "test:ci": "jest --ci --runInBand",
     "lint": "eslint ."

@@ -2,7 +2,7 @@
   "expo": {
     "name": "quran-quiz-شبكة-اختبار-القران",
     "slug": "quranquiznet",
-    "version": "2.3.0",
+    "version": "2.3.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quranquiz",
@@ -10,13 +10,15 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "9",
+      "buildNumber": "10",
       "appleTeamId": "FNSP52WBLF",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "associatedDomains": ["applinks:quranquiz.net"]
+      "associatedDomains": [
+        "applinks:quranquiz.net"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -24,7 +26,7 @@
         "backgroundColor": "#0d2d4e"
       },
       "package": "net.quranquiz",
-      "versionCode": 15,
+      "versionCode": 16,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
@@ -37,7 +39,10 @@
               "pathPrefix": "/add"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
