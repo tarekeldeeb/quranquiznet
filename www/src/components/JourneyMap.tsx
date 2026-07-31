@@ -74,8 +74,13 @@ export default function JourneyMap({ currentIndex, avatarUri, colors, onPressCur
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentIndex]);
 
-  const mapLayerStyle = useAnimatedStyle(() => ({ left: pct(pan.value) }));
-  const avatarStyle = useAnimatedStyle(() => ({ left: pct(avatarX.value), top: pct(avatarY.value) }));
+  // Inlined rather than calling pct() — a worklet (this callback is
+  // auto-workletized by Reanimated's Babel plugin) can't call a plain JS
+  // function that isn't itself a worklet: it lives on the JS thread's Hermes
+  // instance, not the UI thread's, so invoking it from here throws and takes
+  // the whole app down (uncaught native exception, no JS red-box to catch it).
+  const mapLayerStyle = useAnimatedStyle(() => ({ left: `${pan.value}%` }));
+  const avatarStyle = useAnimatedStyle(() => ({ left: `${avatarX.value}%`, top: `${avatarY.value}%` }));
 
   return (
     <View style={[s.wrap, { aspectRatio: JOURNEY_VIEWPORT_ASPECT, backgroundColor: colors.paper, borderColor: colors.line }]}>

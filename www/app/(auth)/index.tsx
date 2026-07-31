@@ -8,6 +8,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTranslation } from 'react-i18next';
 import { signInAnon, signInGoogle, signInFacebook, signInApple, onAuthChange } from '../../src/services/firebase';
+import { consumePendingDeepLink } from '../../src/services/pendingDeepLink';
 import { useTheme, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -59,6 +60,14 @@ export default function AuthScreen() {
   useEffect(() => {
     const unsub = onAuthChange((user) => {
       if (!user) return;
+      // A deep link (e.g. an "add friend" link) that bounced here before
+      // sign-in takes priority over the usual post-sign-in destination —
+      // otherwise it'd silently be dropped.
+      const pendingDeepLink = consumePendingDeepLink();
+      if (pendingDeepLink) {
+        router.replace(pendingDeepLink as Parameters<typeof router.replace>[0]);
+        return;
+      }
       // Guests land on Study Parts first to build a basic profile; social
       // sign-ins already have (or will sync) a real profile, so they go
       // straight in.
