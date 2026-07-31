@@ -1,5 +1,5 @@
 // Bottom-tab navigator — mirrors the side-menu in www/templates/menu.html
-import { Tabs, useRouter } from 'expo-router';
+import { Tabs, useRouter, usePathname } from 'expo-router';
 import { useEffect, useState } from 'react';
 import { Image, Text, View, StyleSheet, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import {
   onAuthChange, fetchRemoteProfile, pushCurrentProfile, armPresence,
   watchIncomingPvpInvites, acceptPvpInvite, declinePvpInvite, createPvpMatch, type PvpInviteEntry,
 } from '../../src/services/firebase';
+import { setPendingDeepLink } from '../../src/services/pendingDeepLink';
 
 import {
   scopeFromParts, commonLevel, intersectScope, newMatchSeed, PVP_ROUNDS, type PvpMatchMeta,
@@ -83,6 +84,7 @@ async function detectCountry(setCountry: (c: string) => void) {
 
 export default function AppLayout() {
   const router = useRouter();
+  const pathname = usePathname();
   const profile = useProfileStore();
   const { colors } = useTheme();
   const { t } = useTranslation();
@@ -92,6 +94,10 @@ export default function AppLayout() {
     detectCountry(profile.setCountry);
     const unsub = onAuthChange(async (user) => {
       if (!user) {
+        // A deep link (e.g. an "add friend" link) landed here before the
+        // visitor had signed in — remember it so (auth) can send them
+        // straight back instead of dropping it on the floor.
+        if (pathname && pathname !== '/') setPendingDeepLink(pathname);
         router.replace('/(auth)');
         return;
       }
