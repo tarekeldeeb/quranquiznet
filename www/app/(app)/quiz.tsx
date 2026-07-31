@@ -895,12 +895,13 @@ export default function QuizScreen() {
 
   async function shareScoreDaily() {
     try {
+      // message already embeds the url; don't also pass `url`, or share
+      // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
         message: t('quiz.dailyEnd.shareMsg', {
           score: dailyFinalScore,
           appName: t('common.appName'),
         }),
-        url: 'https://quranquiz.net',
       });
     } catch { /* ignore */ }
   }

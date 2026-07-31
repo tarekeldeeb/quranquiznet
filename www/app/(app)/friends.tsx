@@ -128,9 +128,10 @@ export default function FriendsScreen() {
     // (app)/add/[code].tsx, which this path already routes to.
     const link = `https://quranquiz.net/add/${myCode}`;
     try {
+      // message already embeds the link; don't also pass `url`, or share
+      // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
         message: t('friends.shareMessage', { code: myCode, link }),
-        url: link,
       });
     } catch { /* ignore */ }
   }

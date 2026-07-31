@@ -239,12 +239,13 @@ export default function QuizCard({
 
   async function handleShare() {
     try {
+      // message already embeds the url; don't also pass `url`, or share
+      // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
         message: t('quizCard.shareMsg', {
           appName: t('common.appName'),
           url: card.socialURL,
         }),
-        url: card.socialURL,
       });
     } catch { /* ignore */ }
   }

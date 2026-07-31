@@ -439,9 +439,10 @@ export default function MeScreen() {
       ? profile.lastDailyScore
       : profile.pendingDailySubmit?.score ?? profile.lastDailyScore;
     try {
+      // message already embeds the url; don't also pass `url`, or share
+      // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
         message: `حصلت على ${score} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
-        url: 'https://quranquiz.net',
       });
     } catch { /* ignore */ }
   }
