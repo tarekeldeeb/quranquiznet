@@ -110,7 +110,7 @@ export default function PvpJourneyScreen() {
                 style={{ width: '100%', aspectRatio: CITY_IMAGE_ASPECT[item.city.id] }}
               />
             </View>
-            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
               <Defs>
                 <LinearGradient id={`rowFade-${item.city.id}`} x1="0" y1="0" x2="1" y2="0">
                   {fadeStops.map((stop) => (
@@ -118,7 +118,7 @@ export default function PvpJourneyScreen() {
                   ))}
                 </LinearGradient>
               </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill={`url(#rowFade-${item.city.id})`} />
+              <Rect x="0" y="0" width="100" height="100" fill={`url(#rowFade-${item.city.id})`} />
             </Svg>
 
             <View style={[s.rowContent, { flexDirection: rowDir(isRTL) }]}>

@@ -613,7 +613,7 @@ export default function MeScreen() {
                 style={{ width: '100%', aspectRatio: CITY_IMAGE_ASPECT[pvpTier.city.id] }}
               />
             </View>
-            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
               <Defs>
                 <LinearGradient id="pvpCardFade" x1="0" y1="0" x2="1" y2="0">
                   {pvpFadeStops.map((stop) => (
@@ -621,7 +621,7 @@ export default function MeScreen() {
                   ))}
                 </LinearGradient>
               </Defs>
-              <Rect x="0" y="0" width="100%" height="100%" fill="url(#pvpCardFade)" />
+              <Rect x="0" y="0" width="100" height="100" fill="url(#pvpCardFade)" />
             </Svg>
 
             <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('pvpJourney.title')}</Text>
