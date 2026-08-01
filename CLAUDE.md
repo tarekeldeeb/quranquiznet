@@ -41,8 +41,12 @@ npx expo export --clear               # ALWAYS pass --clear on a version bump,
 # Type check
 npx tsc --noEmit
 
-# Tests (Jest)
-npm test
+# Tests (Jest) — use test:ci for a single run; plain `npm test` is watch mode
+# (--watchAll) and never exits
+npm run test:ci
+
+# Cloud Functions tests (node --test, run from functions/)
+cd ../functions && npm test
 
 # Deploy hosting (after expo export)
 firebase deploy --only hosting

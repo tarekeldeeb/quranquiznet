@@ -4,6 +4,7 @@ const { onValueCreated } = require('firebase-functions/v2/database');
 const logger = require('firebase-functions/logger');
 const { sendPush, isCategoryEnabled } = require('./push.js');
 const { streaksched } = require('./streak.js');
+const { mergeDayIntoMonthTotals, topOfMonth } = require('./monthTotals.js');
 exports.streaksched = streaksched;
 
 // The Firebase Admin SDK to access the Realtime Database.
@@ -68,33 +69,34 @@ exports.weeklysched = onSchedule('every 168 hours', async () => {
 });
 
 function dailyQuiz() {
-  return admin.database().ref('daily/head_submit').orderByChild('score').limitToLast(5).once('value')
-    .then(async function (top5) {
-      // Get Top-5 of Today's Quiz
-      var yesterday = [];
-      top5.forEach(function (t) {
-        yesterday.push(t.val());
-      });
-      yesterday.reverse();
-      // Store them in Yesterday
-      if (yesterday.length > 0) {
+  // Full day's submissions, not a top-5 query: the monthly board is cumulative
+  // per uid, so every participant's score counts — the consistent mid-field
+  // player is exactly who the old top-5-only merge kept invisible.
+  return admin.database().ref('daily/head_submit').once('value')
+    .then(async function (subsSnap) {
+      var submissions = Object.values(subsSnap.val() || {});
+      if (submissions.length > 0) {
+        // Yesterday's report stays a best-first top-5 of single-day scores.
+        var yesterday = submissions.slice().sort(function (a, b) {
+          return (b.score || 0) - (a.score || 0);
+        }).slice(0, 5);
         await admin.database().ref('daily/reports/yday').set(yesterday);
 
-        // Merge into this calendar month's leaderboard. Resets automatically
-        // on the first run of a new month: the stored month key won't match,
-        // so the old accumulated entries are dropped instead of carried over.
+        // Merge everyone into this month's cumulative per-uid totals. Resets
+        // automatically on the first run of a new month: the stored month key
+        // won't match, so old totals are dropped instead of carried over.
         var monthKey = new Date().toISOString().slice(0, 7); // "YYYY-MM"
         var storedMonth = await admin.database().ref('daily/reports/month_key').once('value');
-        var arr_old = [];
+        var totals = {};
         if (storedMonth.val() === monthKey) {
-          var old = await admin.database().ref('daily/reports/month').once('value');
-          arr_old = old.val() || [];
+          var old = await admin.database().ref('daily/reports/month_totals').once('value');
+          totals = old.val() || {};
         }
-        var oldPlusYesterday = arr_old.concat(yesterday);
-        oldPlusYesterday.sort(function (a, b) {
-          return (a.score > b.score) ? -1 : ((b.score > a.score) ? 1 : 0);
-        });
-        await admin.database().ref('daily/reports/month').set(oldPlusYesterday.slice(0, 10));
+        totals = mergeDayIntoMonthTotals(totals, submissions);
+        await admin.database().ref('daily/reports/month_totals').set(totals);
+        // Legacy mirror: shipped clients read a top-10 array at reports/month;
+        // they get the same cumulative standings, just without own-rank/days.
+        await admin.database().ref('daily/reports/month').set(topOfMonth(totals, 10));
         await admin.database().ref('daily/reports/month_key').set(monthKey);
       }
 
