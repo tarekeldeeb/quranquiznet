@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useRootNavigationState, type Href } from 'expo-router';
 import {
   I18nManager, ActivityIndicator, View, Text, TextInput, ImageBackground, Platform, StyleSheet,
 } from 'react-native';
@@ -11,7 +11,7 @@ import i18n from '../src/i18n';
 import { initDb } from '../src/db/initDb';
 import { initMadinaAssets } from '../src/services/madinaAssets';
 import { getFirebaseApp, flushPendingDailySubmit } from '../src/services/firebase';
-import { configureNotifications } from '../src/services/notifications';
+import { configureNotifications, observeNotificationTaps } from '../src/services/notifications';
 import { useProfileStore } from '../src/stores/profileStore';
 import { Analytics } from '../src/components/Analytics';
 import { ConsentBanner } from '../src/components/ConsentBanner';
@@ -138,6 +138,24 @@ const webStyles = StyleSheet.create({
   },
 });
 
+// Routes taps on server pushes (PvP challenges, friend requests) to their
+// screen — including the tap that cold-started the app. That launch tap can
+// only be acted on once the navigation tree under <Stack> exists (navigating
+// earlier throws), so this renders inside the ready branch below and
+// additionally waits for the root navigation state instead of running at
+// module scope like configureNotifications above. `navigate` (not `push`)
+// because the entry redirect may already have landed on /me — don't stack a
+// duplicate under the back button in that case.
+function NotificationTapRouter() {
+  const router = useRouter();
+  const navReady = Boolean(useRootNavigationState()?.key);
+  useEffect(() => {
+    if (!navReady) return;
+    return observeNotificationTaps((path) => router.navigate(path as Href));
+  }, [navReady, router]);
+  return null;
+}
+
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
   const [dbProgress, setDbProgress] = useState(0);
@@ -210,6 +228,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <Analytics />
+      <NotificationTapRouter />
       <WebFrame>
         <I18nextProvider i18n={i18n}>
           <Stack screenOptions={{ headerShown: false }} />
