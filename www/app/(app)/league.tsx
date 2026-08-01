@@ -48,7 +48,10 @@ export default function LeagueScreen() {
   const [status, setStatus] = useState<Status>('loading');
   const [head, setHead] = useState<DailyHead | null>(null);
   const [yday, setYday] = useState<LeaderboardEntry[]>([]);
-  const [monthTop, setMonthTop] = useState<LeaderboardEntry[]>([]);
+  // Full month standings (cumulative per-uid totals, best-first, unbounded) —
+  // kept whole so the user's own monthly rank is computable even when they're
+  // far outside the top-10 slice the list displays.
+  const [monthAll, setMonthAll] = useState<LeaderboardEntry[]>([]);
   const [ydayLoaded, setYdayLoaded] = useState(false);
   const [monthLoaded, setMonthLoaded] = useState(false);
   // Today's live, unbounded standings (every submission so far today) — the
@@ -87,7 +90,7 @@ export default function LeagueScreen() {
       setYdayLoaded(true);
     }).then((unsub) => { if (cancelled) unsub(); else unsubYday = unsub; });
     const unsubMonth = subscribeMonthlyTopReport((entries) => {
-      setMonthTop(entries.slice(0, 10));
+      setMonthAll(entries);
       setMonthLoaded(true);
     });
     const unsubToday = subscribeTodayStandings(setTodayStandings);
@@ -127,9 +130,12 @@ export default function LeagueScreen() {
     ]);
   }
 
-  const listData = tab === 'today' ? todayStandings : tab === 'yesterday' ? yday : monthTop;
+  const listData = tab === 'today' ? todayStandings : tab === 'yesterday' ? yday : monthAll.slice(0, 10);
   const reportsLoading = tab === 'today' ? false : tab === 'yesterday' ? !ydayLoaded : !monthLoaded;
   const ownRank = findOwnRank(todayStandings, profile.uid);
+  // Own monthly rank — only rendered as an extra tail row when the user is
+  // outside the displayed top-10 (inside it, their own row is already lit up).
+  const monthOwnRank = tab === 'month' ? findOwnRank(monthAll, profile.uid, 0) : null;
 
   // Movement vs yesterday — only computable where we have real data: the
   // اليوم tab, cross-referenced against yesterday's own top-N report. Rows
@@ -151,6 +157,19 @@ export default function LeagueScreen() {
   const podium = listData.length >= 3 ? listData.slice(0, 3) : [];
   const rest = listData.length >= 3 ? listData.slice(3) : listData;
 
+  // Days-played chip for cumulative month rows: calendar icon + localized
+  // count. Language-neutral on purpose — no pluralized string to translate
+  // into every locale. Renders nothing for single-day entries (no days field).
+  function daysChipFor(item: LeaderboardEntry) {
+    if (item.days == null) return null;
+    return (
+      <View style={[s.daysChip, { flexDirection: rowDir(isRTL) }]}>
+        <Ionicons name="calendar-clear-outline" size={11} color={colors.inkSoft} />
+        <Text style={[s.daysChipTxt, { color: colors.inkSoft }]}>{localeNum(item.days, language)}</Text>
+      </View>
+    );
+  }
+
   function renderRow({ item, index }: { item: LeaderboardEntry; index: number }) {
     const rank = index + podium.length + 1; // podium (if any) covers 1..podium.length
     const isMe = item.uid === profile.uid;
@@ -161,6 +180,7 @@ export default function LeagueScreen() {
         <Text style={[s.rank, { color: colors.inkSoft }]}>{localeNum(rank, language)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
         <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? t('common.guestName')}</Text>
+        {daysChipFor(item)}
         {delta != null && delta !== 0 && (
           <Text style={[s.delta, delta > 0 ? { color: colors.correct } : { color: colors.wrong }]}>
             {delta > 0 ? `▲${localeNum(delta, language)}` : `▼${localeNum(Math.abs(delta), language)}`}
@@ -180,6 +200,7 @@ export default function LeagueScreen() {
         <Text style={[s.rank, { color: colors.inkSoft }]}>{item.rank <= 3 ? MEDAL[item.rank - 1] : localeNum(item.rank, language)}</Text>
         {flag ? <Text style={s.rowFlag}>{flag}</Text> : <View style={s.rowFlagPlaceholder} />}
         <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }, isMe && { fontFamily: 'PlexArabic-Bold', color: colors.goldDeep }]} numberOfLines={1}>{item.name ?? t('common.guestName')}</Text>
+        {daysChipFor(item)}
         <Text style={[s.rowScore, { color: colors.ink, textAlign: isRTL ? 'left' : 'right' }, isMe && { color: colors.goldDeep }]}>{localeNum(item.score, language)}</Text>
       </View>
     );
@@ -301,6 +322,14 @@ export default function LeagueScreen() {
                   {renderRow({ item, index })}
                 </Fragment>
               ))}
+              {/* Your own monthly standing when it falls below the top-10 —
+                  the cumulative feed is unbounded, so the real rank is known. */}
+              {monthOwnRank && monthOwnRank.rank > listData.length && (
+                <>
+                  <Text style={[s.moreDots, { color: colors.inkSoft }]}>⋯</Text>
+                  {renderNeighborRow(monthOwnRank.entry, true)}
+                </>
+              )}
             </>
           )}
         </View>
@@ -373,6 +402,9 @@ const s = StyleSheet.create({
   rowFlag: { fontSize: 18, width: 28, textAlign: 'center' },
   rowFlagPlaceholder: { width: 28 },
   rowName: { flex: 1, fontSize: 14 },
+  daysChip: { alignItems: 'center', gap: 3 },
+  daysChipTxt: { fontSize: 11, fontFamily: 'PlexArabic-SemiBold' },
+  moreDots: { textAlign: 'center', fontSize: 16, lineHeight: 16, marginTop: 2 },
   delta: { fontSize: 11, fontFamily: 'PlexArabic-Bold' },
   rowScore: { fontSize: 15, fontFamily: 'PlexArabic-Bold', minWidth: 42 },
   sep: { height: 1, marginHorizontal: 14 },
