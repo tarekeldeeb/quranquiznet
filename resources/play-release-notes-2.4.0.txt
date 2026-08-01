@@ -1,0 +1,78 @@
+<en-US>
+• The app is now available in 16 languages — pick yours in Settings.
+• The monthly leaderboard now adds up all your points across the month.
+• Tapping a notification takes you straight to the right screen.
+• Bug fixes and improvements.
+</en-US>
+<ar>
+• أصبح التطبيق متوفرًا الآن بـ16 لغة — اختر لغتك من الإعدادات.
+• لوحة الصدارة الشهرية أصبحت تجمع كل نقاطك على مدار الشهر.
+• عند الضغط على الإشعار تنتقل الآن مباشرة إلى الشاشة الصحيحة.
+• إصلاحات وتحسينات.
+</ar>
+<ms>
+• Apl kini tersedia dalam 16 bahasa — pilih bahasa anda dalam Tetapan.
+• Papan pendahulu bulanan kini mengumpulkan semua mata anda sepanjang bulan.
+• Mengetik pemberitahuan kini membawa anda terus ke skrin yang betul.
+• Pembetulan pepijat dan penambahbaikan.
+</ms>
+<bn-BD>
+• অ্যাপটি এখন ১৬টি ভাষায় উপলব্ধ — সেটিংস থেকে আপনার ভাষা বেছে নিন।
+• মাসিক লিডারবোর্ড এখন সারা মাসের সব পয়েন্ট যোগ করে।
+• নোটিফিকেশনে ট্যাপ করলে এখন সরাসরি সঠিক স্ক্রিনে পৌঁছে যাবেন।
+• বাগ সংশোধন ও উন্নতি।
+</bn-BD>
+<tr-TR>
+• Uygulama artık 16 dilde — dilinizi Ayarlar'dan seçin.
+• Aylık liderlik tablosu artık ay boyunca kazandığınız tüm puanları topluyor.
+• Bildirime dokunduğunuzda artık doğrudan ilgili ekrana gidersiniz.
+• Hata düzeltmeleri ve iyileştirmeler.
+</tr-TR>
+<ur>
+• ایپ اب 16 زبانوں میں دستیاب ہے — ترتیبات سے اپنی زبان منتخب کریں۔
+• ماہانہ لیڈر بورڈ اب پورے مہینے کے تمام پوائنٹس جمع کرتا ہے۔
+• اطلاع پر ٹیپ کرنے سے اب آپ سیدھے درست اسکرین پر پہنچتے ہیں۔
+• خرابیوں کی اصلاح اور بہتریاں۔
+</ur>
+<pa>
+• ایپ ہن 16 زباناں وچ دستیاب اے — سیٹنگز وچوں اپنی زبان چنو۔
+• مہینے دا لیڈر بورڈ ہن پورے مہینے دے سارے پوائنٹ جوڑدا اے۔
+• نوٹیفکیشن اُتے ٹیپ کرن نال ہن تسی سدھے ٹھیک سکرین اُتے پہنچدے او۔
+• خرابیاں دی درستی تے بہتریاں۔
+</pa>
+<fa>
+• برنامه اکنون به ۱۶ زبان در دسترس است — زبان خود را از «تنظیمات» انتخاب کنید.
+• جدول امتیازات ماهانه اکنون همه امتیازهای شما در طول ماه را جمع می‌کند.
+• با لمس اعلان اکنون مستقیماً به صفحه درست می‌روید.
+• رفع اشکال‌ها و بهبودها.
+</fa>
+<fr-FR>
+• L'application est désormais disponible en 16 langues — choisissez la vôtre dans les Réglages.
+• Le classement mensuel cumule maintenant tous vos points du mois.
+• Appuyer sur une notification ouvre désormais directement le bon écran.
+• Corrections de bugs et améliorations.
+</fr-FR>
+<es-ES>
+• La aplicación ya está disponible en 16 idiomas: elige el tuyo en Ajustes.
+• La clasificación mensual ahora suma todos tus puntos del mes.
+• Al tocar una notificación ahora vas directo a la pantalla correcta.
+• Corrección de errores y mejoras.
+</es-ES>
+<id>
+• Aplikasi kini tersedia dalam 16 bahasa — pilih bahasamu di Pengaturan.
+• Papan peringkat bulanan kini menjumlahkan semua poinmu sepanjang bulan.
+• Mengetuk notifikasi kini langsung membuka layar yang tepat.
+• Perbaikan bug dan peningkatan.
+</id>
+<zh-CN>
+• 应用现已支持 16 种语言——请在“设置”中选择您的语言。
+• 月度排行榜现在会累计您整月的全部积分。
+• 点按通知现在会直接打开对应页面。
+• 修复问题并提升体验。
+</zh-CN>
+<sw>
+• Programu sasa inapatikana kwa lugha 16 — chagua yako katika Mipangilio.
+• Ubao wa wanaoongoza wa kila mwezi sasa unajumlisha pointi zako zote za mwezi mzima.
+• Kugusa arifa sasa kunakupeleka moja kwa moja kwenye skrini sahihi.
+• Marekebisho ya hitilafu na maboresho.
+</sw>

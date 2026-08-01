@@ -2,7 +2,7 @@
   "expo": {
     "name": "quran-quiz-شبكة-اختبار-القران",
     "slug": "quranquiznet",
-    "version": "2.3.3",
+    "version": "2.4.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "quranquiz",
@@ -10,7 +10,7 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "12",
+      "buildNumber": "13",
       "appleTeamId": "FNSP52WBLF",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
@@ -27,7 +27,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "net.quranquiz",
-      "versionCode": 18,
+      "versionCode": 19,
       "googleServicesFile": "./google-services.json",
       "intentFilters": [
         {
