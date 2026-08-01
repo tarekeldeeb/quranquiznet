@@ -5,7 +5,7 @@
 // can't drift out of sync between files.
 
 export const SUPPORTED_LANGUAGES = [
-  'ar', 'en', 'ms', 'bn', 'tr', 'ur', 'pa', 'fa', 'ha', 'jv', 'ps', 'fr', 'es', 'id',
+  'ar', 'en', 'ms', 'bn', 'tr', 'ur', 'pa', 'fa', 'ha', 'jv', 'ps', 'fr', 'es', 'id', 'zh', 'sw',
 ] as const;
 
 export type Language = typeof SUPPORTED_LANGUAGES[number];
@@ -35,6 +35,11 @@ export const LANGUAGE_META: Record<Language, LanguageMeta> = {
   fr: { nativeLabel: 'Français',       isRTL: false, numberTag: 'fr-FR' },
   es: { nativeLabel: 'Español',        isRTL: false, numberTag: 'es-ES' },
   id: { nativeLabel: 'Bahasa Indonesia', isRTL: false, numberTag: 'id-ID' },
+  // Simplified Chinese — mainland China (incl. the Hui Muslim community),
+  // Singapore, Malaysia. Needs a dedicated CJK font (see NotoSansSC in
+  // app/_layout.tsx); PlexArabic has zero CJK glyph coverage.
+  zh: { nativeLabel: '简体中文',         isRTL: false, numberTag: 'zh-CN' },
+  sw: { nativeLabel: 'Kiswahili',       isRTL: false, numberTag: 'sw-TZ' },
 };
 
 export function isSupportedLanguage(x: string): x is Language {

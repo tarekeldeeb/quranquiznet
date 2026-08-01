@@ -19,8 +19,10 @@ import ps from '../locales/ps.json';
 import fr from '../locales/fr.json';
 import es from '../locales/es.json';
 import id from '../locales/id.json';
+import zh from '../locales/zh.json';
+import sw from '../locales/sw.json';
 
-const LOCALES: Record<Language, unknown> = { ar, en, ms, bn, tr, ur, pa, fa, ha, jv, ps, fr, es, id };
+const LOCALES: Record<Language, unknown> = { ar, en, ms, bn, tr, ur, pa, fa, ha, jv, ps, fr, es, id, zh, sw };
 
 // The three key groups in en.json that carry CLDR plural suffixes today
 // (me.duration.hours_one/_two/..., me.duration.minutes_one/..., me.activeParts_one/...).

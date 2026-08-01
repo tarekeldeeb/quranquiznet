@@ -16,6 +16,8 @@ import ps from './locales/ps.json';
 import fr from './locales/fr.json';
 import es from './locales/es.json';
 import id from './locales/id.json';
+import zh from './locales/zh.json';
+import sw from './locales/sw.json';
 
 const deviceLang = Localization.getLocales()[0]?.languageCode;
 const initialLng: Language = resolveDeviceLanguage(deviceLang);
@@ -59,6 +61,8 @@ i18next.use(localeAwareFormatter).use(initReactI18next).init({
     fr: { translation: fr },
     es: { translation: es },
     id: { translation: id },
+    zh: { translation: zh },
+    sw: { translation: sw },
   },
   lng: initialLng,
   fallbackLng: 'en',
