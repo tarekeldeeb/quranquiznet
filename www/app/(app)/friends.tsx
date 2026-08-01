@@ -11,6 +11,7 @@ import {
   declineFriendRequest, sendPvpInvite, watchPresence, type FriendRequestEntry, type FriendEntry,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
+import { trackEvent } from '../../src/services/analytics';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
 import { useTheme, radii } from '../../src/theme/tokens';
@@ -123,6 +124,7 @@ export default function FriendsScreen() {
 
   async function handleShareCode() {
     if (!myCode) return;
+    trackEvent('share_tap', { surface: 'add_friend' });
     // A real link (not just the bare code as text) so tapping it on the
     // recipient's end resolves and sends the request automatically — see
     // (app)/add/[code].tsx, which this path already routes to.

@@ -77,6 +77,7 @@ async function maybeRequestNotificationPermission() {
     if (shown) return;
     await AsyncStorage.setItem(NOTIF_PROMPT_KEY, '1');
     const granted = await requestPermission();
+    trackEvent('notif_permission_result', { outcome: granted ? 'granted' : 'denied' });
     if (granted) {
       scheduleStreakReminder(useProfileStore.getState().streak);
       registerPushToken(useProfileStore.getState().uid);
@@ -86,6 +87,8 @@ async function maybeRequestNotificationPermission() {
 
 // Module-level session cache. expo-router can unmount an inactive tab on web, so
 // component state/refs do NOT survive leaving to another tab (e.g. Me) and back.
+export type QuizMode = 'daily' | 'weak_review' | 'shared' | 'custom' | 'random';
+
 // This module object outlives remounts, letting us resume the in-progress run.
 interface SessionCache {
   active: boolean;       // a run is in progress and resumable
@@ -120,6 +123,8 @@ interface NormalSnapshot {
   weakReviewParts: number[] | null;
   qo: QuestionObject;   // the live question when the normal run was suspended
   seed: number;         // questionnaire seed at suspension (= active question idx)
+  sessionMode: QuizMode;
+  sessionStartScore: number;
 }
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
@@ -227,9 +232,33 @@ export default function QuizScreen() {
     sessionCache.combo = combo;
   }, [cards, active, score, dailyMode, combo]);
 
+  const sessionModeRef = useRef<QuizMode>('random');
+  const sessionStartScoreRef = useRef<number>(0);
+
+  function emitSessionComplete(dailyScoreOverride?: number) {
+    if (!sessionActiveRef.current) return;
+    sessionActiveRef.current = false;
+    const isDaily = sessionModeRef.current === 'daily';
+    const earnedScore = isDaily
+      ? (dailyScoreOverride ?? dailyScoreRef.current)
+      : Math.max(0, profile.getScore() - sessionStartScoreRef.current);
+
+    trackEvent('quiz_session_complete', {
+      mode: sessionModeRef.current,
+      correct: sessionCorrectRef.current,
+      answered: sessionAnsweredRef.current,
+      score: earnedScore,
+    });
+  }
+
   // Guard against a stray setState after the screen unmounts mid-fade.
   useEffect(() => {
-    return () => { if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current); };
+    return () => {
+      if (milestoneTimerRef.current) clearTimeout(milestoneTimerRef.current);
+      if (sessionActiveRef.current && sessionAnsweredRef.current > 0) {
+        emitSessionComplete();
+      }
+    };
   }, []);
 
   // Reclaim the header: show the live score while a run is in progress instead
@@ -254,6 +283,11 @@ export default function QuizScreen() {
   //   {}                     → random across the profile's enabled parts
   function startSession(opts: { daily?: boolean; partIndex?: number | null; startIdx?: number; startLevel?: number; weakReview?: boolean }) {
     const daily = !!opts.daily;
+    if (sessionActiveRef.current && sessionAnsweredRef.current > 0) {
+      if (!daily || !shouldSuspendNormalRun(sessionActiveRef.current, dailyModeRef.current)) {
+        emitSessionComplete();
+      }
+    }
     if (daily) {
       // Entering the daily quiz: if a normal run is live, suspend it (with its
       // own card stack + engine state) so it can reappear once the daily ends.
@@ -268,6 +302,8 @@ export default function QuizScreen() {
           weakReviewParts: weakReviewPartsRef.current,
           qo: deepCopy(QS.qo),
           seed: profile.lastSeed,
+          sessionMode: sessionModeRef.current,
+          sessionStartScore: sessionStartScoreRef.current,
         };
       }
     } else {
@@ -292,7 +328,18 @@ export default function QuizScreen() {
     // cleared after use.
     pendingStartIdxRef.current = opts.startIdx ?? null;
     pendingStartLevelRef.current = opts.startLevel ?? null;
+    const mode: QuizMode = daily
+      ? 'daily'
+      : opts.weakReview
+      ? 'weak_review'
+      : opts.startIdx != null
+      ? 'shared'
+      : opts.partIndex != null
+      ? 'custom'
+      : 'random';
     sessionActiveRef.current = true;
+    sessionModeRef.current = mode;
+    sessionStartScoreRef.current = profile.getScore();
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
     sessionAnsweredRef.current = 0;
@@ -302,7 +349,7 @@ export default function QuizScreen() {
     dailyEndedRef.current = false;
     syncCacheFlags();
     trackEvent('quiz_start', {
-      mode: daily ? 'daily' : opts.weakReview ? 'weak_review' : opts.startIdx != null ? 'shared' : opts.partIndex != null ? 'custom' : 'random',
+      mode,
       level: profile.level,
       part: opts.partIndex ?? undefined,
     });
@@ -354,6 +401,9 @@ export default function QuizScreen() {
 
   // Reset to the start chooser (random / specific sura).
   function openChooser() {
+    if (sessionActiveRef.current && sessionAnsweredRef.current > 0) {
+      emitSessionComplete();
+    }
     clearTimers();
     setCards([]);
     setActive(null);
@@ -389,6 +439,8 @@ export default function QuizScreen() {
     customPartRef.current = snap.customPart;
     weakReviewPartsRef.current = snap.weakReviewParts ?? null;
     sessionActiveRef.current = true;
+    sessionModeRef.current = snap.sessionMode;
+    sessionStartScoreRef.current = snap.sessionStartScore;
     dailyEndedRef.current = false;
     cardCounterRef.current = snap.cardCounter;
     sessionCorrectRef.current = snap.sessionCorrect;
@@ -701,12 +753,6 @@ export default function QuizScreen() {
     if (dailyMode) stopDailyTimeTracker();
     if (shouldShowSummary(sessionAnsweredRef.current, dailyMode)) {
       profile.updateScoreRecord();
-      trackEvent('quiz_complete', {
-        mode: weakReviewPartsRef.current != null ? 'weak_review' : customPartRef.current != null ? 'custom' : 'random',
-        correct: sessionCorrectRef.current,
-        answered: sessionAnsweredRef.current,
-        score: profile.getScore(),
-      });
       maybeRequestNotificationPermission();
       summaryPendingRef.current = true;
       setTimeout(() => { summaryPendingRef.current = false; setSummaryVisible(true); }, 650);
@@ -857,6 +903,7 @@ export default function QuizScreen() {
       correct: dailyScoreRef.current,
       time_sec: Math.round(dailyTimeRef.current / 1000),
     });
+    emitSessionComplete(finalScore);
 
     const today = new Date().toISOString().split('T')[0];
     const social = profile.social;
@@ -894,6 +941,7 @@ export default function QuizScreen() {
   }
 
   async function shareScoreDaily() {
+    trackEvent('share_tap', { surface: 'daily_score_quiz' });
     try {
       // message already embeds the url; don't also pass `url`, or share
       // targets that surface both (e.g. iMessage) duplicate it.
@@ -1192,7 +1240,7 @@ export default function QuizScreen() {
               </Text>
             )}
             <View style={s.modalRow}>
-              <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => { setSummaryVisible(false); router.replace('/(app)/me'); }}>
+              <PressScale style={[s.btnCancel, { backgroundColor: colors.goldPale }]} onPress={() => { emitSessionComplete(); setSummaryVisible(false); router.replace('/(app)/me'); }}>
                 <Text style={[s.btnCancelText, { color: colors.inkSoft }]}>{t('quiz.summary.home')}</Text>
               </PressScale>
               <PressScale style={[s.btnConfirm, { backgroundColor: colors.navy }]} onPress={() => { setSummaryVisible(false); loadNextQuestion(); }}>

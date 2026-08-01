@@ -518,9 +518,21 @@
   },
   "notifications": {
     "channelName": "Tunatarwa",
+    "pvpInvite": {
+      "title": "⚔️ Sabon Ƙalubale!",
+      "body": "{{name}} ya ƙalubalance ku a kan gaba na Al-Qur'ani! Bude manhajar don karɓa."
+    },
+    "friendRequest": {
+      "title": "👥 Sabuwar Bukatar Abota",
+      "body": "{{name}} ya aiko muku da bukatar abota a Quran Quiz Net."
+    },
     "streakReminder": {
-      "title": "🔥 Kada ku rasa jerin nasararku",
-      "body": "Jerin nasararku na kwana {{count}}! Ku yi kwiz yau domin ci gaba da shi."
+      "title": "🔥 Kada ku rasa jerinku",
+      "body": "Jerinku na kwana {{count}} yana cikin haɗari daren nan! Ku yi kwiz yanzu don kiyaye shi."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Kare jerinku",
+      "body": "Jerinku na kwana {{count}} yana cikin haɗari daren nan! Kuna da alamar daskarewa. Buɗe manhaja don amfani da ita."
     },
     "dailyReady": {
       "title": "⭐ Kwizin yau yana shirye",

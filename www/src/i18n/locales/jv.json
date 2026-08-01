@@ -515,9 +515,21 @@
   },
   "notifications": {
     "channelName": "Pengeling",
+    "pvpInvite": {
+      "title": "⚔️ Tantangan Anyar!",
+      "body": "{{name}} nantang sampeyan duel Al-Qur'an! Bukak aplikasi kanggo nampa."
+    },
+    "friendRequest": {
+      "title": "👥 Panjaluk Kanca Anyar",
+      "body": "{{name}} ngirim panjaluk kanca ing Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Aja nganti ilang runtutan sampeyan",
-      "body": "Runtutan sampeyan {{count}} dina! Dolanan kuis dina iki kanggo njaga runtutane."
+      "body": "Runtutan {{count}} dina sampeyan beresiko wengi iki! Mainna kuis saiki kanggo njaga."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Jaga runtutan sampeyan",
+      "body": "Runtutan {{count}} dina sampeyan beresiko wengi iki! Sampeyan duwe token pambekuan. Bukak aplikasi kanggo nggunakake."
     },
     "dailyReady": {
       "title": "⭐ Kuis dina iki wis siap",

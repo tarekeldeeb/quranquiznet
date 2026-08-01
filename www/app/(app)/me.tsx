@@ -17,6 +17,7 @@ import { useProfileStore } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME, translatePartName } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
+import { trackEvent } from '../../src/services/analytics';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
@@ -432,6 +433,7 @@ export default function MeScreen() {
   }
 
   async function shareScore() {
+    trackEvent('share_tap', { surface: 'daily_score_me' });
     // A submission still pending confirmation hasn't updated lastDailyScore
     // yet (see endDailyQuiz in quiz.tsx) — fall back to the pending payload's
     // score so a share right after finishing shows today's actual result.

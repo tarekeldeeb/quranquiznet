@@ -515,9 +515,21 @@
   },
   "notifications": {
     "channelName": "Peringatan",
+    "pvpInvite": {
+      "title": "⚔️ Cabaran Baharu!",
+      "body": "{{name}} mencabar anda dalam pertarungan Al-Quran! Buka aplikasi untuk menerima."
+    },
+    "friendRequest": {
+      "title": "👥 Permintaan Rakan Baharu",
+      "body": "{{name}} menghantar permintaan rakan kepada anda di Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Jangan hilang rentetan anda",
-      "body": "Rentetan anda {{count}} hari! Mainkan kuiz hari ini untuk mengekalkannya."
+      "body": "Rentetan {{count}} hari anda berisiko malam ini! Main kuiz sekarang untuk mengekalkannya."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Lindungi rentetan anda",
+      "body": "Rentetan {{count}} hari anda berisiko malam ini! Anda mempunyai pembekuan sedia ada. Buka aplikasi untuk menggunakannya."
     },
     "dailyReady": {
       "title": "⭐ Kuiz hari ini sudah sedia",

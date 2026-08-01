@@ -518,9 +518,21 @@
   },
   "notifications": {
     "channelName": "Hatırlatmalar",
+    "pvpInvite": {
+      "title": "⚔️ Yeni Meydan Okuma!",
+      "body": "{{name}} seni Kuran düellosuna davet etti! Kabul etmek için uygulamayı aç."
+    },
+    "friendRequest": {
+      "title": "👥 Yeni Arkadaşlık İsteği",
+      "body": "{{name}} sana Quran Quiz Net üzerinde arkadaşlık isteği gönderdi."
+    },
     "streakReminder": {
-      "title": "🔥 Serinizi kaybetmeyin",
-      "body": "Seriniz {{count}} gün! Devam ettirmek için bugün bir test oynayın."
+      "title": "🔥 Serini kaybetme",
+      "body": "{{count}} günlük serin bu gece tehlikede! Devam ettirmek için hemen bir test çöz."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Serini koru",
+      "body": "{{count}} günlük serin bu gece tehlikede! Bir dondurma jetonun var. Kullanmak için uygulamayı aç."
     },
     "dailyReady": {
       "title": "⭐ Bugünün testi hazır",

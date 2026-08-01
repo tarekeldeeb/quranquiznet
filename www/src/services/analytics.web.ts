@@ -39,6 +39,51 @@ export function trackEvent(name: string, params?: Record<string, unknown>): void
   gtag('event', name, params);
 }
 
+/** Set the primary user ID for analytics. */
+export function setUserId(id: string | null): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  gtag('config', GA_MEASUREMENT_ID, { user_id: id });
+}
+
+/** Set custom user properties for segmentation. */
+export function setUserProperties(properties: Record<string, string | null>): void {
+  const gtag = getGtag();
+  if (!gtag) return;
+  gtag('set', 'user_properties', properties);
+}
+
+/** Bucket streak values into standardized ranges (0, 1-6, 7-29, 30+). */
+export function getStreakBucket(streak: number): string {
+  if (streak <= 0) return '0';
+  if (streak <= 6) return '1-6';
+  if (streak <= 29) return '7-29';
+  return '30+';
+}
+
+export interface UserAnalyticsProfile {
+  uid?: string | null;
+  level: number;
+  language: string;
+  isAnonymous?: boolean;
+  social?: { isAnonymous?: boolean };
+  streak: number;
+}
+
+/** Sync user ID and user properties based on profile state. */
+export function syncUserAnalytics(profile: UserAnalyticsProfile): void {
+  if (profile.uid) {
+    setUserId(profile.uid);
+  }
+  const isAnon = profile.isAnonymous ?? profile.social?.isAnonymous ?? false;
+  setUserProperties({
+    user_level: String(profile.level),
+    user_lang: profile.language,
+    user_type: isAnon ? 'guest' : 'registered',
+    user_streak_bucket: getStreakBucket(profile.streak),
+  });
+}
+
 // ── Consent (GDPR) ──────────────────────────────────────────────────────────
 // We use Google Consent Mode v2. gtag.js is initialized with consent defaulted
 // to DENIED (see app/+html.tsx), so until the user accepts, GA only sends

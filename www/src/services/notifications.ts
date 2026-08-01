@@ -14,6 +14,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { savePushToken } from './firebase';
+import { useProfileStore } from '../stores/profileStore';
 import i18n from '../i18n';
 
 const STREAK_ID = 'qqn-streak';
@@ -147,9 +148,9 @@ export async function registerPushToken(uid: string): Promise<void> {
     const token = tokenData.data;
     const platform = Platform.OS;
     const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    await savePushToken(uid, token, platform, tz);
+    const lang = useProfileStore.getState().language;
+    await savePushToken(uid, token, platform, tz, lang);
   } catch {
     /* push token registration is non-critical / best-effort */
   }
 }
-

@@ -527,9 +527,21 @@
   },
   "notifications": {
     "channelName": "Reminders",
+    "pvpInvite": {
+      "title": "⚔️ New Challenge!",
+      "body": "{{name}} challenged you to a Quran duel! Open the app to accept."
+    },
+    "friendRequest": {
+      "title": "👥 New Friend Request",
+      "body": "{{name}} sent you a friend request on Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Don't lose your streak",
-      "body": "Your streak is {{count}} days! Play a quiz today to keep it going."
+      "body": "Your {{count}}-day streak is at risk tonight! Play a quiz now to keep it going."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Protect your streak",
+      "body": "Your {{count}}-day streak is at risk tonight! You have a freeze token available. Open the app to use it."
     },
     "dailyReady": {
       "title": "⭐ Today's quiz is ready",

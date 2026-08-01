@@ -3,6 +3,7 @@ const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { onValueCreated } = require('firebase-functions/v2/database');
 const logger = require('firebase-functions/logger');
 const { sendPush, isCategoryEnabled } = require('./push.js');
+const { getNotificationText } = require('./i18n.js');
 const { streaksched } = require('./streak.js');
 exports.streaksched = streaksched;
 
@@ -19,9 +20,13 @@ exports.onpvpinvite = onValueCreated('/pvp/invites/{uid}/{fromUid}', async (even
     const enabled = await isCategoryEnabled(uid, 'invites');
     if (!enabled) return;
 
-    const challengerName = invite.fromName || 'أحد الأصدقاء';
-    const title = '⚔️ تحدٍّ جديد!';
-    const body = `تحداك ${challengerName} في مبارزة قرآنية! افتح التطبيق لقبول التحدي.`;
+    const tokenSnap = await admin.database().ref(`pushTokens/${uid}`).once('value');
+    const tokenVal = tokenSnap.val() || {};
+    const lang = tokenVal.lang || tokenVal.locale || 'ar';
+
+    const challengerName = invite.fromName || (lang === 'ar' ? 'أحد الأصدقاء' : 'A friend');
+    const title = getNotificationText(lang, 'notifications.pvpInvite.title');
+    const body = getNotificationText(lang, 'notifications.pvpInvite.body', { name: challengerName });
 
     await sendPush(uid, title, body, { type: 'pvp_invite', fromUid });
   } catch (err) {
@@ -38,9 +43,13 @@ exports.onfriendrequest = onValueCreated('/friendRequests/{uid}/{fromUid}', asyn
     const enabled = await isCategoryEnabled(uid, 'friendRequests');
     if (!enabled) return;
 
-    const senderName = req.fromName || 'أحد الحفّاظ';
-    const title = '👥 طلب صداقة جديد';
-    const body = `أرسل لك ${senderName} طلب صداقة على شبكة اختبار القرآن.`;
+    const tokenSnap = await admin.database().ref(`pushTokens/${uid}`).once('value');
+    const tokenVal = tokenSnap.val() || {};
+    const lang = tokenVal.lang || tokenVal.locale || 'ar';
+
+    const senderName = req.fromName || (lang === 'ar' ? 'أحد الحفّاظ' : 'A user');
+    const title = getNotificationText(lang, 'notifications.friendRequest.title');
+    const body = getNotificationText(lang, 'notifications.friendRequest.body', { name: senderName });
 
     await sendPush(uid, title, body, { type: 'friend_request' });
   } catch (err) {

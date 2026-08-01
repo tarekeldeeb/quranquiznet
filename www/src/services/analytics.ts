@@ -13,6 +13,8 @@ import {
   logScreenView,
   setAnalyticsCollectionEnabled,
   setConsent,
+  setUserId as rnSetUserId,
+  setUserProperties as rnSetUserProperties,
 } from '@react-native-firebase/analytics';
 
 const analytics = getAnalytics();
@@ -29,6 +31,47 @@ export function trackPageView(path: string, title?: string): void {
 /** Send a custom GA4 event. */
 export function trackEvent(name: string, params?: Record<string, unknown>): void {
   void logEvent(analytics, name, params);
+}
+
+/** Set the primary user ID for analytics. */
+export function setUserId(id: string | null): void {
+  void rnSetUserId(analytics, id);
+}
+
+/** Set custom user properties for segmentation. */
+export function setUserProperties(properties: Record<string, string | null>): void {
+  void rnSetUserProperties(analytics, properties);
+}
+
+/** Bucket streak values into standardized ranges (0, 1-6, 7-29, 30+). */
+export function getStreakBucket(streak: number): string {
+  if (streak <= 0) return '0';
+  if (streak <= 6) return '1-6';
+  if (streak <= 29) return '7-29';
+  return '30+';
+}
+
+export interface UserAnalyticsProfile {
+  uid?: string | null;
+  level: number;
+  language: string;
+  isAnonymous?: boolean;
+  social?: { isAnonymous?: boolean };
+  streak: number;
+}
+
+/** Sync user ID and user properties based on profile state. */
+export function syncUserAnalytics(profile: UserAnalyticsProfile): void {
+  if (profile.uid) {
+    setUserId(profile.uid);
+  }
+  const isAnon = profile.isAnonymous ?? profile.social?.isAnonymous ?? false;
+  setUserProperties({
+    user_level: String(profile.level),
+    user_lang: profile.language,
+    user_type: isAnon ? 'guest' : 'registered',
+    user_streak_bucket: getStreakBucket(profile.streak),
+  });
 }
 
 // ── Consent (GDPR) ──────────────────────────────────────────────────────────

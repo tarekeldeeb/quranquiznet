@@ -416,12 +416,15 @@ export async function savePushToken(
   token: string,
   platform: string,
   tz: string,
+  lang?: string,
 ): Promise<void> {
   try {
+    const language = lang ?? useProfileStore.getState().language;
     await set(ref(getFirebaseDb(), `/pushTokens/${uid}`), {
       token,
       platform,
       tz,
+      lang: language,
       updatedAt: Date.now(),
     });
   } catch (e) {

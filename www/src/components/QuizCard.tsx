@@ -18,6 +18,7 @@ import PressScale from './PressScale';
 import { useTheme, arNum, localeNum, radii } from '../theme/tokens';
 import { useDirection, rowDir, alignDir } from '../theme/direction';
 import { hapticTick } from '../services/haptics';
+import { trackEvent } from '../services/analytics';
 
 // Word count of an Arabic snippet, ignoring aya-end markers in either form
 // (raw ﴿123﴾ or the ۝ glyph removeAyaNum produces) — quran-madina-html does not
@@ -238,6 +239,7 @@ export default function QuizCard({
   const borderColor = isCorrect ? colors.correct : colors.wrong;
 
   async function handleShare() {
+    trackEvent('share_tap', { surface: 'question_challenge' });
     try {
       // message already embeds the url; don't also pass `url`, or share
       // targets that surface both (e.g. iMessage) duplicate it.

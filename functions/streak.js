@@ -2,6 +2,7 @@ const { onSchedule } = require('firebase-functions/v2/scheduler');
 const logger = require('firebase-functions/logger');
 const admin = require('firebase-admin');
 const { sendPush, isCategoryEnabled } = require('./push.js');
+const { getNotificationText } = require('./i18n.js');
 
 function getLocalDateAndHour(tz) {
   const now = new Date();
@@ -52,14 +53,15 @@ exports.streaksched = onSchedule('every 1 hours', async () => {
       if (!streak || lastPlayDate === localDate) continue;
 
       const freezeTokens = (userData.pvp && userData.pvp.streakFreezeTokens) || 0;
+      const lang = tokenData.lang || tokenData.locale || 'ar';
 
       let title, body;
       if (freezeTokens > 0) {
-        title = '🔥 حافظ على سلسلتك';
-        body = `سلسلتك ${streak} يوم في خطر الليلة! لديك تجميد متاح لحفظ سلسلتك. افتح التطبيق لاستخدامه.`;
+        title = getNotificationText(lang, 'notifications.streakReminderFreeze.title');
+        body = getNotificationText(lang, 'notifications.streakReminderFreeze.body', { count: streak });
       } else {
-        title = '🔥 لا تفقد سلسلتك';
-        body = `سلسلتك ${streak} يوم في خطر الليلة! العب اختباراً الآن للحفاظ عليها.`;
+        title = getNotificationText(lang, 'notifications.streakReminder.title');
+        body = getNotificationText(lang, 'notifications.streakReminder.body', { count: streak });
       }
 
       await sendPush(uid, title, body, { type: 'streak_reminder' });

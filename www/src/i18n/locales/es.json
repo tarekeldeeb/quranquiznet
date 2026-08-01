@@ -521,9 +521,21 @@
   },
   "notifications": {
     "channelName": "Recordatorios",
+    "pvpInvite": {
+      "title": "⚔️ ¡Nuevo desafío!",
+      "body": "¡{{name}} te ha desafiado a un duelo coránico! Abre la aplicación para aceptar."
+    },
+    "friendRequest": {
+      "title": "👥 Nueva solicitud de amistad",
+      "body": "{{name}} te envió una solicitud de amistad en Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 No pierdas tu racha",
-      "body": "¡Tu racha es de {{count}} días! Juega un cuestionario hoy para mantenerla."
+      "body": "¡Tu racha de {{count}} días está en riesgo esta noche! Juega un examen ahora para mantenerla."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Protege tu racha",
+      "body": "¡Tu racha de {{count}} días está en riesgo esta noche! Tienes una congelación disponible. Abre la aplicación para usarla."
     },
     "dailyReady": {
       "title": "⭐ El cuestionario de hoy está listo",

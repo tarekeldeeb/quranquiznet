@@ -9,6 +9,7 @@ import * as AppleAuthentication from 'expo-apple-authentication';
 import { useTranslation } from 'react-i18next';
 import { signInAnon, signInGoogle, signInFacebook, signInApple, onAuthChange } from '../../src/services/firebase';
 import { consumePendingDeepLink } from '../../src/services/pendingDeepLink';
+import { trackEvent } from '../../src/services/analytics';
 import { useTheme, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
@@ -80,6 +81,7 @@ export default function AuthScreen() {
   async function handleGoogle() {
     try {
       await signInGoogle();
+      trackEvent('auth_complete', { method: 'google' });
     } catch {
       notify(t('auth.errorTitle'), t('auth.errorGoogle'));
     }
@@ -88,6 +90,7 @@ export default function AuthScreen() {
   async function handleFacebook() {
     try {
       await signInFacebook();
+      trackEvent('auth_complete', { method: 'facebook' });
     } catch {
       notify(t('auth.errorTitle'), t('auth.errorFacebook'));
     }
@@ -96,6 +99,7 @@ export default function AuthScreen() {
   async function handleApple() {
     try {
       await signInApple();
+      trackEvent('auth_complete', { method: 'apple' });
     } catch {
       // A slight delay avoids a real iOS timing issue: presenting Alert.alert
       // immediately after the native Apple auth sheet dismisses can silently
@@ -106,6 +110,7 @@ export default function AuthScreen() {
 
   async function handleAnonymous() {
     await signInAnon();
+    trackEvent('auth_complete', { method: 'anonymous' });
   }
 
   return (

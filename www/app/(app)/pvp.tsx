@@ -346,6 +346,7 @@ export default function PvpScreen() {
     myQueueTsRef.current = null;
     setPhase('searching');
     setSearchSecondsLeft(15);
+    trackEvent('pvp_queue_join', { level: profile.level });
 
     const uid = profile.uid;
     const scope = scopeFromParts(profile.parts);
@@ -414,6 +415,7 @@ export default function PvpScreen() {
   function giveUpSearchAndUseBot(uid: string) {
     stopSearchListeners();
     FB.leavePvpQueue(uid).catch(() => {});
+    trackEvent('pvp_queue_timeout', { level: profile.level });
     startBotMatch();
   }
 
@@ -546,6 +548,7 @@ export default function PvpScreen() {
       if (result) handleMatchResult(result);
     });
 
+    trackEvent('pvp_matched', { level: meta.level });
     trackEvent('pvp_start', { level: meta.level, opponent: 'human' });
     runCountdown();
   }
