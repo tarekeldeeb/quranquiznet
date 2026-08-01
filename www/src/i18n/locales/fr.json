@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Demandes d'amis",
       "friendRequestsHint": "Notifier lors d'une nouvelle demande d'ami",
       "streakAlertsLabel": "Alertes de série",
-      "streakAlertsHint": "Rappel en soirée si ta série est en danger"
+      "streakAlertsHint": "Rappel en soirée si ta série est en danger",
+      "dailyReadyLabel": "Alertes du quiz quotidien",
+      "dailyReadyHint": "Notifier lorsqu'un nouveau quiz quotidien est prêt"
     },
     "mobileAppHeader": "Application mobile",
     "storeLinks": {

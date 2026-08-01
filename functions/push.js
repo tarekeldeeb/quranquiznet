@@ -23,6 +23,29 @@ async function sendPush(uid, title, body, data) {
   }
 }
 
+async function sendPushBulk(messages) {
+  try {
+    if (!Array.isArray(messages) || messages.length === 0) return;
+
+    const validMessages = messages.filter(
+      (msg) => msg && msg.to && Expo.isExpoPushToken(msg.to)
+    );
+
+    if (validMessages.length === 0) return;
+
+    const chunks = expo.chunkPushNotifications(validMessages);
+    for (const chunk of chunks) {
+      try {
+        await expo.sendPushNotificationsAsync(chunk);
+      } catch (err) {
+        logger.error('Error sending push notification chunk:', err);
+      }
+    }
+  } catch (err) {
+    logger.error('Error in sendPushBulk:', err);
+  }
+}
+
 async function isCategoryEnabled(uid, category) {
   try {
     const snap = await admin.database().ref(`notifPrefs/${uid}/${category}`).once('value');
@@ -35,5 +58,7 @@ async function isCategoryEnabled(uid, category) {
 }
 
 exports.sendPush = sendPush;
+exports.sendPushBulk = sendPushBulk;
 exports.isCategoryEnabled = isCategoryEnabled;
+
 

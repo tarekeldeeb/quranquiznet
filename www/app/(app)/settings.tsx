@@ -109,6 +109,7 @@ export default function SettingsScreen() {
     invites: true,
     friendRequests: true,
     streakAlerts: true,
+    dailyReady: true,
   });
 
   useEffect(() => {
@@ -315,6 +316,18 @@ export default function SettingsScreen() {
             <Switch
               value={notifPrefs.streakAlerts}
               onValueChange={(v) => handleToggleNotifPref('streakAlerts', v)}
+              trackColor={{ false: colors.line, true: colors.gold }}
+              thumbColor="#fff"
+            />
+          </View>
+          <View style={[s.toggleRow, { flexDirection: rowDir(isRTL), borderTopWidth: 1, borderTopColor: colors.line }]}>
+            <View style={[s.toggleInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.toggleLabel, { color: colors.ink, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.dailyReadyLabel')}</Text>
+              <Text style={[s.toggleHint, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('settings.notifPrefs.dailyReadyHint')}</Text>
+            </View>
+            <Switch
+              value={notifPrefs.dailyReady}
+              onValueChange={(v) => handleToggleNotifPref('dailyReady', v)}
               trackColor={{ false: colors.line, true: colors.gold }}
               thumbColor="#fff"
             />

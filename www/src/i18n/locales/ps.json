@@ -97,7 +97,9 @@
       "friendRequestsLabel": "د ملګرتیا غوښتنې",
       "friendRequestsHint": "کله چې نوې ملګرتیا غوښتنه راشي خبر شئ",
       "streakAlertsLabel": "د لړۍ خبرتیاوې",
-      "streakAlertsHint": "ماښامنی یادونه که ستاسو لړۍ په خطر کې وي"
+      "streakAlertsHint": "ماښامنی یادونه که ستاسو لړۍ په خطر کې وي",
+      "dailyReadyLabel": "د ورځنۍ ازموینې خبرتیاوې",
+      "dailyReadyHint": "کله چې نوې ورځنۍ ازموینه چمتو شي خبر شئ"
     },
     "mobileAppHeader": "د موبایل اپلیکیشن",
     "storeLinks": {

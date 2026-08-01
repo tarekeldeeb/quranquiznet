@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Permintaan Rakan",
       "friendRequestsHint": "Beritahu apabila anda menerima permintaan rakan baharu",
       "streakAlertsLabel": "Amaran Rentetan",
-      "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko"
+      "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko",
+      "dailyReadyLabel": "Amaran Kuiz Harian",
+      "dailyReadyHint": "Beritahu apabila kuiz harian baharu sudah sedia"
     },
     "mobileAppHeader": "Aplikasi Mudah Alih",
     "storeLinks": {

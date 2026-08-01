@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Permintaan Pertemanan",
       "friendRequestsHint": "Beri tahu saat Anda menerima permintaan pertemanan baru",
       "streakAlertsLabel": "Peringatan Rentetan",
-      "streakAlertsHint": "Pengingat malam jika rentetan Anda berisiko"
+      "streakAlertsHint": "Pengingat malam jika rentetan Anda berisiko",
+      "dailyReadyLabel": "Peringatan Kuis Harian",
+      "dailyReadyHint": "Beri tahu saat kuis harian baru sudah siap"
     },
     "mobileAppHeader": "Aplikasi Seluler",
     "storeLinks": {

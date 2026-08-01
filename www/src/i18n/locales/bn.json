@@ -97,7 +97,9 @@
       "friendRequestsLabel": "বন্ধুর অনুরোধ",
       "friendRequestsHint": "নতুন বন্ধুর অনুরোধ পেলে জানান",
       "streakAlertsLabel": "স্ট্রিক সতর্কতা",
-      "streakAlertsHint": "স্ট্রিক ঝুঁকিতে থাকলে সন্ধ্যায় স্মরণ করিয়ে দেওয়া হবে"
+      "streakAlertsHint": "স্ট্রিক ঝুঁকিতে থাকলে সন্ধ্যায় স্মরণ করিয়ে দেওয়া হবে",
+      "dailyReadyLabel": "দৈনিক কুইজ সতর্কতা",
+      "dailyReadyHint": "নতুন দৈনিক কুইজ প্রস্তুত হলে জানান"
     },
     "mobileAppHeader": "মোবাইল অ্যাপ",
     "storeLinks": {

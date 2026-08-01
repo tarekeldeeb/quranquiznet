@@ -14,7 +14,7 @@ jest.mock('expo-router', () => ({
 const mockSignOut = jest.fn((..._a: unknown[]) => Promise.resolve());
 const mockDeleteAccount = jest.fn((..._a: unknown[]) => Promise.resolve());
 const mockWatchNotifPrefs = jest.fn((_uid: string, cb: (prefs: unknown) => void) => {
-  cb({ invites: true, friendRequests: true, streakAlerts: true });
+  cb({ invites: true, friendRequests: true, streakAlerts: true, dailyReady: true });
   return jest.fn();
 });
 const mockSetNotifPref = jest.fn((..._a: unknown[]) => Promise.resolve());

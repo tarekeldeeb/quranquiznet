@@ -97,7 +97,9 @@
       "friendRequestsLabel": "دوستی کی درخواستیں",
       "friendRequestsHint": "نئی دوستی کی درخواست ملنے پر مطلع کریں",
       "streakAlertsLabel": "تسلسل کی اطلاعات",
-      "streakAlertsHint": "اگر آپ کا تسلسل خطرے میں ہو تو شام کی یاد دہانی"
+      "streakAlertsHint": "اگر آپ کا تسلسل خطرے میں ہو تو شام کی یاد دہانی",
+      "dailyReadyLabel": "روزانہ کوئز کی اطلاعات",
+      "dailyReadyHint": "جب نیا روزانہ کوئز تیار ہو تو مطلع کریں"
     },
     "mobileAppHeader": "موبائل ایپ",
     "storeLinks": {

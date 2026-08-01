@@ -97,7 +97,9 @@
       "friendRequestsLabel": "دوستی دیاں بینتیاں",
       "friendRequestsHint": "نويں دوستی دی بینتی آون تے دسو",
       "streakAlertsLabel": "تسلسل دیاں اطلاعاں",
-      "streakAlertsHint": "جے تہاڈا تسلسل خطرے وچ ہووے تاں شام دی یاد دہانی"
+      "streakAlertsHint": "جے تہاڈا تسلسل خطرے وچ ہووے تاں شام دی یاد دہانی",
+      "dailyReadyLabel": "روزانہ کوئز دیاں اطلاعاں",
+      "dailyReadyHint": "جدوں نواں روزانہ کوئز تیار ہووے تاں دسو"
     },
     "mobileAppHeader": "موبائل ایپ",
     "storeLinks": {

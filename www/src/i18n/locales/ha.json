@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Buƙatun Abokantaka",
       "friendRequestsHint": "Sanar da ni idan na sami sabuwar buƙatar abokantaka",
       "streakAlertsLabel": "Faɗakarwar Jerin Nasara",
-      "streakAlertsHint": "Tunatarwa da yamma idan jerin nasararku na cikin haɗari"
+      "streakAlertsHint": "Tunatarwa da yamma idan jerin nasararku na cikin haɗari",
+      "dailyReadyLabel": "Faɗakarwar Kwizin Yau da Kullum",
+      "dailyReadyHint": "Sanar da ni idan sabon kwizin yau yana shirye"
     },
     "mobileAppHeader": "Manhajar Waya",
     "storeLinks": {

@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Friend Requests",
       "friendRequestsHint": "Notify when you receive a new friend request",
       "streakAlertsLabel": "Streak Alerts",
-      "streakAlertsHint": "Evening reminder if your streak is at risk"
+      "streakAlertsHint": "Evening reminder if your streak is at risk",
+      "dailyReadyLabel": "Daily Quiz Alerts",
+      "dailyReadyHint": "Notify when a new daily quiz is ready"
     },
     "mobileAppHeader": "Mobile App",
     "storeLinks": {

@@ -97,7 +97,9 @@
       "friendRequestsLabel": "درخواست‌های دوستی",
       "friendRequestsHint": "اعلان هنگام دریافت درخواست دوستی جدید",
       "streakAlertsLabel": "هشدارهای رکورد",
-      "streakAlertsHint": "یادآوری عصرگاهی در صورت خطر از دست رفتن رکورد"
+      "streakAlertsHint": "یادآوری عصرگاهی در صورت خطر از دست رفتن رکورد",
+      "dailyReadyLabel": "هشدارهای آزمون روزانه",
+      "dailyReadyHint": "اعلان هنگام آماده شدن آزمون روزانه جدید"
     },
     "mobileAppHeader": "برنامه موبایل",
     "storeLinks": {

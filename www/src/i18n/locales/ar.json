@@ -97,7 +97,9 @@
       "friendRequestsLabel": "طلبات الصداقة",
       "friendRequestsHint": "إشعار عند تلقي طلب صداقة جديد",
       "streakAlertsLabel": "تنبيهات السلسلة",
-      "streakAlertsHint": "تنبيه مساءً إذا كانت سلسلتك في خطر"
+      "streakAlertsHint": "تنبيه مساءً إذا كانت سلسلتك في خطر",
+      "dailyReadyLabel": "تنبيهات الاختبار اليومي",
+      "dailyReadyHint": "إشعار عند جاهزية اختبار يومي جديد"
     },
     "mobileAppHeader": "تطبيق الجوال",
     "storeLinks": {

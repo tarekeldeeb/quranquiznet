@@ -15,6 +15,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 حافظ على سلسلتك",
       "body": "سلسلتك {{count}} يوم في خطر الليلة! لديك تجميد متاح لحفظ سلسلتك. افتح التطبيق لاستخدامه."
+    },
+    "dailyReady": {
+      "title": "⭐ اختبار اليوم جاهز",
+      "body": "اختبار جديد في نطاق حفظك بانتظارك. جرّب حظك الآن!"
     }
   },
   "bn": {
@@ -33,6 +37,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 আপনার স্ট্রিক সুরক্ষিত রাখুন",
       "body": "আপনার {{count}} দিনের স্ট্রিক আজ রাতে ঝুঁকিতে রয়েছে! আপনার একটি ফ্রিজ টোকেন আছে। ব্যবহার করতে অ্যাপ খুলুন।"
+    },
+    "dailyReady": {
+      "title": "⭐ আজকের কুইজ প্রস্তুত",
+      "body": "আপনার মুখস্থ করা অংশের মধ্যে একটি নতুন কুইজ অপেক্ষা করছে। এখনই ভাগ্য পরীক্ষা করুন!"
     }
   },
   "en": {
@@ -51,6 +59,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Protect your streak",
       "body": "Your {{count}}-day streak is at risk tonight! You have a freeze token available. Open the app to use it."
+    },
+    "dailyReady": {
+      "title": "⭐ Today's quiz is ready",
+      "body": "A new quiz within your memorized range is waiting. Try your luck now!"
     }
   },
   "es": {
@@ -69,6 +81,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Protege tu racha",
       "body": "¡Tu racha de {{count}} días está en riesgo esta noche! Tienes una congelación disponible. Abre la aplicación para usarla."
+    },
+    "dailyReady": {
+      "title": "⭐ El cuestionario de hoy está listo",
+      "body": "Un nuevo cuestionario dentro de tu alcance de memorización te espera. ¡Prueba tu suerte ahora!"
     }
   },
   "fa": {
@@ -87,6 +103,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 از زنجیره خود محافظت کنید",
       "body": "زنجیره {{count}} روزه شما امشب در خطر است! شما یک توکن انجماد دارید. برای استفاده برنامه را باز کنید."
+    },
+    "dailyReady": {
+      "title": "⭐ آزمون امروز آماده است",
+      "body": "آزمون جدیدی در محدوده حفظ شما منتظر است. حالا شانست رو امتحان کن!"
     }
   },
   "fr": {
@@ -105,6 +125,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Protégez votre série",
       "body": "Votre série de {{count}} jours est menacée ce soir ! Vous avez un gel disponible. Ouvrez l'application pour l'utiliser."
+    },
+    "dailyReady": {
+      "title": "⭐ Le quiz du jour est prêt",
+      "body": "Un nouveau quiz dans ton périmètre de mémorisation t'attend. Tente ta chance maintenant !"
     }
   },
   "ha": {
@@ -123,6 +147,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Kare jerinku",
       "body": "Jerinku na kwana {{count}} yana cikin haɗari daren nan! Kuna da alamar daskarewa. Buɗe manhaja don amfani da ita."
+    },
+    "dailyReady": {
+      "title": "⭐ Kwizin yau yana shirye",
+      "body": "Sabon kwiz a cikin iyakar haddarku yana jiran ku. Ku gwada sa'arku yanzu!"
     }
   },
   "id": {
@@ -141,6 +169,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Lindungi rentetan Anda",
       "body": "Rentetan {{count}} hari Anda berisiko malam ini! Anda memiliki pembekuan gratis. Buka aplikasi untuk menggunakannya."
+    },
+    "dailyReady": {
+      "title": "⭐ Kuis hari ini sudah siap",
+      "body": "Kuis baru dalam cakupan hafalan Anda sudah menunggu. Coba peruntungan Anda sekarang!"
     }
   },
   "jv": {
@@ -159,6 +191,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Jaga runtutan sampeyan",
       "body": "Runtutan {{count}} dina sampeyan beresiko wengi iki! Sampeyan duwe token pambekuan. Bukak aplikasi kanggo nggunakake."
+    },
+    "dailyReady": {
+      "title": "⭐ Kuis dina iki wis siap",
+      "body": "Kuis anyar ing wates apalan sampeyan wis ngenteni. Cobanen keberuntungan sampeyan saiki!"
     }
   },
   "ms": {
@@ -177,6 +213,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Lindungi rentetan anda",
       "body": "Rentetan {{count}} hari anda berisiko malam ini! Anda mempunyai pembekuan sedia ada. Buka aplikasi untuk menggunakannya."
+    },
+    "dailyReady": {
+      "title": "⭐ Kuiz hari ini sudah sedia",
+      "body": "Kuiz baharu dalam skop hafazan anda sedang menunggu. Cuba nasib anda sekarang!"
     }
   },
   "pa": {
@@ -195,6 +235,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 اپنے تسلسل دی حفاظت کرو",
       "body": "تہاڈا {{count}} دن دا تسلسل اج رات خطرے وچ اے! تہاڈے کول اک فریز ٹوکن موجود اے۔ استعمال لئی ایپ کھولو۔"
+    },
+    "dailyReady": {
+      "title": "⭐ اج دا کوئز تیار اے",
+      "body": "تہاڈے حفظ دے دائرے وچ اک نواں کوئز تہاڈا انتظار کر رہیا اے۔ ہُنے اپنی قسمت اجماؤ!"
     }
   },
   "ps": {
@@ -213,6 +257,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 خپله لړۍ وساتئ",
       "body": "ستاسو د {{count}} ورځو لړۍ امشب په خطر کې ده! تاسو د کنګل کولو نښه لرئ. د کارولو لپاره اپلیکیشن پرانیزئ."
+    },
+    "dailyReady": {
+      "title": "⭐ د نن ورځې ازموینه چمتو ده",
+      "body": "نوې ازموینه ستاسو د حفظ ساحې کې تاسو ته په انتظار ده. اوس خپل قسمت وازمویئ!"
     }
   },
   "tr": {
@@ -231,6 +279,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 Serini koru",
       "body": "{{count}} günlük serin bu gece tehlikede! Bir dondurma jetonun var. Kullanmak için uygulamayı aç."
+    },
+    "dailyReady": {
+      "title": "⭐ Bugünün testi hazır",
+      "body": "Ezber kapsamınızda yeni bir test sizi bekliyor. Şimdi şansınızı deneyin!"
     }
   },
   "ur": {
@@ -249,6 +301,10 @@ module.exports = {
     "streakReminderFreeze": {
       "title": "🔥 اپنے تسلسل کی حفاظت کریں",
       "body": "آپ کا {{count}} دن کا تسلسل آج رات خطرے میں ہے! آپ کے پاس ایک فریز ٹوکن موجود ہے۔ استعمال کے لیے ایپ کھولیں۔"
+    },
+    "dailyReady": {
+      "title": "⭐ آج کا کوئز تیار ہے",
+      "body": "آپ کے حفظ شدہ دائرے میں ایک نیا کوئز منتظر ہے۔ ابھی اپنی قسمت آزمائیں!"
     }
   }
 };

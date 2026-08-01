@@ -2,7 +2,7 @@
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { onValueCreated } = require('firebase-functions/v2/database');
 const logger = require('firebase-functions/logger');
-const { sendPush, isCategoryEnabled } = require('./push.js');
+const { sendPush, isCategoryEnabled, sendPushBulk } = require('./push.js');
 const { getNotificationText } = require('./i18n.js');
 const { streaksched } = require('./streak.js');
 exports.streaksched = streaksched;
@@ -115,10 +115,45 @@ function dailyQuiz() {
       };
       // Set new head
       await admin.database().ref('daily/head').set(newDaily);
+
+      // Send push notifications for new daily quiz
+      try {
+        const tokensSnap = await admin.database().ref('pushTokens').once('value');
+        const tokens = tokensSnap.val();
+        if (tokens) {
+          const messages = [];
+          for (const uid of Object.keys(tokens)) {
+            const tokenData = tokens[uid];
+            const token = typeof tokenData === 'string' ? tokenData : tokenData?.token;
+            if (!token) continue;
+
+            const enabled = await isCategoryEnabled(uid, 'dailyReady');
+            if (!enabled) continue;
+
+            const lang = (tokenData && (tokenData.lang || tokenData.locale)) || 'ar';
+            const title = getNotificationText(lang, 'notifications.dailyReady.title');
+            const body = getNotificationText(lang, 'notifications.dailyReady.body');
+
+            messages.push({
+              to: token,
+              title,
+              body,
+              data: { type: 'daily_ready' },
+            });
+          }
+          if (messages.length > 0) {
+            await sendPushBulk(messages);
+          }
+        }
+      } catch (err) {
+        logger.error('Error sending daily quiz push notifications:', err);
+      }
+
       // Clear submissions
       await admin.database().ref('daily/head_submit').remove();
     });
 }
+
 
 // ── PvP hygiene ─────────────────────────────────────────────────────────────
 // Matches: clients never delete match docs, and a lost matchmaking claim race

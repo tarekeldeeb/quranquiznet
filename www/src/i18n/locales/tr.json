@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Arkadaşlık İstekleri",
       "friendRequestsHint": "Yeni bir arkadaşlık isteği aldığınızda bildirim al",
       "streakAlertsLabel": "Seri Uyarıları",
-      "streakAlertsHint": "Seriniz risk altındaysa akşam hatırlatması"
+      "streakAlertsHint": "Seriniz risk altındaysa akşam hatırlatması",
+      "dailyReadyLabel": "Günlük Test Uyarıları",
+      "dailyReadyHint": "Yeni bir günlük test hazır olduğunda bildirim al"
     },
     "mobileAppHeader": "Mobil Uygulama",
     "storeLinks": {

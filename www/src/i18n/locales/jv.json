@@ -97,7 +97,9 @@
       "friendRequestsLabel": "Panjaluk Kekancan",
       "friendRequestsHint": "Kabari nalika sampeyan nampa panjaluk kekancan anyar",
       "streakAlertsLabel": "Pengeling Runtutan",
-      "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko"
+      "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko",
+      "dailyReadyLabel": "Pengeling Kuis Bendina",
+      "dailyReadyHint": "Kabari nalika kuis bendina anyar wis siap"
     },
     "mobileAppHeader": "Aplikasi Hape",
     "storeLinks": {
