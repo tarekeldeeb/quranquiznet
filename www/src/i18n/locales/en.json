@@ -524,5 +524,16 @@
     "bannerMessage": "{{name}} challenges you to a duel",
     "accept": "Accept",
     "decline": "Decline"
+  },
+  "notifications": {
+    "channelName": "Reminders",
+    "streakReminder": {
+      "title": "🔥 Don't lose your streak",
+      "body": "Your streak is {{count}} days! Play a quiz today to keep it going."
+    },
+    "dailyReady": {
+      "title": "⭐ Today's quiz is ready",
+      "body": "A new quiz within your memorized range is waiting. Try your luck now!"
+    }
   }
 }

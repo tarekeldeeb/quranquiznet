@@ -24,6 +24,7 @@ import { getPvpTierInfo, PVP_TIER_COLOR } from '../../src/models/pvpTiers';
 import { CITY_IMAGES, CITY_IMAGE_ASPECT } from '../../src/models/cityImages';
 import { useTheme, arNum, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
+import type { Language } from '../../src/i18n/languages';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
 
@@ -102,7 +103,7 @@ function formatRemaining(ms: number, t: (key: string, options?: any) => string):
 function ProgressChart({ scores, colors }: { scores: { date: number; score: number }[]; colors: ReturnType<typeof useTheme>['colors'] }) {
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
-  const lang = i18n.language as 'ar' | 'en';
+  const lang = i18n.language as Language;
   const MAX_BARS = 40;
   const data = scores.slice(-MAX_BARS);
   const H = 46;
@@ -149,7 +150,7 @@ function StreakSheet({
   const profile = useProfileStore();
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
-  const lang = i18n.language as 'ar' | 'en';
+  const lang = i18n.language as Language;
   const today = new Date().toISOString().split('T')[0];
   const isPlayedToday = playedToday || profile.lastPlayDate === today;
   const freezeTokens = profile.pvp.streakFreezeTokens ?? 0;
@@ -250,7 +251,7 @@ function RankSheet({
 }) {
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
-  const lang = i18n.language as 'ar' | 'en';
+  const lang = i18n.language as Language;
   const ladder = getRankLadder(score);
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
@@ -308,7 +309,7 @@ export default function MeScreen() {
   const { colors } = useTheme();
   const { t, i18n } = useTranslation();
   const { isRTL } = useDirection();
-  const lang = i18n.language as 'ar' | 'en';
+  const lang = i18n.language as Language;
   const profile = useProfileStore();
   const social = profile.social;
 
@@ -442,7 +443,7 @@ export default function MeScreen() {
       // message already embeds the url; don't also pass `url`, or share
       // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
-        message: `حصلت على ${score} نقطة في اختبار اليوم على شبكة اختبار القرآن! جرّب حظك:\nhttps://quranquiz.net`,
+        message: t('quiz.dailyEnd.shareMsg', { score, appName: t('common.appName') }),
       });
     } catch { /* ignore */ }
   }
@@ -453,10 +454,12 @@ export default function MeScreen() {
       else if (provider === 'facebook') await signInFacebook();
       else await signInApple();
     } catch {
+      const errorKey = provider === 'google' ? 'auth.errorGoogle'
+        : provider === 'facebook' ? 'auth.errorFacebook' : 'auth.errorApple';
       // A slight delay avoids a real iOS timing issue where Alert.alert can
       // silently fail to show if it's presented immediately after a native
       // auth sheet dismisses (see handleApple in (auth)/index.tsx).
-      setTimeout(() => notify('خطأ', 'تعذر تسجيل الدخول. حاول مرة أخرى.'), 400);
+      setTimeout(() => notify(t('auth.errorTitle'), t(errorKey)), 400);
     }
   }
 

@@ -1,0 +1,527 @@
+{
+  "common": {
+    "guestName": "Tamu",
+    "appName": "Jaringan Kuis Quran",
+    "homePage": "Kaca Utama",
+    "start": "Miwiti",
+    "home": "Utama",
+    "juzPart": "Juz {{name}}",
+    "consentBanner": {
+      "text": "Kita nggunakake cookie kanggo nganalisis panganggone aplikasi lan ningkatake pengalaman sampeyan.",
+      "privacyPolicy": "Kabijakan Privasi",
+      "decline": "Tolak",
+      "accept": "Setuju"
+    },
+    "themeToggle": {
+      "light": "Padhang",
+      "dark": "Peteng"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Pitakon spesial {{specialState}}",
+      "specialOn": "aktif",
+      "specialOff": "ora aktif",
+      "dailyActive": "Tantangan Saben Dina Aktif",
+      "dailyProgress": "Pitakon {{current}} saka {{total}}",
+      "dailyNote": "Pitakon dipilih otomatis saka wates apalan sampeyan",
+      "showLess": "Sethithik ▴",
+      "showMore": "Luwih Akeh ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Lapurna Kesalahan",
+      "placeholder": "Mangga jlentrehake kesalahane...",
+      "cancel": "Ora",
+      "confirm": "Iya"
+    }
+  },
+  "onboarding": {
+    "skip": "Liwati",
+    "next": "Terusake",
+    "start": "Miwiti",
+    "badges": {
+      "quiz": "Kuis",
+      "daily": "Tantangan Saben Dina",
+      "leaderboard": "Papan Rangking"
+    },
+    "quizPreview": {
+      "correctFeedback": "Apik tenan! Kaya ngene rupane pitakon-pitakone 🎉",
+      "wrongFeedback": "Meh bener — jawaban sing bener: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 pitakon watesan wektu — jawaben kanthi cepet lan tepat",
+      "secondsUnit": "d"
+    },
+    "slides": {
+      "s1": {
+        "title": "Tes Apalan Sampeyan",
+        "body": "Aplikasi sing nguji apalan Quran sampeyan nganggo pitakon pilihan ganda lan ngidini sampeyan tandhing karo para hafiz ing saindenging jagad.",
+        "p1": "Pitakon sing disesuaikan karo wates apalan sampeyan",
+        "p2": "Tantangan saben dina kanthi watesan wektu",
+        "p3": "Rangking papan rangking sadonya"
+      },
+      "s2": {
+        "title": "Cara Anggone Kerja",
+        "body": "Cuplikan ayat bakal muncul, banjur sampeyan milih tembung sabanjure sing bener saka limang pilihan. Saben jawaban bener nambahi skor sampeyan, lan yen kleru, kita bakal nuduhake ayat lengkap lan panggonane ing Quran."
+      },
+      "s3": {
+        "title": "Tantangan Saben Dina",
+        "body": "10 pitakon anyar saben dina ing wates apalan sampeyan, kanthi wektu winates. Jawaben kanthi cepet lan tepat kanggo entuk skor maksimal sadurunge wektune entek."
+      },
+      "s4": {
+        "title": "Dadi Nomer Siji ing Papan Rangking",
+        "body": "Bandhingake skor sampeyan karo para hafiz ing saindenging jagad ing papan rangking — rangking saben dina lan sakabehe wektu. Kumpulake poin lan munggah rangking."
+      }
+    },
+    "setup": {
+      "title": "Apa Sing Wis Sampeyan Apalake?",
+      "subtitle": "Pilih Surah lan Juz sing wis sampeyan apalake",
+      "all": "Kabeh",
+      "none": "Resiki Kabeh",
+      "recent": "5 Juz Pungkasan",
+      "confirm": "Konfirmasi & Terusake"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Tampilan",
+    "themeLabel": "Tema Aplikasi",
+    "themeHint": "Mode peteng minangka standar",
+    "languageHeader": "Basa",
+    "languageLabel": "Basa Aplikasi",
+    "levelHeader": "Level kuis: {{level}}",
+    "specialHeader": "Pitakon Spesial",
+    "specialLabel": "Aktifake pitakon babagan jeneng Surah lan nomer ayat",
+    "specialHint": "Level menengah lan ing ndhuwure",
+    "notifPrefs": {
+      "header": "Pemberitahuan",
+      "invitesLabel": "Undangan Duel PvP",
+      "invitesHint": "Kabari nalika kanca nantang sampeyan duel",
+      "friendRequestsLabel": "Panjaluk Kekancan",
+      "friendRequestsHint": "Kabari nalika sampeyan nampa panjaluk kekancan anyar",
+      "streakAlertsLabel": "Pengeling Runtutan",
+      "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko"
+    },
+    "mobileAppHeader": "Aplikasi Hape",
+    "storeLinks": {
+      "iosHint": "Kanggo iPhone lan iPad",
+      "androidHint": "Kanggo piranti Android"
+    },
+    "rateAppHeader": "Seneng Aplikasine?",
+    "rateAppLabelIos": "Wenehi Rating ing App Store",
+    "rateAppLabelAndroid": "Wenehi Rating ing Google Play",
+    "rateAppHint": "Ulasan sampeyan mbantu wong liya nemokake Quran Quiz Net",
+    "signOut": "Metu",
+    "signOutConfirmMsg": "Data aplikasi lokal bakal dihapus. Sampeyan pengin nerusake?",
+    "no": "Ora",
+    "yes": "Iya",
+    "deleteAccountLink": "Hapus Akun",
+    "deleteSheetTitle": "Hapus akun kanthi permanen?",
+    "deleteSheetBody": "Kemajuan, asil, lan kabeh data sampeyan bakal dihapus saka server kita lan piranti iki. Tumindak iki ora bisa dibatalake.",
+    "deleteSheetConfirm": "Hapus Akun Kanthi Permanen",
+    "cancel": "Batal",
+    "reloginTitle": "Perlu Otentikasi Maneh",
+    "reloginBody": "Kanggo alesan keamanan, mangga metu banjur mlebu maneh sadurunge ngapus akun sampeyan.",
+    "errorTitle": "Kesalahan",
+    "errorBody": "Gagal ngapus akun. Mangga coba maneh mengko.",
+    "version": "Versi {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_other": "{{count}} jam",
+      "minutes_other": "{{count}} menit",
+      "combined": "{{hours}} {{minutes}}",
+      "availableNow": "Kasedhiya saiki",
+      "lessThanMinute": "Kurang saka semenit"
+    },
+    "activeParts_other": "{{count}} Surah aktif",
+    "greeting": "Sugeng rawuh {{name}}",
+    "greetingNoName": "Sugeng rawuh",
+    "streakSheet": {
+      "title": "Runtutan Sampeyan",
+      "daysInRow": "dina berturut-turut",
+      "bestStreak": "Runtutan paling apik: {{count}} dina",
+      "riskBanner": "Runtutan sampeyan kena risiko bengi iki — dolanan kuis sadurunge tengah wengi!",
+      "useFreezeBtn": "Nggunakake token pembeku kanggo njaga runtutan sampeyan"
+    },
+    "dow": {
+      "sun": "Ngh",
+      "mon": "Sen",
+      "tue": "Sel",
+      "wed": "Reb",
+      "thu": "Kem",
+      "fri": "Jem",
+      "sat": "Set"
+    },
+    "rankSheet": {
+      "title": "Tingkat Apalan",
+      "fromStart": "Saka wiwitan",
+      "fromPoints": "Saka {{count}} poin",
+      "yourLevel": "Level sampeyan saiki"
+    },
+    "pointsSuffix": " poin",
+    "pointsToRank": "{{remaining}} poin nuju \"{{nextTitle}}\" ✦",
+    "dailyHero": {
+      "completed": "Sampeyan wis ngrampungake kuis dina iki — kuis anyar sajrone {{duration}}",
+      "readyTitle": "Kuis dina iki wis siap!",
+      "readyBody": "10 pitakon × ketepatan lan kacepetan",
+      "unavailTitle": "Durung ana kuis dina iki",
+      "unavailSub": "Kuis dianyari saben 24 jam"
+    },
+    "pvpWinsBadge": "{{count}} menang",
+    "weakSuraNudge": "Baleni Surah sing paling lemah: {{sura}}",
+    "anonNag": "Mlebu kanggo nyimpen kemajuan sampeyan",
+    "nicknameModal": {
+      "title": "Pilih jeneng sing bakal ditampilake ing papan rangking",
+      "later": "Mengko",
+      "save": "Simpen"
+    },
+    "progressChart": {
+      "label": "Kemajuan Sampeyan",
+      "days": "{{count}} dina",
+      "startPlaying": "Miwiti dolanan"
+    },
+    "statTiles": {
+      "studyLabel": "Apalan",
+      "studySub": "saka Quran",
+      "ratioLabel": "Ketepatan",
+      "ratioSub": "Ketepatan jawaban"
+    },
+    "mapCard": {
+      "title": "Peta Apalan",
+      "tapForDetails": "Ketuk kanggo ndeleng rincian"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Miwiti Kuis",
+    "scorePoints": "{{count}} poin",
+    "streak": "{{count}} berturut-turut",
+    "randomQuiz": "Kuis Acak",
+    "reviewWeakSubtitle": "Utawa balenana Surah sing perlu ditingkatake:",
+    "reviewAllWeakBtn": "Baleni kabeh titik lemah",
+    "dailyEnd": {
+      "title": "Matur nuwun wis melu kuis dina iki",
+      "body": "Mangga baleni apalan Quran sampeyan, sesuk bakal ana kuis anyar, insya Allah.",
+      "share": "Bagekake Asil",
+      "practiceWeak": "Latihan Surah Paling Lemah Sampeyan",
+      "ok": "OK",
+      "shareMsg": "Aku entuk {{score}} poin ing kuis dina iki ing {{appName}}! Cobanen keberuntungan sampeyan:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Apik Tenan!",
+      "body": "Sampeyan mangsuli bener {{correct}} saka {{total}} pitakon",
+      "totalPoints": "Total Poin",
+      "needsReview": "{{part}} perlu dibaleni",
+      "home": "Utama",
+      "continue": "Terusake"
+    }
+  },
+  "pvp": {
+    "botName": "Hafiz",
+    "you": "Sampeyan",
+    "theOpponent": "Lawan",
+    "opponent": "Lawan",
+    "idleTitle": "Kompetisi Langsung",
+    "idleSub": "{{count}} pitakon saka Surah apalan sampeyan — kita bakal golek lawan asli dhisik, lan yen ora ketemu, {{botName}} {{botEmoji}} bakal nampani tantangan",
+    "wins": "Menang",
+    "draws": "Seri",
+    "losses": "Kalah",
+    "startBtn": "Miwiti Pertandingan",
+    "searching": "Nggoleki lawan...",
+    "cancel": "Batal",
+    "readyQuestion": "{{name}}: Apa sampeyan wis siap?",
+    "vs": "vs",
+    "disconnectBanner": "Sambungan karo lawan pedhot… ngenteni dheweke bali",
+    "waitingForOpponent": "Ngenteni lawan rampung...",
+    "outcome": {
+      "winTitle": "Sampeyan menang! 🏆",
+      "lossTitle": "{{name}} menang sepisan iki",
+      "drawTitle": "Seri!",
+      "winSub": "Apik tenan — sampeyan ngalahake {{name}}. Terusake!",
+      "lossSub": "Baleni apalan sampeyan lan coba maneh — kamenangan wis cedhak, insya Allah.",
+      "drawSub": "Pertandingan imbang! Babak liyane bakal nemtokake asile."
+    },
+    "rematch": "Babak Anyar",
+    "home": "Utama",
+    "tier": {
+      "bronze": "Prunggu",
+      "silver": "Perak",
+      "gold": "Emas",
+      "platinum": "Platinum",
+      "hafizGold": "Hafiz Emas"
+    }
+  },
+  "pvpJourney": {
+    "title": "Lelampahan Kompetisi",
+    "pointsGained": "+{{count}} poin",
+    "toNextCity": "{{count}} poin nuju {{cityName}}",
+    "complete": "Sampeyan wis tekan Marrakech! Lelampahan rampung 🏁",
+    "here": "Sampeyan ing kene",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Baghdad",
+      "mecca": "Mekah",
+      "medina": "Madinah",
+      "damascus": "Damaskus",
+      "jerusalem": "Yerusalem",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Kairo",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Aljir",
+      "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "Diadegake",
+      "population": "Populasi Negara",
+      "muslimPopulation": "Populasi Muslim",
+      "muslimPercent": "% Muslim",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} SM",
+      "million": "{{value}}Jt",
+      "thousand": "{{value}}Rb"
+    },
+    "country": {
+      "indonesia": "Indonesia",
+      "malaysia": "Malaysia",
+      "bangladesh": "Bangladesh",
+      "india": "India",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afghanistan",
+      "uzbekistan": "Uzbekistan",
+      "iran": "Iran",
+      "iraq": "Irak",
+      "saudiArabia": "Arab Saudi",
+      "syria": "Suriah",
+      "palestine": "Palestina",
+      "turkey": "Turki",
+      "bosnia": "Bosnia lan Herzegovina",
+      "egypt": "Mesir",
+      "libya": "Libya",
+      "tunisia": "Tunisia",
+      "algeria": "Aljazair",
+      "morocco": "Maroko"
+    }
+  },
+  "league": {
+    "title": "Papan Rangking",
+    "dailyCompleted": "Tantangan dina iki rampung ✓",
+    "dailyReady": "Kuis dina iki wis siap",
+    "dailyStart": "Miwiti",
+    "dailyChecking": "Mriksa...",
+    "dailyError": "Sambungan gagal — Coba Maneh",
+    "ownRank": "Rangking sampeyan dina iki: #{{rank}}",
+    "tabs": {
+      "today": "Dina Iki",
+      "yesterday": "Wingi",
+      "month": "Sasi"
+    },
+    "cardTitles": {
+      "today": "Papan Rangking Dina Iki",
+      "yesterday": "Asil Paling Apik Wingi",
+      "month": "Asil Paling Apik Sasi Iki"
+    },
+    "emptyTitle": "Dadiya sing pisanan ing papan rangking {{timeframe}}",
+    "timeframes": {
+      "today": "dina iki",
+      "month": "sasi iki"
+    },
+    "emptyBtnDaily": "Miwiti Kuis Dina Iki",
+    "emptyBtnGeneric": "Miwiti Kuis",
+    "startDialog": {
+      "title": "Kuis Dina Iki",
+      "msg": "Kuis iki dumadi saka 10 pitakon ing wates apalan sampeyan. Jawaben kanthi bener lan cepet.",
+      "no": "Ora",
+      "start": "Miwiti"
+    }
+  },
+  "map": {
+    "title": "Peta Apalan",
+    "filterAll": "Kabeh",
+    "filterGood": "Apik",
+    "filterWeak": "Lemah",
+    "correctOf": "{{correct}} bener saka {{questions}}",
+    "notTested": "Durung diuji"
+  },
+  "auth": {
+    "heroTitle": "Jaringan Kuis Quran",
+    "heroTagline": "Tes apalan sampeyan lan tandhing karo ahli Quran",
+    "stats": {
+      "surahs": "Surah",
+      "words": "Tembung",
+      "questions": "Pitakon"
+    },
+    "playBtn": "Miwiti Saiki",
+    "playHint": "Ora perlu mlebu — pitakon pisanan sajrone sawetara detik",
+    "divider": "Utawa mlebu kanggo nyimpen kemajuan sampeyan",
+    "continueGoogle": "Terusake nganggo Google",
+    "continueFacebook": "Terusake nganggo Facebook",
+    "termsNotice": "Kanthi nerusake, sampeyan setuju karo ",
+    "errorTitle": "Kesalahan",
+    "errorGoogle": "Ora bisa mlebu nganggo Google",
+    "errorFacebook": "Ora bisa mlebu nganggo Facebook",
+    "errorApple": "Ora bisa mlebu nganggo Apple"
+  },
+  "privacy": {
+    "title": "Syarat & Kabijakan Privasi",
+    "updated": "Pungkasan dianyari: Juni 2026",
+    "sections": {
+      "intro": {
+        "title": "Pambuka",
+        "body": "Ing Quran Quiz Net, kita ngajeni privasi sampeyan. Kaca iki njlentrehake data apa sing kita kumpulake, kepiye anggone kita nggunakake, lan kepiye anggone kita njaga nalika sampeyan nggunakake aplikasi."
+      },
+      "dataCollected": {
+        "title": "Data Sing Kita Kumpulake",
+        "body": "Nalika sampeyan mlebu nganggo Google utawa Facebook, kita nyimpen jeneng, foto profil, lan alamat email sampeyan kanggo gawe profil sampeyan. Kita uga nyimpen kemajuan apalan, asil tes, lan setelan sampeyan. Sampeyan uga bisa nggunakake aplikasi minangka tamu tanpa mlebu."
+      },
+      "useOfData": {
+        "title": "Kepiye Kita Nggunakake Data Sampeyan",
+        "body": "Kita nggunakake data sampeyan kanggo nyimpen lan nyelarasake kemajuan sampeyan ing antarane piranti, nampilake rangking sampeyan ing papan rangking lan tantangan saben dina, sarta ningkatake pengalaman sampeyan ing aplikasi. Kita ora ngedol data sampeyan utawa nampilake iklan."
+      },
+      "cookiesAnalytics": {
+        "title": "Cookie & Analitik",
+        "body": "Kita nggunakake Google Analytics kanggo mangerteni kepiye aplikasi digunakake (kaya kaca sing dibukak lan cacahe tes) kanggo ningkatake pengalaman pangguna, liwat cookie. Kita mung ngaktifake pelacakan iki yen sampeyan setuju, lan sampeyan bisa nolak saka banner persetujuan tanpa mengaruhi panganggone aplikasi sampeyan. Kita nggunakake data iki mung kanggo analitik, ora kanggo iklan."
+      },
+      "storageSecurity": {
+        "title": "Panyimpenan & Keamanan",
+        "body": "Data sampeyan disimpen ing server Firebase duweke Google kanthi proteksi sing cocog. Data lokal sampeyan tetep ana ing piranti sampeyan lan dihapus nalika sampeyan metu."
+      },
+      "accountDeletion": {
+        "title": "Ngapus Akun",
+        "body": "Sampeyan bisa metu kapan wae kanggo ngapus data lokal sampeyan saka piranti iki. Kanggo ngapus akun lan kabeh data sampeyan saka server kita kanthi permanen dhewe: saka layar utama, ketuk ikon setelan ⚙ ing dhuwur kaca, banjur ketuk \"Hapus Akun\" ing ngisor kaca Setelan, lan konfirmasi panghapusane. Akun sampeyan bakal dihapus sanalika, lan tumindak iki ora bisa dibatalake."
+      },
+      "termsOfUse": {
+        "title": "Syarat Panganggo",
+        "body": "Aplikasi iki dirancang kanggo mbantu sampeyan mbaleni apalan Quran Suci sampeyan. Layanan diwenehake \"kaya anane\" tanpa jaminan, lan kita ngupayakake ketepatan isi Quran adhedhasar sumber Tanzil (tanzil.net)."
+      },
+      "contact": {
+        "title": "Kontak",
+        "body": "Kanggo pitakonan apa wae babagan privasi utawa syarat, sampeyan bisa ngubungi kita liwat email resmi aplikasi."
+      }
+    }
+  },
+  "support": {
+    "title": "Dhukungan & Bantuan",
+    "sections": {
+      "technical": {
+        "title": "Dhukungan Teknis",
+        "body": "Nemoni masalah karo aplikasi, utawa duwe saran kanggo ningkatake? Kita seneng mbantu. Kirim email menyang kita ing ngisor iki lan kita bakal mangsuli sanalika bisa."
+      },
+      "sync": {
+        "title": "Masalah Mlebu utawa Sinkronisasi",
+        "body": "Yen sampeyan ngalami masalah mlebu nganggo Google utawa Facebook, utawa ngerti yen kemajuan sampeyan ora sinkron ing antarane piranti, ubungi kita kanthi nyebutake jinis piranti lan sistem operasi supaya kita bisa mbantu luwih cepet."
+      },
+      "deletion": {
+        "title": "Ngapus Akun utawa Data",
+        "body": "Kanggo njaluk panghapusan permanen akun lan data sampeyan sing disimpen ing server kita, kirim email menyang kita ing ngisor iki lan kita bakal ngrampungake panjaluk sajrone sawetara dina."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "Surah {{name}}",
+      "ayahCount": "Cacahe ayat {{count}}",
+      "ayahNumber": "Nomer ayat {{count}}"
+    },
+    "meccan": "Makkiyah",
+    "medinan": "Madaniyah",
+    "instructionNotSpecial": "Pilih terusane sing bener",
+    "instructionSuraName": "Pilih jeneng Surah",
+    "instructionAyahCount": "Pilih cacahe ayat Surah",
+    "instructionMakki": "Pilih klasifikasi Surah",
+    "instructionAyahNumber": "Pilih nomer ayat",
+    "correctMark": "✓ Bener",
+    "pickedWrongMark": "Sampeyan milih ✗",
+    "skip": "Aku ora ngerti",
+    "ayahCount": "{{count}} ayat",
+    "ayahLabel": "Ayat {{number}}",
+    "ok": "OK",
+    "view": "Deleng",
+    "compete": "Tandhing",
+    "shareMsg": "Tandhing karo aku ing {{appName}}!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Sampeyan ngungguli kabeh wong dina iki! 🏆",
+    "behindBy": "Rangking sampeyan dina iki: #{{rank}} saka {{total}} — ketinggalan {{diff}} poin saka {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{threshold}} jawaban bener ing {{partName}}!",
+    "mastery": "🏅 Sampeyan wis kuwasa {{partName}}!"
+  },
+  "rank": {
+    "beginner": "Pemula",
+    "diligent": "Tekun",
+    "hafiz": "Hafiz",
+    "master": "Mahir"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Level Pemula",
+      "comment": "Pitakon diwiwiti saka wiwitan ayat, lan nambahi skor sampeyan 5"
+    },
+    "elementary": {
+      "text": "Level Dhasar",
+      "comment": "Pitakon diwiwiti saka telung tembung, nambahi skor sampeyan 10"
+    },
+    "secondary": {
+      "text": "Level Tengahan",
+      "comment": "Pitakon diwiwiti saka rong tembung, nambahi skor sampeyan 20"
+    },
+    "advanced": {
+      "text": "Level Lanjutan",
+      "comment": "Luwih saka siji jawaban bener, lan nambahi skor sampeyan 30"
+    }
+  },
+  "friends": {
+    "title": "Kanca",
+    "myCodeTitle": "Kode Kuis Sampeyan",
+    "shareBtn": "Bagekake Kode",
+    "shareMessage": "Tambahna aku ing Quran Quiz Net! Ketuk pranala kanggo nambahake aku sanalika:\n{{link}}",
+    "addFriendTitle": "Tambah Kanca nganggo Kode Kuis",
+    "placeholderCode": "Lebokna kode (conto: ABCD1234)",
+    "addBtn": "Tambah",
+    "incomingRequests": "Panjaluk Kekancan Mlebu",
+    "noRequests": "Ora ana panjaluk kekancan sing nunggu",
+    "accept": "Setuju",
+    "decline": "Tolak",
+    "friendList": "Dhaftar Kanca",
+    "noFriends": "Sampeyan durung nambahake kanca. Bagekake kode sampeyan utawa tambahna kanca nganggo kodhene!",
+    "invalidCode": "Kode Kuis Ora Sah",
+    "invalidCodeSub": "Mangga priksa kode lan coba maneh.",
+    "selfCode": "Iku Kode Kuis sampeyan dhewe!",
+    "selfCodeSub": "Bagekake kode iki karo kanca-kanca sampeyan supaya bisa nambahake sampeyan.",
+    "requestSent": "Panjaluk Kekancan Wis Dikirim!",
+    "requestSentSub": "Panjaluk sampeyan bakal katon ing kothak mlebu kancane sampeyan kanggo disetujoni.",
+    "sending": "Ngirim...",
+    "resolving": "Mriksa kode...",
+    "errorOccurred": "Ana kesalahan nalika ngirim",
+    "back": "Bali",
+    "goToFriends": "Deleng Kanca",
+    "challenge": "Tantang"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Duel Kanca",
+    "waitingFor": "Ngenteni {{name}} setuju...",
+    "cancel": "Batalake Tantangan",
+    "bannerTitle": "Tantangan Duel!",
+    "bannerMessage": "{{name}} nantang sampeyan duel",
+    "accept": "Setuju",
+    "decline": "Tolak"
+  },
+  "notifications": {
+    "channelName": "Pengeling",
+    "streakReminder": {
+      "title": "🔥 Aja nganti ilang runtutan sampeyan",
+      "body": "Runtutan sampeyan {{count}} dina! Dolanan kuis dina iki kanggo njaga runtutane."
+    },
+    "dailyReady": {
+      "title": "⭐ Kuis dina iki wis siap",
+      "body": "Kuis anyar ing wates apalan sampeyan wis ngenteni. Cobanen keberuntungan sampeyan saiki!"
+    }
+  }
+}

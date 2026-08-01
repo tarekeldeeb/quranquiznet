@@ -1,0 +1,530 @@
+{
+  "common": {
+    "guestName": "Baƙo",
+    "appName": "Hanyar Sadarwar Kwiz na Alqur'ani",
+    "homePage": "Babban Shafi",
+    "start": "Fara",
+    "home": "Gida",
+    "juzPart": "Juzu'i {{name}}",
+    "consentBanner": {
+      "text": "Muna amfani da cookies don nazarin yadda ake amfani da manhajar da inganta gogewarku.",
+      "privacyPolicy": "Manufar Sirri",
+      "decline": "Ƙi",
+      "accept": "Yarda"
+    },
+    "themeToggle": {
+      "light": "Haske",
+      "dark": "Duhu"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Tambayoyi na musamman {{specialState}}",
+      "specialOn": "an kunna",
+      "specialOff": "an kashe",
+      "dailyActive": "Ƙalubalen Yau da Kullum Yana Aiki",
+      "dailyProgress": "Tambaya {{current}} daga cikin {{total}}",
+      "dailyNote": "Ana zaɓar tambayoyi ta atomatik daga iyakar haddar ku",
+      "showLess": "Ƙasa ▴",
+      "showMore": "Ƙari ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Kai Rahoton Kuskure",
+      "placeholder": "Da fatan za a bayyana kuskuren...",
+      "cancel": "A'a",
+      "confirm": "Eh"
+    }
+  },
+  "onboarding": {
+    "skip": "Tsallake",
+    "next": "Gaba",
+    "start": "Fara",
+    "badges": {
+      "quiz": "Kwiz",
+      "daily": "Ƙalubalen Yau da Kullum",
+      "leaderboard": "Jerin Manyan"
+    },
+    "quizPreview": {
+      "correctFeedback": "Madalla! Ga yadda tambayoyin suke 🎉",
+      "wrongFeedback": "Kusa-kusa — amsar da ta dace: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "Tambayoyi 10 masu ƙayyadadden lokaci — ku amsa da sauri kuma daidai",
+      "secondsUnit": "s"
+    },
+    "slides": {
+      "s1": {
+        "title": "Gwada Haddar Ku",
+        "body": "Manhaja da ke gwada haddar Alqur'ani naku ta hanyar tambayoyin zaɓi da yawa, kuma tana ba ku damar yin gasa da masu haddar Alqur'ani a duniya baki ɗaya.",
+        "p1": "Tambayoyin da aka daidaita da iyakar haddar ku",
+        "p2": "Ƙalubalen yau da kullum mai ƙayyadadden lokaci",
+        "p3": "Matsayi a jerin manyan na duniya"
+      },
+      "s2": {
+        "title": "Yadda Take Aiki",
+        "body": "Wani yanki na aya zai bayyana, sai ku zaɓi kalmar da ta dace daga cikin zaɓuɓɓuka biyar. Kowace amsa daidai tana ƙara maki, idan kuma kun yi kuskure, muna nuna muku ayar gaba ɗaya da matsayinta a cikin Alqur'ani."
+      },
+      "s3": {
+        "title": "Ƙalubalen Yau da Kullum",
+        "body": "Sabbin tambayoyi 10 kowace rana a cikin iyakar haddar ku, da ƙayyadadden lokaci. Ku amsa da sauri kuma daidai domin samun mafi yawan maki kafin lokaci ya ƙare."
+      },
+      "s4": {
+        "title": "Zama na Farko a Jerin Manyan",
+        "body": "Kwatanta makinku da na masu haddar Alqur'ani a duniya a jerin manyan — na yau da kullum da na tsawon lokaci. Tara maki ku ci gaba gaba a matsayi."
+      }
+    },
+    "setup": {
+      "title": "Me Kuka Riga Kuka Haddace?",
+      "subtitle": "Zaɓi Surorin da Juzu'ai da kuka riga kuka haddace",
+      "all": "Duka",
+      "none": "Share Duka",
+      "recent": "Juzu'i 5 na Ƙarshe",
+      "confirm": "Tabbatar & Ci gaba"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Kamanni",
+    "themeLabel": "Jigon Manhaja",
+    "themeHint": "Yanayin duhu shine tsohon zaɓi",
+    "languageHeader": "Harshe",
+    "languageLabel": "Harshen Manhaja",
+    "levelHeader": "Matakin kwiz: {{level}}",
+    "specialHeader": "Tambayoyi na Musamman",
+    "specialLabel": "Kunna tambayoyi kan sunan Sura da lambar aya",
+    "specialHint": "Matakin tsakiya zuwa sama",
+    "notifPrefs": {
+      "header": "Sanarwowi",
+      "invitesLabel": "Gayyatar Faɗa ta PvP",
+      "invitesHint": "Sanar da ni idan aboki ya ƙalubalance ni da faɗa",
+      "friendRequestsLabel": "Buƙatun Abokantaka",
+      "friendRequestsHint": "Sanar da ni idan na sami sabuwar buƙatar abokantaka",
+      "streakAlertsLabel": "Faɗakarwar Jerin Nasara",
+      "streakAlertsHint": "Tunatarwa da yamma idan jerin nasararku na cikin haɗari"
+    },
+    "mobileAppHeader": "Manhajar Waya",
+    "storeLinks": {
+      "iosHint": "Domin iPhone da iPad",
+      "androidHint": "Domin na'urorin Android"
+    },
+    "rateAppHeader": "Kuna Jin Daɗin Manhajar?",
+    "rateAppLabelIos": "Kimanta a App Store",
+    "rateAppLabelAndroid": "Kimanta a Google Play",
+    "rateAppHint": "Kimancinku yana taimaka wa wasu su gano Quran Quiz Net",
+    "signOut": "Fita",
+    "signOutConfirmMsg": "Za a share bayanan manhaja na cikin na'ura. Kuna son ci gaba?",
+    "no": "A'a",
+    "yes": "Eh",
+    "deleteAccountLink": "Share Asusu",
+    "deleteSheetTitle": "Share asusu har abada?",
+    "deleteSheetBody": "Za a share ci gaban ku, sakamakonku, da duk bayananku daga sabobinmu da wannan na'ura. Ba za a iya soke wannan aikin ba.",
+    "deleteSheetConfirm": "Share Asusu Har Abada",
+    "cancel": "Soke",
+    "reloginTitle": "Ana Buƙatar Sake Tabbatarwa",
+    "reloginBody": "Saboda dalilan tsaro, da fatan za a fita sannan a shiga kuma kafin share asusun ku.",
+    "errorTitle": "Kuskure",
+    "errorBody": "An kasa share asusu. Da fatan a sake gwadawa daga baya.",
+    "version": "Sigar {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_one": "sa'a {{count}}",
+      "hours_other": "sa'o'i {{count}}",
+      "minutes_one": "minti {{count}}",
+      "minutes_other": "mintuna {{count}}",
+      "combined": "{{hours}} da {{minutes}}",
+      "availableNow": "Yana samuwa yanzu",
+      "lessThanMinute": "Ƙasa da minti ɗaya"
+    },
+    "activeParts_one": "Sura {{count}} mai aiki",
+    "activeParts_other": "Surori {{count}} masu aiki",
+    "greeting": "Barka da zuwa {{name}}",
+    "greetingNoName": "Barka da zuwa",
+    "streakSheet": {
+      "title": "Jerin Nasarar Ku",
+      "daysInRow": "kwanaki a jere",
+      "bestStreak": "Mafi kyawun jere: kwanaki {{count}}",
+      "riskBanner": "Jerin nasararku na cikin haɗari yau da dare — ku yi kwiz kafin tsakar dare!",
+      "useFreezeBtn": "Yi amfani da alamar daskarewa domin ceton jerin nasararku"
+    },
+    "dow": {
+      "sun": "Lah",
+      "mon": "Lit",
+      "tue": "Tal",
+      "wed": "Lar",
+      "thu": "Alh",
+      "fri": "Jum",
+      "sat": "Asa"
+    },
+    "rankSheet": {
+      "title": "Matakan Hadda",
+      "fromStart": "Daga farko",
+      "fromPoints": "Daga maki {{count}}",
+      "yourLevel": "Matakinku yanzu"
+    },
+    "pointsSuffix": " maki",
+    "pointsToRank": "Maki {{remaining}} zuwa \"{{nextTitle}}\" ✦",
+    "dailyHero": {
+      "completed": "Kun gama kwizin yau — sabon kwiz bayan {{duration}}",
+      "readyTitle": "Kwizin yau yana shirye!",
+      "readyBody": "Tambayoyi 10 × daidaito da sauri",
+      "unavailTitle": "Babu kwiz na yau tukuna",
+      "unavailSub": "Ana sabunta kwiz duk bayan sa'o'i 24"
+    },
+    "pvpWinsBadge": "Nasarori {{count}}",
+    "weakSuraNudge": "Sake duba Sura mafi rauni: {{sura}}",
+    "anonNag": "Ku shiga domin adana ci gabanku",
+    "nicknameModal": {
+      "title": "Zaɓi sunan da za a nuna a jerin manyan",
+      "later": "Daga baya",
+      "save": "Ajiye"
+    },
+    "progressChart": {
+      "label": "Ci Gabanku",
+      "days": "Kwanaki {{count}}",
+      "startPlaying": "Fara wasa"
+    },
+    "statTiles": {
+      "studyLabel": "Hadda",
+      "studySub": "na Alqur'ani",
+      "ratioLabel": "Daidaito",
+      "ratioSub": "Daidaiton amsoshi"
+    },
+    "mapCard": {
+      "title": "Taswirar Hadda",
+      "tapForDetails": "Danna domin ganin bayani"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Fara Kwiz",
+    "scorePoints": "Maki {{count}}",
+    "streak": "{{count}} a jere",
+    "randomQuiz": "Kwiz na Bazata",
+    "reviewWeakSubtitle": "Ko sake duba Sura da take buƙatar inganta:",
+    "reviewAllWeakBtn": "Sake duba dukkan wuraren rauni",
+    "dailyEnd": {
+      "title": "Na gode da kuka yi kwizin yau",
+      "body": "Da fatan za a sake duba haddar Alqur'ani naku, kuma za ku sami sabon kwiz gobe, in Allah Ya so.",
+      "share": "Raba Sakamako",
+      "practiceWeak": "Yi Atisaye a Sura Mafi Rauni",
+      "ok": "To",
+      "shareMsg": "Na samu maki {{score}} a kwizin yau a {{appName}}! Ku gwada sa'arku:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Madalla!",
+      "body": "Kun amsa {{correct}} daidai daga cikin {{total}}",
+      "totalPoints": "Jimlar Maki",
+      "needsReview": "{{part}} na buƙatar sake dubawa",
+      "home": "Gida",
+      "continue": "Ci gaba"
+    }
+  },
+  "pvp": {
+    "botName": "Hafiz",
+    "you": "Kai",
+    "theOpponent": "Abokin hamayya",
+    "opponent": "Abokin hamayya",
+    "idleTitle": "Gasa kai tsaye",
+    "idleSub": "Tambayoyi {{count}} daga Surorin da kuka haddace — za mu fara neman ainihin abokin hamayya, idan ba a samu ba, {{botName}} {{botEmoji}} zai karɓi ƙalubale",
+    "wins": "Nasarori",
+    "draws": "Canjaras",
+    "losses": "Rashi",
+    "startBtn": "Fara Wasa",
+    "searching": "Ana neman abokin hamayya...",
+    "cancel": "Soke",
+    "readyQuestion": "{{name}}: Kun shirya?",
+    "vs": "da",
+    "disconnectBanner": "An yanke haɗi da abokin hamayya… ana jira dawowarsa",
+    "waitingForOpponent": "Ana jiran abokin hamayya ya gama...",
+    "outcome": {
+      "winTitle": "Kun ci nasara! 🏆",
+      "lossTitle": "{{name}} ya ci a wannan karon",
+      "drawTitle": "Canjaras ne!",
+      "winSub": "Madalla — kun doke {{name}}. Ku ci gaba haka!",
+      "lossSub": "Ku sake duba haddarku ku sake gwadawa — nasara na kusa, in Allah Ya so.",
+      "drawSub": "Wasa ne mai daidaito! Wani zagaye zai tantance sakamako."
+    },
+    "rematch": "Sabon Zagaye",
+    "home": "Gida",
+    "tier": {
+      "bronze": "Tagulla",
+      "silver": "Azurfa",
+      "gold": "Zinariya",
+      "platinum": "Platinum",
+      "hafizGold": "Hafiz na Zinariya"
+    }
+  },
+  "pvpJourney": {
+    "title": "Tafiyar Gasa",
+    "pointsGained": "+{{count}} maki",
+    "toNextCity": "Maki {{count}} zuwa {{cityName}}",
+    "complete": "Kun isa Marrakech! Tafiya ta ƙare 🏁",
+    "here": "Kuna nan",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Bagdaza",
+      "mecca": "Makka",
+      "medina": "Madina",
+      "damascus": "Damascus",
+      "jerusalem": "Kudus",
+      "istanbul": "Istambul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Alƙahira",
+      "tripoli": "Tarabulus",
+      "tunis": "Tunis",
+      "algiers": "Aljeriya",
+      "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "An Kafa",
+      "population": "Yawan Jama'ar Ƙasa",
+      "muslimPopulation": "Yawan Musulmi",
+      "muslimPercent": "% Musulmi",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} K.Z.",
+      "million": "Miliyan {{value}}",
+      "thousand": "Dubu {{value}}"
+    },
+    "country": {
+      "indonesia": "Indonesiya",
+      "malaysia": "Malesiya",
+      "bangladesh": "Bangladash",
+      "india": "Indiya",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afganistan",
+      "uzbekistan": "Uzbekistan",
+      "iran": "Iran",
+      "iraq": "Iraki",
+      "saudiArabia": "Saudiyya",
+      "syria": "Siriya",
+      "palestine": "Falasɗinu",
+      "turkey": "Turkiyya",
+      "bosnia": "Bosniya da Herzegovina",
+      "egypt": "Masar",
+      "libya": "Libiya",
+      "tunisia": "Tunisiya",
+      "algeria": "Aljeriya",
+      "morocco": "Maroko"
+    }
+  },
+  "league": {
+    "title": "Jerin Manyan",
+    "dailyCompleted": "An gama ƙalubalen yau ✓",
+    "dailyReady": "Kwizin yau yana shirye",
+    "dailyStart": "Fara",
+    "dailyChecking": "Ana duba...",
+    "dailyError": "Haɗi ya kasa — Sake Gwadawa",
+    "ownRank": "Matsayinku yau: #{{rank}}",
+    "tabs": {
+      "today": "Yau",
+      "yesterday": "Jiya",
+      "month": "Wata"
+    },
+    "cardTitles": {
+      "today": "Jerin Manyan na Yau",
+      "yesterday": "Mafi Kyawun Sakamako na Jiya",
+      "month": "Mafi Kyawun Sakamako na Wannan Wata"
+    },
+    "emptyTitle": "Ku zama na farko a jerin manyan {{timeframe}}",
+    "timeframes": {
+      "today": "yau",
+      "month": "wannan wata"
+    },
+    "emptyBtnDaily": "Fara Kwizin Yau",
+    "emptyBtnGeneric": "Fara Kwiz",
+    "startDialog": {
+      "title": "Kwizin Yau",
+      "msg": "Kwizin ya ƙunshi tambayoyi 10 a cikin iyakar haddarku. Ku amsa daidai kuma da sauri.",
+      "no": "A'a",
+      "start": "Fara"
+    }
+  },
+  "map": {
+    "title": "Taswirar Hadda",
+    "filterAll": "Duka",
+    "filterGood": "Mai Kyau",
+    "filterWeak": "Mai Rauni",
+    "correctOf": "Daidai {{correct}} daga cikin {{questions}}",
+    "notTested": "Ba a gwada ba tukuna"
+  },
+  "auth": {
+    "heroTitle": "Hanyar Sadarwar Kwiz na Alqur'ani",
+    "heroTagline": "Gwada haddarku ku yi gasa da mutanen Alqur'ani",
+    "stats": {
+      "surahs": "Sura",
+      "words": "Kalma",
+      "questions": "Tambayoyi"
+    },
+    "playBtn": "Fara Yanzu",
+    "playHint": "Ba a buƙatar shiga — tambaya ta farko cikin daƙiƙu",
+    "divider": "Ko ku shiga domin adana ci gabanku",
+    "continueGoogle": "Ci gaba da Google",
+    "continueFacebook": "Ci gaba da Facebook",
+    "termsNotice": "Ta hanyar ci gaba, kun yarda da ",
+    "errorTitle": "Kuskure",
+    "errorGoogle": "An kasa shiga da Google",
+    "errorFacebook": "An kasa shiga da Facebook",
+    "errorApple": "An kasa shiga da Apple"
+  },
+  "privacy": {
+    "title": "Sharuɗɗa & Manufar Sirri",
+    "updated": "An sabunta a ƙarshe: Yuni 2026",
+    "sections": {
+      "intro": {
+        "title": "Gabatarwa",
+        "body": "A Quran Quiz Net, muna daraja sirrinku. Wannan shafi yana bayyana irin bayanan da muke tattarawa, yadda muke amfani da su, da yadda muke kiyaye su lokacin da kuke amfani da manhajar."
+      },
+      "dataCollected": {
+        "title": "Bayanan da Muke Tattarawa",
+        "body": "Idan kuka shiga da Google ko Facebook, muna adana sunanku, hoton bayaninku, da adireshin imel domin ƙirƙirar bayaninku. Muna kuma adana ci gaban haddarku, sakamakon jarrabawa, da saitunanku. Hakanan za ku iya amfani da manhajar a matsayin baƙo ba tare da shiga ba."
+      },
+      "useOfData": {
+        "title": "Yadda Muke Amfani da Bayananku",
+        "body": "Muna amfani da bayananku domin adanawa da daidaita ci gabanku a cikin na'urorinku, nuna matsayinku a jerin manyan da ƙalubalen yau da kullum, da inganta gogewarku a cikin manhajar. Ba mu sayar da bayananku ko nuna talla."
+      },
+      "cookiesAnalytics": {
+        "title": "Cookies & Bincike",
+        "body": "Muna amfani da Google Analytics domin fahimtar yadda ake amfani da manhajar (kamar shafukan da aka ziyarta da yawan jarrabawa) domin inganta gogewar mai amfani, ta hanyar cookies. Muna kunna wannan bibiya ne kawai da izininku, kuma za ku iya ƙin yarda daga bagen izini ba tare da shafar amfaninku da manhajar ba. Muna amfani da wannan bayanan ne kawai domin bincike, ba domin talla ba."
+      },
+      "storageSecurity": {
+        "title": "Ajiya & Tsaro",
+        "body": "Ana ajiye bayananku a sabobin Firebase na Google tare da kariya ta dace. Bayananku na cikin na'ura suna nan a na'urarku kuma ana share su lokacin da kuka fita."
+      },
+      "accountDeletion": {
+        "title": "Share Asusu",
+        "body": "Za ku iya fita a kowane lokaci domin share bayananku na cikin na'ura daga wannan na'urar. Domin share asusunku da duk bayananku daga sabobinmu har abada da kanku: daga babban shafi, danna alamar saituna ⚙ a saman shafin, sannan ku danna \"Share Asusu\" a ƙasan shafin Saitunan, sannan ku tabbatar da sharewa. Za a share asusunku nan take, kuma ba za a iya soke wannan aikin ba."
+      },
+      "termsOfUse": {
+        "title": "Sharuɗɗan Amfani",
+        "body": "An tsara manhajar domin taimaka muku sake duba haddarku na Alƙur'ani mai girma. Ana bayar da hidimar \"kamar yadda take\" ba tare da wata garantin ba, kuma muna ƙoƙarin tabbatar da daidaiton abin da ke cikin Alƙur'ani bisa tushen Tanzil (tanzil.net)."
+      },
+      "contact": {
+        "title": "Tuntuɓa",
+        "body": "Domin duk wata tambaya game da sirri ko sharuɗɗa, za ku iya tuntuɓarmu ta hanyar imel na hukuma na manhajar."
+      }
+    }
+  },
+  "support": {
+    "title": "Tallafi & Taimako",
+    "sections": {
+      "technical": {
+        "title": "Tallafin Fasaha",
+        "body": "Kun ci karo da matsala tare da manhajar, ko kuna da shawara don inganta ta? Muna farin cikin taimakawa. Ku aiko mana da imel a ƙasa kuma za mu amsa muku da wuri-wuri."
+      },
+      "sync": {
+        "title": "Matsalolin Shiga ko Daidaitawa",
+        "body": "Idan kuna fuskantar matsala wajen shiga da Google ko Facebook, ko kuka lura cewa ci gabanku ba ya daidaitawa a cikin na'urorinku, ku tuntuɓe mu tare da ambaton irin na'urarku da tsarin aikinta domin mu taimaka muku da sauri."
+      },
+      "deletion": {
+        "title": "Share Asusu ko Bayanai",
+        "body": "Domin neman a share asusunku da bayananku da aka ajiye a sabobinmu har abada, ku aiko mana da imel a ƙasa kuma za mu kammala buƙatar cikin 'yan kwanaki."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "Sura {{name}}",
+      "ayahCount": "Yawan aya {{count}}",
+      "ayahNumber": "Lambar aya {{count}}"
+    },
+    "meccan": "Ta Makka",
+    "medinan": "Ta Madina",
+    "instructionNotSpecial": "Zaɓi daidai ci gaban ayar",
+    "instructionSuraName": "Zaɓi sunan Sura",
+    "instructionAyahCount": "Zaɓi yawan ayoyin Sura",
+    "instructionMakki": "Zaɓi rukunin Sura",
+    "instructionAyahNumber": "Zaɓi lambar aya",
+    "correctMark": "✓ Daidai",
+    "pickedWrongMark": "Kun zaɓi ✗",
+    "skip": "Ban sani ba",
+    "ayahCount": "Aya {{count}}",
+    "ayahLabel": "Aya {{number}}",
+    "ok": "To",
+    "view": "Duba",
+    "compete": "Yi Gasa",
+    "shareMsg": "Yi gasa da ni a {{appName}}!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Kuna gaban kowa yau! 🏆",
+    "behindBy": "Matsayinku yau: #{{rank}} daga cikin {{total}} — a baya da maki {{diff}} daga {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 Amsoshi {{threshold}} daidai a {{partName}}!",
+    "mastery": "🏅 Kun ƙware a {{partName}}!"
+  },
+  "rank": {
+    "beginner": "Mai Farawa",
+    "diligent": "Mai Himma",
+    "hafiz": "Hafiz",
+    "master": "Gwani"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Matakin Farawa",
+      "comment": "Tambayar tana farawa daga farkon ayar, kuma tana ƙara maki 5"
+    },
+    "elementary": {
+      "text": "Matakin Farko",
+      "comment": "Tambayar tana farawa daga kalmomi uku, tana ƙara maki 10"
+    },
+    "secondary": {
+      "text": "Matakin Tsakiya",
+      "comment": "Tambayar tana farawa daga kalmomi biyu, tana ƙara maki 20"
+    },
+    "advanced": {
+      "text": "Matakin Ci Gaba",
+      "comment": "Fiye da amsa ɗaya daidai, kuma tana ƙara maki 30"
+    }
+  },
+  "friends": {
+    "title": "Abokai",
+    "myCodeTitle": "Lambar Kwizinku",
+    "shareBtn": "Raba Lamba",
+    "shareMessage": "Ku ƙara ni a Quran Quiz Net! Danna hanyar haɗi domin ƙara ni nan take:\n{{link}}",
+    "addFriendTitle": "Ƙara Aboki ta Lambar Kwiz",
+    "placeholderCode": "Shigar da lamba (misali ABCD1234)",
+    "addBtn": "Ƙara",
+    "incomingRequests": "Buƙatun Abokantaka Masu Shigowa",
+    "noRequests": "Babu buƙatun abokantaka masu jira",
+    "accept": "Yarda",
+    "decline": "Ƙi",
+    "friendList": "Jerin Abokai",
+    "noFriends": "Har yanzu ba ku ƙara abokai ba. Ku raba lambarku ko ku ƙara aboki da lambarsa!",
+    "invalidCode": "Lambar Kwiz Ba Ta Inganta Ba",
+    "invalidCodeSub": "Da fatan a duba lambar sannan a sake gwadawa.",
+    "selfCode": "Wannan lambar kwizinku ce!",
+    "selfCodeSub": "Ku raba wannan lambar da abokanku domin su ƙara ku.",
+    "requestSent": "An Aika Buƙatar Abokantaka!",
+    "requestSentSub": "Buƙatarku za ta bayyana a akwatin saƙon abokinku domin yarda.",
+    "sending": "Ana aikawa...",
+    "resolving": "Ana duba lamba...",
+    "errorOccurred": "An sami kuskure yayin aikawa",
+    "back": "Baya",
+    "goToFriends": "Duba Abokai",
+    "challenge": "Ƙalubalanta"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Faɗan Abokai",
+    "waitingFor": "Ana jiran {{name}} ya yarda...",
+    "cancel": "Soke Ƙalubale",
+    "bannerTitle": "Ƙalubalen Faɗa!",
+    "bannerMessage": "{{name}} yana ƙalubalantar ku da faɗa",
+    "accept": "Yarda",
+    "decline": "Ƙi"
+  },
+  "notifications": {
+    "channelName": "Tunatarwa",
+    "streakReminder": {
+      "title": "🔥 Kada ku rasa jerin nasararku",
+      "body": "Jerin nasararku na kwana {{count}}! Ku yi kwiz yau domin ci gaba da shi."
+    },
+    "dailyReady": {
+      "title": "⭐ Kwizin yau yana shirye",
+      "body": "Sabon kwiz a cikin iyakar haddarku yana jiran ku. Ku gwada sa'arku yanzu!"
+    }
+  }
+}

@@ -38,12 +38,23 @@ I18nManager.forceRTL(false);
 // given native implementation doesn't expose it, this silently no-ops there
 // and per-component explicit fontFamily props (unaffected by this patch)
 // continue to work exactly as before.
-const DEFAULT_FONT = { fontFamily: 'PlexArabic-Regular' };
+//
+// Bengali is the one supported language whose script PlexArabic has zero
+// glyphs for, so the default is language-aware: Bengali gets NotoSansBengali,
+// every other language keeps PlexArabic (its Latin-script glyphs also fall
+// through to the OS/browser's own font fallback either way — verified via
+// direct glyph inspection, not just for English). Read directly off the
+// zustand store (no hook) since this patches a render function that fires on
+// every Text/TextInput render regardless of subscription.
+const DEFAULT_FONT_AR = { fontFamily: 'PlexArabic-Regular' };
+const DEFAULT_FONT_BN = { fontFamily: 'NotoSansBengali-Regular' };
+const getDefaultFont = () =>
+  (useProfileStore.getState().language === 'bn' ? DEFAULT_FONT_BN : DEFAULT_FONT_AR);
 const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __fontPatched?: boolean }) => {
   if (typeof Comp.render !== 'function' || Comp.__fontPatched) return;
   const origRender = Comp.render;
   Comp.render = (props: any, ref: any) =>
-    origRender({ ...props, style: [DEFAULT_FONT, props.style] }, ref);
+    origRender({ ...props, style: [getDefaultFont(), props.style] }, ref);
   Comp.__fontPatched = true;
 };
 patchDefaultFont(Text as unknown as { render?: (props: any, ref: any) => unknown });
@@ -150,6 +161,10 @@ export default function RootLayout() {
     // assets) — the app-wide Quran-text face, for both plain-text fallbacks
     // and the answer options, so everything visually matches.
     'UthmanTN': require('../assets/fonts/UthmanTN_v2-0.woff2'),
+    // Bengali-script default face (see getDefaultFont above) — PlexArabic has
+    // no Bengali glyphs at all.
+    'NotoSansBengali-Regular': require('../assets/fonts/NotoSansBengali-Regular.woff2'),
+    'NotoSansBengali-Bold': require('../assets/fonts/NotoSansBengali-Bold.woff2'),
   });
 
   useEffect(() => {

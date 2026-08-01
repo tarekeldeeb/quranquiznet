@@ -1,0 +1,530 @@
+{
+  "common": {
+    "guestName": "Ziyaretçi",
+    "appName": "Kur'an Test Ağı",
+    "homePage": "Ana Sayfa",
+    "start": "Başla",
+    "home": "Ana Sayfa",
+    "juzPart": "{{name}}. Cüz",
+    "consentBanner": {
+      "text": "Uygulama kullanımını analiz etmek ve deneyiminizi geliştirmek için çerezler kullanıyoruz.",
+      "privacyPolicy": "Gizlilik Politikası",
+      "decline": "Reddet",
+      "accept": "Kabul Et"
+    },
+    "themeToggle": {
+      "light": "Açık",
+      "dark": "Koyu"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Özel sorular {{specialState}}",
+      "specialOn": "açık",
+      "specialOff": "kapalı",
+      "dailyActive": "Aktif Günlük Meydan Okuma",
+      "dailyProgress": "Soru {{current}} / {{total}}",
+      "dailyNote": "Sorular ezber kapsamınızdan otomatik seçilir",
+      "showLess": "Daha Az ▴",
+      "showMore": "Daha Fazla ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Hata Bildir",
+      "placeholder": "Lütfen hatayı açıklayın...",
+      "cancel": "Hayır",
+      "confirm": "Evet"
+    }
+  },
+  "onboarding": {
+    "skip": "Atla",
+    "next": "İleri",
+    "start": "Başla",
+    "badges": {
+      "quiz": "Test",
+      "daily": "Günlük Meydan Okuma",
+      "leaderboard": "Lider Tablosu"
+    },
+    "quizPreview": {
+      "correctFeedback": "Aferin! Sorular böyle görünüyor 🎉",
+      "wrongFeedback": "Yaklaştınız — doğru cevap: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 süreli soru — hızlı ve doğru cevaplayın",
+      "secondsUnit": "sn"
+    },
+    "slides": {
+      "s1": {
+        "title": "Ezberinizi Test Edin",
+        "body": "Çoktan seçmeli sorularla Kur'an ezberinizi test eden ve dünyadaki hafızlarla yarışmanızı sağlayan bir uygulama.",
+        "p1": "Ezber kapsamınıza göre hazırlanmış sorular",
+        "p2": "Süreli günlük meydan okuma",
+        "p3": "Küresel lider tablosu sıralaması"
+      },
+      "s2": {
+        "title": "Nasıl Çalışır?",
+        "body": "Bir ayet parçası görünür ve beş seçenek arasından doğru sonraki kelimeyi seçersiniz. Her doğru cevap puanınızı artırır; yanlış yaparsanız ayetin tamamını ve Kur'an'daki yerini gösteririz."
+      },
+      "s3": {
+        "title": "Günlük Meydan Okuma",
+        "body": "Ezber kapsamınızda her gün 10 yeni soru, süre sınırıyla. Süre bitmeden en yüksek puanı almak için hızlı ve doğru cevaplayın."
+      },
+      "s4": {
+        "title": "Lider Tablosunda Zirveye Çıkın",
+        "body": "Puanınızı dünyadaki hafızlarla lider tablosunda karşılaştırın — günlük ve tüm zamanlar sıralaması. Puan toplayın ve sıralamada yükselin."
+      }
+    },
+    "setup": {
+      "title": "Neyi Ezberlediniz?",
+      "subtitle": "Ezberlediğiniz Sureleri ve Cüzleri seçin",
+      "all": "Tümü",
+      "none": "Tümünü Temizle",
+      "recent": "Son 5 Cüz",
+      "confirm": "Onayla ve Devam Et"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Görünüm",
+    "themeLabel": "Uygulama Teması",
+    "themeHint": "Koyu mod varsayılandır",
+    "languageHeader": "Dil",
+    "languageLabel": "Uygulama Dili",
+    "levelHeader": "Test seviyesi: {{level}}",
+    "specialHeader": "Özel Sorular",
+    "specialLabel": "Sure adı ve ayet numarası hakkında soruları etkinleştir",
+    "specialHint": "Orta seviye ve üzeri",
+    "notifPrefs": {
+      "header": "Bildirimler",
+      "invitesLabel": "Düello Davetleri",
+      "invitesHint": "Bir arkadaş sizi düelloya davet ettiğinde bildirim al",
+      "friendRequestsLabel": "Arkadaşlık İstekleri",
+      "friendRequestsHint": "Yeni bir arkadaşlık isteği aldığınızda bildirim al",
+      "streakAlertsLabel": "Seri Uyarıları",
+      "streakAlertsHint": "Seriniz risk altındaysa akşam hatırlatması"
+    },
+    "mobileAppHeader": "Mobil Uygulama",
+    "storeLinks": {
+      "iosHint": "iPhone ve iPad için",
+      "androidHint": "Android cihazlar için"
+    },
+    "rateAppHeader": "Uygulamayı Beğendiniz mi?",
+    "rateAppLabelIos": "App Store'da Değerlendirin",
+    "rateAppLabelAndroid": "Google Play'de Değerlendirin",
+    "rateAppHint": "Değerlendirmeniz başkalarının Kur'an Test Ağı'nı keşfetmesine yardımcı olur",
+    "signOut": "Çıkış Yap",
+    "signOutConfirmMsg": "Yerel uygulama verileri silinecek. Devam etmek istiyor musunuz?",
+    "no": "Hayır",
+    "yes": "Evet",
+    "deleteAccountLink": "Hesabı Sil",
+    "deleteSheetTitle": "Hesap kalıcı olarak silinsin mi?",
+    "deleteSheetBody": "İlerlemeniz, sonuçlarınız ve tüm verileriniz sunucularımızdan ve bu cihazdan silinecektir. Bu işlem geri alınamaz.",
+    "deleteSheetConfirm": "Hesabı Kalıcı Olarak Sil",
+    "cancel": "İptal",
+    "reloginTitle": "Yeniden Kimlik Doğrulama Gerekli",
+    "reloginBody": "Güvenlik nedeniyle, hesabınızı silmeden önce lütfen çıkış yapıp tekrar giriş yapın.",
+    "errorTitle": "Hata",
+    "errorBody": "Hesap silinemedi. Lütfen daha sonra tekrar deneyin.",
+    "version": "Sürüm {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_one": "{{count}} saat",
+      "hours_other": "{{count}} saat",
+      "minutes_one": "{{count}} dakika",
+      "minutes_other": "{{count}} dakika",
+      "combined": "{{hours}} {{minutes}}",
+      "availableNow": "Şimdi hazır",
+      "lessThanMinute": "Bir dakikadan az"
+    },
+    "activeParts_one": "{{count}} aktif Sure",
+    "activeParts_other": "{{count}} aktif Sure",
+    "greeting": "Hoş geldin {{name}}",
+    "greetingNoName": "Hoş geldiniz",
+    "streakSheet": {
+      "title": "Seriniz",
+      "daysInRow": "gün üst üste",
+      "bestStreak": "En iyi seri: {{count}} gün",
+      "riskBanner": "Seriniz bu gece risk altında — gece yarısından önce bir test oynayın!",
+      "useFreezeBtn": "Serinizi korumak için bir dondurma jetonu kullanın"
+    },
+    "dow": {
+      "sun": "Paz",
+      "mon": "Pzt",
+      "tue": "Sal",
+      "wed": "Çar",
+      "thu": "Per",
+      "fri": "Cum",
+      "sat": "Cmt"
+    },
+    "rankSheet": {
+      "title": "Ezber Dereceleri",
+      "fromStart": "Baştan itibaren",
+      "fromPoints": "{{count}} puandan itibaren",
+      "yourLevel": "Şu anki seviyeniz"
+    },
+    "pointsSuffix": " puan",
+    "pointsToRank": "\"{{nextTitle}}\" için {{remaining}} puan ✦",
+    "dailyHero": {
+      "completed": "Bugünün testini tamamladınız — yeni test {{duration}} sonra",
+      "readyTitle": "Bugünün testi hazır!",
+      "readyBody": "10 soru × doğruluk ve hız",
+      "unavailTitle": "Henüz bugüne ait test yok",
+      "unavailSub": "Test her 24 saatte bir yenilenir"
+    },
+    "pvpWinsBadge": "{{count}} galibiyet",
+    "weakSuraNudge": "En zayıf sureyi tekrar edin: {{sura}}",
+    "anonNag": "İlerlemenizi kaydetmek için giriş yapın",
+    "nicknameModal": {
+      "title": "Lider tablosunda görünecek bir isim seçin",
+      "later": "Daha Sonra",
+      "save": "Kaydet"
+    },
+    "progressChart": {
+      "label": "İlerlemeniz",
+      "days": "{{count}} gün",
+      "startPlaying": "Oynamaya başla"
+    },
+    "statTiles": {
+      "studyLabel": "Ezber",
+      "studySub": "Kur'an'ın",
+      "ratioLabel": "Doğruluk",
+      "ratioSub": "Cevap doğruluğu"
+    },
+    "mapCard": {
+      "title": "Ezber Haritası",
+      "tapForDetails": "Detaylar için dokunun"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Bir Test Başlat",
+    "scorePoints": "{{count}} puan",
+    "streak": "{{count}} üst üste",
+    "randomQuiz": "Rastgele Test",
+    "reviewWeakSubtitle": "Ya da geliştirilmesi gereken bir Sureyi tekrar edin:",
+    "reviewAllWeakBtn": "Tüm zayıf noktaları gözden geçir",
+    "dailyEnd": {
+      "title": "Bugünün testine katıldığınız için teşekkürler",
+      "body": "Lütfen Kur'an ezberinizi gözden geçirin, inşallah yarın yeni bir testiniz olacak.",
+      "share": "Sonucu Paylaş",
+      "practiceWeak": "En Zayıf Surenizi Alıştırın",
+      "ok": "Tamam",
+      "shareMsg": "{{appName}} üzerinde bugünün testinde {{score}} puan aldım! Şansını dene:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Mükemmel!",
+      "body": "{{total}} sorudan {{correct}} tanesini doğru cevapladınız",
+      "totalPoints": "Toplam Puan",
+      "needsReview": "{{part}} gözden geçirilmeli",
+      "home": "Ana Sayfa",
+      "continue": "Devam Et"
+    }
+  },
+  "pvp": {
+    "botName": "Hafız",
+    "you": "Sen",
+    "theOpponent": "Rakip",
+    "opponent": "Rakip",
+    "idleTitle": "Canlı Yarışma",
+    "idleSub": "Ezberlediğiniz Surelerden {{count}} soru — önce gerçek bir rakip arayacağız, bulamazsak {{botName}} {{botEmoji}} meydan okumayı üstlenecek",
+    "wins": "Galibiyet",
+    "draws": "Beraberlik",
+    "losses": "Mağlubiyet",
+    "startBtn": "Maçı Başlat",
+    "searching": "Rakip aranıyor...",
+    "cancel": "İptal",
+    "readyQuestion": "{{name}}: Hazır mısınız?",
+    "vs": "vs",
+    "disconnectBanner": "Rakiple bağlantı kesildi… dönmesi bekleniyor",
+    "waitingForOpponent": "Rakibin bitirmesi bekleniyor...",
+    "outcome": {
+      "winTitle": "Kazandınız! 🏆",
+      "lossTitle": "{{name}} bu sefer kazandı",
+      "drawTitle": "Berabere!",
+      "winSub": "Aferin — {{name}} rakibini yendiniz. Böyle devam edin!",
+      "lossSub": "Ezberinizi gözden geçirip tekrar deneyin — zafer yakın, inşallah.",
+      "drawSub": "Denk bir maçtı! Sonucu başka bir tur belirleyecek."
+    },
+    "rematch": "Yeni Tur",
+    "home": "Ana Sayfa",
+    "tier": {
+      "bronze": "Bronz",
+      "silver": "Gümüş",
+      "gold": "Altın",
+      "platinum": "Platin",
+      "hafizGold": "Hafız Altın"
+    }
+  },
+  "pvpJourney": {
+    "title": "Yarışma Yolculuğu",
+    "pointsGained": "+{{count}} puan",
+    "toNextCity": "{{cityName}}'a {{count}} puan",
+    "complete": "Marakeş'e ulaştınız! Yolculuk tamamlandı 🏁",
+    "here": "Buradasınız",
+    "city": {
+      "jakarta": "Cakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dakka",
+      "delhi": "Delhi",
+      "lahore": "Lahor",
+      "kabul": "Kabil",
+      "tashkent": "Taşkent",
+      "tehran": "Tahran",
+      "baghdad": "Bağdat",
+      "mecca": "Mekke",
+      "medina": "Medine",
+      "damascus": "Şam",
+      "jerusalem": "Kudüs",
+      "istanbul": "İstanbul",
+      "sarajevo": "Saraybosna",
+      "cairo": "Kahire",
+      "tripoli": "Trablus",
+      "tunis": "Tunus",
+      "algiers": "Cezayir",
+      "marrakech": "Marakeş"
+    },
+    "cityCard": {
+      "founded": "Kuruluş",
+      "population": "Ülke Nüfusu",
+      "muslimPopulation": "Müslüman nüfus",
+      "muslimPercent": "% Müslüman",
+      "location": "{{city}}, {{country}}",
+      "bce": "MÖ {{value}}",
+      "million": "{{value}}M",
+      "thousand": "{{value}}B"
+    },
+    "country": {
+      "indonesia": "Endonezya",
+      "malaysia": "Malezya",
+      "bangladesh": "Bangladeş",
+      "india": "Hindistan",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afganistan",
+      "uzbekistan": "Özbekistan",
+      "iran": "İran",
+      "iraq": "Irak",
+      "saudiArabia": "Suudi Arabistan",
+      "syria": "Suriye",
+      "palestine": "Filistin",
+      "turkey": "Türkiye",
+      "bosnia": "Bosna Hersek",
+      "egypt": "Mısır",
+      "libya": "Libya",
+      "tunisia": "Tunus",
+      "algeria": "Cezayir",
+      "morocco": "Fas"
+    }
+  },
+  "league": {
+    "title": "Lider Tablosu",
+    "dailyCompleted": "Bugünün meydan okuması tamamlandı ✓",
+    "dailyReady": "Bugünün testi hazır",
+    "dailyStart": "Başla",
+    "dailyChecking": "Kontrol ediliyor...",
+    "dailyError": "Bağlantı başarısız — Tekrar Dene",
+    "ownRank": "Bugünkü sıranız: #{{rank}}",
+    "tabs": {
+      "today": "Bugün",
+      "yesterday": "Dün",
+      "month": "Ay"
+    },
+    "cardTitles": {
+      "today": "Bugünün Lider Tablosu",
+      "yesterday": "Dünün En İyi Sonuçları",
+      "month": "Bu Ayın En İyi Sonuçları"
+    },
+    "emptyTitle": "Lider tablosunda ilk sen ol {{timeframe}}",
+    "timeframes": {
+      "today": "bugün",
+      "month": "bu ay"
+    },
+    "emptyBtnDaily": "Bugünün Testini Başlat",
+    "emptyBtnGeneric": "Bir Test Başlat",
+    "startDialog": {
+      "title": "Bugünün Testi",
+      "msg": "Test, ezber kapsamınızda 10 sorudan oluşur. Doğru ve hızlı cevaplayın.",
+      "no": "Hayır",
+      "start": "Başla"
+    }
+  },
+  "map": {
+    "title": "Ezber Haritası",
+    "filterAll": "Tümü",
+    "filterGood": "İyi",
+    "filterWeak": "Zayıf",
+    "correctOf": "{{questions}} sorudan {{correct}} doğru",
+    "notTested": "Henüz test edilmedi"
+  },
+  "auth": {
+    "heroTitle": "Kur'an Test Ağı",
+    "heroTagline": "Ezberinizi test edin ve Kur'an ehliyle yarışın",
+    "stats": {
+      "surahs": "Sure",
+      "words": "Kelime",
+      "questions": "Soru"
+    },
+    "playBtn": "Şimdi Başla",
+    "playHint": "Giriş gerekmez — ilk soru saniyeler içinde",
+    "divider": "Ya da ilerlemenizi kaydetmek için giriş yapın",
+    "continueGoogle": "Google ile Devam Et",
+    "continueFacebook": "Facebook ile Devam Et",
+    "termsNotice": "Devam ederek şunu kabul etmiş olursunuz: ",
+    "errorTitle": "Hata",
+    "errorGoogle": "Google ile giriş yapılamadı",
+    "errorFacebook": "Facebook ile giriş yapılamadı",
+    "errorApple": "Apple ile giriş yapılamadı"
+  },
+  "privacy": {
+    "title": "Şartlar ve Gizlilik Politikası",
+    "updated": "Son güncelleme: Haziran 2026",
+    "sections": {
+      "intro": {
+        "title": "Giriş",
+        "body": "Kur'an Test Ağı'nda gizliliğinize değer veriyoruz. Bu sayfa, uygulamayı kullanırken hangi verileri topladığımızı, nasıl kullandığımızı ve nasıl koruduğumuzu açıklar."
+      },
+      "dataCollected": {
+        "title": "Topladığımız Veriler",
+        "body": "Google veya Facebook ile giriş yaptığınızda, profilinizi oluşturmak için adınızı, profil fotoğrafınızı ve e-posta adresinizi saklarız. Ayrıca ezber ilerlemenizi, test sonuçlarınızı ve ayarlarınızı kaydederiz. Uygulamayı giriş yapmadan misafir olarak da kullanabilirsiniz."
+      },
+      "useOfData": {
+        "title": "Verilerinizi Nasıl Kullanıyoruz",
+        "body": "Verilerinizi cihazlarınız arasında ilerlemenizi kaydetmek ve senkronize etmek, lider tablosunda ve günlük meydan okumada sıralamanızı göstermek ve uygulama içi deneyiminizi geliştirmek için kullanıyoruz. Verilerinizi satmıyor veya reklam göstermiyoruz."
+      },
+      "cookiesAnalytics": {
+        "title": "Çerezler ve Analitik",
+        "body": "Uygulamanın nasıl kullanıldığını (ziyaret edilen sayfalar ve test sayısı gibi) anlamak ve deneyimi geliştirmek için Google Analytics ve çerezler kullanıyoruz. Bu takibi yalnızca onayınızla etkinleştiririz ve onay bandından reddetseniz de uygulamayı kullanmaya devam edebilirsiniz. Bu verileri yalnızca analiz için kullanırız, reklam için değil."
+      },
+      "storageSecurity": {
+        "title": "Depolama ve Güvenlik",
+        "body": "Verileriniz Google'ın Firebase sunucularında uygun koruma altında saklanır. Yerel verileriniz cihazınızda kalır ve çıkış yaptığınızda silinir."
+      },
+      "accountDeletion": {
+        "title": "Hesap Silme",
+        "body": "Bu cihazdaki yerel verilerinizi silmek için istediğiniz zaman çıkış yapabilirsiniz. Hesabınızı ve tüm verilerinizi sunucularımızdan kalıcı olarak kendiniz silmek için: ana ekrandan sayfanın üstündeki ⚙ ayarlar simgesine dokunun, ardından Ayarlar sayfasının altındaki \"Hesabı Sil\"e dokunun ve silme işlemini onaylayın. Hesabınız hemen silinir ve bu işlem geri alınamaz."
+      },
+      "termsOfUse": {
+        "title": "Kullanım Şartları",
+        "body": "Uygulama, Kur'an-ı Kerim ezberinizi gözden geçirmenize yardımcı olmak için tasarlanmıştır. Hizmet garantisiz \"olduğu gibi\" sunulur ve Kur'an içeriğinin doğruluğu için Tanzil kaynağına (tanzil.net) dayanırız."
+      },
+      "contact": {
+        "title": "İletişim",
+        "body": "Gizlilik veya şartlarla ilgili herhangi bir sorunuz için uygulamanın resmi e-postası üzerinden bize ulaşabilirsiniz."
+      }
+    }
+  },
+  "support": {
+    "title": "Destek ve Yardım",
+    "sections": {
+      "technical": {
+        "title": "Teknik Destek",
+        "body": "Uygulamada bir sorunla mı karşılaştınız veya geliştirmek için bir öneriniz mi var? Yardımcı olmaktan mutluluk duyarız. Aşağıdan bize e-posta gönderin, en kısa sürede yanıt verelim."
+      },
+      "sync": {
+        "title": "Giriş veya Senkronizasyon Sorunları",
+        "body": "Google veya Facebook ile giriş yaparken sorun yaşıyorsanız ya da ilerlemenizin cihazlarınız arasında senkronize olmadığını fark ettiyseniz, size daha hızlı yardımcı olabilmemiz için cihaz türünüzü ve işletim sisteminizi belirterek bize ulaşın."
+      },
+      "deletion": {
+        "title": "Hesap veya Veri Silme",
+        "body": "Hesabınızın ve sunucularımızda saklanan verilerinizin kalıcı olarak silinmesini istemek için aşağıdan bize e-posta gönderin, talebinizi birkaç gün içinde tamamlayalım."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "{{name}} Suresi",
+      "ayahCount": "Ayet sayısı {{count}}",
+      "ayahNumber": "Ayet numarası {{count}}"
+    },
+    "meccan": "Mekkî",
+    "medinan": "Medenî",
+    "instructionNotSpecial": "Doğru devamı seçin",
+    "instructionSuraName": "Sure adını seçin",
+    "instructionAyahCount": "Surenin ayet sayısını seçin",
+    "instructionMakki": "Surenin sınıflandırmasını seçin",
+    "instructionAyahNumber": "Ayet numarasını seçin",
+    "correctMark": "✓ Doğru",
+    "pickedWrongMark": "Seçtiğiniz ✗",
+    "skip": "Bilmiyorum",
+    "ayahCount": "{{count}} ayet",
+    "ayahLabel": "{{number}}. Ayet",
+    "ok": "Tamam",
+    "view": "Görüntüle",
+    "compete": "Yarış",
+    "shareMsg": "{{appName}} üzerinde benimle yarış!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Bugün herkesin önündesiniz! 🏆",
+    "behindBy": "Bugünkü sıranız: #{{rank}} / {{total}} — {{name}}'den {{diff}} puan geride"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{partName}}'de {{threshold}} doğru cevap!",
+    "mastery": "🏅 {{partName}}'de ustalaştınız!"
+  },
+  "rank": {
+    "beginner": "Başlangıç",
+    "diligent": "Gayretli",
+    "hafiz": "Hafız",
+    "master": "Usta"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Başlangıç Seviyesi",
+      "comment": "Soru ayetin başından başlar ve puanınızı 5 artırır"
+    },
+    "elementary": {
+      "text": "Temel Seviye",
+      "comment": "Soru üç kelimeden başlar, puanınızı 10 artırır"
+    },
+    "secondary": {
+      "text": "Orta Seviye",
+      "comment": "Soru iki kelimeden başlar, puanınızı 20 artırır"
+    },
+    "advanced": {
+      "text": "İleri Seviye",
+      "comment": "Birden fazla doğru cevap vardır, puanınızı 30 artırır"
+    }
+  },
+  "friends": {
+    "title": "Arkadaşlar",
+    "myCodeTitle": "Test Kodunuz",
+    "shareBtn": "Kodu Paylaş",
+    "shareMessage": "Beni Kur'an Test Ağı'nda ekle! Beni hemen eklemek için bağlantıya dokun:\n{{link}}",
+    "addFriendTitle": "Test Koduyla Arkadaş Ekle",
+    "placeholderCode": "Kodu girin (örn. ABCD1234)",
+    "addBtn": "Ekle",
+    "incomingRequests": "Gelen Arkadaşlık İstekleri",
+    "noRequests": "Bekleyen arkadaşlık isteği yok",
+    "accept": "Kabul Et",
+    "decline": "Reddet",
+    "friendList": "Arkadaş Listesi",
+    "noFriends": "Henüz arkadaş eklemediniz. Kodunuzu paylaşın veya bir arkadaşınızı kodla ekleyin!",
+    "invalidCode": "Geçersiz Test Kodu",
+    "invalidCodeSub": "Lütfen kodu kontrol edip tekrar deneyin.",
+    "selfCode": "Bu sizin kendi Test Kodunuz!",
+    "selfCodeSub": "Arkadaşlarınızın sizi ekleyebilmesi için bu kodu onlarla paylaşın.",
+    "requestSent": "Arkadaşlık İsteği Gönderildi!",
+    "requestSentSub": "İsteğiniz kabul edilmek üzere arkadaşınızın gelen kutusunda görünecek.",
+    "sending": "Gönderiliyor...",
+    "resolving": "Kod kontrol ediliyor...",
+    "errorOccurred": "Gönderim sırasında bir hata oluştu",
+    "back": "Geri",
+    "goToFriends": "Arkadaşları Görüntüle",
+    "challenge": "Meydan Oku"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Arkadaş Düellosu",
+    "waitingFor": "{{name}}'in kabul etmesi bekleniyor...",
+    "cancel": "Meydan Okumayı İptal Et",
+    "bannerTitle": "Düello Meydan Okuması!",
+    "bannerMessage": "{{name}} sizi düelloya davet ediyor",
+    "accept": "Kabul Et",
+    "decline": "Reddet"
+  },
+  "notifications": {
+    "channelName": "Hatırlatmalar",
+    "streakReminder": {
+      "title": "🔥 Serinizi kaybetmeyin",
+      "body": "Seriniz {{count}} gün! Devam ettirmek için bugün bir test oynayın."
+    },
+    "dailyReady": {
+      "title": "⭐ Bugünün testi hazır",
+      "body": "Ezber kapsamınızda yeni bir test sizi bekliyor. Şimdi şansınızı deneyin!"
+    }
+  }
+}

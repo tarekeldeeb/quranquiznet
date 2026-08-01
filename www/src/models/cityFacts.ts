@@ -10,6 +10,7 @@
 // keyed by the city id itself — see CityCard.tsx's CITY_IMAGES.
 
 import i18n from '../i18n';
+import { LANGUAGE_META, type Language } from '../i18n/languages';
 
 export type CountryId =
   | 'indonesia' | 'malaysia' | 'bangladesh' | 'india' | 'pakistan' | 'afghanistan'
@@ -57,7 +58,7 @@ export function muslimPopulation(id: string): number {
 // Formatter in i18n/index.ts. Building "300 BCE"/"1.2M" by hand here would
 // silently ship Western digits and English words into the Arabic UI.
 function localeTag(): string {
-  return i18n.language === 'ar' ? 'ar-EG' : 'en-US';
+  return LANGUAGE_META[i18n.language as Language]?.numberTag ?? 'en-US';
 }
 
 export function formatFoundedYear(year: number): string {

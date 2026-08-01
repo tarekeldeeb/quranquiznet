@@ -3,6 +3,7 @@
 // that used to be re-declared per screen. Palette drawn from the muṣḥaf:
 // gilded gold instead of 2013 Flat-UI orange, warm paper instead of blue-grey.
 import { useProfileStore } from '../stores/profileStore';
+import { LANGUAGE_META, type Language } from '../i18n/languages';
 
 export type ThemeMode = 'light' | 'dark';
 
@@ -101,7 +102,7 @@ export function arNum(n: number): string {
   return n.toLocaleString('ar-EG');
 }
 
-export function localeNum(n: number, lang: 'ar' | 'en'): string {
-  return lang === 'ar' ? n.toLocaleString('ar-EG') : n.toLocaleString('en-US');
+export function localeNum(n: number, lang: Language): string {
+  return n.toLocaleString(LANGUAGE_META[lang].numberTag);
 }
 

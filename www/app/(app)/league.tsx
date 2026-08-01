@@ -17,6 +17,7 @@ import * as QS from '../../src/services/questionnaireService';
 import { flagEmoji } from '../../src/models/constants';
 import { useTheme, localeNum, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
+import { LANGUAGE_META } from '../../src/i18n/languages';
 import PressScale from '../../src/components/PressScale';
 
 type Tab = 'today' | 'yesterday' | 'month';
@@ -100,7 +101,7 @@ export default function LeagueScreen() {
 
   // Reclaim the header: the month name instead of the app's repeated name.
   useEffect(() => {
-    const monthName = new Date().toLocaleDateString(language === 'ar' ? 'ar-EG' : 'en-US', { month: 'long' });
+    const monthName = new Date().toLocaleDateString(LANGUAGE_META[language].numberTag, { month: 'long' });
     navigation.setOptions({
       headerTitle: () => <Text style={{ color: '#fff', fontSize: 16, fontFamily: 'PlexArabic-Bold' }}>{t('league.title')} · {monthName}</Text>,
     });

@@ -1,15 +1,28 @@
 import i18next, { type FormatterModule } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import * as Localization from 'expo-localization';
-import en from './locales/en.json';
+import { LANGUAGE_META, resolveDeviceLanguage, type Language } from './languages';
 import ar from './locales/ar.json';
+import en from './locales/en.json';
+import ms from './locales/ms.json';
+import bn from './locales/bn.json';
+import tr from './locales/tr.json';
+import ur from './locales/ur.json';
+import pa from './locales/pa.json';
+import fa from './locales/fa.json';
+import ha from './locales/ha.json';
+import jv from './locales/jv.json';
+import ps from './locales/ps.json';
+import fr from './locales/fr.json';
+import es from './locales/es.json';
+import id from './locales/id.json';
 
 const deviceLang = Localization.getLocales()[0]?.languageCode;
-const initialLng: 'ar' | 'en' = deviceLang?.startsWith('ar') ? 'ar' : 'en';
+const initialLng: Language = resolveDeviceLanguage(deviceLang);
 
 // A plural key's {{count}} must stay a raw number for Intl.PluralRules
 // category selection (not a pre-formatted string like localeNum() produces),
-// so it needs Arabic-Indic digit formatting applied on the way out instead.
+// so it needs locale-aware digit formatting applied on the way out instead.
 // i18next's own built-in Formatter short-circuits to the raw value whenever no
 // explicit `{{value, someFormat}}` name is given (see node_modules/i18next's
 // Formatter.format: `if (!format) return value`), so passing a plain
@@ -26,14 +39,26 @@ const localeAwareFormatter: FormatterModule = {
   addCached: () => {},
   format: (value: unknown, _format, lng) =>
     (typeof value === 'number'
-      ? value.toLocaleString(lng === 'ar' ? 'ar-EG' : 'en-US')
+      ? value.toLocaleString(LANGUAGE_META[lng as Language]?.numberTag ?? 'en-US')
       : String(value)),
 };
 
 i18next.use(localeAwareFormatter).use(initReactI18next).init({
   resources: {
-    en: { translation: en },
     ar: { translation: ar },
+    en: { translation: en },
+    ms: { translation: ms },
+    bn: { translation: bn },
+    tr: { translation: tr },
+    ur: { translation: ur },
+    pa: { translation: pa },
+    fa: { translation: fa },
+    ha: { translation: ha },
+    jv: { translation: jv },
+    ps: { translation: ps },
+    fr: { translation: fr },
+    es: { translation: es },
+    id: { translation: id },
   },
   lng: initialLng,
   fallbackLng: 'en',
@@ -46,7 +71,7 @@ i18next.use(localeAwareFormatter).use(initReactI18next).init({
   },
 });
 
-export function changeLanguage(lang: 'ar' | 'en') {
+export function changeLanguage(lang: Language) {
   return i18next.changeLanguage(lang);
 }
 

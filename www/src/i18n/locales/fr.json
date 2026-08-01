@@ -1,0 +1,533 @@
+{
+  "common": {
+    "guestName": "Visiteur(euse)",
+    "appName": "Réseau de Quiz du Coran",
+    "homePage": "Page d'accueil",
+    "start": "Commencer",
+    "home": "Accueil",
+    "juzPart": "Juz' {{name}}",
+    "consentBanner": {
+      "text": "Nous utilisons des cookies pour analyser l'utilisation de l'application et améliorer ton expérience.",
+      "privacyPolicy": "Politique de confidentialité",
+      "decline": "Refuser",
+      "accept": "Accepter"
+    },
+    "themeToggle": {
+      "light": "Clair",
+      "dark": "Sombre"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Questions spéciales {{specialState}}",
+      "specialOn": "activées",
+      "specialOff": "désactivées",
+      "dailyActive": "Défi quotidien actif",
+      "dailyProgress": "Question {{current}} sur {{total}}",
+      "dailyNote": "Questions sélectionnées automatiquement selon ton périmètre de mémorisation",
+      "showLess": "Moins ▴",
+      "showMore": "Plus ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Signaler une erreur",
+      "placeholder": "Décris l'erreur...",
+      "cancel": "Non",
+      "confirm": "Oui"
+    }
+  },
+  "onboarding": {
+    "skip": "Passer",
+    "next": "Suivant",
+    "start": "Commencer",
+    "badges": {
+      "quiz": "Quiz",
+      "daily": "Défi quotidien",
+      "leaderboard": "Classement"
+    },
+    "quizPreview": {
+      "correctFeedback": "Bien joué ! Voici à quoi ressemblent les questions 🎉",
+      "wrongFeedback": "Presque — la bonne réponse : {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 questions chronométrées — réponds vite et bien",
+      "secondsUnit": "s"
+    },
+    "slides": {
+      "s1": {
+        "title": "Teste ta mémorisation",
+        "body": "Une application qui teste ta mémorisation du Coran avec des questions à choix multiples, et te permet de rivaliser avec des mémorisateurs du monde entier.",
+        "p1": "Des questions adaptées à ton périmètre de mémorisation",
+        "p2": "Un défi quotidien chronométré",
+        "p3": "Un classement mondial"
+      },
+      "s2": {
+        "title": "Comment ça marche",
+        "body": "Un extrait de verset apparaît, et tu choisis le mot suivant correct parmi cinq options. Chaque bonne réponse augmente ton score, et en cas d'erreur, nous révélons le verset complet et sa position dans le Coran."
+      },
+      "s3": {
+        "title": "Défi quotidien",
+        "body": "10 nouvelles questions chaque jour dans ton périmètre de mémorisation, avec un chronomètre. Réponds vite et bien pour marquer un maximum de points avant la fin du temps."
+      },
+      "s4": {
+        "title": "Domine le classement",
+        "body": "Compare ton score avec des mémorisateurs du monde entier sur le classement — classements quotidien et général. Cumule des points et grimpe les échelons."
+      }
+    },
+    "setup": {
+      "title": "Qu'as-tu mémorisé ?",
+      "subtitle": "Sélectionne les sourates et les Juz' que tu as mémorisés",
+      "all": "Tout",
+      "none": "Tout effacer",
+      "recent": "5 derniers Juz'",
+      "confirm": "Confirmer et continuer"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Apparence",
+    "themeLabel": "Thème de l'application",
+    "themeHint": "Le mode sombre est activé par défaut",
+    "languageHeader": "Langue",
+    "languageLabel": "Langue de l'application",
+    "levelHeader": "Niveau du quiz : {{level}}",
+    "specialHeader": "Questions spéciales",
+    "specialLabel": "Activer les questions sur le nom de la sourate et le numéro du verset",
+    "specialHint": "Niveau secondaire et plus",
+    "notifPrefs": {
+      "header": "Notifications",
+      "invitesLabel": "Invitations en duel",
+      "invitesHint": "Notifier quand un ami te met au défi en duel",
+      "friendRequestsLabel": "Demandes d'amis",
+      "friendRequestsHint": "Notifier lors d'une nouvelle demande d'ami",
+      "streakAlertsLabel": "Alertes de série",
+      "streakAlertsHint": "Rappel en soirée si ta série est en danger"
+    },
+    "mobileAppHeader": "Application mobile",
+    "storeLinks": {
+      "iosHint": "Pour iPhone et iPad",
+      "androidHint": "Pour appareils Android"
+    },
+    "rateAppHeader": "Tu aimes l'application ?",
+    "rateAppLabelIos": "Noter sur l'App Store",
+    "rateAppLabelAndroid": "Noter sur Google Play",
+    "rateAppHint": "Ton avis aide d'autres personnes à découvrir Quran Quiz Net",
+    "signOut": "Se déconnecter",
+    "signOutConfirmMsg": "Les données locales de l'application seront effacées. Veux-tu continuer ?",
+    "no": "Non",
+    "yes": "Oui",
+    "deleteAccountLink": "Supprimer le compte",
+    "deleteSheetTitle": "Supprimer définitivement le compte ?",
+    "deleteSheetBody": "Ta progression, tes résultats et toutes tes données seront supprimés de nos serveurs et de cet appareil. Cette action est irréversible.",
+    "deleteSheetConfirm": "Supprimer définitivement le compte",
+    "cancel": "Annuler",
+    "reloginTitle": "Nouvelle authentification requise",
+    "reloginBody": "Pour des raisons de sécurité, déconnecte-toi puis reconnecte-toi avant de supprimer ton compte.",
+    "errorTitle": "Erreur",
+    "errorBody": "Échec de la suppression du compte. Réessaie plus tard.",
+    "version": "Version {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_one": "{{count}} heure",
+      "hours_many": "{{count}} heures",
+      "hours_other": "{{count}} heures",
+      "minutes_one": "{{count}} minute",
+      "minutes_many": "{{count}} minutes",
+      "minutes_other": "{{count}} minutes",
+      "combined": "{{hours}} et {{minutes}}",
+      "availableNow": "Disponible maintenant",
+      "lessThanMinute": "Moins d'une minute"
+    },
+    "activeParts_one": "{{count}} sourate active",
+    "activeParts_many": "{{count}} sourates actives",
+    "activeParts_other": "{{count}} sourates actives",
+    "greeting": "Bienvenue {{name}}",
+    "greetingNoName": "Bienvenue",
+    "streakSheet": {
+      "title": "Ta série",
+      "daysInRow": "jours consécutifs",
+      "bestStreak": "Meilleure série : {{count}} jours",
+      "riskBanner": "Ta série est en danger ce soir — joue un quiz avant minuit !",
+      "useFreezeBtn": "Utiliser un jeton de gel pour préserver ta série"
+    },
+    "dow": {
+      "sun": "dim",
+      "mon": "lun",
+      "tue": "mar",
+      "wed": "mer",
+      "thu": "jeu",
+      "fri": "ven",
+      "sat": "sam"
+    },
+    "rankSheet": {
+      "title": "Rangs de mémorisation",
+      "fromStart": "Depuis le début",
+      "fromPoints": "À partir de {{count}} pts",
+      "yourLevel": "Ton niveau actuel"
+    },
+    "pointsSuffix": " pts",
+    "pointsToRank": "{{remaining}} pts jusqu'à « {{nextTitle}} » ✦",
+    "dailyHero": {
+      "completed": "Tu as terminé le quiz du jour — nouveau quiz dans {{duration}}",
+      "readyTitle": "Le quiz du jour est prêt !",
+      "readyBody": "10 questions × précision et rapidité",
+      "unavailTitle": "Pas encore de quiz aujourd'hui",
+      "unavailSub": "Le quiz se renouvelle toutes les 24 heures"
+    },
+    "pvpWinsBadge": "{{count}} victoires",
+    "weakSuraNudge": "Révise ta sourate la plus faible : {{sura}}",
+    "anonNag": "Connecte-toi pour sauvegarder ta progression",
+    "nicknameModal": {
+      "title": "Choisis un nom à afficher sur le classement",
+      "later": "Plus tard",
+      "save": "Enregistrer"
+    },
+    "progressChart": {
+      "label": "Ta progression",
+      "days": "{{count}} jours",
+      "startPlaying": "Commencer à jouer"
+    },
+    "statTiles": {
+      "studyLabel": "Mémorisation",
+      "studySub": "du Coran",
+      "ratioLabel": "Précision",
+      "ratioSub": "Précision des réponses"
+    },
+    "mapCard": {
+      "title": "Carte de mémorisation",
+      "tapForDetails": "Appuie pour voir les détails"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Commencer un quiz",
+    "scorePoints": "{{count}} pts",
+    "streak": "{{count}} d'affilée",
+    "randomQuiz": "Quiz aléatoire",
+    "reviewWeakSubtitle": "Ou révise une sourate à améliorer :",
+    "reviewAllWeakBtn": "Réviser tous les points faibles",
+    "dailyEnd": {
+      "title": "Merci d'avoir fait le quiz du jour",
+      "body": "Révise ta mémorisation du Coran, et tu auras un nouveau quiz demain, si Dieu le veut.",
+      "share": "Partager le résultat",
+      "practiceWeak": "S'entraîner sur ta sourate la plus faible",
+      "ok": "OK",
+      "shareMsg": "J'ai obtenu {{score}} points au quiz du jour sur {{appName}} ! Tente ta chance :\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Excellent !",
+      "body": "Tu as répondu correctement à {{correct}} question(s) sur {{total}}",
+      "totalPoints": "Points totaux",
+      "needsReview": "{{part}} à réviser",
+      "home": "Accueil",
+      "continue": "Continuer"
+    }
+  },
+  "pvp": {
+    "botName": "Hafiz",
+    "you": "Toi",
+    "theOpponent": "L'adversaire",
+    "opponent": "Adversaire",
+    "idleTitle": "Compétition en direct",
+    "idleSub": "{{count}} questions issues de tes sourates mémorisées — nous chercherons d'abord un adversaire réel, et si aucun n'est trouvé, {{botName}} {{botEmoji}} relèvera le défi",
+    "wins": "Victoires",
+    "draws": "Nuls",
+    "losses": "Défaites",
+    "startBtn": "Démarrer le match",
+    "searching": "Recherche d'un adversaire...",
+    "cancel": "Annuler",
+    "readyQuestion": "{{name}} : es-tu prêt(e) ?",
+    "vs": "contre",
+    "disconnectBanner": "Connexion perdue avec l'adversaire… en attente de son retour",
+    "waitingForOpponent": "En attente que l'adversaire termine...",
+    "outcome": {
+      "winTitle": "Tu as gagné ! 🏆",
+      "lossTitle": "{{name}} a gagné cette fois",
+      "drawTitle": "Match nul !",
+      "winSub": "Bravo — tu as battu {{name}}. Continue comme ça !",
+      "lossSub": "Révise ta mémorisation et retente ta chance — la victoire est proche, si Dieu le veut.",
+      "drawSub": "Un match équilibré ! Une autre manche décidera du résultat."
+    },
+    "rematch": "Nouvelle manche",
+    "home": "Accueil",
+    "tier": {
+      "bronze": "Bronze",
+      "silver": "Argent",
+      "gold": "Or",
+      "platinum": "Platine",
+      "hafizGold": "Hafiz Or"
+    }
+  },
+  "pvpJourney": {
+    "title": "Parcours de compétition",
+    "pointsGained": "+{{count}} points",
+    "toNextCity": "{{count}} points avant {{cityName}}",
+    "complete": "Tu as atteint Marrakech ! Parcours terminé 🏁",
+    "here": "Tu es ici",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dacca",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kaboul",
+      "tashkent": "Tachkent",
+      "tehran": "Téhéran",
+      "baghdad": "Bagdad",
+      "mecca": "La Mecque",
+      "medina": "Médine",
+      "damascus": "Damas",
+      "jerusalem": "Jérusalem",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Le Caire",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Alger",
+      "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "Fondation",
+      "population": "Population du pays",
+      "muslimPopulation": "Population musulmane",
+      "muslimPercent": "% de musulmans",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} av. J.-C.",
+      "million": "{{value}} M",
+      "thousand": "{{value}} k"
+    },
+    "country": {
+      "indonesia": "Indonésie",
+      "malaysia": "Malaisie",
+      "bangladesh": "Bangladesh",
+      "india": "Inde",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afghanistan",
+      "uzbekistan": "Ouzbékistan",
+      "iran": "Iran",
+      "iraq": "Irak",
+      "saudiArabia": "Arabie saoudite",
+      "syria": "Syrie",
+      "palestine": "Palestine",
+      "turkey": "Turquie",
+      "bosnia": "Bosnie-Herzégovine",
+      "egypt": "Égypte",
+      "libya": "Libye",
+      "tunisia": "Tunisie",
+      "algeria": "Algérie",
+      "morocco": "Maroc"
+    }
+  },
+  "league": {
+    "title": "Classement",
+    "dailyCompleted": "Défi du jour terminé ✓",
+    "dailyReady": "Le quiz du jour est prêt",
+    "dailyStart": "Commencer",
+    "dailyChecking": "Vérification...",
+    "dailyError": "Échec de connexion — Réessayer",
+    "ownRank": "Ton rang aujourd'hui : #{{rank}}",
+    "tabs": {
+      "today": "Aujourd'hui",
+      "yesterday": "Hier",
+      "month": "Mois"
+    },
+    "cardTitles": {
+      "today": "Classement du jour",
+      "yesterday": "Meilleurs résultats d'hier",
+      "month": "Meilleurs résultats du mois"
+    },
+    "emptyTitle": "Sois le premier au classement {{timeframe}}",
+    "timeframes": {
+      "today": "aujourd'hui",
+      "month": "ce mois-ci"
+    },
+    "emptyBtnDaily": "Commencer le quiz du jour",
+    "emptyBtnGeneric": "Commencer un quiz",
+    "startDialog": {
+      "title": "Quiz du jour",
+      "msg": "Le quiz comprend 10 questions dans ton périmètre de mémorisation. Réponds correctement et rapidement.",
+      "no": "Non",
+      "start": "Commencer"
+    }
+  },
+  "map": {
+    "title": "Carte de mémorisation",
+    "filterAll": "Tout",
+    "filterGood": "Bon",
+    "filterWeak": "Faible",
+    "correctOf": "{{correct}} correctes sur {{questions}}",
+    "notTested": "Pas encore testé"
+  },
+  "auth": {
+    "heroTitle": "Réseau de Quiz du Coran",
+    "heroTagline": "Teste ta mémorisation et affronte les gens du Coran",
+    "stats": {
+      "surahs": "Sourate",
+      "words": "Mot",
+      "questions": "Questions"
+    },
+    "playBtn": "Commencer maintenant",
+    "playHint": "Sans inscription — première question en quelques secondes",
+    "divider": "Ou connecte-toi pour sauvegarder ta progression",
+    "continueGoogle": "Continuer avec Google",
+    "continueFacebook": "Continuer avec Facebook",
+    "termsNotice": "En continuant, tu acceptes les ",
+    "errorTitle": "Erreur",
+    "errorGoogle": "Impossible de se connecter avec Google",
+    "errorFacebook": "Impossible de se connecter avec Facebook",
+    "errorApple": "Impossible de se connecter avec Apple"
+  },
+  "privacy": {
+    "title": "Conditions et politique de confidentialité",
+    "updated": "Dernière mise à jour : juin 2026",
+    "sections": {
+      "intro": {
+        "title": "Introduction",
+        "body": "Chez Quran Quiz Net, nous accordons de l'importance à ta vie privée. Cette page explique quelles données nous collectons, comment nous les utilisons et comment nous les protégeons lorsque tu utilises l'application."
+      },
+      "dataCollected": {
+        "title": "Données que nous collectons",
+        "body": "Lorsque tu te connectes avec Google ou Facebook, nous conservons ton nom, ta photo de profil et ton adresse e-mail pour créer ton profil. Nous enregistrons également ta progression de mémorisation, tes résultats de tests et tes paramètres. Tu peux aussi utiliser l'application en tant qu'invité, sans te connecter."
+      },
+      "useOfData": {
+        "title": "Comment nous utilisons tes données",
+        "body": "Nous utilisons tes données pour sauvegarder et synchroniser ta progression entre tes appareils, afficher ton classement dans le tableau des scores et le défi quotidien, et améliorer ton expérience dans l'application. Nous ne vendons pas tes données et n'affichons pas de publicités."
+      },
+      "cookiesAnalytics": {
+        "title": "Cookies et analyses",
+        "body": "Nous utilisons Google Analytics pour comprendre comment l'application est utilisée (comme les pages visitées et le nombre de tests) afin d'améliorer l'expérience utilisateur, à l'aide de cookies. Nous n'activons ce suivi qu'avec ton consentement, et tu peux le refuser depuis la bannière de consentement sans que cela n'affecte ton utilisation de l'application. Nous utilisons ces données uniquement à des fins d'analyse, et non de publicité."
+      },
+      "storageSecurity": {
+        "title": "Stockage et sécurité",
+        "body": "Tes données sont stockées sur les serveurs Firebase de Google avec une protection appropriée. Tes données locales restent sur ton appareil et sont effacées lors de la déconnexion."
+      },
+      "accountDeletion": {
+        "title": "Suppression du compte",
+        "body": "Tu peux te déconnecter à tout moment pour effacer tes données locales de cet appareil. Pour supprimer définitivement toi-même ton compte et toutes tes données de nos serveurs : depuis l'écran principal, appuie sur l'icône des paramètres ⚙ en haut de la page, puis sur « Supprimer le compte » en bas de la page des paramètres, et confirme la suppression. Ton compte est supprimé immédiatement, et cette action est irréversible."
+      },
+      "termsOfUse": {
+        "title": "Conditions d'utilisation",
+        "body": "L'application est conçue pour t'aider à réviser ta mémorisation du Saint Coran. Le service est fourni « tel quel » sans garantie, et nous veillons à l'exactitude du contenu coranique basé sur la source Tanzil (tanzil.net)."
+      },
+      "contact": {
+        "title": "Contact",
+        "body": "Pour toute question concernant la confidentialité ou les conditions, tu peux nous contacter via l'adresse e-mail officielle de l'application."
+      }
+    }
+  },
+  "support": {
+    "title": "Support et aide",
+    "sections": {
+      "technical": {
+        "title": "Support technique",
+        "body": "Tu as rencontré un problème avec l'application, ou tu as une suggestion pour l'améliorer ? Nous sommes heureux de t'aider. Écris-nous ci-dessous et nous te répondrons dans les plus brefs délais."
+      },
+      "sync": {
+        "title": "Problèmes de connexion ou de synchronisation",
+        "body": "Si tu rencontres un problème pour te connecter avec Google ou Facebook, ou si tu remarques que ta progression ne se synchronise pas entre tes appareils, contacte-nous en précisant le type de ton appareil et son système d'exploitation afin que nous puissions t'aider plus rapidement."
+      },
+      "deletion": {
+        "title": "Suppression du compte ou des données",
+        "body": "Pour demander la suppression définitive de ton compte et des données stockées sur nos serveurs, écris-nous ci-dessous et nous traiterons ta demande sous quelques jours."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "Sourate {{name}}",
+      "ayahCount": "Nombre de versets {{count}}",
+      "ayahNumber": "Numéro du verset {{count}}"
+    },
+    "meccan": "Mecquoise",
+    "medinan": "Médinoise",
+    "instructionNotSpecial": "Choisis la suite correcte",
+    "instructionSuraName": "Choisis le nom de la sourate",
+    "instructionAyahCount": "Choisis le nombre de versets de la sourate",
+    "instructionMakki": "Choisis la classification de la sourate",
+    "instructionAyahNumber": "Choisis le numéro du verset",
+    "correctMark": "✓ Correct",
+    "pickedWrongMark": "Tu as choisi ✗",
+    "skip": "Je ne sais pas",
+    "ayahCount": "{{count}} versets",
+    "ayahLabel": "Verset {{number}}",
+    "ok": "OK",
+    "view": "Voir",
+    "compete": "Défier",
+    "shareMsg": "Affronte-moi sur {{appName}} !\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Tu es devant tout le monde aujourd'hui ! 🏆",
+    "behindBy": "Ton rang aujourd'hui : #{{rank}} sur {{total}} — {{diff}} points de retard sur {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{threshold}} bonnes réponses dans {{partName}} !",
+    "mastery": "🏅 Tu maîtrises {{partName}} !"
+  },
+  "rank": {
+    "beginner": "Débutant",
+    "diligent": "Assidu",
+    "hafiz": "Hafiz",
+    "master": "Maître"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Niveau débutant",
+      "comment": "La question part du début du verset, et augmente ton score de 5"
+    },
+    "elementary": {
+      "text": "Niveau élémentaire",
+      "comment": "La question part de trois mots, et augmente ton score de 10"
+    },
+    "secondary": {
+      "text": "Niveau secondaire",
+      "comment": "La question part de deux mots, et augmente ton score de 20"
+    },
+    "advanced": {
+      "text": "Niveau avancé",
+      "comment": "Plus d'une bonne réponse possible, et augmente ton score de 30"
+    }
+  },
+  "friends": {
+    "title": "Amis",
+    "myCodeTitle": "Ton code de quiz",
+    "shareBtn": "Partager le code",
+    "shareMessage": "Ajoute-moi sur Quran Quiz Net ! Appuie sur le lien pour m'ajouter instantanément :\n{{link}}",
+    "addFriendTitle": "Ajouter un ami par code de quiz",
+    "placeholderCode": "Saisis le code (ex. ABCD1234)",
+    "addBtn": "Ajouter",
+    "incomingRequests": "Demandes d'amis reçues",
+    "noRequests": "Aucune demande d'ami en attente",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "friendList": "Liste d'amis",
+    "noFriends": "Aucun ami ajouté pour l'instant. Partage ton code ou ajoute un ami avec le sien !",
+    "invalidCode": "Code de quiz invalide",
+    "invalidCodeSub": "Vérifie le code et réessaie.",
+    "selfCode": "C'est ton propre code de quiz !",
+    "selfCodeSub": "Partage ce code avec tes amis pour qu'ils puissent t'ajouter.",
+    "requestSent": "Demande d'ami envoyée !",
+    "requestSentSub": "Ta demande apparaîtra dans la boîte de réception de ton ami pour qu'il l'accepte.",
+    "sending": "Envoi...",
+    "resolving": "Vérification du code...",
+    "errorOccurred": "Une erreur s'est produite lors de l'envoi",
+    "back": "Retour",
+    "goToFriends": "Voir les amis",
+    "challenge": "Défier"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Duel entre amis",
+    "waitingFor": "En attente que {{name}} accepte...",
+    "cancel": "Annuler le défi",
+    "bannerTitle": "Défi en duel !",
+    "bannerMessage": "{{name}} te défie en duel",
+    "accept": "Accepter",
+    "decline": "Refuser"
+  },
+  "notifications": {
+    "channelName": "Rappels",
+    "streakReminder": {
+      "title": "🔥 Ne perds pas ta série",
+      "body": "Ta série est de {{count}} jours ! Joue un quiz aujourd'hui pour la maintenir."
+    },
+    "dailyReady": {
+      "title": "⭐ Le quiz du jour est prêt",
+      "body": "Un nouveau quiz dans ton périmètre de mémorisation t'attend. Tente ta chance maintenant !"
+    }
+  }
+}

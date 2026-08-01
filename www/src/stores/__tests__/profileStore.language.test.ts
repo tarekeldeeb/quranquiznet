@@ -54,10 +54,20 @@ describe('load(): ?lang= URL override (web only)', () => {
 
   it('ignores an unrecognized lang value and falls back to the stored preference', async () => {
     await AsyncStorage.setItem('prf_language', JSON.stringify('en'));
-    (global as { window?: unknown }).window = { location: { search: '?lang=fr' } };
+    (global as { window?: unknown }).window = { location: { search: '?lang=xx' } };
 
     await store().load();
 
     expect(store().language).toBe('en');
+  });
+
+  it('accepts a language added after the initial EN/AR rollout', async () => {
+    await AsyncStorage.setItem('prf_language', JSON.stringify('en'));
+    (global as { window?: unknown }).window = { location: { search: '?lang=fr' } };
+
+    await store().load();
+
+    expect(store().language).toBe('fr');
+    expect(JSON.parse((await AsyncStorage.getItem('prf_language'))!)).toBe('fr');
   });
 });

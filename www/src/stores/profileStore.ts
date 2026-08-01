@@ -16,6 +16,7 @@ import { MasteryTier } from '../models/milestones';
 import { pointsForWin, STREAK_FREEZE_EVERY_N_WINS } from '../models/pvpTiers';
 import type { ThemeMode } from '../theme/tokens';
 import { changeLanguage } from '../i18n';
+import { type Language, isSupportedLanguage, resolveDeviceLanguage } from '../i18n/languages';
 
 export interface StudyPart {
   start: number;
@@ -194,7 +195,7 @@ export interface ProfileState {
   // THEME_KEY) so it survives sign-out/delete instead of resetting with the
   // rest of the profile. Defaults to dark (وضع الليل is the app's default look).
   themeMode: ThemeMode;
-  language: 'ar' | 'en';
+  language: Language;
 
   // Actions
   load(): Promise<boolean>;
@@ -217,7 +218,7 @@ export interface ProfileState {
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
   setThemeMode(mode: ThemeMode): void;
-  setLanguage(lang: 'ar' | 'en'): void;
+  setLanguage(lang: Language): void;
 
   // Computed getters (call these as functions)
   getScore(): number;
@@ -273,10 +274,10 @@ const EMPTY_PVP: PvpRecord = { wins: 0, losses: 0, draws: 0, points: 0, winStrea
 // like an explicit in-app choice — not just for that one page load. Native
 // `window` has no `.location` (see Analytics.tsx), so this only ever fires
 // on web.
-function getUrlLang(): 'ar' | 'en' | null {
+function getUrlLang(): Language | null {
   if (Platform.OS !== 'web' || typeof window === 'undefined') return null;
   const lang = new URLSearchParams(window.location.search).get('lang');
-  return lang === 'ar' || lang === 'en' ? lang : null;
+  return lang && isSupportedLanguage(lang) ? lang : null;
 }
 
 async function saveKey(key: string, value: unknown) {
@@ -328,17 +329,17 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
 
     const rawLanguage = await AsyncStorage.getItem(LANGUAGE_KEY);
     const urlLang = getUrlLang();
-    let language: 'ar' | 'en';
+    let language: Language;
     if (urlLang) {
       language = urlLang;
       await saveKey(LANGUAGE_KEY, language);
     } else if (rawLanguage === null) {
-      const sysLang = Localization.getLocales()[0]?.languageCode;
-      language = sysLang?.startsWith('ar') ? 'ar' : 'en';
+      language = resolveDeviceLanguage(Localization.getLocales()[0]?.languageCode);
       await saveKey(LANGUAGE_KEY, language);
     } else {
       try {
-        language = JSON.parse(rawLanguage) as 'ar' | 'en';
+        const parsed = JSON.parse(rawLanguage);
+        language = typeof parsed === 'string' && isSupportedLanguage(parsed) ? parsed : 'ar';
       } catch {
         language = 'ar';
       }
@@ -527,7 +528,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     saveKey(KEYS.lastUpdate, now);
   },
 
-  setLanguage(lang: 'ar' | 'en') {
+  setLanguage(lang: Language) {
     // See setThemeMode's comment — same reasoning for syncing this preference.
     const now = Date.now();
     set({ language: lang, lastUpdate: now });

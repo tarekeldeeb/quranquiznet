@@ -14,6 +14,7 @@ import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import Constants from 'expo-constants';
 import { savePushToken } from './firebase';
+import i18n from '../i18n';
 
 const STREAK_ID = 'qqn-streak';
 const DAILY_ID = 'qqn-daily';
@@ -41,7 +42,7 @@ export function configureNotifications(): void {
   });
   // Android 8+ requires an explicit channel for notifications to appear.
   Notifications.setNotificationChannelAsync('default', {
-    name: 'التذكيرات',
+    name: i18n.t('notifications.channelName'),
     importance: Notifications.AndroidImportance.DEFAULT,
   }).catch(() => { /* channel setup is best-effort */ });
 }
@@ -108,8 +109,8 @@ export async function scheduleStreakReminder(streak: number): Promise<void> {
     await scheduleAt(
       STREAK_ID,
       when,
-      '🔥 لا تفقد سلسلتك',
-      `سلسلتك ${streak} يوم! العب اختباراً اليوم للحفاظ عليها.`,
+      i18n.t('notifications.streakReminder.title'),
+      i18n.t('notifications.streakReminder.body', { count: streak }),
     );
   } catch { /* scheduling is non-critical */ }
 }
@@ -128,8 +129,8 @@ export async function scheduleDailyReminder(atMs: number): Promise<void> {
     await scheduleAt(
       DAILY_ID,
       new Date(atMs),
-      '⭐ اختبار اليوم جاهز',
-      'اختبار جديد في نطاق حفظك بانتظارك. جرّب حظك الآن!',
+      i18n.t('notifications.dailyReady.title'),
+      i18n.t('notifications.dailyReady.body'),
     );
   } catch { /* scheduling is non-critical */ }
 }

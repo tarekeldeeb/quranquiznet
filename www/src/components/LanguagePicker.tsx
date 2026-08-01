@@ -1,18 +1,19 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme, radii } from '../theme/tokens';
+import { SUPPORTED_LANGUAGES, LANGUAGE_META, type Language } from '../i18n/languages';
 import PressScale from './PressScale';
 
 interface Props {
-  value: 'ar' | 'en';
-  onChange: (lang: 'ar' | 'en') => void;
+  value: Language;
+  onChange: (lang: Language) => void;
 }
 
-const OPTIONS: { lang: 'ar' | 'en'; label: string }[] = [
-  { lang: 'ar', label: 'العربية' },
-  { lang: 'en', label: 'English' },
-];
+const OPTIONS: { lang: Language; label: string }[] = SUPPORTED_LANGUAGES.map((lang) => ({
+  lang,
+  label: LANGUAGE_META[lang].nativeLabel,
+}));
 
 export default function LanguagePicker({ value, onChange }: Props) {
   const [open, setOpen] = useState(false);
@@ -20,7 +21,7 @@ export default function LanguagePicker({ value, onChange }: Props) {
 
   const selectedOption = OPTIONS.find((opt) => opt.lang === value) || OPTIONS[0];
 
-  const handleSelect = (lang: 'ar' | 'en') => {
+  const handleSelect = (lang: Language) => {
     onChange(lang);
     setOpen(false);
   };
@@ -60,35 +61,37 @@ export default function LanguagePicker({ value, onChange }: Props) {
             },
           ]}
         >
-          {OPTIONS.map((opt) => {
-            const active = opt.lang === value;
-            return (
-              <Pressable
-                key={opt.lang}
-                style={({ pressed }) => [
-                  s.option,
-                  active && { backgroundColor: colors.goldPale },
-                  pressed && { opacity: 0.8 },
-                ]}
-                onPress={() => handleSelect(opt.lang)}
-                accessibilityRole="button"
-                accessibilityState={{ selected: active }}
-                accessibilityLabel={opt.label}
-              >
-                <Text
-                  style={[
-                    s.optionText,
-                    { color: active ? colors.navy : colors.ink },
-                    active && s.optionTextActive,
+          <ScrollView style={s.dropdownScroll} nestedScrollEnabled showsVerticalScrollIndicator>
+            {OPTIONS.map((opt) => {
+              const active = opt.lang === value;
+              return (
+                <Pressable
+                  key={opt.lang}
+                  style={({ pressed }) => [
+                    s.option,
+                    active && { backgroundColor: colors.goldPale },
+                    pressed && { opacity: 0.8 },
                   ]}
-                  numberOfLines={1}
+                  onPress={() => handleSelect(opt.lang)}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: active }}
+                  accessibilityLabel={opt.label}
                 >
-                  {opt.label}
-                </Text>
-                {active && <Ionicons name="checkmark" size={16} color={colors.navy} />}
-              </Pressable>
-            );
-          })}
+                  <Text
+                    style={[
+                      s.optionText,
+                      { color: active ? colors.navy : colors.ink },
+                      active && s.optionTextActive,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {opt.label}
+                  </Text>
+                  {active && <Ionicons name="checkmark" size={16} color={colors.navy} />}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
         </View>
       )}
     </View>
@@ -122,6 +125,11 @@ const s = StyleSheet.create({
     borderWidth: 1,
     overflow: 'hidden',
     elevation: 4,
+  },
+  // 14 languages no longer fit on screen at once — cap the height and let the
+  // rest scroll instead of overflowing past the screen edge.
+  dropdownScroll: {
+    maxHeight: 280,
   },
   option: {
     flexDirection: 'row',

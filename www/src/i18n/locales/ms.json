@@ -1,0 +1,527 @@
+{
+  "common": {
+    "guestName": "Pelawat",
+    "appName": "Quran Quiz Net",
+    "homePage": "Laman Utama",
+    "start": "Mula",
+    "home": "Utama",
+    "juzPart": "Juzuk {{name}}",
+    "consentBanner": {
+      "text": "Kami menggunakan kuki untuk menganalisis penggunaan aplikasi dan menambah baik pengalaman anda.",
+      "privacyPolicy": "Dasar Privasi",
+      "decline": "Tolak",
+      "accept": "Terima"
+    },
+    "themeToggle": {
+      "light": "Cerah",
+      "dark": "Gelap"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Soalan khas {{specialState}}",
+      "specialOn": "diaktifkan",
+      "specialOff": "dimatikan",
+      "dailyActive": "Cabaran Harian Aktif",
+      "dailyProgress": "Soalan {{current}} daripada {{total}}",
+      "dailyNote": "Soalan dipilih secara automatik daripada skop hafazan anda",
+      "showLess": "Kurang ▴",
+      "showMore": "Lagi ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Laporkan Ralat",
+      "placeholder": "Sila terangkan ralat...",
+      "cancel": "Tidak",
+      "confirm": "Ya"
+    }
+  },
+  "onboarding": {
+    "skip": "Langkau",
+    "next": "Seterusnya",
+    "start": "Mula",
+    "badges": {
+      "quiz": "Kuiz",
+      "daily": "Cabaran Harian",
+      "leaderboard": "Papan Pendahulu"
+    },
+    "quizPreview": {
+      "correctFeedback": "Syabas! Beginilah rupa soalannya 🎉",
+      "wrongFeedback": "Hampir — jawapan yang betul: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 soalan berjangka masa — jawab dengan pantas dan tepat",
+      "secondsUnit": "s"
+    },
+    "slides": {
+      "s1": {
+        "title": "Uji Hafazan Anda",
+        "body": "Aplikasi yang menguji hafazan al-Quran anda dengan soalan aneka pilihan, dan membolehkan anda bersaing dengan para huffaz di seluruh dunia.",
+        "p1": "Soalan disesuaikan dengan skop hafazan anda",
+        "p2": "Cabaran harian berjangka masa",
+        "p3": "Kedudukan papan pendahulu global"
+      },
+      "s2": {
+        "title": "Cara Ia Berfungsi",
+        "body": "Satu petikan ayat akan dipaparkan, dan anda memilih perkataan seterusnya yang betul daripada lima pilihan. Setiap jawapan betul menambah markah anda, dan jika tersilap, kami akan tunjukkan ayat penuh serta kedudukannya dalam al-Quran."
+      },
+      "s3": {
+        "title": "Cabaran Harian",
+        "body": "10 soalan baharu setiap hari dalam skop hafazan anda, dengan pemasa. Jawab dengan pantas dan tepat untuk mendapat markah maksimum sebelum masa tamat."
+      },
+      "s4": {
+        "title": "Mendahului Papan Pendahulu",
+        "body": "Bandingkan markah anda dengan huffaz di seluruh dunia pada papan pendahulu — kedudukan harian dan sepanjang masa. Kumpul markah dan naik kedudukan."
+      }
+    },
+    "setup": {
+      "title": "Apa Yang Anda Telah Hafaz?",
+      "subtitle": "Pilih surah dan juzuk yang telah anda hafaz",
+      "all": "Semua",
+      "none": "Kosongkan Semua",
+      "recent": "5 Juzuk Terakhir",
+      "confirm": "Sahkan & Teruskan"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Rupa",
+    "themeLabel": "Tema Aplikasi",
+    "themeHint": "Mod gelap adalah lalai",
+    "languageHeader": "Bahasa",
+    "languageLabel": "Bahasa Aplikasi",
+    "levelHeader": "Tahap kuiz: {{level}}",
+    "specialHeader": "Soalan Khas",
+    "specialLabel": "Aktifkan soalan tentang nama surah dan nombor ayat",
+    "specialHint": "Tahap menengah ke atas",
+    "notifPrefs": {
+      "header": "Pemberitahuan",
+      "invitesLabel": "Jemputan Duel PvP",
+      "invitesHint": "Beritahu apabila rakan mencabar anda untuk duel",
+      "friendRequestsLabel": "Permintaan Rakan",
+      "friendRequestsHint": "Beritahu apabila anda menerima permintaan rakan baharu",
+      "streakAlertsLabel": "Amaran Rentetan",
+      "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko"
+    },
+    "mobileAppHeader": "Aplikasi Mudah Alih",
+    "storeLinks": {
+      "iosHint": "Untuk iPhone dan iPad",
+      "androidHint": "Untuk peranti Android"
+    },
+    "rateAppHeader": "Suka Aplikasi Ini?",
+    "rateAppLabelIos": "Nilai di App Store",
+    "rateAppLabelAndroid": "Nilai di Google Play",
+    "rateAppHint": "Ulasan anda membantu orang lain menemui Quran Quiz Net",
+    "signOut": "Log Keluar",
+    "signOutConfirmMsg": "Data aplikasi tempatan akan dipadam. Adakah anda mahu teruskan?",
+    "no": "Tidak",
+    "yes": "Ya",
+    "deleteAccountLink": "Padam Akaun",
+    "deleteSheetTitle": "Padam akaun secara kekal?",
+    "deleteSheetBody": "Kemajuan, keputusan dan semua data anda akan dipadam daripada pelayan kami dan peranti ini. Tindakan ini tidak boleh dibatalkan.",
+    "deleteSheetConfirm": "Padam Akaun Secara Kekal",
+    "cancel": "Batal",
+    "reloginTitle": "Pengesahan Semula Diperlukan",
+    "reloginBody": "Atas sebab keselamatan, sila log keluar dan log masuk semula sebelum memadam akaun anda.",
+    "errorTitle": "Ralat",
+    "errorBody": "Gagal memadam akaun. Sila cuba lagi kemudian.",
+    "version": "Versi {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_other": "{{count}} jam",
+      "minutes_other": "{{count}} minit",
+      "combined": "{{hours}} dan {{minutes}}",
+      "availableNow": "Tersedia sekarang",
+      "lessThanMinute": "Kurang daripada seminit"
+    },
+    "activeParts_other": "{{count}} surah aktif",
+    "greeting": "Selamat datang {{name}}",
+    "greetingNoName": "Selamat datang",
+    "streakSheet": {
+      "title": "Rentetan Anda",
+      "daysInRow": "hari berturut-turut",
+      "bestStreak": "Rentetan terbaik: {{count}} hari",
+      "riskBanner": "Rentetan anda berisiko malam ini — mainkan kuiz sebelum tengah malam!",
+      "useFreezeBtn": "Gunakan token beku untuk menyelamatkan rentetan anda"
+    },
+    "dow": {
+      "sun": "Ahd",
+      "mon": "Isn",
+      "tue": "Sel",
+      "wed": "Rab",
+      "thu": "Kha",
+      "fri": "Jum",
+      "sat": "Sab"
+    },
+    "rankSheet": {
+      "title": "Pangkat Hafazan",
+      "fromStart": "Dari permulaan",
+      "fromPoints": "Dari {{count}} mata",
+      "yourLevel": "Tahap anda sekarang"
+    },
+    "pointsSuffix": " mata",
+    "pointsToRank": "{{remaining}} mata lagi ke \"{{nextTitle}}\" ✦",
+    "dailyHero": {
+      "completed": "Anda telah selesaikan kuiz hari ini — kuiz baharu dalam {{duration}}",
+      "readyTitle": "Kuiz hari ini sudah sedia!",
+      "readyBody": "10 soalan × ketepatan dan kelajuan",
+      "unavailTitle": "Belum ada kuiz hari ini",
+      "unavailSub": "Kuiz diperbaharui setiap 24 jam"
+    },
+    "pvpWinsBadge": "{{count}} kemenangan",
+    "weakSuraNudge": "Ulang kaji surah paling lemah: {{sura}}",
+    "anonNag": "Log masuk untuk menyimpan kemajuan anda",
+    "nicknameModal": {
+      "title": "Pilih nama untuk dipaparkan pada papan pendahulu",
+      "later": "Nanti",
+      "save": "Simpan"
+    },
+    "progressChart": {
+      "label": "Kemajuan Anda",
+      "days": "{{count}} hari",
+      "startPlaying": "Mula bermain"
+    },
+    "statTiles": {
+      "studyLabel": "Hafazan",
+      "studySub": "daripada al-Quran",
+      "ratioLabel": "Ketepatan",
+      "ratioSub": "Ketepatan jawapan"
+    },
+    "mapCard": {
+      "title": "Peta Hafazan",
+      "tapForDetails": "Ketik untuk lihat butiran"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Mula Kuiz",
+    "scorePoints": "{{count}} mata",
+    "streak": "{{count}} berturut-turut",
+    "randomQuiz": "Kuiz Rawak",
+    "reviewWeakSubtitle": "Atau ulang kaji surah yang perlu diperbaiki:",
+    "reviewAllWeakBtn": "Ulang kaji semua kelemahan",
+    "dailyEnd": {
+      "title": "Terima kasih kerana mengambil kuiz hari ini",
+      "body": "Sila ulang kaji hafazan al-Quran anda, dan anda akan mendapat kuiz baharu esok, insya-Allah.",
+      "share": "Kongsi Keputusan",
+      "practiceWeak": "Berlatih Surah Paling Lemah Anda",
+      "ok": "OK",
+      "shareMsg": "Saya mendapat {{score}} mata dalam kuiz hari ini di {{appName}}! Cuba nasib anda:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Cemerlang!",
+      "body": "Anda menjawab {{correct}} daripada {{total}} soalan dengan betul",
+      "totalPoints": "Jumlah Mata",
+      "needsReview": "{{part}} perlu diulang kaji",
+      "home": "Utama",
+      "continue": "Teruskan"
+    }
+  },
+  "pvp": {
+    "botName": "Hafiz",
+    "you": "Anda",
+    "theOpponent": "Lawan",
+    "opponent": "Lawan",
+    "idleTitle": "Pertandingan Langsung",
+    "idleSub": "{{count}} soalan daripada surah hafazan anda — kami akan cari lawan sebenar dahulu, dan jika tiada, {{botName}} {{botEmoji}} akan menerima cabaran",
+    "wins": "Menang",
+    "draws": "Seri",
+    "losses": "Kalah",
+    "startBtn": "Mula Perlawanan",
+    "searching": "Mencari lawan...",
+    "cancel": "Batal",
+    "readyQuestion": "{{name}}: Sudah bersedia?",
+    "vs": "lwn",
+    "disconnectBanner": "Sambungan dengan lawan terputus… menunggu dia kembali",
+    "waitingForOpponent": "Menunggu lawan selesai...",
+    "outcome": {
+      "winTitle": "Anda Menang! 🏆",
+      "lossTitle": "{{name}} menang kali ini",
+      "drawTitle": "Seri!",
+      "winSub": "Syabas — anda mengalahkan {{name}}. Teruskan usaha!",
+      "lossSub": "Ulang kaji hafazan anda dan cuba lagi — kemenangan sudah hampir, insya-Allah.",
+      "drawSub": "Perlawanan seimbang! Satu pusingan lagi akan menentukan keputusan."
+    },
+    "rematch": "Pusingan Baharu",
+    "home": "Utama",
+    "tier": {
+      "bronze": "Gangsa",
+      "silver": "Perak",
+      "gold": "Emas",
+      "platinum": "Platinum",
+      "hafizGold": "Hafiz Emas"
+    }
+  },
+  "pvpJourney": {
+    "title": "Perjalanan Pertandingan",
+    "pointsGained": "+{{count}} mata",
+    "toNextCity": "{{count}} mata lagi ke {{cityName}}",
+    "complete": "Anda telah sampai ke Marrakech! Perjalanan selesai 🏁",
+    "here": "Anda di sini",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Baghdad",
+      "mecca": "Makkah",
+      "medina": "Madinah",
+      "damascus": "Damsyik",
+      "jerusalem": "Al-Quds",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Kaherah",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Algiers",
+      "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "Penubuhan",
+      "population": "Populasi Negara",
+      "muslimPopulation": "Populasi Muslim",
+      "muslimPercent": "% Muslim",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} SM",
+      "million": "{{value}}J",
+      "thousand": "{{value}}K"
+    },
+    "country": {
+      "indonesia": "Indonesia",
+      "malaysia": "Malaysia",
+      "bangladesh": "Bangladesh",
+      "india": "India",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afghanistan",
+      "uzbekistan": "Uzbekistan",
+      "iran": "Iran",
+      "iraq": "Iraq",
+      "saudiArabia": "Arab Saudi",
+      "syria": "Syria",
+      "palestine": "Palestin",
+      "turkey": "Turki",
+      "bosnia": "Bosnia dan Herzegovina",
+      "egypt": "Mesir",
+      "libya": "Libya",
+      "tunisia": "Tunisia",
+      "algeria": "Algeria",
+      "morocco": "Maghribi"
+    }
+  },
+  "league": {
+    "title": "Papan Pendahulu",
+    "dailyCompleted": "Cabaran hari ini selesai ✓",
+    "dailyReady": "Kuiz hari ini sudah sedia",
+    "dailyStart": "Mula",
+    "dailyChecking": "Menyemak...",
+    "dailyError": "Sambungan gagal — Cuba Lagi",
+    "ownRank": "Kedudukan anda hari ini: #{{rank}}",
+    "tabs": {
+      "today": "Hari Ini",
+      "yesterday": "Semalam",
+      "month": "Bulan"
+    },
+    "cardTitles": {
+      "today": "Papan Pendahulu Hari Ini",
+      "yesterday": "Keputusan Terbaik Semalam",
+      "month": "Keputusan Terbaik Bulan Ini"
+    },
+    "emptyTitle": "Jadilah yang pertama di papan pendahulu {{timeframe}}",
+    "timeframes": {
+      "today": "hari ini",
+      "month": "bulan ini"
+    },
+    "emptyBtnDaily": "Mula Kuiz Hari Ini",
+    "emptyBtnGeneric": "Mula Kuiz",
+    "startDialog": {
+      "title": "Kuiz Hari Ini",
+      "msg": "Kuiz ini mengandungi 10 soalan dalam skop hafazan anda. Jawab dengan betul dan pantas.",
+      "no": "Tidak",
+      "start": "Mula"
+    }
+  },
+  "map": {
+    "title": "Peta Hafazan",
+    "filterAll": "Semua",
+    "filterGood": "Baik",
+    "filterWeak": "Lemah",
+    "correctOf": "{{correct}} betul daripada {{questions}}",
+    "notTested": "Belum diuji"
+  },
+  "auth": {
+    "heroTitle": "Quran Quiz Net",
+    "heroTagline": "Uji hafazan anda dan bersaing dengan ahli al-Quran",
+    "stats": {
+      "surahs": "Surah",
+      "words": "Perkataan",
+      "questions": "Soalan"
+    },
+    "playBtn": "Mula Sekarang",
+    "playHint": "Tiada keperluan log masuk — soalan pertama dalam beberapa saat",
+    "divider": "Atau log masuk untuk menyimpan kemajuan anda",
+    "continueGoogle": "Teruskan dengan Google",
+    "continueFacebook": "Teruskan dengan Facebook",
+    "termsNotice": "Dengan meneruskan, anda bersetuju dengan ",
+    "errorTitle": "Ralat",
+    "errorGoogle": "Tidak dapat log masuk dengan Google",
+    "errorFacebook": "Tidak dapat log masuk dengan Facebook",
+    "errorApple": "Tidak dapat log masuk dengan Apple"
+  },
+  "privacy": {
+    "title": "Terma & Dasar Privasi",
+    "updated": "Kemas kini terakhir: Jun 2026",
+    "sections": {
+      "intro": {
+        "title": "Pengenalan",
+        "body": "Di Quran Quiz Net, kami menghargai privasi anda. Halaman ini menerangkan data yang kami kumpul, cara kami menggunakannya, dan cara kami melindunginya semasa anda menggunakan aplikasi ini."
+      },
+      "dataCollected": {
+        "title": "Data Yang Kami Kumpul",
+        "body": "Apabila anda log masuk dengan Google atau Facebook, kami menyimpan nama, gambar profil dan alamat e-mel anda untuk mencipta profil anda. Kami juga menyimpan kemajuan hafazan, keputusan ujian dan tetapan anda. Anda juga boleh menggunakan aplikasi sebagai tetamu tanpa log masuk."
+      },
+      "useOfData": {
+        "title": "Cara Kami Menggunakan Data Anda",
+        "body": "Kami menggunakan data anda untuk menyimpan dan menyegerakkan kemajuan anda merentasi peranti anda, memaparkan kedudukan anda pada papan pendahulu dan cabaran harian, dan menambah baik pengalaman anda dalam aplikasi. Kami tidak menjual data anda atau memaparkan iklan."
+      },
+      "cookiesAnalytics": {
+        "title": "Kuki & Analitik",
+        "body": "Kami menggunakan Google Analytics untuk memahami cara aplikasi digunakan (seperti halaman yang dilawati dan bilangan ujian) bagi menambah baik pengalaman pengguna, menggunakan kuki. Kami hanya mengaktifkan penjejakan ini dengan persetujuan anda, dan anda boleh menolaknya daripada banar persetujuan tanpa menjejaskan penggunaan aplikasi anda. Kami menggunakan data ini untuk analitik sahaja dan bukan untuk pengiklanan."
+      },
+      "storageSecurity": {
+        "title": "Penyimpanan & Keselamatan",
+        "body": "Data anda disimpan di pelayan Firebase milik Google dengan perlindungan yang sesuai. Data tempatan anda kekal pada peranti anda dan dipadam apabila anda log keluar."
+      },
+      "accountDeletion": {
+        "title": "Pemadaman Akaun",
+        "body": "Anda boleh log keluar pada bila-bila masa untuk memadam data tempatan anda daripada peranti ini. Untuk memadam akaun dan semua data anda daripada pelayan kami secara kekal sendiri: dari skrin utama, ketik ikon tetapan ⚙ di atas halaman, kemudian ketik \"Padam Akaun\" di bawah halaman Tetapan, dan sahkan pemadaman. Akaun anda dipadam serta-merta, dan tindakan ini tidak boleh dibatalkan."
+      },
+      "termsOfUse": {
+        "title": "Terma Penggunaan",
+        "body": "Aplikasi ini direka untuk membantu anda mengulang kaji hafazan al-Quran anda. Perkhidmatan ini disediakan \"seadanya\" tanpa jaminan, dan kami berusaha memastikan ketepatan kandungan al-Quran berdasarkan sumber Tanzil (tanzil.net)."
+      },
+      "contact": {
+        "title": "Hubungi Kami",
+        "body": "Untuk sebarang pertanyaan mengenai privasi atau terma, anda boleh menghubungi kami melalui e-mel rasmi aplikasi ini."
+      }
+    }
+  },
+  "support": {
+    "title": "Sokongan & Bantuan",
+    "sections": {
+      "technical": {
+        "title": "Sokongan Teknikal",
+        "body": "Menghadapi masalah dengan aplikasi ini, atau ada cadangan untuk menambah baiknya? Kami sedia membantu. E-mel kami di bawah dan kami akan membalas secepat mungkin."
+      },
+      "sync": {
+        "title": "Masalah Log Masuk atau Penyegerakan",
+        "body": "Jika anda menghadapi masalah log masuk dengan Google atau Facebook, atau perasan kemajuan anda tidak disegerakkan merentasi peranti anda, hubungi kami dengan menyatakan jenis peranti dan sistem operasi anda supaya kami dapat membantu dengan lebih pantas."
+      },
+      "deletion": {
+        "title": "Pemadaman Akaun atau Data",
+        "body": "Untuk memohon pemadaman kekal akaun dan data anda yang disimpan di pelayan kami, e-mel kami di bawah dan kami akan menyelesaikan permohonan dalam beberapa hari."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "Surah {{name}}",
+      "ayahCount": "Bilangan ayat {{count}}",
+      "ayahNumber": "Nombor ayat {{count}}"
+    },
+    "meccan": "Makkiyah",
+    "medinan": "Madaniyah",
+    "instructionNotSpecial": "Pilih sambungan yang betul",
+    "instructionSuraName": "Pilih nama surah",
+    "instructionAyahCount": "Pilih bilangan ayat surah",
+    "instructionMakki": "Pilih klasifikasi surah",
+    "instructionAyahNumber": "Pilih nombor ayat",
+    "correctMark": "✓ Betul",
+    "pickedWrongMark": "Anda pilih ✗",
+    "skip": "Saya tidak tahu",
+    "ayahCount": "{{count}} ayat",
+    "ayahLabel": "Ayat {{number}}",
+    "ok": "OK",
+    "view": "Lihat",
+    "compete": "Bersaing",
+    "shareMsg": "Bersaing dengan saya di {{appName}}!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Anda mendahului semua orang hari ini! 🏆",
+    "behindBy": "Kedudukan anda hari ini: #{{rank}} daripada {{total}} — ketinggalan {{diff}} mata daripada {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 {{threshold}} jawapan betul dalam {{partName}}!",
+    "mastery": "🏅 Anda telah menguasai {{partName}}!"
+  },
+  "rank": {
+    "beginner": "Pemula",
+    "diligent": "Rajin",
+    "hafiz": "Hafiz",
+    "master": "Mahir"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Tahap Pemula",
+      "comment": "Soalan bermula dari awal ayat, dan menambah markah anda sebanyak 5"
+    },
+    "elementary": {
+      "text": "Tahap Asas",
+      "comment": "Soalan bermula daripada tiga perkataan, dan menambah markah anda sebanyak 10"
+    },
+    "secondary": {
+      "text": "Tahap Menengah",
+      "comment": "Soalan bermula daripada dua perkataan, dan menambah markah anda sebanyak 20"
+    },
+    "advanced": {
+      "text": "Tahap Lanjutan",
+      "comment": "Lebih daripada satu jawapan betul, dan menambah markah anda sebanyak 30"
+    }
+  },
+  "friends": {
+    "title": "Rakan",
+    "myCodeTitle": "Kod Kuiz Anda",
+    "shareBtn": "Kongsi Kod",
+    "shareMessage": "Tambah saya di Quran Quiz Net! Ketik pautan untuk menambah saya serta-merta:\n{{link}}",
+    "addFriendTitle": "Tambah Rakan Melalui Kod Kuiz",
+    "placeholderCode": "Masukkan kod (cth. ABCD1234)",
+    "addBtn": "Tambah",
+    "incomingRequests": "Permintaan Rakan Masuk",
+    "noRequests": "Tiada permintaan rakan tertunda",
+    "accept": "Terima",
+    "decline": "Tolak",
+    "friendList": "Senarai Rakan",
+    "noFriends": "Belum ada rakan ditambah. Kongsi kod anda atau tambah rakan dengan kod mereka!",
+    "invalidCode": "Kod Kuiz Tidak Sah",
+    "invalidCodeSub": "Sila semak kod dan cuba lagi.",
+    "selfCode": "Ini kod kuiz anda sendiri!",
+    "selfCodeSub": "Kongsi kod ini dengan rakan anda supaya mereka boleh menambah anda.",
+    "requestSent": "Permintaan Rakan Dihantar!",
+    "requestSentSub": "Permintaan anda akan muncul dalam peti masuk rakan anda untuk diterima.",
+    "sending": "Menghantar...",
+    "resolving": "Menyemak kod...",
+    "errorOccurred": "Ralat berlaku semasa menghantar",
+    "back": "Kembali",
+    "goToFriends": "Lihat Rakan",
+    "challenge": "Cabar"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Duel Rakan",
+    "waitingFor": "Menunggu {{name}} menerima...",
+    "cancel": "Batalkan Cabaran",
+    "bannerTitle": "Cabaran Duel!",
+    "bannerMessage": "{{name}} mencabar anda untuk duel",
+    "accept": "Terima",
+    "decline": "Tolak"
+  },
+  "notifications": {
+    "channelName": "Peringatan",
+    "streakReminder": {
+      "title": "🔥 Jangan hilang rentetan anda",
+      "body": "Rentetan anda {{count}} hari! Mainkan kuiz hari ini untuk mengekalkannya."
+    },
+    "dailyReady": {
+      "title": "⭐ Kuiz hari ini sudah sedia",
+      "body": "Kuiz baharu dalam skop hafazan anda sedang menunggu. Cuba nasib anda sekarang!"
+    }
+  }
+}
