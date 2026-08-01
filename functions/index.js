@@ -2,7 +2,8 @@
 const { onSchedule } = require('firebase-functions/v2/scheduler');
 const { onValueCreated } = require('firebase-functions/v2/database');
 const logger = require('firebase-functions/logger');
-const { sendPush, isCategoryEnabled } = require('./push.js');
+const { sendPush, isCategoryEnabled, sendPushBulk } = require('./push.js');
+const { getNotificationText } = require('./i18n.js');
 const { streaksched } = require('./streak.js');
 const { mergeDayIntoMonthTotals, topOfMonth } = require('./monthTotals.js');
 exports.streaksched = streaksched;
@@ -20,9 +21,13 @@ exports.onpvpinvite = onValueCreated('/pvp/invites/{uid}/{fromUid}', async (even
     const enabled = await isCategoryEnabled(uid, 'invites');
     if (!enabled) return;
 
-    const challengerName = invite.fromName || 'أحد الأصدقاء';
-    const title = '⚔️ تحدٍّ جديد!';
-    const body = `تحداك ${challengerName} في مبارزة قرآنية! افتح التطبيق لقبول التحدي.`;
+    const tokenSnap = await admin.database().ref(`pushTokens/${uid}`).once('value');
+    const tokenVal = tokenSnap.val() || {};
+    const lang = tokenVal.lang || tokenVal.locale || 'ar';
+
+    const challengerName = invite.fromName || (lang === 'ar' ? 'أحد الأصدقاء' : 'A friend');
+    const title = getNotificationText(lang, 'notifications.pvpInvite.title');
+    const body = getNotificationText(lang, 'notifications.pvpInvite.body', { name: challengerName });
 
     await sendPush(uid, title, body, { type: 'pvp_invite', fromUid });
   } catch (err) {
@@ -39,9 +44,13 @@ exports.onfriendrequest = onValueCreated('/friendRequests/{uid}/{fromUid}', asyn
     const enabled = await isCategoryEnabled(uid, 'friendRequests');
     if (!enabled) return;
 
-    const senderName = req.fromName || 'أحد الحفّاظ';
-    const title = '👥 طلب صداقة جديد';
-    const body = `أرسل لك ${senderName} طلب صداقة على شبكة اختبار القرآن.`;
+    const tokenSnap = await admin.database().ref(`pushTokens/${uid}`).once('value');
+    const tokenVal = tokenSnap.val() || {};
+    const lang = tokenVal.lang || tokenVal.locale || 'ar';
+
+    const senderName = req.fromName || (lang === 'ar' ? 'أحد الحفّاظ' : 'A user');
+    const title = getNotificationText(lang, 'notifications.friendRequest.title');
+    const body = getNotificationText(lang, 'notifications.friendRequest.body', { name: senderName });
 
     await sendPush(uid, title, body, { type: 'friend_request' });
   } catch (err) {
@@ -108,9 +117,121 @@ function dailyQuiz() {
       };
       // Set new head
       await admin.database().ref('daily/head').set(newDaily);
+
+      // Fetch push tokens snapshot — reused for dailyReady and friendBeatScore pushes
+      let tokens = null;
+      try {
+        const tokensSnap = await admin.database().ref('pushTokens').once('value');
+        tokens = tokensSnap.val();
+      } catch (err) {
+        logger.error('Error fetching push tokens for daily quiz:', err);
+      }
+
+      // Send push notifications for new daily quiz
+      try {
+        if (tokens) {
+          const messages = [];
+          for (const uid of Object.keys(tokens)) {
+            const tokenData = tokens[uid];
+            const token = typeof tokenData === 'string' ? tokenData : tokenData?.token;
+            if (!token) continue;
+
+            const enabled = await isCategoryEnabled(uid, 'dailyReady');
+            if (!enabled) continue;
+
+            const lang = (tokenData && (tokenData.lang || tokenData.locale)) || 'ar';
+            const title = getNotificationText(lang, 'notifications.dailyReady.title');
+            const body = getNotificationText(lang, 'notifications.dailyReady.body');
+
+            messages.push({
+              to: token,
+              title,
+              body,
+              data: { type: 'daily_ready' },
+            });
+          }
+          if (messages.length > 0) {
+            await sendPushBulk(messages);
+          }
+        }
+      } catch (err) {
+        logger.error('Error sending daily quiz push notifications:', err);
+      }
+
+      // Send push notifications for friends outscoring today
+      try {
+        if (tokens && submissions.length > 0) {
+          const userScores = buildUserScores(submissions);
+          const friendMessages = [];
+          for (const uid of Object.keys(userScores)) {
+            const tokenData = tokens[uid];
+            const token = typeof tokenData === 'string' ? tokenData : tokenData?.token;
+            if (!token) continue;
+
+            const enabled = await isCategoryEnabled(uid, 'friendActivity');
+            if (!enabled) continue;
+
+            const friendsSnap = await admin.database().ref(`friends/${uid}`).once('value');
+            const friendsVal = friendsSnap.val();
+            if (!friendsVal) continue;
+
+            const userObj = userScores[uid];
+            const topFriend = findHighestScoringOutscoringFriend(uid, userObj.score, friendsVal, userScores);
+            if (!topFriend) continue;
+
+            const lang = (tokenData && (tokenData.lang || tokenData.locale)) || 'ar';
+            const friendName = (topFriend.name && topFriend.name.trim()) || (lang === 'ar' ? 'أحد الأصدقاء' : 'A friend');
+            const title = getNotificationText(lang, 'notifications.friendBeatScore.title');
+            const body = getNotificationText(lang, 'notifications.friendBeatScore.body', { name: friendName });
+
+            friendMessages.push({
+              to: token,
+              title,
+              body,
+              data: { type: 'friend_beat_score' },
+            });
+          }
+          if (friendMessages.length > 0) {
+            await sendPushBulk(friendMessages);
+          }
+        }
+      } catch (err) {
+        logger.error('Error sending friend beat score push notifications:', err);
+      }
+
       // Clear submissions
       await admin.database().ref('daily/head_submit').remove();
     });
+}
+
+function buildUserScores(submissions) {
+  const userScores = {};
+  if (!submissions) return userScores;
+  for (const entry of submissions) {
+    if (!entry || !entry.uid || typeof entry.score !== 'number') continue;
+    const { uid, score, name } = entry;
+    if (!userScores[uid] || score > userScores[uid].score) {
+      userScores[uid] = { score, name: name || '' };
+    }
+  }
+  return userScores;
+}
+
+function findHighestScoringOutscoringFriend(userUid, userScore, friendsMap, userScores) {
+  if (!friendsMap) return null;
+  let topFriend = null;
+  let topScore = -1;
+  for (const friendUid of Object.keys(friendsMap)) {
+    if (friendUid === userUid) continue;
+    const friendData = userScores[friendUid];
+    if (friendData && friendData.score > userScore) {
+      if (friendData.score > topScore) {
+        topScore = friendData.score;
+        topFriend = friendData;
+      }
+    }
+  }
+  return topFriend;
 }
 
 // ── PvP hygiene ─────────────────────────────────────────────────────────────

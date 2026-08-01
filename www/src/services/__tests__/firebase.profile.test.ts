@@ -83,12 +83,13 @@ describe('pushCurrentProfile()', () => {
     expect(mockSet).not.toHaveBeenCalled();
   });
 
-  it('writes the full synced-field surface for a signed-in account, keyed by /users/{uid}', async () => {
+  it('writes the full synced-field surface for a signed-in account, keyed by /users/{uid} and /publicStats/{uid}', async () => {
     m.__authState.currentUser = { uid: 'u1', isAnonymous: false };
     await pushCurrentProfile();
 
-    expect(mockSet).toHaveBeenCalledTimes(1);
-    expect(mockRef).toHaveBeenCalledWith(expect.anything(), '/users/u1');
+    expect(mockSet).toHaveBeenCalledTimes(2);
+    expect(mockRef).toHaveBeenNthCalledWith(1, expect.anything(), '/users/u1');
+    expect(mockRef).toHaveBeenNthCalledWith(2, expect.anything(), '/publicStats/u1');
     const payload = mockSet.mock.calls[0][1] as Record<string, unknown>;
     expect(payload).toMatchObject({
       uid: 'u1',
@@ -110,6 +111,14 @@ describe('pushCurrentProfile()', () => {
     });
     expect((payload.social as Record<string, unknown>).photoURL).toBeUndefined();
     expect((payload.social as Record<string, unknown>).email).toBeUndefined();
+
+    const publicStatsPayload = mockSet.mock.calls[1][1] as Record<string, unknown>;
+    expect(publicStatsPayload).toEqual({
+      name: 'Nickname',
+      score: 0,
+      streak: 5,
+      level: 2,
+    });
   });
 });
 

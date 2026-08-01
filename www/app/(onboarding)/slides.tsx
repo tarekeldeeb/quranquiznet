@@ -1,4 +1,4 @@
-import { useRef, useState, ReactNode } from 'react';
+import { useRef, useState, useEffect, ReactNode } from 'react';
 import {
   View, Text, FlatList, StyleSheet, Dimensions, Platform,
 } from 'react-native';
@@ -12,6 +12,7 @@ import { useDirection, rowDir, alignDir, writingDir, mirror } from '../../src/th
 import { useProfileStore } from '../../src/stores/profileStore';
 import PressScale from '../../src/components/PressScale';
 import LanguagePicker from '../../src/components/LanguagePicker';
+import { trackEvent } from '../../src/services/analytics';
 
 const { width: SW } = Dimensions.get('window');
 
@@ -223,10 +224,15 @@ export default function SlidesScreen() {
     },
   ];
 
+  useEffect(() => {
+    trackEvent('onboarding_start');
+  }, []);
+
   // The Study Parts screen is no longer shown to everyone here — it now only
   // runs for guests, right after they pick "continue as guest" on the auth
   // screen. Everyone finishing (or skipping) the slides goes to auth next.
   async function finishSlides() {
+    trackEvent('onboarding_complete');
     await AsyncStorage.setItem('onboarding_done', 'true');
     router.replace('/(auth)');
   }

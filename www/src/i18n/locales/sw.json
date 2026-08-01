@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Maombi ya Urafiki",
       "friendRequestsHint": "Arifu unapopokea ombi jipya la urafiki",
       "streakAlertsLabel": "Arifa za Mfululizo",
-      "streakAlertsHint": "Ukumbusho wa jioni ikiwa mfululizo wako uko hatarini"
+      "streakAlertsHint": "Ukumbusho wa jioni ikiwa mfululizo wako uko hatarini",
+      "dailyReadyLabel": "Arifa za Maswali ya Kila Siku",
+      "dailyReadyHint": "Arifu maswali mapya ya kila siku yanapokuwa tayari",
+      "friendActivityLabel": "Shughuli za Marafiki",
+      "friendActivityHint": "Arifu rafiki anapozidi alama zako za kila siku"
     },
     "mobileAppHeader": "Programu ya Simu",
     "storeLinks": {
@@ -518,13 +522,29 @@
   },
   "notifications": {
     "channelName": "Vikumbusho",
+    "pvpInvite": {
+      "title": "⚔️ Changamoto Mpya!",
+      "body": "{{name}} amekualika kwenye mashindano ya Kurani! Fungua programu ili kukubali."
+    },
+    "friendRequest": {
+      "title": "👥 Ombi Jipya la Urafiki",
+      "body": "{{name}} amekutumia ombi la urafiki kwenye Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Usipoteze mfululizo wako",
       "body": "Mfululizo wako ni siku {{count}}! Cheza maswali leo ili kuuendeleza."
     },
+    "streakReminderFreeze": {
+      "title": "🔥 Linda mfululizo wako",
+      "body": "Mfululizo wako wa siku {{count}} uko hatarini leo usiku! Unayo kadi ya kuganda inayopatikana. Fungua programu ili kuitumia."
+    },
     "dailyReady": {
       "title": "⭐ Maswali ya leo yako tayari",
       "body": "Maswali mapya ndani ya sehemu uliyohifadhi yanakusubiri. Jaribu bahati yako sasa!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Alama Zimepitwa!",
+      "body": "{{name}} amepita alama zako za leo! Cheza tena ili kurudisha uongozi."
     }
   }
 }

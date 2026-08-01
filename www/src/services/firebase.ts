@@ -382,6 +382,39 @@ export async function pushProfile(uid: string, profile: unknown): Promise<void> 
  * rather than hand-building the payload, so profileStore.syncTo()'s merge
  * logic always has a matching field to read back.
  */
+export interface PublicStats {
+  name?: string;
+  score: number;
+  streak: number;
+  level: number;
+  country?: string;
+}
+
+/**
+ * Pushes public leaderboard stats ({ name, score, streak, level, country }) to
+ * /publicStats/{uid}. No-op for anonymous guests and signed-out users.
+ */
+export async function pushPublicStats(): Promise<void> {
+  try {
+    const user = getFirebaseAuth().currentUser;
+    if (!user || user.isAnonymous) return;
+    const s = useProfileStore.getState();
+    const raw: Record<string, unknown> = {
+      name: s.social.displayName || undefined,
+      score: s.getScore(),
+      streak: s.streak,
+      level: s.level,
+      country: s.country ? s.country : undefined,
+    };
+    for (const key of Object.keys(raw)) {
+      if (raw[key] === undefined) delete raw[key];
+    }
+    await set(ref(getFirebaseDb(), `/publicStats/${user.uid}`), raw);
+  } catch (e) {
+    console.error('pushPublicStats error:', e);
+  }
+}
+
 export async function pushCurrentProfile(): Promise<void> {
   const user = getFirebaseAuth().currentUser;
   if (!user || user.isAnonymous) return;
@@ -409,6 +442,7 @@ export async function pushCurrentProfile(): Promise<void> {
     // current values on some other device's next syncTo().
     social: { displayName: s.social.displayName },
   });
+  await pushPublicStats();
 }
 
 export async function savePushToken(
@@ -416,12 +450,15 @@ export async function savePushToken(
   token: string,
   platform: string,
   tz: string,
+  lang?: string,
 ): Promise<void> {
   try {
+    const language = lang ?? useProfileStore.getState().language;
     await set(ref(getFirebaseDb(), `/pushTokens/${uid}`), {
       token,
       platform,
       tz,
+      lang: language,
       updatedAt: Date.now(),
     });
   } catch (e) {
@@ -1029,9 +1066,18 @@ export function watchPresence(
   });
 }
 
+export function watchPublicStats(
+  uid: string,
+  cb: (stats: PublicStats | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/publicStats/${uid}`), (snap) => {
+    cb((snap.val() as PublicStats | null) ?? null);
+  });
+}
+
 // ─── Notification Preferences ────────────────────────────────────────────────
 
-export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts';
+export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts' | 'dailyReady' | 'friendActivity';
 
 export type NotifPrefs = Record<NotifCategory, boolean>;
 
@@ -1043,10 +1089,12 @@ export async function getNotifPrefs(uid: string): Promise<NotifPrefs> {
       invites: val?.invites !== false,
       friendRequests: val?.friendRequests !== false,
       streakAlerts: val?.streakAlerts !== false,
+      dailyReady: val?.dailyReady !== false,
+      friendActivity: val?.friendActivity !== false,
     };
   } catch (e) {
     console.error('getNotifPrefs error:', e);
-    return { invites: true, friendRequests: true, streakAlerts: true };
+    return { invites: true, friendRequests: true, streakAlerts: true, dailyReady: true, friendActivity: true };
   }
 }
 
@@ -1072,6 +1120,8 @@ export function watchNotifPrefs(
       invites: val?.invites !== false,
       friendRequests: val?.friendRequests !== false,
       streakAlerts: val?.streakAlerts !== false,
+      dailyReady: val?.dailyReady !== false,
+      friendActivity: val?.friendActivity !== false,
     });
   });
 }

@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Solicitudes de amistad",
       "friendRequestsHint": "Notificar cuando recibas una nueva solicitud de amistad",
       "streakAlertsLabel": "Alertas de racha",
-      "streakAlertsHint": "Recordatorio nocturno si tu racha está en riesgo"
+      "streakAlertsHint": "Recordatorio nocturno si tu racha está en riesgo",
+      "dailyReadyLabel": "Alertas del cuestionario diario",
+      "dailyReadyHint": "Notificar cuando un nuevo cuestionario diario esté listo",
+      "friendActivityLabel": "Actividad de amigos",
+      "friendActivityHint": "Recibe una notificación cuando un amigo supere tu puntuación diaria"
     },
     "mobileAppHeader": "Aplicación móvil",
     "storeLinks": {
@@ -521,13 +525,29 @@
   },
   "notifications": {
     "channelName": "Recordatorios",
+    "pvpInvite": {
+      "title": "⚔️ ¡Nuevo desafío!",
+      "body": "¡{{name}} te ha desafiado a un duelo coránico! Abre la aplicación para aceptar."
+    },
+    "friendRequest": {
+      "title": "👥 Nueva solicitud de amistad",
+      "body": "{{name}} te envió una solicitud de amistad en Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 No pierdas tu racha",
-      "body": "¡Tu racha es de {{count}} días! Juega un cuestionario hoy para mantenerla."
+      "body": "¡Tu racha de {{count}} días está en riesgo esta noche! Juega un examen ahora para mantenerla."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Protege tu racha",
+      "body": "¡Tu racha de {{count}} días está en riesgo esta noche! Tienes una congelación disponible. Abre la aplicación para usarla."
     },
     "dailyReady": {
       "title": "⭐ El cuestionario de hoy está listo",
       "body": "Un nuevo cuestionario dentro de tu alcance de memorización te espera. ¡Prueba tu suerte ahora!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 ¡Un amigo superó tu puntuación!",
+      "body": "¡{{name}} obtuvo un puntaje mayor en el examen de hoy! Juega de nuevo para recuperar el liderazgo."
     }
   }
 }

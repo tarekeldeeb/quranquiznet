@@ -9,6 +9,7 @@ import {
 } from '../../src/services/firebase';
 import { setPendingDeepLink } from '../../src/services/pendingDeepLink';
 
+import { syncUserAnalytics } from '../../src/services/analytics';
 import {
   scopeFromParts, commonLevel, intersectScope, newMatchSeed, PVP_ROUNDS, type PvpMatchMeta,
 } from '../../src/services/pvpService';
@@ -89,6 +90,19 @@ export default function AppLayout() {
   const { colors } = useTheme();
   const { t } = useTranslation();
   const { isRTL } = useDirection();
+
+  const userUid = profile.social.uid || profile.uid;
+  useEffect(() => {
+    if (userUid) {
+      syncUserAnalytics({
+        uid: userUid,
+        level: profile.level,
+        language: profile.language,
+        isAnonymous: !!profile.social.isAnonymous,
+        streak: profile.streak,
+      });
+    }
+  }, [userUid, profile.level, profile.language, profile.social.isAnonymous, profile.streak]);
 
   useEffect(() => {
     detectCountry(profile.setCountry);

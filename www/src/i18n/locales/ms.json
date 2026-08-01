@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Permintaan Rakan",
       "friendRequestsHint": "Beritahu apabila anda menerima permintaan rakan baharu",
       "streakAlertsLabel": "Amaran Rentetan",
-      "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko"
+      "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko",
+      "dailyReadyLabel": "Amaran Kuiz Harian",
+      "dailyReadyHint": "Beritahu apabila kuiz harian baharu sudah sedia",
+      "friendActivityLabel": "Aktiviti Rakan",
+      "friendActivityHint": "Dapatkan pemberitahuan apabila rakan mengatasi skor harian anda"
     },
     "mobileAppHeader": "Aplikasi Mudah Alih",
     "storeLinks": {
@@ -515,13 +519,29 @@
   },
   "notifications": {
     "channelName": "Peringatan",
+    "pvpInvite": {
+      "title": "⚔️ Cabaran Baharu!",
+      "body": "{{name}} mencabar anda dalam pertarungan Al-Quran! Buka aplikasi untuk menerima."
+    },
+    "friendRequest": {
+      "title": "👥 Permintaan Rakan Baharu",
+      "body": "{{name}} menghantar permintaan rakan kepada anda di Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Jangan hilang rentetan anda",
-      "body": "Rentetan anda {{count}} hari! Mainkan kuiz hari ini untuk mengekalkannya."
+      "body": "Rentetan {{count}} hari anda berisiko malam ini! Main kuiz sekarang untuk mengekalkannya."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Lindungi rentetan anda",
+      "body": "Rentetan {{count}} hari anda berisiko malam ini! Anda mempunyai pembekuan sedia ada. Buka aplikasi untuk menggunakannya."
     },
     "dailyReady": {
       "title": "⭐ Kuiz hari ini sudah sedia",
       "body": "Kuiz baharu dalam skop hafazan anda sedang menunggu. Cuba nasib anda sekarang!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Rakan Mengatasi Skor Anda!",
+      "body": "{{name}} mendapat skor lebih tinggi dalam kuiz hari ini! Main semula untuk mengambil alih tempat teratas."
     }
   }
 }

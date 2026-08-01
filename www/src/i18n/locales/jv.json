@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Panjaluk Kekancan",
       "friendRequestsHint": "Kabari nalika sampeyan nampa panjaluk kekancan anyar",
       "streakAlertsLabel": "Pengeling Runtutan",
-      "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko"
+      "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko",
+      "dailyReadyLabel": "Pengeling Kuis Bendina",
+      "dailyReadyHint": "Kabari nalika kuis bendina anyar wis siap",
+      "friendActivityLabel": "Aktivitas Kanca",
+      "friendActivityHint": "Entuk notifikasi nalika kanca ngluwih skor harian sampeyan"
     },
     "mobileAppHeader": "Aplikasi Hape",
     "storeLinks": {
@@ -515,13 +519,29 @@
   },
   "notifications": {
     "channelName": "Pengeling",
+    "pvpInvite": {
+      "title": "⚔️ Tantangan Anyar!",
+      "body": "{{name}} nantang sampeyan duel Al-Qur'an! Bukak aplikasi kanggo nampa."
+    },
+    "friendRequest": {
+      "title": "👥 Panjaluk Kanca Anyar",
+      "body": "{{name}} ngirim panjaluk kanca ing Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Aja nganti ilang runtutan sampeyan",
-      "body": "Runtutan sampeyan {{count}} dina! Dolanan kuis dina iki kanggo njaga runtutane."
+      "body": "Runtutan {{count}} dina sampeyan beresiko wengi iki! Mainna kuis saiki kanggo njaga."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Jaga runtutan sampeyan",
+      "body": "Runtutan {{count}} dina sampeyan beresiko wengi iki! Sampeyan duwe token pambekuan. Bukak aplikasi kanggo nggunakake."
     },
     "dailyReady": {
       "title": "⭐ Kuis dina iki wis siap",
       "body": "Kuis anyar ing wates apalan sampeyan wis ngenteni. Cobanen keberuntungan sampeyan saiki!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Kanca Ngluwih Skor Sampeyan!",
+      "body": "{{name}} entuk skor luwih dhuwur ing kuis dina iki! Main maneh kanggo ngrebut posisi teratas."
     }
   }
 }

@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Demandes d'amis",
       "friendRequestsHint": "Notifier lors d'une nouvelle demande d'ami",
       "streakAlertsLabel": "Alertes de série",
-      "streakAlertsHint": "Rappel en soirée si ta série est en danger"
+      "streakAlertsHint": "Rappel en soirée si ta série est en danger",
+      "dailyReadyLabel": "Alertes du quiz quotidien",
+      "dailyReadyHint": "Notifier lorsqu'un nouveau quiz quotidien est prêt",
+      "friendActivityLabel": "Activité des amis",
+      "friendActivityHint": "Soyez averti lorsqu'un ami dépasse votre score du jour"
     },
     "mobileAppHeader": "Application mobile",
     "storeLinks": {
@@ -521,13 +525,29 @@
   },
   "notifications": {
     "channelName": "Rappels",
+    "pvpInvite": {
+      "title": "⚔️ Nouveau défi !",
+      "body": "{{name}} vous a défié en duel coranique ! Ouvrez l'application pour accepter."
+    },
+    "friendRequest": {
+      "title": "👥 Nouvelle demande d'ami",
+      "body": "{{name}} vous a envoyé une demande d'ami sur Quran Quiz Net."
+    },
     "streakReminder": {
-      "title": "🔥 Ne perds pas ta série",
-      "body": "Ta série est de {{count}} jours ! Joue un quiz aujourd'hui pour la maintenir."
+      "title": "🔥 Ne perdez pas votre série",
+      "body": "Votre série de {{count}} jours est menacée ce soir ! Jouez un quiz maintenant pour la maintenir."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Protégez votre série",
+      "body": "Votre série de {{count}} jours est menacée ce soir ! Vous avez un gel disponible. Ouvrez l'application pour l'utiliser."
     },
     "dailyReady": {
       "title": "⭐ Le quiz du jour est prêt",
       "body": "Un nouveau quiz dans ton périmètre de mémorisation t'attend. Tente ta chance maintenant !"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Score dépassé !",
+      "body": "{{name}} a obtenu un meilleur score que vous aujourd'hui ! Rejouez pour reprendre la tête."
     }
   }
 }

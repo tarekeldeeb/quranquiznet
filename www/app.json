@@ -38,6 +38,11 @@
               "scheme": "https",
               "host": "quranquiz.net",
               "pathPrefix": "/add"
+            },
+            {
+              "scheme": "https",
+              "host": "quranquiz.net",
+              "pathPrefix": "/quiz"
             }
           ],
           "category": [

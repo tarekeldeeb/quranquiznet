@@ -97,7 +97,11 @@
       "friendRequestsLabel": "Friend Requests",
       "friendRequestsHint": "Notify when you receive a new friend request",
       "streakAlertsLabel": "Streak Alerts",
-      "streakAlertsHint": "Evening reminder if your streak is at risk"
+      "streakAlertsHint": "Evening reminder if your streak is at risk",
+      "dailyReadyLabel": "Daily Quiz Alerts",
+      "dailyReadyHint": "Notify when a new daily quiz is ready",
+      "friendActivityLabel": "Friend Activity",
+      "friendActivityHint": "Get notified when a friend beats your daily score"
     },
     "mobileAppHeader": "Mobile App",
     "storeLinks": {
@@ -527,13 +531,29 @@
   },
   "notifications": {
     "channelName": "Reminders",
+    "pvpInvite": {
+      "title": "⚔️ New Challenge!",
+      "body": "{{name}} challenged you to a Quran duel! Open the app to accept."
+    },
+    "friendRequest": {
+      "title": "👥 New Friend Request",
+      "body": "{{name}} sent you a friend request on Quran Quiz Net."
+    },
     "streakReminder": {
       "title": "🔥 Don't lose your streak",
-      "body": "Your streak is {{count}} days! Play a quiz today to keep it going."
+      "body": "Your {{count}}-day streak is at risk tonight! Play a quiz now to keep it going."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Protect your streak",
+      "body": "Your {{count}}-day streak is at risk tonight! You have a freeze token available. Open the app to use it."
     },
     "dailyReady": {
       "title": "⭐ Today's quiz is ready",
       "body": "A new quiz within your memorized range is waiting. Try your luck now!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Score Beaten!",
+      "body": "{{name}} beat your daily score today! Play again to reclaim the lead."
     }
   }
 }

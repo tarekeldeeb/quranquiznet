@@ -18,6 +18,7 @@ jest.mock('../../../src/services/firebase', () => ({
   watchFriendRequests: jest.fn(() => jest.fn()),
   watchFriends: jest.fn(() => jest.fn()),
   watchPresence: jest.fn(() => jest.fn()),
+  watchPublicStats: jest.fn(() => jest.fn()),
   acceptFriendRequest: jest.fn(() => Promise.resolve()),
   declineFriendRequest: jest.fn(() => Promise.resolve()),
   sendPvpInvite: jest.fn(() => Promise.resolve()),

@@ -6,6 +6,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { resolveQuizCode, sendFriendRequest } from '../../../src/services/firebase';
 import { useProfileStore } from '../../../src/stores/profileStore';
+import { trackEvent } from '../../../src/services/analytics';
 import { DEFAULT_GUEST_NAME } from '../../../src/models/constants';
 import { useTheme, radii } from '../../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../../src/theme/direction';
@@ -35,6 +36,8 @@ export default function AddByCodeScreen() {
       setStatus('loading');
       const targetUid = await resolveQuizCode(cleanCode);
       if (cancelled) return;
+
+      trackEvent('invite_link_open', { code: cleanCode, valid: !!targetUid });
 
       if (!targetUid) {
         setStatus('invalid');
