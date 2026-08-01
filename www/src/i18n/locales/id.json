@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Peringatan Rentetan",
       "streakAlertsHint": "Pengingat malam jika rentetan Anda berisiko",
       "dailyReadyLabel": "Peringatan Kuis Harian",
-      "dailyReadyHint": "Beri tahu saat kuis harian baru sudah siap"
+      "dailyReadyHint": "Beri tahu saat kuis harian baru sudah siap",
+      "friendActivityLabel": "Aktivitas Teman",
+      "friendActivityHint": "Dapatkan pemberitahuan saat teman melampaui skor harianmu"
     },
     "mobileAppHeader": "Aplikasi Seluler",
     "storeLinks": {
@@ -536,6 +538,10 @@
     "dailyReady": {
       "title": "⭐ Kuis hari ini sudah siap",
       "body": "Kuis baru dalam cakupan hafalan Anda sudah menunggu. Coba peruntungan Anda sekarang!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Teman Melampaui Skormu!",
+      "body": "{{name}} meraih skor lebih tinggi di kuis hari ini! Main lagi untuk merebut kembali posisi puncak."
     }
   }
 }

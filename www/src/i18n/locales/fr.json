@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Alertes de série",
       "streakAlertsHint": "Rappel en soirée si ta série est en danger",
       "dailyReadyLabel": "Alertes du quiz quotidien",
-      "dailyReadyHint": "Notifier lorsqu'un nouveau quiz quotidien est prêt"
+      "dailyReadyHint": "Notifier lorsqu'un nouveau quiz quotidien est prêt",
+      "friendActivityLabel": "Activité des amis",
+      "friendActivityHint": "Soyez averti lorsqu'un ami dépasse votre score du jour"
     },
     "mobileAppHeader": "Application mobile",
     "storeLinks": {
@@ -542,6 +544,10 @@
     "dailyReady": {
       "title": "⭐ Le quiz du jour est prêt",
       "body": "Un nouveau quiz dans ton périmètre de mémorisation t'attend. Tente ta chance maintenant !"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Score dépassé !",
+      "body": "{{name}} a obtenu un meilleur score que vous aujourd'hui ! Rejouez pour reprendre la tête."
     }
   }
 }

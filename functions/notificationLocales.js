@@ -19,6 +19,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ اختبار اليوم جاهز",
       "body": "اختبار جديد في نطاق حفظك بانتظارك. جرّب حظك الآن!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 صديق تجاوز نتيجتك!",
+      "body": "حقق {{name}} نتيجة أعلى منك في اختبار اليوم! العب مجدداً لاستعادة الصدارة."
     }
   },
   "bn": {
@@ -41,6 +45,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ আজকের কুইজ প্রস্তুত",
       "body": "আপনার মুখস্থ করা অংশের মধ্যে একটি নতুন কুইজ অপেক্ষা করছে। এখনই ভাগ্য পরীক্ষা করুন!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 বন্ধুর নতুন উচ্চ স্কোর!",
+      "body": "আজকের কুইজে {{name}} আপনার চেয়ে বেশি নম্বর পেয়েছে! শীর্ষস্থান ফিরে পেতে আবার খেলুন।"
     }
   },
   "en": {
@@ -63,6 +71,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Today's quiz is ready",
       "body": "A new quiz within your memorized range is waiting. Try your luck now!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Score Beaten!",
+      "body": "{{name}} beat your daily score today! Play again to reclaim the lead."
     }
   },
   "es": {
@@ -85,6 +97,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ El cuestionario de hoy está listo",
       "body": "Un nuevo cuestionario dentro de tu alcance de memorización te espera. ¡Prueba tu suerte ahora!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 ¡Un amigo superó tu puntuación!",
+      "body": "¡{{name}} obtuvo un puntaje mayor en el examen de hoy! Juega de nuevo para recuperar el liderazgo."
     }
   },
   "fa": {
@@ -107,6 +123,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ آزمون امروز آماده است",
       "body": "آزمون جدیدی در محدوده حفظ شما منتظر است. حالا شانست رو امتحان کن!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 دوست شما امتیاز بهتری ثبت کرد!",
+      "body": "{{name}} در آزمون امروز امتیاز بالاتری نسبت به شما کسب کرد! دوباره بازی کنید تا صدرنشین شوید."
     }
   },
   "fr": {
@@ -129,6 +149,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Le quiz du jour est prêt",
       "body": "Un nouveau quiz dans ton périmètre de mémorisation t'attend. Tente ta chance maintenant !"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Score dépassé !",
+      "body": "{{name}} a obtenu un meilleur score que vous aujourd'hui ! Rejouez pour reprendre la tête."
     }
   },
   "ha": {
@@ -151,6 +175,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Kwizin yau yana shirye",
       "body": "Sabon kwiz a cikin iyakar haddarku yana jiran ku. Ku gwada sa'arku yanzu!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Aboki ya fi ka maki!",
+      "body": "{{name}} ya samu maki mafi girma a kwizin yau! Sake yin kwiz don dawo da jagoranci."
     }
   },
   "id": {
@@ -173,6 +201,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Kuis hari ini sudah siap",
       "body": "Kuis baru dalam cakupan hafalan Anda sudah menunggu. Coba peruntungan Anda sekarang!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Teman Melampaui Skormu!",
+      "body": "{{name}} meraih skor lebih tinggi di kuis hari ini! Main lagi untuk merebut kembali posisi puncak."
     }
   },
   "jv": {
@@ -195,6 +227,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Kuis dina iki wis siap",
       "body": "Kuis anyar ing wates apalan sampeyan wis ngenteni. Cobanen keberuntungan sampeyan saiki!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Kanca Ngluwih Skor Sampeyan!",
+      "body": "{{name}} entuk skor luwih dhuwur ing kuis dina iki! Main maneh kanggo ngrebut posisi teratas."
     }
   },
   "ms": {
@@ -217,6 +253,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Kuiz hari ini sudah sedia",
       "body": "Kuiz baharu dalam skop hafazan anda sedang menunggu. Cuba nasib anda sekarang!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Rakan Mengatasi Skor Anda!",
+      "body": "{{name}} mendapat skor lebih tinggi dalam kuiz hari ini! Main semula untuk mengambil alih tempat teratas."
     }
   },
   "pa": {
@@ -239,6 +279,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ اج دا کوئز تیار اے",
       "body": "تہاڈے حفظ دے دائرے وچ اک نواں کوئز تہاڈا انتظار کر رہیا اے۔ ہُنے اپنی قسمت اجماؤ!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 دوست نے تہاڈا اسکور توڑ دتا!",
+      "body": "{{name}} نے اج دے کوئز وچ تہاڈے توں زیادہ اسکور کیتا اے! صدارت واپس لین لئی پھر کھیڈو۔"
     }
   },
   "ps": {
@@ -261,6 +305,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ د نن ورځې ازموینه چمتو ده",
       "body": "نوې ازموینه ستاسو د حفظ ساحې کې تاسو ته په انتظار ده. اوس خپل قسمت وازمویئ!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 ملګري ستاسو نمره ماته کړه!",
+      "body": "{{name}} د نن ورځې ازموینه کې ستاسو څخه لوړه نمره ترلاسه کړه! د لومړي مقام بېرته اخیستلو لپاره بیا لوبه وکړئ."
     }
   },
   "tr": {
@@ -283,6 +331,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ Bugünün testi hazır",
       "body": "Ezber kapsamınızda yeni bir test sizi bekliyor. Şimdi şansınızı deneyin!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Arkadaşın Skorunu Geçti!",
+      "body": "{{name}} bugünün testinde senden daha yüksek bir skor yaptı! Liderliği geri almak için tekrar oyna."
     }
   },
   "ur": {
@@ -305,6 +357,10 @@ module.exports = {
     "dailyReady": {
       "title": "⭐ آج کا کوئز تیار ہے",
       "body": "آپ کے حفظ شدہ دائرے میں ایک نیا کوئز منتظر ہے۔ ابھی اپنی قسمت آزمائیں!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 دوست نے آپ کا اسکور توڑ دیا!",
+      "body": "{{name}} نے آج کے کوئز میں آپ سے زیادہ اسکور کیا ہے! دوبارہ پرچمدار بننے کے لیے ابھی کھیلیں۔"
     }
   }
 };

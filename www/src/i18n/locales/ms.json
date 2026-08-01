@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Amaran Rentetan",
       "streakAlertsHint": "Peringatan pada waktu malam jika rentetan anda berisiko",
       "dailyReadyLabel": "Amaran Kuiz Harian",
-      "dailyReadyHint": "Beritahu apabila kuiz harian baharu sudah sedia"
+      "dailyReadyHint": "Beritahu apabila kuiz harian baharu sudah sedia",
+      "friendActivityLabel": "Aktiviti Rakan",
+      "friendActivityHint": "Dapatkan pemberitahuan apabila rakan mengatasi skor harian anda"
     },
     "mobileAppHeader": "Aplikasi Mudah Alih",
     "storeLinks": {
@@ -536,6 +538,10 @@
     "dailyReady": {
       "title": "⭐ Kuiz hari ini sudah sedia",
       "body": "Kuiz baharu dalam skop hafazan anda sedang menunggu. Cuba nasib anda sekarang!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Rakan Mengatasi Skor Anda!",
+      "body": "{{name}} mendapat skor lebih tinggi dalam kuiz hari ini! Main semula untuk mengambil alih tempat teratas."
     }
   }
 }

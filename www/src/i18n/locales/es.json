@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Alertas de racha",
       "streakAlertsHint": "Recordatorio nocturno si tu racha está en riesgo",
       "dailyReadyLabel": "Alertas del cuestionario diario",
-      "dailyReadyHint": "Notificar cuando un nuevo cuestionario diario esté listo"
+      "dailyReadyHint": "Notificar cuando un nuevo cuestionario diario esté listo",
+      "friendActivityLabel": "Actividad de amigos",
+      "friendActivityHint": "Recibe una notificación cuando un amigo supere tu puntuación diaria"
     },
     "mobileAppHeader": "Aplicación móvil",
     "storeLinks": {
@@ -542,6 +544,10 @@
     "dailyReady": {
       "title": "⭐ El cuestionario de hoy está listo",
       "body": "Un nuevo cuestionario dentro de tu alcance de memorización te espera. ¡Prueba tu suerte ahora!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 ¡Un amigo superó tu puntuación!",
+      "body": "¡{{name}} obtuvo un puntaje mayor en el examen de hoy! Juega de nuevo para recuperar el liderazgo."
     }
   }
 }

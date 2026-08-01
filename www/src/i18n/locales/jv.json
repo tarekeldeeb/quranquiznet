@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Pengeling Runtutan",
       "streakAlertsHint": "Pengeling wayah sore yen runtutan sampeyan kena risiko",
       "dailyReadyLabel": "Pengeling Kuis Bendina",
-      "dailyReadyHint": "Kabari nalika kuis bendina anyar wis siap"
+      "dailyReadyHint": "Kabari nalika kuis bendina anyar wis siap",
+      "friendActivityLabel": "Aktivitas Kanca",
+      "friendActivityHint": "Entuk notifikasi nalika kanca ngluwih skor harian sampeyan"
     },
     "mobileAppHeader": "Aplikasi Hape",
     "storeLinks": {
@@ -536,6 +538,10 @@
     "dailyReady": {
       "title": "⭐ Kuis dina iki wis siap",
       "body": "Kuis anyar ing wates apalan sampeyan wis ngenteni. Cobanen keberuntungan sampeyan saiki!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Kanca Ngluwih Skor Sampeyan!",
+      "body": "{{name}} entuk skor luwih dhuwur ing kuis dina iki! Main maneh kanggo ngrebut posisi teratas."
     }
   }
 }

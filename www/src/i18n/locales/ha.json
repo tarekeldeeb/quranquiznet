@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Faɗakarwar Jerin Nasara",
       "streakAlertsHint": "Tunatarwa da yamma idan jerin nasararku na cikin haɗari",
       "dailyReadyLabel": "Faɗakarwar Kwizin Yau da Kullum",
-      "dailyReadyHint": "Sanar da ni idan sabon kwizin yau yana shirye"
+      "dailyReadyHint": "Sanar da ni idan sabon kwizin yau yana shirye",
+      "friendActivityLabel": "Ayyukan Abokai",
+      "friendActivityHint": "Samun sanarwa lokacin da aboki ya fi ka maki a kwizin yau"
     },
     "mobileAppHeader": "Manhajar Waya",
     "storeLinks": {
@@ -539,6 +541,10 @@
     "dailyReady": {
       "title": "⭐ Kwizin yau yana shirye",
       "body": "Sabon kwiz a cikin iyakar haddarku yana jiran ku. Ku gwada sa'arku yanzu!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Aboki ya fi ka maki!",
+      "body": "{{name}} ya samu maki mafi girma a kwizin yau! Sake yin kwiz don dawo da jagoranci."
     }
   }
 }

@@ -116,10 +116,17 @@ function dailyQuiz() {
       // Set new head
       await admin.database().ref('daily/head').set(newDaily);
 
-      // Send push notifications for new daily quiz
+      // Fetch push tokens snapshot — reused for dailyReady and friendBeatScore pushes
+      let tokens = null;
       try {
         const tokensSnap = await admin.database().ref('pushTokens').once('value');
-        const tokens = tokensSnap.val();
+        tokens = tokensSnap.val();
+      } catch (err) {
+        logger.error('Error fetching push tokens for daily quiz:', err);
+      }
+
+      // Send push notifications for new daily quiz
+      try {
         if (tokens) {
           const messages = [];
           for (const uid of Object.keys(tokens)) {
@@ -149,11 +156,85 @@ function dailyQuiz() {
         logger.error('Error sending daily quiz push notifications:', err);
       }
 
+      // Send push notifications for friends outscoring today
+      try {
+        if (tokens) {
+          const fullSubmitsSnap = await admin.database().ref('daily/head_submit').once('value');
+          const fullSubmits = fullSubmitsSnap.val();
+          if (fullSubmits) {
+            const userScores = buildUserScores(fullSubmits);
+            const friendMessages = [];
+            for (const uid of Object.keys(userScores)) {
+              const tokenData = tokens[uid];
+              const token = typeof tokenData === 'string' ? tokenData : tokenData?.token;
+              if (!token) continue;
+
+              const enabled = await isCategoryEnabled(uid, 'friendActivity');
+              if (!enabled) continue;
+
+              const friendsSnap = await admin.database().ref(`friends/${uid}`).once('value');
+              const friendsVal = friendsSnap.val();
+              if (!friendsVal) continue;
+
+              const userObj = userScores[uid];
+              const topFriend = findHighestScoringOutscoringFriend(uid, userObj.score, friendsVal, userScores);
+              if (!topFriend) continue;
+
+              const lang = (tokenData && (tokenData.lang || tokenData.locale)) || 'ar';
+              const friendName = (topFriend.name && topFriend.name.trim()) || (lang === 'ar' ? 'أحد الأصدقاء' : 'A friend');
+              const title = getNotificationText(lang, 'notifications.friendBeatScore.title');
+              const body = getNotificationText(lang, 'notifications.friendBeatScore.body', { name: friendName });
+
+              friendMessages.push({
+                to: token,
+                title,
+                body,
+                data: { type: 'friend_beat_score' },
+              });
+            }
+            if (friendMessages.length > 0) {
+              await sendPushBulk(friendMessages);
+            }
+          }
+        }
+      } catch (err) {
+        logger.error('Error sending friend beat score push notifications:', err);
+      }
+
       // Clear submissions
       await admin.database().ref('daily/head_submit').remove();
     });
 }
 
+function buildUserScores(headSubmitVal) {
+  const userScores = {};
+  if (!headSubmitVal) return userScores;
+  for (const entry of Object.values(headSubmitVal)) {
+    if (!entry || !entry.uid || typeof entry.score !== 'number') continue;
+    const { uid, score, name } = entry;
+    if (!userScores[uid] || score > userScores[uid].score) {
+      userScores[uid] = { score, name: name || '' };
+    }
+  }
+  return userScores;
+}
+
+function findHighestScoringOutscoringFriend(userUid, userScore, friendsMap, userScores) {
+  if (!friendsMap) return null;
+  let topFriend = null;
+  let topScore = -1;
+  for (const friendUid of Object.keys(friendsMap)) {
+    if (friendUid === userUid) continue;
+    const friendData = userScores[friendUid];
+    if (friendData && friendData.score > userScore) {
+      if (friendData.score > topScore) {
+        topScore = friendData.score;
+        topFriend = friendData;
+      }
+    }
+  }
+  return topFriend;
+}
 
 // ── PvP hygiene ─────────────────────────────────────────────────────────────
 // Matches: clients never delete match docs, and a lost matchmaking claim race

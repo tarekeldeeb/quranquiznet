@@ -1060,7 +1060,7 @@ export function watchPublicStats(
 
 // ─── Notification Preferences ────────────────────────────────────────────────
 
-export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts' | 'dailyReady';
+export type NotifCategory = 'invites' | 'friendRequests' | 'streakAlerts' | 'dailyReady' | 'friendActivity';
 
 export type NotifPrefs = Record<NotifCategory, boolean>;
 
@@ -1073,10 +1073,11 @@ export async function getNotifPrefs(uid: string): Promise<NotifPrefs> {
       friendRequests: val?.friendRequests !== false,
       streakAlerts: val?.streakAlerts !== false,
       dailyReady: val?.dailyReady !== false,
+      friendActivity: val?.friendActivity !== false,
     };
   } catch (e) {
     console.error('getNotifPrefs error:', e);
-    return { invites: true, friendRequests: true, streakAlerts: true, dailyReady: true };
+    return { invites: true, friendRequests: true, streakAlerts: true, dailyReady: true, friendActivity: true };
   }
 }
 
@@ -1103,6 +1104,7 @@ export function watchNotifPrefs(
       friendRequests: val?.friendRequests !== false,
       streakAlerts: val?.streakAlerts !== false,
       dailyReady: val?.dailyReady !== false,
+      friendActivity: val?.friendActivity !== false,
     });
   });
 }

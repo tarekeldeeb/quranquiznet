@@ -99,7 +99,9 @@
       "streakAlertsLabel": "Seri Uyarıları",
       "streakAlertsHint": "Seriniz risk altındaysa akşam hatırlatması",
       "dailyReadyLabel": "Günlük Test Uyarıları",
-      "dailyReadyHint": "Yeni bir günlük test hazır olduğunda bildirim al"
+      "dailyReadyHint": "Yeni bir günlük test hazır olduğunda bildirim al",
+      "friendActivityLabel": "Arkadaş Aktivitesi",
+      "friendActivityHint": "Bir arkadaşın günlük skorunu geçtiğinde bildirim al"
     },
     "mobileAppHeader": "Mobil Uygulama",
     "storeLinks": {
@@ -539,6 +541,10 @@
     "dailyReady": {
       "title": "⭐ Bugünün testi hazır",
       "body": "Ezber kapsamınızda yeni bir test sizi bekliyor. Şimdi şansınızı deneyin!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Arkadaşın Skorunu Geçti!",
+      "body": "{{name}} bugünün testinde senden daha yüksek bir skor yaptı! Liderliği geri almak için tekrar oyna."
     }
   }
 }
