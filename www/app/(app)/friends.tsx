@@ -8,7 +8,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   registerQuizCode, watchFriendRequests, watchFriends, acceptFriendRequest,
-  declineFriendRequest, sendPvpInvite, watchPresence, type FriendRequestEntry, type FriendEntry,
+  declineFriendRequest, sendPvpInvite, watchPresence, watchPublicStats,
+  type FriendRequestEntry, type FriendEntry, type PublicStats,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { trackEvent } from '../../src/services/analytics';
@@ -20,16 +21,27 @@ import PressScale from '../../src/components/PressScale';
 
 import { scopeFromParts } from '../../src/services/pvpService';
 
-function FriendRow({
-  friendUid,
-  friend,
+interface LeaderboardItem {
+  uid: string;
+  name: string;
+  photoURL?: string;
+  score: number;
+  streak: number;
+  level: number;
+  isSelf: boolean;
+  friend?: FriendEntry;
+}
+
+function LeaderboardRow({
+  rank,
+  item,
   isRTL,
   colors,
   t,
   onChallenge,
 }: {
-  friendUid: string;
-  friend: FriendEntry;
+  rank: number;
+  item: LeaderboardItem;
   isRTL: boolean;
   colors: ReturnType<typeof useTheme>['colors'];
   t: (key: string) => string;
@@ -38,39 +50,71 @@ function FriendRow({
   const [online, setOnline] = useState(false);
 
   useEffect(() => {
-    const unsub = watchPresence(friendUid, (presence) => {
+    if (item.isSelf) return;
+    const unsub = watchPresence(item.uid, (presence) => {
       setOnline(!!presence?.online);
     });
     return unsub;
-  }, [friendUid]);
+  }, [item.uid, item.isSelf]);
 
   return (
     <View
-      style={[s.rowCard, { backgroundColor: colors.card, borderColor: colors.line, flexDirection: rowDir(isRTL) }]}
+      style={[
+        s.rowCard,
+        {
+          backgroundColor: item.isSelf ? colors.goldPale : colors.card,
+          borderColor: item.isSelf ? colors.gold : colors.line,
+          flexDirection: rowDir(isRTL),
+        },
+      ]}
     >
+      <View style={[s.rankBadge, { backgroundColor: item.isSelf ? colors.gold : colors.paper }]}>
+        <Text style={[s.rankText, { color: item.isSelf ? colors.navy : colors.inkSoft }]}>
+          #{rank}
+        </Text>
+      </View>
       <View style={s.avatarContainer}>
         <Avatar
-          uri={friend.photoURL}
+          uri={item.photoURL}
           fallback={require('../../assets/images/app-icon.png')}
           style={s.rowAvatar}
         />
-        {online && (
+        {!item.isSelf && online && (
           <View style={[s.onlineDot, { backgroundColor: colors.correct, borderColor: colors.card }]} />
         )}
       </View>
       <View style={[s.rowInfo, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-        <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
-          {friend.name || t('common.guestName')}
-        </Text>
+        <View style={[s.nameRow, { flexDirection: rowDir(isRTL) }]}>
+          <Text style={[s.rowName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>
+            {item.name}
+          </Text>
+          {item.isSelf && (
+            <View style={[s.youBadge, { backgroundColor: colors.gold }]}>
+              <Text style={[s.youBadgeTxt, { color: colors.navy }]}>{t('daily.you')}</Text>
+            </View>
+          )}
+        </View>
+        <View style={[s.statsRow, { flexDirection: rowDir(isRTL) }]}>
+          <View style={s.statItem}>
+            <Ionicons name="trophy-outline" size={13} color={colors.goldDeep} />
+            <Text style={[s.statTxt, { color: colors.ink }]}>{item.score.toLocaleString()}</Text>
+          </View>
+          <View style={s.statItem}>
+            <Ionicons name="flame" size={13} color={colors.goldDeep} />
+            <Text style={[s.statTxt, { color: colors.ink }]}>{item.streak}</Text>
+          </View>
+        </View>
       </View>
       <View style={[s.actionRow, { flexDirection: rowDir(isRTL) }]}>
-        <PressScale
-          style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
-          onPress={() => onChallenge(friendUid, friend)}
-        >
-          <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
-          <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
-        </PressScale>
+        {!item.isSelf && item.friend && (
+          <PressScale
+            style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
+            onPress={() => onChallenge(item.uid, item.friend!)}
+          >
+            <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
+            <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
+          </PressScale>
+        )}
       </View>
     </View>
   );
@@ -84,14 +128,16 @@ export default function FriendsScreen() {
   const social = useProfileStore((s) => s.social);
   const parts = useProfileStore((s) => s.parts);
   const level = useProfileStore((s) => s.level);
+  const streak = useProfileStore((s) => s.streak);
+  const getScore = useProfileStore((s) => s.getScore);
 
   const [myCode, setMyCode] = useState<string | null>(null);
   const [inputCode, setInputCode] = useState('');
   const [requests, setRequests] = useState<Record<string, FriendRequestEntry>>({});
   const [friends, setFriends] = useState<Record<string, FriendEntry>>({});
   const [loadingCode, setLoadingCode] = useState(true);
+  const [publicStatsMap, setPublicStatsMap] = useState<Record<string, PublicStats>>({});
 
-  // Step 3: Call registerQuizCode once, lazily, when friends screen mounts
   useEffect(() => {
     if (!social.uid) return;
     let cancelled = false;
@@ -111,7 +157,6 @@ export default function FriendsScreen() {
     };
   }, [social.uid]);
 
-  // Subscribe to incoming friend requests and friend list
   useEffect(() => {
     if (!social.uid) return;
     const unsubRequests = watchFriendRequests(social.uid, setRequests);
@@ -122,16 +167,35 @@ export default function FriendsScreen() {
     };
   }, [social.uid]);
 
+  useEffect(() => {
+    if (!social.uid) return;
+    const uids = Array.from(new Set([social.uid, ...Object.keys(friends)]));
+    const unsubs: Array<() => void> = [];
+
+    uids.forEach((uid) => {
+      const unsub = watchPublicStats(uid, (stats) => {
+        setPublicStatsMap((prev) => {
+          if (!stats) {
+            const next = { ...prev };
+            delete next[uid];
+            return next;
+          }
+          return { ...prev, [uid]: stats };
+        });
+      });
+      unsubs.push(unsub);
+    });
+
+    return () => {
+      unsubs.forEach((fn) => fn());
+    };
+  }, [social.uid, friends]);
+
   async function handleShareCode() {
     if (!myCode) return;
     trackEvent('share_tap', { surface: 'add_friend' });
-    // A real link (not just the bare code as text) so tapping it on the
-    // recipient's end resolves and sends the request automatically — see
-    // (app)/add/[code].tsx, which this path already routes to.
     const link = `https://quranquiz.net/add/${myCode}`;
     try {
-      // message already embeds the link; don't also pass `url`, or share
-      // targets that surface both (e.g. iMessage) duplicate it.
       await Share.share({
         message: t('friends.shareMessage', { code: myCode, link }),
       });
@@ -174,6 +238,41 @@ export default function FriendsScreen() {
 
   const requestEntries = Object.entries(requests);
   const friendEntries = Object.entries(friends);
+  const ownScore = getScore();
+
+  const leaderboardItems: LeaderboardItem[] = [];
+
+  if (social.uid) {
+    const selfStats = publicStatsMap[social.uid];
+    leaderboardItems.push({
+      uid: social.uid,
+      name: selfStats?.name || social.displayName || t('common.guestName'),
+      photoURL: social.photoURL,
+      score: selfStats?.score ?? ownScore,
+      streak: selfStats?.streak ?? streak,
+      level: selfStats?.level ?? level,
+      isSelf: true,
+    });
+  }
+
+  for (const [friendUid, friend] of Object.entries(friends)) {
+    const fStats = publicStatsMap[friendUid];
+    leaderboardItems.push({
+      uid: friendUid,
+      name: friend.name || fStats?.name || t('common.guestName'),
+      photoURL: friend.photoURL,
+      score: fStats?.score ?? 0,
+      streak: fStats?.streak ?? 0,
+      level: fStats?.level ?? 0,
+      isSelf: false,
+      friend,
+    });
+  }
+
+  leaderboardItems.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.streak - a.streak;
+  });
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['top', 'bottom']}>
@@ -287,33 +386,33 @@ export default function FriendsScreen() {
           ))
         )}
 
-        {/* ── Friend List ── */}
+        {/* ── Friends Leaderboard ── */}
         <View style={s.sectionHeader}>
           <Text style={[s.sectionTitle, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
-            {t('friends.friendList')} ({friendEntries.length})
+            {t('friends.friendList')} ({leaderboardItems.length})
           </Text>
         </View>
 
-        {friendEntries.length === 0 ? (
+        {friendEntries.length === 0 && (
           <View style={[s.emptyBox, { backgroundColor: colors.card, borderColor: colors.line }]}>
             <Ionicons name="people-outline" size={24} color={colors.inkSoft} />
             <Text style={[s.emptyText, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
               {t('friends.noFriends')}
             </Text>
           </View>
-        ) : (
-          friendEntries.map(([friendUid, friend]) => (
-            <FriendRow
-              key={friendUid}
-              friendUid={friendUid}
-              friend={friend}
-              isRTL={isRTL}
-              colors={colors}
-              t={t}
-              onChallenge={handleChallenge}
-            />
-          ))
         )}
+
+        {leaderboardItems.map((item, idx) => (
+          <LeaderboardRow
+            key={item.uid}
+            rank={idx + 1}
+            item={item}
+            isRTL={isRTL}
+            colors={colors}
+            t={t}
+            onChallenge={handleChallenge}
+          />
+        ))}
 
       </ScrollView>
     </SafeAreaView>
@@ -426,7 +525,18 @@ const s = StyleSheet.create({
     borderWidth: 1,
     padding: 12,
     alignItems: 'center',
-    gap: 12,
+    gap: 10,
+  },
+  rankBadge: {
+    width: 26,
+    height: 26,
+    borderRadius: 13,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  rankText: {
+    fontSize: 12,
+    fontFamily: 'PlexArabic-Bold',
   },
   avatarContainer: {
     position: 'relative',
@@ -448,8 +558,35 @@ const s = StyleSheet.create({
   rowInfo: {
     flex: 1,
   },
+  nameRow: {
+    alignItems: 'center',
+    gap: 6,
+  },
   rowName: {
     fontSize: 14.5,
+    fontFamily: 'PlexArabic-SemiBold',
+  },
+  youBadge: {
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: radii.pill,
+  },
+  youBadgeTxt: {
+    fontSize: 10,
+    fontFamily: 'PlexArabic-Bold',
+  },
+  statsRow: {
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 2,
+  },
+  statItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 3,
+  },
+  statTxt: {
+    fontSize: 12,
     fontFamily: 'PlexArabic-SemiBold',
   },
   actionRow: {

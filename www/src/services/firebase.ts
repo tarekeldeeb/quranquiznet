@@ -382,6 +382,39 @@ export async function pushProfile(uid: string, profile: unknown): Promise<void> 
  * rather than hand-building the payload, so profileStore.syncTo()'s merge
  * logic always has a matching field to read back.
  */
+export interface PublicStats {
+  name?: string;
+  score: number;
+  streak: number;
+  level: number;
+  country?: string;
+}
+
+/**
+ * Pushes public leaderboard stats ({ name, score, streak, level, country }) to
+ * /publicStats/{uid}. No-op for anonymous guests and signed-out users.
+ */
+export async function pushPublicStats(): Promise<void> {
+  try {
+    const user = getFirebaseAuth().currentUser;
+    if (!user || user.isAnonymous) return;
+    const s = useProfileStore.getState();
+    const raw: Record<string, unknown> = {
+      name: s.social.displayName || undefined,
+      score: s.getScore(),
+      streak: s.streak,
+      level: s.level,
+      country: s.country ? s.country : undefined,
+    };
+    for (const key of Object.keys(raw)) {
+      if (raw[key] === undefined) delete raw[key];
+    }
+    await set(ref(getFirebaseDb(), `/publicStats/${user.uid}`), raw);
+  } catch (e) {
+    console.error('pushPublicStats error:', e);
+  }
+}
+
 export async function pushCurrentProfile(): Promise<void> {
   const user = getFirebaseAuth().currentUser;
   if (!user || user.isAnonymous) return;
@@ -409,6 +442,7 @@ export async function pushCurrentProfile(): Promise<void> {
     // current values on some other device's next syncTo().
     social: { displayName: s.social.displayName },
   });
+  await pushPublicStats();
 }
 
 export async function savePushToken(
@@ -1012,6 +1046,15 @@ export function watchPresence(
 ): () => void {
   return onValue(ref(getFirebaseDb(), `/presence/${uid}`), (snap) => {
     cb((snap.val() as PresenceState | null) ?? null);
+  });
+}
+
+export function watchPublicStats(
+  uid: string,
+  cb: (stats: PublicStats | null) => void,
+): () => void {
+  return onValue(ref(getFirebaseDb(), `/publicStats/${uid}`), (snap) => {
+    cb((snap.val() as PublicStats | null) ?? null);
   });
 }
 
