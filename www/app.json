@@ -73,7 +73,9 @@
             "./assets/fonts/PlexArabic-SemiBold.woff2",
             "./assets/fonts/PlexArabic-Bold.woff2",
             "./assets/fonts/NotoSansBengali-Regular.woff2",
-            "./assets/fonts/NotoSansBengali-Bold.woff2"
+            "./assets/fonts/NotoSansBengali-Bold.woff2",
+            "./assets/fonts/NotoSansSC-Regular.woff2",
+            "./assets/fonts/NotoSansSC-Bold.woff2"
           ]
         }
       ],

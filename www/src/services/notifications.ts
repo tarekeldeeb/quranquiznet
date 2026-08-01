@@ -154,3 +154,52 @@ export async function registerPushToken(uid: string): Promise<void> {
     /* push token registration is non-critical / best-effort */
   }
 }
+
+/**
+ * Map a server push's data payload (attached in functions/push.js) to the
+ * in-app path a tap on it should open. PvP invites only need to land inside
+ * the (app) group: its layout watches /pvp/invites globally and pops the
+ * accept/decline modal on its own, so home is the right destination.
+ */
+export function routeForNotification(data: unknown): string | null {
+  const type = (data as { type?: unknown } | null | undefined)?.type;
+  switch (type) {
+    case 'pvp_invite':
+      return '/(app)/me';
+    case 'friend_request':
+      return '/(app)/friends';
+    default:
+      return null;
+  }
+}
+
+// Module-level so it survives an observer remount: the same tap must never
+// navigate twice — getLastNotificationResponseAsync keeps returning the launch
+// tap for the whole process lifetime, and Android can additionally replay it
+// through the response listener.
+let handledTapId: string | null = null;
+
+/**
+ * Route notification taps to their screen: the cold-start tap that launched
+ * the process (last response) plus taps while the app is running. Call once
+ * the navigation tree is mounted. Returns an unsubscribe fn. No-op on web.
+ */
+export function observeNotificationTaps(navigate: (path: string) => void): () => void {
+  if (!isNative) return () => {};
+  let disposed = false;
+  const handle = (response: Notifications.NotificationResponse | null) => {
+    if (disposed || !response) return;
+    const id = response.notification.request.identifier;
+    if (id && id === handledTapId) return;
+    const route = routeForNotification(response.notification.request.content.data);
+    if (!route) return;
+    handledTapId = id;
+    navigate(route);
+  };
+  Notifications.getLastNotificationResponseAsync().then(handle).catch(() => { /* best-effort */ });
+  const sub = Notifications.addNotificationResponseReceivedListener(handle);
+  return () => {
+    disposed = true;
+    sub.remove();
+  };
+}

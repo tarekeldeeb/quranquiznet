@@ -1,0 +1,547 @@
+{
+  "common": {
+    "guestName": "访客",
+    "appName": "古兰经问答网",
+    "homePage": "主页",
+    "start": "开始",
+    "home": "首页",
+    "juzPart": "第 {{name}} 本",
+    "consentBanner": {
+      "text": "我们使用 Cookie 来分析应用使用情况并改善您的体验。",
+      "privacyPolicy": "隐私政策",
+      "decline": "拒绝",
+      "accept": "接受"
+    },
+    "themeToggle": {
+      "light": "浅色",
+      "dark": "深色"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - 特殊问题{{specialState}}",
+      "specialOn": "已启用",
+      "specialOff": "已禁用",
+      "dailyActive": "每日挑战进行中",
+      "dailyProgress": "第 {{current}} / {{total}} 题",
+      "dailyNote": "题目会根据你的背诵范围自动选择",
+      "showLess": "收起 ▴",
+      "showMore": "更多 ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "报告错误",
+      "placeholder": "请描述遇到的问题……",
+      "cancel": "否",
+      "confirm": "是"
+    }
+  },
+  "onboarding": {
+    "skip": "跳过",
+    "next": "下一步",
+    "start": "开始",
+    "badges": {
+      "quiz": "问答",
+      "daily": "每日挑战",
+      "leaderboard": "排行榜"
+    },
+    "quizPreview": {
+      "correctFeedback": "太棒了!题目就是这样的 🎉",
+      "wrongFeedback": "差一点——正确答案是:{{answer}}"
+    },
+    "dailyPreview": {
+      "body": "10 道限时题——又快又准地作答",
+      "secondsUnit": "秒"
+    },
+    "slides": {
+      "s1": {
+        "title": "检验你的背诵",
+        "body": "一款通过选择题检验古兰经背诵情况的应用,让你与全球背诵者一较高下。",
+        "p1": "根据你的背诵范围定制题目",
+        "p2": "限时每日挑战",
+        "p3": "全球排行榜排名"
+      },
+      "s2": {
+        "title": "使用方法",
+        "body": "屏幕上会出现一段经文,你需要从五个选项中选出正确的下一个词。每答对一题都会增加分数,答错时,我们会展示完整经文及其在古兰经中的位置。"
+      },
+      "s3": {
+        "title": "每日挑战",
+        "body": "每天都有 10 道在你背诵范围内的新题目,并设有计时。又快又准地作答,才能在时间结束前获得最高分。"
+      },
+      "s4": {
+        "title": "登上排行榜榜首",
+        "body": "在排行榜上与全球背诵者比较分数——包括每日榜和总榜。积累积分,不断提升排名。"
+      }
+    },
+    "setup": {
+      "title": "你已经背诵了哪些内容?",
+      "subtitle": "选择你已背诵的章节和本",
+      "all": "全选",
+      "none": "全部清除",
+      "recent": "最后五本",
+      "confirm": "确认并继续"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "外观",
+    "themeLabel": "应用主题",
+    "themeHint": "默认使用深色模式",
+    "languageHeader": "语言",
+    "languageLabel": "应用语言",
+    "levelHeader": "问答等级:{{level}}",
+    "specialHeader": "特殊问题",
+    "specialLabel": "启用关于章节名称和经文编号的问题",
+    "specialHint": "中级及以上",
+    "notifPrefs": {
+      "header": "通知",
+      "invitesLabel": "对战邀请",
+      "invitesHint": "当好友向你发起对战挑战时通知你",
+      "friendRequestsLabel": "好友请求",
+      "friendRequestsHint": "当你收到新的好友请求时通知你",
+      "streakAlertsLabel": "连胜提醒",
+      "streakAlertsHint": "如果你的连续记录有中断风险,晚间会提醒你",
+      "dailyReadyLabel": "每日问答提醒",
+      "dailyReadyHint": "当新的每日问答就绪时通知你",
+      "friendActivityLabel": "好友动态",
+      "friendActivityHint": "当好友超越你的每日成绩时通知你"
+    },
+    "mobileAppHeader": "手机应用",
+    "storeLinks": {
+      "iosHint": "适用于 iPhone 和 iPad",
+      "androidHint": "适用于 Android 设备"
+    },
+    "rateAppHeader": "喜欢这款应用吗?",
+    "rateAppLabelIos": "在 App Store 评分",
+    "rateAppLabelAndroid": "在 Google Play 评分",
+    "rateAppHint": "你的评价能帮助更多人发现古兰经问答网",
+    "signOut": "退出登录",
+    "signOutConfirmMsg": "本地应用数据将被清除。是否继续?",
+    "no": "否",
+    "yes": "是",
+    "deleteAccountLink": "删除账户",
+    "deleteSheetTitle": "永久删除账户?",
+    "deleteSheetBody": "你的进度、成绩和所有数据都将从我们的服务器和本设备中删除。此操作无法撤销。",
+    "deleteSheetConfirm": "永久删除账户",
+    "cancel": "取消",
+    "reloginTitle": "需要重新验证身份",
+    "reloginBody": "出于安全原因,请先退出登录,然后重新登录后再删除账户。",
+    "errorTitle": "错误",
+    "errorBody": "删除账户失败,请稍后重试。",
+    "version": "版本 {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_other": "{{count}} 小时",
+      "minutes_other": "{{count}} 分钟",
+      "combined": "{{hours}} {{minutes}}",
+      "availableNow": "现在可用",
+      "lessThanMinute": "不到一分钟"
+    },
+    "activeParts_other": "{{count}} 个活跃章节",
+    "greeting": "欢迎,{{name}}",
+    "greetingNoName": "欢迎",
+    "streakSheet": {
+      "title": "你的连续记录",
+      "daysInRow": "天连续记录",
+      "bestStreak": "最佳连续记录:{{count}} 天",
+      "riskBanner": "今晚你的连续记录有中断风险——请在午夜前完成一次问答!",
+      "useFreezeBtn": "使用保护卡来保住你的连续记录"
+    },
+    "dow": {
+      "sun": "周日",
+      "mon": "周一",
+      "tue": "周二",
+      "wed": "周三",
+      "thu": "周四",
+      "fri": "周五",
+      "sat": "周六"
+    },
+    "rankSheet": {
+      "title": "背诵等级",
+      "fromStart": "从零开始",
+      "fromPoints": "从 {{count}} 分起",
+      "yourLevel": "你目前的等级"
+    },
+    "pointsSuffix": " 分",
+    "pointsToRank": "距离「{{nextTitle}}」还差 {{remaining}} 分 ✦",
+    "dailyHero": {
+      "completed": "你已完成今天的问答——{{duration}}后有新问答",
+      "readyTitle": "今天的问答已就绪!",
+      "readyBody": "10 道题 × 准确度与速度",
+      "unavailTitle": "今天还没有问答",
+      "unavailSub": "问答每 24 小时更新一次"
+    },
+    "pvpWinsBadge": "{{count}} 场胜利",
+    "weakSuraNudge": "复习最薄弱的章节:{{sura}}",
+    "anonNag": "登录以保存你的进度",
+    "nicknameModal": {
+      "title": "选择一个显示在排行榜上的名字",
+      "later": "稍后",
+      "save": "保存"
+    },
+    "progressChart": {
+      "label": "你的进度",
+      "days": "{{count}} 天",
+      "startPlaying": "开始游戏"
+    },
+    "statTiles": {
+      "studyLabel": "背诵进度",
+      "studySub": "占古兰经的比例",
+      "ratioLabel": "准确率",
+      "ratioSub": "答题准确率"
+    },
+    "mapCard": {
+      "title": "背诵地图",
+      "tapForDetails": "点击查看详情"
+    }
+  },
+  "quiz": {
+    "startQuiz": "开始问答",
+    "scorePoints": "{{count}} 分",
+    "streak": "连续答对 {{count}} 题",
+    "randomQuiz": "随机问答",
+    "reviewWeakSubtitle": "或复习一个需要加强的章节:",
+    "reviewAllWeakBtn": "复习所有薄弱环节",
+    "dailyEnd": {
+      "title": "感谢你完成今天的问答",
+      "body": "请继续复习你对古兰经的背诵,明天会有新的问答,如安拉意欲。",
+      "share": "分享成绩",
+      "practiceWeak": "练习你最薄弱的章节",
+      "ok": "好的",
+      "shareMsg": "我在 {{appName}} 的今日问答中得了 {{score}} 分!来试试你的运气:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "太棒了!",
+      "body": "你在 {{total}} 题中答对了 {{correct}} 题",
+      "totalPoints": "总积分",
+      "needsReview": "{{part}} 需要复习",
+      "home": "首页",
+      "continue": "继续"
+    }
+  },
+  "pvp": {
+    "botName": "哈菲兹",
+    "you": "你",
+    "theOpponent": "对手",
+    "opponent": "对手",
+    "idleTitle": "实时对战",
+    "idleSub": "{{count}} 道题目来自你已背诵的章节——我们会先为你寻找真实对手,如果找不到,{{botName}} {{botEmoji}} 将代为应战",
+    "wins": "胜",
+    "draws": "平",
+    "losses": "负",
+    "startBtn": "开始对战",
+    "searching": "正在寻找对手……",
+    "cancel": "取消",
+    "readyQuestion": "{{name}}:准备好了吗?",
+    "vs": "对战",
+    "disconnectBanner": "与对手的连接已断开……等待对方返回",
+    "waitingForOpponent": "等待对手完成……",
+    "outcome": {
+      "winTitle": "你赢了!🏆",
+      "lossTitle": "{{name}} 这次获胜",
+      "drawTitle": "打成平局!",
+      "winSub": "太棒了——你击败了 {{name}}。继续保持!",
+      "lossSub": "复习你的背诵,再试一次——胜利就在眼前,如安拉意欲。",
+      "drawSub": "势均力敌!再来一局分出胜负。"
+    },
+    "rematch": "再来一局",
+    "home": "首页",
+    "tier": {
+      "bronze": "青铜",
+      "silver": "白银",
+      "gold": "黄金",
+      "platinum": "铂金",
+      "hafizGold": "哈菲兹黄金"
+    }
+  },
+  "pvpJourney": {
+    "title": "对战之旅",
+    "pointsGained": "+{{count}} 分",
+    "toNextCity": "还差 {{count}} 分到达{{cityName}}",
+    "complete": "你已到达马拉喀什!旅程完成 🏁",
+    "here": "你在这里",
+    "city": {
+      "jakarta": "雅加达",
+      "kualaLumpur": "吉隆坡",
+      "dhaka": "达卡",
+      "delhi": "德里",
+      "lahore": "拉合尔",
+      "kabul": "喀布尔",
+      "tashkent": "塔什干",
+      "tehran": "德黑兰",
+      "baghdad": "巴格达",
+      "mecca": "麦加",
+      "medina": "麦地那",
+      "damascus": "大马士革",
+      "jerusalem": "耶路撒冷",
+      "istanbul": "伊斯坦布尔",
+      "sarajevo": "萨拉热窝",
+      "cairo": "开罗",
+      "tripoli": "的黎波里",
+      "tunis": "突尼斯市",
+      "algiers": "阿尔及尔",
+      "marrakech": "马拉喀什"
+    },
+    "cityCard": {
+      "founded": "建立于",
+      "population": "国家人口",
+      "muslimPopulation": "穆斯林人口",
+      "muslimPercent": "% 穆斯林",
+      "location": "{{city}},{{country}}",
+      "bce": "公元前 {{value}} 年",
+      "million": "{{value}} 百万",
+      "thousand": "{{value}} 千"
+    },
+    "country": {
+      "indonesia": "印度尼西亚",
+      "malaysia": "马来西亚",
+      "bangladesh": "孟加拉国",
+      "india": "印度",
+      "pakistan": "巴基斯坦",
+      "afghanistan": "阿富汗",
+      "uzbekistan": "乌兹别克斯坦",
+      "iran": "伊朗",
+      "iraq": "伊拉克",
+      "saudiArabia": "沙特阿拉伯",
+      "syria": "叙利亚",
+      "palestine": "巴勒斯坦",
+      "turkey": "土耳其",
+      "bosnia": "波斯尼亚和黑塞哥维那",
+      "egypt": "埃及",
+      "libya": "利比亚",
+      "tunisia": "突尼斯",
+      "algeria": "阿尔及利亚",
+      "morocco": "摩洛哥"
+    }
+  },
+  "league": {
+    "title": "排行榜",
+    "dailyCompleted": "已完成今日挑战 ✓",
+    "dailyReady": "今天的问答已就绪",
+    "dailyStart": "开始",
+    "dailyChecking": "检查中……",
+    "dailyError": "连接失败——重试",
+    "ownRank": "你今天的排名:第 {{rank}} 名",
+    "tabs": {
+      "today": "今天",
+      "yesterday": "昨天",
+      "month": "本月"
+    },
+    "cardTitles": {
+      "today": "今日排行榜",
+      "yesterday": "昨日最佳成绩",
+      "month": "本月最佳成绩"
+    },
+    "emptyTitle": "成为{{timeframe}}排行榜上的第一人",
+    "timeframes": {
+      "today": "今天",
+      "month": "本月"
+    },
+    "emptyBtnDaily": "开始今天的问答",
+    "emptyBtnGeneric": "开始问答",
+    "startDialog": {
+      "title": "今日问答",
+      "msg": "问答由 10 道题组成,均在你的背诵范围内。请又快又准地作答。",
+      "no": "否",
+      "start": "开始"
+    }
+  },
+  "map": {
+    "title": "背诵地图",
+    "filterAll": "全部",
+    "filterGood": "熟练",
+    "filterWeak": "薄弱",
+    "correctOf": "{{questions}} 题中答对 {{correct}} 题",
+    "notTested": "尚未测试"
+  },
+  "auth": {
+    "heroTitle": "古兰经问答网",
+    "heroTagline": "检验你的背诵,与古兰经的人们一较高下",
+    "stats": {
+      "surahs": "章",
+      "words": "词",
+      "questions": "题目"
+    },
+    "playBtn": "立即开始",
+    "playHint": "无需登录——几秒钟内即可开始第一题",
+    "divider": "或登录以保存你的进度",
+    "continueGoogle": "使用 Google 继续",
+    "continueFacebook": "使用 Facebook 继续",
+    "termsNotice": "继续即表示你同意",
+    "errorTitle": "错误",
+    "errorGoogle": "无法使用 Google 登录",
+    "errorFacebook": "无法使用 Facebook 登录",
+    "errorApple": "无法使用 Apple 登录"
+  },
+  "privacy": {
+    "title": "条款与隐私政策",
+    "updated": "最后更新:2026 年 6 月",
+    "sections": {
+      "intro": {
+        "title": "简介",
+        "body": "在古兰经问答网,我们重视你的隐私。本页面说明我们收集哪些数据、如何使用这些数据,以及在你使用本应用时如何保护这些数据。"
+      },
+      "dataCollected": {
+        "title": "我们收集的数据",
+        "body": "当你使用 Google 或 Facebook 登录时,我们会存储你的姓名、头像和电子邮箱地址以创建你的个人资料。我们还会保存你的背诵进度、测试成绩和设置。你也可以以访客身份使用本应用,无需登录。"
+      },
+      "useOfData": {
+        "title": "我们如何使用你的数据",
+        "body": "我们使用你的数据在你的各个设备间保存和同步你的进度,在排行榜和每日挑战中显示你的排名,并改善你的应用体验。我们不会出售你的数据,也不会展示广告。"
+      },
+      "cookiesAnalytics": {
+        "title": "Cookie 与数据分析",
+        "body": "我们使用 Google Analytics(通过 Cookie)来了解应用的使用情况(例如访问的页面和测试次数),以改善用户体验。只有在你同意后,我们才会启用此项跟踪,你也可以在同意横幅中拒绝,而不会影响应用的正常使用。我们仅将这些数据用于分析,而非广告用途。"
+      },
+      "storageSecurity": {
+        "title": "存储与安全",
+        "body": "你的数据存储在 Google 的 Firebase 服务器上,并受到适当保护。你的本地数据保留在你的设备上,并在你退出登录时被清除。"
+      },
+      "accountDeletion": {
+        "title": "账户删除",
+        "body": "你可以随时退出登录,以清除本设备上的本地数据。如需自行永久删除你的账户及服务器上的所有数据:在主界面点击页面顶部的设置图标 ⚙,然后在设置页面底部点击「删除账户」,并确认删除。你的账户将立即被删除,此操作无法撤销。"
+      },
+      "termsOfUse": {
+        "title": "使用条款",
+        "body": "本应用旨在帮助你复习对古兰经的背诵。本服务按「现状」提供,不附带任何保证,我们力求古兰经内容的准确性,内容基于 Tanzil 来源(tanzil.net)。"
+      },
+      "contact": {
+        "title": "联系我们",
+        "body": "如有关于隐私或条款的任何疑问,你可以通过应用的官方邮箱与我们联系。"
+      }
+    }
+  },
+  "support": {
+    "title": "支持与帮助",
+    "sections": {
+      "technical": {
+        "title": "技术支持",
+        "body": "使用本应用时遇到问题,或有改进建议?我们很乐意提供帮助。请通过下方邮箱联系我们,我们会尽快回复。"
+      },
+      "sync": {
+        "title": "登录或同步问题",
+        "body": "如果你在使用 Google 或 Facebook 登录时遇到问题,或发现你的进度未能在各设备间同步,请联系我们并注明你的设备类型和操作系统,以便我们更快地为你提供帮助。"
+      },
+      "deletion": {
+        "title": "账户或数据删除",
+        "body": "如需申请永久删除你的账户及存储在我们服务器上的数据,请通过下方邮箱联系我们,我们会在几天内完成请求。"
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "{{name}} 章",
+      "ayahCount": "经文数 {{count}}",
+      "ayahNumber": "经文编号 {{count}}"
+    },
+    "meccan": "麦加章",
+    "medinan": "麦地那章",
+    "instructionNotSpecial": "选择正确的续接内容",
+    "instructionSuraName": "选择章节名称",
+    "instructionAyahCount": "选择该章的经文数",
+    "instructionMakki": "选择该章的分类",
+    "instructionAyahNumber": "选择经文编号",
+    "correctMark": "✓ 正确",
+    "pickedWrongMark": "你选择了 ✗",
+    "skip": "我不知道",
+    "ayahCount": "{{count}} 节经文",
+    "ayahLabel": "第 {{number}} 节",
+    "ok": "好的",
+    "view": "查看",
+    "compete": "对战",
+    "shareMsg": "来 {{appName}} 和我对战!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "你今天遥遥领先!🏆",
+    "behindBy": "你今天的排名:第 {{rank}} 名(共 {{total}} 名)——落后 {{name}} {{diff}} 分"
+  },
+  "milestones": {
+    "correctThreshold": "💯 在{{partName}}中答对 {{threshold}} 题!",
+    "mastery": "🏅 你已掌握{{partName}}!"
+  },
+  "rank": {
+    "beginner": "初学者",
+    "diligent": "勤奋者",
+    "hafiz": "哈菲兹",
+    "master": "大师"
+  },
+  "levels": {
+    "beginner": {
+      "text": "初级",
+      "comment": "题目从经文开头出题,答对增加 5 分"
+    },
+    "elementary": {
+      "text": "基础级",
+      "comment": "题目从三个词开始出题,答对增加 10 分"
+    },
+    "secondary": {
+      "text": "中级",
+      "comment": "题目从两个词开始出题,答对增加 20 分"
+    },
+    "advanced": {
+      "text": "高级",
+      "comment": "可能有多个正确答案,答对增加 30 分"
+    }
+  },
+  "friends": {
+    "title": "好友",
+    "myCodeTitle": "你的问答码",
+    "shareBtn": "分享代码",
+    "shareMessage": "在古兰经问答网上加我为好友!点击链接即可立即添加我:\n{{link}}",
+    "addFriendTitle": "通过问答码添加好友",
+    "placeholderCode": "输入代码(例如 ABCD1234)",
+    "addBtn": "添加",
+    "incomingRequests": "收到的好友请求",
+    "noRequests": "暂无待处理的好友请求",
+    "accept": "接受",
+    "decline": "拒绝",
+    "friendList": "好友列表",
+    "noFriends": "尚未添加任何好友。分享你的代码,或使用好友的代码添加他们!",
+    "invalidCode": "无效的问答码",
+    "invalidCodeSub": "请检查代码后重试。",
+    "selfCode": "这是你自己的问答码!",
+    "selfCodeSub": "把这个代码分享给你的朋友,方便他们添加你。",
+    "requestSent": "好友请求已发送!",
+    "requestSentSub": "你的请求将出现在好友的收件箱中等待接受。",
+    "sending": "发送中……",
+    "resolving": "正在检查代码……",
+    "errorOccurred": "发送时发生错误",
+    "back": "返回",
+    "goToFriends": "查看好友",
+    "challenge": "挑战"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "好友对战",
+    "waitingFor": "等待 {{name}} 接受……",
+    "cancel": "取消挑战",
+    "bannerTitle": "对战挑战!",
+    "bannerMessage": "{{name}} 向你发起对战挑战",
+    "accept": "接受",
+    "decline": "拒绝"
+  },
+  "notifications": {
+    "channelName": "提醒",
+    "pvpInvite": {
+      "title": "⚔️ 新对战挑战!",
+      "body": "{{name}} 向你发起了古兰经对战!打开应用接受挑战。"
+    },
+    "friendRequest": {
+      "title": "👥 新好友请求",
+      "body": "{{name}} 在古兰经问答网上向你发送了好友请求。"
+    },
+    "streakReminder": {
+      "title": "🔥 别失去你的连续记录",
+      "body": "你的连续记录已有 {{count}} 天!今天完成一次问答以继续保持。"
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 保护你的连续记录",
+      "body": "今晚你的 {{count}} 天连续记录有中断风险!你有可用的保护卡。打开应用来使用它。"
+    },
+    "dailyReady": {
+      "title": "⭐ 今天的问答已就绪",
+      "body": "一份在你背诵范围内的新问答正在等待你。现在就来试试运气!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 成绩被超越!",
+      "body": "{{name}} 今天在每日问答中超越了你的成绩!再玩一次以夺回领先。"
+    }
+  }
+}

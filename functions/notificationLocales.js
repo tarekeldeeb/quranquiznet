@@ -362,5 +362,57 @@ module.exports = {
       "title": "🏆 دوست نے آپ کا اسکور توڑ دیا!",
       "body": "{{name}} نے آج کے کوئز میں آپ سے زیادہ اسکور کیا ہے! دوبارہ پرچمدار بننے کے لیے ابھی کھیلیں۔"
     }
+  },
+  "zh": {
+    "pvpInvite": {
+      "title": "⚔️ 新对战挑战!",
+      "body": "{{name}} 向你发起了古兰经对战!打开应用接受挑战。"
+    },
+    "friendRequest": {
+      "title": "👥 新好友请求",
+      "body": "{{name}} 在古兰经问答网上向你发送了好友请求。"
+    },
+    "streakReminder": {
+      "title": "🔥 别失去你的连续记录",
+      "body": "你的连续记录已有 {{count}} 天!今天完成一次问答以继续保持。"
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 保护你的连续记录",
+      "body": "今晚你的 {{count}} 天连续记录有中断风险!你有可用的保护卡。打开应用来使用它。"
+    },
+    "dailyReady": {
+      "title": "⭐ 今天的问答已就绪",
+      "body": "一份在你背诵范围内的新问答正在等待你。现在就来试试运气!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 成绩被超越!",
+      "body": "{{name}} 今天在每日问答中超越了你的成绩!再玩一次以夺回领先。"
+    }
+  },
+  "sw": {
+    "pvpInvite": {
+      "title": "⚔️ Changamoto Mpya!",
+      "body": "{{name}} amekualika kwenye mashindano ya Kurani! Fungua programu ili kukubali."
+    },
+    "friendRequest": {
+      "title": "👥 Ombi Jipya la Urafiki",
+      "body": "{{name}} amekutumia ombi la urafiki kwenye Quran Quiz Net."
+    },
+    "streakReminder": {
+      "title": "🔥 Usipoteze mfululizo wako",
+      "body": "Mfululizo wako ni siku {{count}}! Cheza maswali leo ili kuuendeleza."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Linda mfululizo wako",
+      "body": "Mfululizo wako wa siku {{count}} uko hatarini leo usiku! Unayo kadi ya kuganda inayopatikana. Fungua programu ili kuitumia."
+    },
+    "dailyReady": {
+      "title": "⭐ Maswali ya leo yako tayari",
+      "body": "Maswali mapya ndani ya sehemu uliyohifadhi yanakusubiri. Jaribu bahati yako sasa!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Alama Zimepitwa!",
+      "body": "{{name}} amepita alama zako za leo! Cheza tena ili kurudisha uongozi."
+    }
   }
 };

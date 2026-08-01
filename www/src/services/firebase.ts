@@ -583,7 +583,7 @@ export async function getMonthlyTopReport(): Promise<unknown[]> {
   }
 }
 
-export interface LeaderboardEntry { name?: string; score: number; uid?: string; country?: string }
+export interface LeaderboardEntry { name?: string; score: number; uid?: string; country?: string; days?: number }
 
 /**
  * Live top-10-of-yesterday feed (was a one-time getYesterdayReport() read).
@@ -603,11 +603,28 @@ export async function subscribeYesterdayReport(
   );
 }
 
-/** Live top-10-of-this-month feed (was a one-time getMonthlyTopReport() read). */
+/**
+ * Live this-month standings: cumulative per-uid totals (score summed over the
+ * user's best daily submission each day, plus a days-played count), sorted
+ * best-first and unbounded — full coverage, so own-rank works like اليوم.
+ * Falls back to the legacy top-10 array at reports/month when the totals node
+ * doesn't exist yet (the first post-deploy cron run hasn't happened).
+ */
 export function subscribeMonthlyTopReport(cb: (entries: LeaderboardEntry[]) => void): () => void {
   return onValue(
-    ref(getFirebaseDb(), '/daily/reports/month'),
-    (snap) => cb((snap.val() as LeaderboardEntry[]) ?? []),
+    ref(getFirebaseDb(), '/daily/reports/month_totals'),
+    (snap) => {
+      const val = snap.val() as Record<string, LeaderboardEntry> | null;
+      if (val) {
+        const list = Object.values(val);
+        list.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
+        cb(list);
+        return;
+      }
+      dbGet(ref(getFirebaseDb(), '/daily/reports/month'))
+        .then((legacy) => cb((legacy.val() as LeaderboardEntry[]) ?? []))
+        .catch(() => cb([]));
+    },
     () => cb([]),
   );
 }

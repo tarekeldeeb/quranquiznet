@@ -1,0 +1,550 @@
+{
+  "common": {
+    "guestName": "Mgeni",
+    "appName": "Quran Quiz Net",
+    "homePage": "Ukurasa wa Nyumbani",
+    "start": "Anza",
+    "home": "Nyumbani",
+    "juzPart": "Juzuu {{name}}",
+    "consentBanner": {
+      "text": "Tunatumia vidakuzi (cookies) kuchambua matumizi ya programu na kuboresha uzoefu wako.",
+      "privacyPolicy": "Sera ya Faragha",
+      "decline": "Kataa",
+      "accept": "Kubali"
+    },
+    "themeToggle": {
+      "light": "Mwangaza",
+      "dark": "Giza"
+    },
+    "quizSettingsBar": {
+      "summary": "{{level}} - Maswali maalum {{specialState}}",
+      "specialOn": "yamewashwa",
+      "specialOff": "yamezimwa",
+      "dailyActive": "Changamoto ya Kila Siku Inaendelea",
+      "dailyProgress": "Swali la {{current}} kati ya {{total}}",
+      "dailyNote": "Maswali huchaguliwa kiotomatiki kutoka sehemu uliyohifadhi",
+      "showLess": "Punguza ▴",
+      "showMore": "Zaidi ({{count}}) ▾"
+    },
+    "reportModal": {
+      "title": "Ripoti Hitilafu",
+      "placeholder": "Tafadhali eleza hitilafu...",
+      "cancel": "Hapana",
+      "confirm": "Ndiyo"
+    }
+  },
+  "onboarding": {
+    "skip": "Ruka",
+    "next": "Endelea",
+    "start": "Anza",
+    "badges": {
+      "quiz": "Maswali",
+      "daily": "Changamoto ya Kila Siku",
+      "leaderboard": "Ubao wa Ushindi"
+    },
+    "quizPreview": {
+      "correctFeedback": "Vizuri sana! Haya ndiyo maswali yatakavyoonekana 🎉",
+      "wrongFeedback": "Umekaribia — jibu sahihi: {{answer}}"
+    },
+    "dailyPreview": {
+      "body": "Maswali 10 ya muda maalum — jibu haraka na kwa usahihi",
+      "secondsUnit": "s"
+    },
+    "slides": {
+      "s1": {
+        "title": "Pima Uhifadhi Wako",
+        "body": "Programu inayopima uhifadhi wako wa Kurani kwa maswali ya kuchagua, na kukuwezesha kushindana na wanaohifadhi Kurani duniani kote.",
+        "p1": "Maswali yanayolingana na sehemu uliyohifadhi",
+        "p2": "Changamoto ya kila siku yenye muda",
+        "p3": "Nafasi za kimataifa kwenye ubao wa ushindi"
+      },
+      "s2": {
+        "title": "Jinsi Inavyofanya Kazi",
+        "body": "Kipande cha aya kinaonekana, kisha unachagua neno linalofuata kwa usahihi kati ya chaguzi tano. Kila jibu sahihi huongeza alama zako, na ukikosea, tunaonyesha aya nzima na mahali ilipo ndani ya Kurani."
+      },
+      "s3": {
+        "title": "Changamoto ya Kila Siku",
+        "body": "Maswali 10 mapya kila siku ndani ya sehemu uliyohifadhi, yenye kipima muda. Jibu haraka na kwa usahihi ili kupata alama nyingi kabla muda haujaisha."
+      },
+      "s4": {
+        "title": "Fika Juu ya Ubao wa Ushindi",
+        "body": "Linganisha alama zako na wanaohifadhi Kurani duniani kote kwenye ubao wa ushindi — nafasi za kila siku na za jumla. Kusanya alama na panda ngazi."
+      }
+    },
+    "setup": {
+      "title": "Umehifadhi Nini?",
+      "subtitle": "Chagua Sura na Juzuu ulizohifadhi",
+      "all": "Zote",
+      "none": "Futa Zote",
+      "recent": "Juzuu 5 za Mwisho",
+      "confirm": "Thibitisha na Uendelee"
+    }
+  },
+  "settings": {
+    "appearanceHeader": "Muonekano",
+    "themeLabel": "Mandhari ya Programu",
+    "themeHint": "Hali ya giza ndiyo chaguo-msingi",
+    "languageHeader": "Lugha",
+    "languageLabel": "Lugha ya Programu",
+    "levelHeader": "Kiwango cha maswali: {{level}}",
+    "specialHeader": "Maswali Maalum",
+    "specialLabel": "Washa maswali kuhusu jina la Sura na namba ya Aya",
+    "specialHint": "Kiwango cha pili na zaidi",
+    "notifPrefs": {
+      "header": "Arifa",
+      "invitesLabel": "Mialiko ya Mashindano",
+      "invitesHint": "Arifu rafiki anapokualika kwenye mashindano",
+      "friendRequestsLabel": "Maombi ya Urafiki",
+      "friendRequestsHint": "Arifu unapopokea ombi jipya la urafiki",
+      "streakAlertsLabel": "Arifa za Mfululizo",
+      "streakAlertsHint": "Ukumbusho wa jioni ikiwa mfululizo wako uko hatarini",
+      "dailyReadyLabel": "Arifa za Maswali ya Kila Siku",
+      "dailyReadyHint": "Arifu maswali mapya ya kila siku yanapokuwa tayari",
+      "friendActivityLabel": "Shughuli za Marafiki",
+      "friendActivityHint": "Arifu rafiki anapozidi alama zako za kila siku"
+    },
+    "mobileAppHeader": "Programu ya Simu",
+    "storeLinks": {
+      "iosHint": "Kwa iPhone na iPad",
+      "androidHint": "Kwa vifaa vya Android"
+    },
+    "rateAppHeader": "Unaifurahia Programu?",
+    "rateAppLabelIos": "Kadiria kwenye App Store",
+    "rateAppLabelAndroid": "Kadiria kwenye Google Play",
+    "rateAppHint": "Tathmini yako husaidia wengine kugundua Quran Quiz Net",
+    "signOut": "Toka",
+    "signOutConfirmMsg": "Data ya programu ya ndani itafutwa. Unataka kuendelea?",
+    "no": "Hapana",
+    "yes": "Ndiyo",
+    "deleteAccountLink": "Futa Akaunti",
+    "deleteSheetTitle": "Futa akaunti kabisa?",
+    "deleteSheetBody": "Maendeleo yako, matokeo, na data yote yatafutwa kutoka kwenye seva zetu na kifaa hiki. Hatua hii haiwezi kutenduliwa.",
+    "deleteSheetConfirm": "Futa Akaunti Kabisa",
+    "cancel": "Ghairi",
+    "reloginTitle": "Uthibitisho Upya Unahitajika",
+    "reloginBody": "Kwa sababu za usalama, tafadhali toka kisha ingia tena kabla ya kufuta akaunti yako.",
+    "errorTitle": "Hitilafu",
+    "errorBody": "Imeshindwa kufuta akaunti. Tafadhali jaribu tena baadaye.",
+    "version": "Toleo {{version}}"
+  },
+  "me": {
+    "duration": {
+      "hours_one": "saa {{count}}",
+      "hours_other": "saa {{count}}",
+      "minutes_one": "dakika {{count}}",
+      "minutes_other": "dakika {{count}}",
+      "combined": "{{hours}} na {{minutes}}",
+      "availableNow": "Inapatikana sasa",
+      "lessThanMinute": "Chini ya dakika moja"
+    },
+    "activeParts_one": "Sura {{count}} inayoendelea",
+    "activeParts_other": "Sura {{count}} zinazoendelea",
+    "greeting": "Karibu {{name}}",
+    "greetingNoName": "Karibu",
+    "streakSheet": {
+      "title": "Mfululizo Wako",
+      "daysInRow": "siku mfululizo",
+      "bestStreak": "Mfululizo bora: siku {{count}}",
+      "riskBanner": "Mfululizo wako uko hatarini leo usiku — cheza maswali kabla ya usiku wa manane!",
+      "useFreezeBtn": "Tumia kadi ya kuganda kuokoa mfululizo wako"
+    },
+    "dow": {
+      "sun": "Jpi",
+      "mon": "Jtt",
+      "tue": "Jnn",
+      "wed": "Jtn",
+      "thu": "Alh",
+      "fri": "Ijm",
+      "sat": "Jms"
+    },
+    "rankSheet": {
+      "title": "Vyeo vya Uhifadhi",
+      "fromStart": "Kutoka mwanzo",
+      "fromPoints": "Kutoka alama {{count}}",
+      "yourLevel": "Kiwango chako sasa"
+    },
+    "pointsSuffix": " alama",
+    "pointsToRank": "Alama {{remaining}} hadi \"{{nextTitle}}\" ✦",
+    "dailyHero": {
+      "completed": "Umemaliza maswali ya leo — maswali mapya baada ya {{duration}}",
+      "readyTitle": "Maswali ya leo yako tayari!",
+      "readyBody": "Maswali 10 × usahihi na kasi",
+      "unavailTitle": "Bado hakuna maswali leo",
+      "unavailSub": "Maswali huboreshwa kila saa 24"
+    },
+    "pvpWinsBadge": "Ushindi {{count}}",
+    "weakSuraNudge": "Rudia Sura dhaifu zaidi: {{sura}}",
+    "anonNag": "Ingia ili kuhifadhi maendeleo yako",
+    "nicknameModal": {
+      "title": "Chagua jina la kuonyesha kwenye ubao wa ushindi",
+      "later": "Baadaye",
+      "save": "Hifadhi"
+    },
+    "progressChart": {
+      "label": "Maendeleo Yako",
+      "days": "siku {{count}}",
+      "startPlaying": "Anza kucheza"
+    },
+    "statTiles": {
+      "studyLabel": "Uhifadhi",
+      "studySub": "wa Kurani",
+      "ratioLabel": "Usahihi",
+      "ratioSub": "Usahihi wa majibu"
+    },
+    "mapCard": {
+      "title": "Ramani ya Uhifadhi",
+      "tapForDetails": "Gusa kuona maelezo"
+    }
+  },
+  "quiz": {
+    "startQuiz": "Anza Maswali",
+    "scorePoints": "alama {{count}}",
+    "streak": "mfululizo wa {{count}}",
+    "randomQuiz": "Maswali ya Nasibu",
+    "reviewWeakSubtitle": "Au rudia Sura inayohitaji kuboreshwa:",
+    "reviewAllWeakBtn": "Rudia sehemu zote dhaifu",
+    "dailyEnd": {
+      "title": "Asante kwa kushiriki maswali ya leo",
+      "body": "Tafadhali endelea kurudia uhifadhi wako wa Kurani, na utapata maswali mapya kesho, Mungu akipenda.",
+      "share": "Shiriki Matokeo",
+      "practiceWeak": "Fanya Mazoezi ya Sura Dhaifu Zaidi",
+      "ok": "Sawa",
+      "shareMsg": "Nimepata alama {{score}} kwenye maswali ya leo kwenye {{appName}}! Jaribu bahati yako:\nhttps://quranquiz.net"
+    },
+    "summary": {
+      "title": "Vizuri Sana!",
+      "body": "Umejibu sahihi maswali {{correct}} kati ya {{total}}",
+      "totalPoints": "Jumla ya Alama",
+      "needsReview": "{{part}} inahitaji kurudiwa",
+      "home": "Nyumbani",
+      "continue": "Endelea"
+    }
+  },
+  "pvp": {
+    "botName": "Hafidh",
+    "you": "Wewe",
+    "theOpponent": "Mpinzani",
+    "opponent": "Mpinzani",
+    "idleTitle": "Mashindano ya Moja kwa Moja",
+    "idleSub": "Maswali {{count}} kutoka Sura ulizohifadhi — kwanza tutatafuta mpinzani halisi, na ikiwa hatupati, {{botName}} {{botEmoji}} atakubali changamoto",
+    "wins": "Ushindi",
+    "draws": "Sare",
+    "losses": "Kushindwa",
+    "startBtn": "Anza Mechi",
+    "searching": "Inatafuta mpinzani...",
+    "cancel": "Ghairi",
+    "readyQuestion": "{{name}}: Uko tayari?",
+    "vs": "dhidi ya",
+    "disconnectBanner": "Muunganisho na mpinzani umekatika… tunasubiri arudi",
+    "waitingForOpponent": "Inasubiri mpinzani amalize...",
+    "outcome": {
+      "winTitle": "Umeshinda! 🏆",
+      "lossTitle": "{{name}} ameshinda mzunguko huu",
+      "drawTitle": "Ni sare!",
+      "winSub": "Vizuri sana — umemshinda {{name}}. Endelea hivyo!",
+      "lossSub": "Rudia uhifadhi wako na ujaribu tena — ushindi uko karibu, Mungu akipenda.",
+      "drawSub": "Mechi sawa! Mzunguko mwingine utaamua matokeo."
+    },
+    "rematch": "Mzunguko Mpya",
+    "home": "Nyumbani",
+    "tier": {
+      "bronze": "Shaba",
+      "silver": "Fedha",
+      "gold": "Dhahabu",
+      "platinum": "Platinamu",
+      "hafizGold": "Dhahabu ya Hafidh"
+    }
+  },
+  "pvpJourney": {
+    "title": "Safari ya Mashindano",
+    "pointsGained": "+alama {{count}}",
+    "toNextCity": "Alama {{count}} hadi {{cityName}}",
+    "complete": "Umefika Marrakech! Safari imekamilika 🏁",
+    "here": "Uko hapa",
+    "city": {
+      "jakarta": "Jakarta",
+      "kualaLumpur": "Kuala Lumpur",
+      "dhaka": "Dhaka",
+      "delhi": "Delhi",
+      "lahore": "Lahore",
+      "kabul": "Kabul",
+      "tashkent": "Tashkent",
+      "tehran": "Tehran",
+      "baghdad": "Baghdad",
+      "mecca": "Maka",
+      "medina": "Madina",
+      "damascus": "Dameski",
+      "jerusalem": "Yerusalemu",
+      "istanbul": "Istanbul",
+      "sarajevo": "Sarajevo",
+      "cairo": "Kairo",
+      "tripoli": "Tripoli",
+      "tunis": "Tunis",
+      "algiers": "Algiers",
+      "marrakech": "Marrakech"
+    },
+    "cityCard": {
+      "founded": "Ilianzishwa",
+      "population": "Idadi ya Watu wa Nchi",
+      "muslimPopulation": "Idadi ya Waislamu",
+      "muslimPercent": "% Waislamu",
+      "location": "{{city}}, {{country}}",
+      "bce": "{{value}} KK",
+      "million": "Milioni {{value}}",
+      "thousand": "Elfu {{value}}"
+    },
+    "country": {
+      "indonesia": "Indonesia",
+      "malaysia": "Malaysia",
+      "bangladesh": "Bangladesh",
+      "india": "India",
+      "pakistan": "Pakistan",
+      "afghanistan": "Afghanistan",
+      "uzbekistan": "Uzbekistan",
+      "iran": "Iran",
+      "iraq": "Iraq",
+      "saudiArabia": "Saudi Arabia",
+      "syria": "Syria",
+      "palestine": "Palestina",
+      "turkey": "Uturuki",
+      "bosnia": "Bosnia na Herzegovina",
+      "egypt": "Misri",
+      "libya": "Libya",
+      "tunisia": "Tunisia",
+      "algeria": "Algeria",
+      "morocco": "Morocco"
+    }
+  },
+  "league": {
+    "title": "Ubao wa Ushindi",
+    "dailyCompleted": "Umemaliza changamoto ya leo ✓",
+    "dailyReady": "Maswali ya leo yako tayari",
+    "dailyStart": "Anza",
+    "dailyChecking": "Inakagua...",
+    "dailyError": "Muunganisho umeshindwa — Jaribu Tena",
+    "ownRank": "Nafasi yako leo: #{{rank}}",
+    "tabs": {
+      "today": "Leo",
+      "yesterday": "Jana",
+      "month": "Mwezi"
+    },
+    "cardTitles": {
+      "today": "Ubao wa Ushindi wa Leo",
+      "yesterday": "Matokeo Bora ya Jana",
+      "month": "Matokeo Bora ya Mwezi Huu"
+    },
+    "emptyTitle": "Kuwa wa kwanza kwenye ubao wa ushindi {{timeframe}}",
+    "timeframes": {
+      "today": "leo",
+      "month": "mwezi huu"
+    },
+    "emptyBtnDaily": "Anza Maswali ya Leo",
+    "emptyBtnGeneric": "Anza Maswali",
+    "startDialog": {
+      "title": "Maswali ya Leo",
+      "msg": "Maswali yana maswali 10 ndani ya sehemu uliyohifadhi. Jibu kwa usahihi na haraka.",
+      "no": "Hapana",
+      "start": "Anza"
+    }
+  },
+  "map": {
+    "title": "Ramani ya Uhifadhi",
+    "filterAll": "Zote",
+    "filterGood": "Nzuri",
+    "filterWeak": "Dhaifu",
+    "correctOf": "sahihi {{correct}} kati ya {{questions}}",
+    "notTested": "Bado haijajaribiwa"
+  },
+  "auth": {
+    "heroTitle": "Quran Quiz Net",
+    "heroTagline": "Pima uhifadhi wako na ushindane na watu wa Kurani",
+    "stats": {
+      "surahs": "Sura",
+      "words": "Neno",
+      "questions": "Maswali"
+    },
+    "playBtn": "Anza Sasa",
+    "playHint": "Hakuna haja ya kuingia — swali la kwanza baada ya sekunde",
+    "divider": "Au ingia ili kuhifadhi maendeleo yako",
+    "continueGoogle": "Endelea na Google",
+    "continueFacebook": "Endelea na Facebook",
+    "termsNotice": "Kwa kuendelea, unakubali ",
+    "errorTitle": "Hitilafu",
+    "errorGoogle": "Imeshindwa kuingia na Google",
+    "errorFacebook": "Imeshindwa kuingia na Facebook",
+    "errorApple": "Imeshindwa kuingia na Apple"
+  },
+  "privacy": {
+    "title": "Masharti na Sera ya Faragha",
+    "updated": "Ilisasishwa mwisho: Juni 2026",
+    "sections": {
+      "intro": {
+        "title": "Utangulizi",
+        "body": "Katika Quran Quiz Net, tunathamini faragha yako. Ukurasa huu unaeleza data tunayokusanya, jinsi tunavyoitumia, na jinsi tunavyoilinda unapotumia programu hii."
+      },
+      "dataCollected": {
+        "title": "Data Tunayokusanya",
+        "body": "Unapoingia kwa kutumia Google au Facebook, tunahifadhi jina lako, picha ya wasifu, na anwani ya barua pepe ili kuunda wasifu wako. Pia tunahifadhi maendeleo yako ya uhifadhi, matokeo ya majaribio, na mipangilio. Unaweza pia kutumia programu kama mgeni bila kuingia."
+      },
+      "useOfData": {
+        "title": "Jinsi Tunavyotumia Data Yako",
+        "body": "Tunatumia data yako kuhifadhi na kusawazisha maendeleo yako katika vifaa vyako vyote, kuonyesha nafasi yako kwenye ubao wa ushindi na changamoto ya kila siku, na kuboresha uzoefu wako ndani ya programu. Hatuuzi data yako wala kuonyesha matangazo."
+      },
+      "cookiesAnalytics": {
+        "title": "Vidakuzi na Uchambuzi",
+        "body": "Tunatumia Google Analytics kuelewa jinsi programu inavyotumika (kama vile kurasa zilizotembelewa na idadi ya majaribio) ili kuboresha uzoefu wa mtumiaji, kwa kutumia vidakuzi. Tunawasha ufuatiliaji huu tu kwa idhini yako, na unaweza kukataa kutoka kwenye bango la idhini bila kuathiri matumizi yako ya programu. Tunatumia data hii kwa uchambuzi tu, si kwa matangazo."
+      },
+      "storageSecurity": {
+        "title": "Uhifadhi na Usalama",
+        "body": "Data yako inahifadhiwa kwenye seva za Firebase za Google zenye ulinzi unaofaa. Data yako ya ndani hubaki kwenye kifaa chako na hufutwa unapotoka."
+      },
+      "accountDeletion": {
+        "title": "Ufutaji wa Akaunti",
+        "body": "Unaweza kutoka wakati wowote ili kufuta data yako ya ndani kutoka kifaa hiki. Ili kufuta kabisa akaunti yako na data yako yote kutoka kwenye seva zetu wewe mwenyewe: kutoka ukurasa mkuu, gusa aikoni ya mipangilio ⚙ juu ya ukurasa, kisha gusa \"Futa Akaunti\" chini ya ukurasa wa Mipangilio, na uthibitishe ufutaji. Akaunti yako inafutwa mara moja, na hatua hii haiwezi kutenduliwa."
+      },
+      "termsOfUse": {
+        "title": "Masharti ya Matumizi",
+        "body": "Programu hii imeundwa kukusaidia kurudia uhifadhi wako wa Kurani Tukufu. Huduma inatolewa \"kama ilivyo\" bila dhamana, na tunajitahidi kuhakikisha usahihi wa maudhui ya Kurani kwa kutumia chanzo cha Tanzil (tanzil.net)."
+      },
+      "contact": {
+        "title": "Wasiliana Nasi",
+        "body": "Kwa maswali yoyote kuhusu faragha au masharti, unaweza kuwasiliana nasi kupitia barua pepe rasmi ya programu."
+      }
+    }
+  },
+  "support": {
+    "title": "Msaada na Usaidizi",
+    "sections": {
+      "technical": {
+        "title": "Msaada wa Kiufundi",
+        "body": "Umekutana na tatizo kwenye programu, au una pendekezo la kuiboresha? Tuko tayari kusaidia. Tutumie barua pepe hapa chini na tutajibu haraka iwezekanavyo."
+      },
+      "sync": {
+        "title": "Matatizo ya Kuingia au Usawazishaji",
+        "body": "Ikiwa unapata tatizo la kuingia kwa Google au Facebook, au unaona kuwa maendeleo yako hayasawazishwi kwenye vifaa vyako, wasiliana nasi ukitaja aina ya kifaa chako na mfumo wa uendeshaji ili tuweze kukusaidia haraka."
+      },
+      "deletion": {
+        "title": "Ufutaji wa Akaunti au Data",
+        "body": "Ili kuomba ufutaji wa kudumu wa akaunti yako na data iliyohifadhiwa kwenye seva zetu, tutumie barua pepe hapa chini na tutakamilisha ombi ndani ya siku chache."
+      }
+    }
+  },
+  "quizCard": {
+    "answerOption": {
+      "sura": "Sura {{name}}",
+      "ayahCount": "Idadi ya Aya {{count}}",
+      "ayahNumber": "Namba ya Aya {{count}}"
+    },
+    "meccan": "Makiya",
+    "medinan": "Madaniya",
+    "instructionNotSpecial": "Chagua muendelezo sahihi",
+    "instructionSuraName": "Chagua jina la Sura",
+    "instructionAyahCount": "Chagua idadi ya Aya za Sura",
+    "instructionMakki": "Chagua aina ya Sura",
+    "instructionAyahNumber": "Chagua namba ya Aya",
+    "correctMark": "✓ Sahihi",
+    "pickedWrongMark": "Umechagua ✗",
+    "skip": "Sijui",
+    "ayahCount": "aya {{count}}",
+    "ayahLabel": "Aya {{number}}",
+    "ok": "Sawa",
+    "view": "Angalia",
+    "compete": "Shindana",
+    "shareMsg": "Shindana nami kwenye {{appName}}!\n{{url}}"
+  },
+  "dailyRank": {
+    "ahead": "Uko mbele ya wote leo! 🏆",
+    "behindBy": "Nafasi yako leo: #{{rank}} kati ya {{total}} — nyuma kwa alama {{diff}} kutoka kwa {{name}}"
+  },
+  "milestones": {
+    "correctThreshold": "💯 Majibu sahihi {{threshold}} katika {{partName}}!",
+    "mastery": "🏅 Umeimudu {{partName}}!"
+  },
+  "rank": {
+    "beginner": "Mwanzilishi",
+    "diligent": "Mwenye Bidii",
+    "hafiz": "Hafidh",
+    "master": "Mtaalamu"
+  },
+  "levels": {
+    "beginner": {
+      "text": "Kiwango cha Mwanzo",
+      "comment": "Swali huanzia mwanzo wa aya, na huongeza alama zako kwa 5"
+    },
+    "elementary": {
+      "text": "Kiwango cha Msingi",
+      "comment": "Swali huanzia maneno matatu, na huongeza alama zako kwa 10"
+    },
+    "secondary": {
+      "text": "Kiwango cha Kati",
+      "comment": "Swali huanzia maneno mawili, na huongeza alama zako kwa 20"
+    },
+    "advanced": {
+      "text": "Kiwango cha Juu",
+      "comment": "Jibu sahihi zaidi ya moja linawezekana, na huongeza alama zako kwa 30"
+    }
+  },
+  "friends": {
+    "title": "Marafiki",
+    "myCodeTitle": "Msimbo Wako wa Maswali",
+    "shareBtn": "Shiriki Msimbo",
+    "shareMessage": "Niongeze kwenye Quran Quiz Net! Gusa kiungo ili kuniongeza mara moja:\n{{link}}",
+    "addFriendTitle": "Ongeza Rafiki kwa Msimbo wa Maswali",
+    "placeholderCode": "Weka msimbo (mfano ABCD1234)",
+    "addBtn": "Ongeza",
+    "incomingRequests": "Maombi ya Urafiki Yanayoingia",
+    "noRequests": "Hakuna maombi ya urafiki yanayosubiri",
+    "accept": "Kubali",
+    "decline": "Kataa",
+    "friendList": "Orodha ya Marafiki",
+    "noFriends": "Bado hujaongeza marafiki. Shiriki msimbo wako au ongeza rafiki kwa msimbo wao!",
+    "invalidCode": "Msimbo Batili wa Maswali",
+    "invalidCodeSub": "Tafadhali kagua msimbo na ujaribu tena.",
+    "selfCode": "Huu ni msimbo wako mwenyewe!",
+    "selfCodeSub": "Shiriki msimbo huu na marafiki zako ili waweze kukuongeza.",
+    "requestSent": "Ombi la Urafiki Limetumwa!",
+    "requestSentSub": "Ombi lako litaonekana kwenye kisanduku cha rafiki yako ili akubali.",
+    "sending": "Inatuma...",
+    "resolving": "Inakagua msimbo...",
+    "errorOccurred": "Hitilafu imetokea wakati wa kutuma",
+    "back": "Rudi",
+    "goToFriends": "Angalia Marafiki",
+    "challenge": "Changamoto"
+  },
+  "pvpInvite": {
+    "lobbyTitle": "Mashindano na Rafiki",
+    "waitingFor": "Inasubiri {{name}} akubali...",
+    "cancel": "Ghairi Changamoto",
+    "bannerTitle": "Changamoto ya Mashindano!",
+    "bannerMessage": "{{name}} anakualika kwenye mashindano",
+    "accept": "Kubali",
+    "decline": "Kataa"
+  },
+  "notifications": {
+    "channelName": "Vikumbusho",
+    "pvpInvite": {
+      "title": "⚔️ Changamoto Mpya!",
+      "body": "{{name}} amekualika kwenye mashindano ya Kurani! Fungua programu ili kukubali."
+    },
+    "friendRequest": {
+      "title": "👥 Ombi Jipya la Urafiki",
+      "body": "{{name}} amekutumia ombi la urafiki kwenye Quran Quiz Net."
+    },
+    "streakReminder": {
+      "title": "🔥 Usipoteze mfululizo wako",
+      "body": "Mfululizo wako ni siku {{count}}! Cheza maswali leo ili kuuendeleza."
+    },
+    "streakReminderFreeze": {
+      "title": "🔥 Linda mfululizo wako",
+      "body": "Mfululizo wako wa siku {{count}} uko hatarini leo usiku! Unayo kadi ya kuganda inayopatikana. Fungua programu ili kuitumia."
+    },
+    "dailyReady": {
+      "title": "⭐ Maswali ya leo yako tayari",
+      "body": "Maswali mapya ndani ya sehemu uliyohifadhi yanakusubiri. Jaribu bahati yako sasa!"
+    },
+    "friendBeatScore": {
+      "title": "🏆 Alama Zimepitwa!",
+      "body": "{{name}} amepita alama zako za leo! Cheza tena ili kurudisha uongozi."
+    }
+  }
+}

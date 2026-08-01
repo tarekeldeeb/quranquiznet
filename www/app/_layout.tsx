@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Stack } from 'expo-router';
+import { Stack, useRouter, useRootNavigationState, type Href } from 'expo-router';
 import {
   I18nManager, ActivityIndicator, View, Text, TextInput, ImageBackground, Platform, StyleSheet,
 } from 'react-native';
@@ -11,7 +11,7 @@ import i18n from '../src/i18n';
 import { initDb } from '../src/db/initDb';
 import { initMadinaAssets } from '../src/services/madinaAssets';
 import { getFirebaseApp, flushPendingDailySubmit } from '../src/services/firebase';
-import { configureNotifications } from '../src/services/notifications';
+import { configureNotifications, observeNotificationTaps } from '../src/services/notifications';
 import { useProfileStore } from '../src/stores/profileStore';
 import { Analytics } from '../src/components/Analytics';
 import { ConsentBanner } from '../src/components/ConsentBanner';
@@ -39,17 +39,27 @@ I18nManager.forceRTL(false);
 // and per-component explicit fontFamily props (unaffected by this patch)
 // continue to work exactly as before.
 //
-// Bengali is the one supported language whose script PlexArabic has zero
-// glyphs for, so the default is language-aware: Bengali gets NotoSansBengali,
-// every other language keeps PlexArabic (its Latin-script glyphs also fall
-// through to the OS/browser's own font fallback either way — verified via
-// direct glyph inspection, not just for English). Read directly off the
-// zustand store (no hook) since this patches a render function that fires on
-// every Text/TextInput render regardless of subscription.
+// Bengali and Chinese are the two supported languages whose scripts PlexArabic
+// has zero glyphs for, so the default is language-aware: each gets its own
+// dedicated font, every other language keeps PlexArabic (its Latin-script
+// glyphs also fall through to the OS/browser's own font fallback either way —
+// verified via direct glyph inspection, not just for English). The Chinese
+// font (NotoSansSC) is subset to only the characters actually used in
+// zh.json's translated strings (~660 codepoints vs. tens of thousands in the
+// full CJK charset) to keep it from ballooning the app bundle — a future
+// zh.json edit that introduces a brand-new character falls back to the
+// system font for just that character until the subset is regenerated. Read
+// directly off the zustand store (no hook) since this patches a render
+// function that fires on every Text/TextInput render regardless of subscription.
 const DEFAULT_FONT_AR = { fontFamily: 'PlexArabic-Regular' };
 const DEFAULT_FONT_BN = { fontFamily: 'NotoSansBengali-Regular' };
-const getDefaultFont = () =>
-  (useProfileStore.getState().language === 'bn' ? DEFAULT_FONT_BN : DEFAULT_FONT_AR);
+const DEFAULT_FONT_ZH = { fontFamily: 'NotoSansSC-Regular' };
+const getDefaultFont = () => {
+  const language = useProfileStore.getState().language;
+  if (language === 'bn') return DEFAULT_FONT_BN;
+  if (language === 'zh') return DEFAULT_FONT_ZH;
+  return DEFAULT_FONT_AR;
+};
 const patchDefaultFont = (Comp: { render?: (props: any, ref: any) => unknown; __fontPatched?: boolean }) => {
   if (typeof Comp.render !== 'function' || Comp.__fontPatched) return;
   const origRender = Comp.render;
@@ -138,6 +148,24 @@ const webStyles = StyleSheet.create({
   },
 });
 
+// Routes taps on server pushes (PvP challenges, friend requests) to their
+// screen — including the tap that cold-started the app. That launch tap can
+// only be acted on once the navigation tree under <Stack> exists (navigating
+// earlier throws), so this renders inside the ready branch below and
+// additionally waits for the root navigation state instead of running at
+// module scope like configureNotifications above. `navigate` (not `push`)
+// because the entry redirect may already have landed on /me — don't stack a
+// duplicate under the back button in that case.
+function NotificationTapRouter() {
+  const router = useRouter();
+  const navReady = Boolean(useRootNavigationState()?.key);
+  useEffect(() => {
+    if (!navReady) return;
+    return observeNotificationTaps((path) => router.navigate(path as Href));
+  }, [navReady, router]);
+  return null;
+}
+
 export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
   const [dbProgress, setDbProgress] = useState(0);
@@ -165,6 +193,10 @@ export default function RootLayout() {
     // no Bengali glyphs at all.
     'NotoSansBengali-Regular': require('../assets/fonts/NotoSansBengali-Regular.woff2'),
     'NotoSansBengali-Bold': require('../assets/fonts/NotoSansBengali-Bold.woff2'),
+    // Chinese-script default face (see getDefaultFont above) — subset to only
+    // the characters used in zh.json, not the full CJK charset.
+    'NotoSansSC-Regular': require('../assets/fonts/NotoSansSC-Regular.woff2'),
+    'NotoSansSC-Bold': require('../assets/fonts/NotoSansSC-Bold.woff2'),
   });
 
   useEffect(() => {
@@ -210,6 +242,7 @@ export default function RootLayout() {
     <SafeAreaProvider>
       <StatusBar style="light" />
       <Analytics />
+      <NotificationTapRouter />
       <WebFrame>
         <I18nextProvider i18n={i18n}>
           <Stack screenOptions={{ headerShown: false }} />
