@@ -33,6 +33,33 @@ function juzEnd(j: number): number {
 // mastered neighbor, so the weaker tier wins an exact tie.
 const TIE_ORDER: MasteryTier[] = ['LOW', 'MID', 'HIGH', 'EMPTY'];
 
+// Compact wire format for publishing a JuzCell[] to a friend-readable RTDB
+// node (see firebase.ts pushPublicStats / PublicStats.juzMap): a 30-char
+// tier string (one of HMLE, 'O' = outside the study plan / no tier) plus a
+// parallel 0-100 coverage array — RTDB drops null fields outright, so `tier:
+// null` can't round-trip directly and needs the 'O' sentinel instead.
+export interface PublicJuzMap {
+  tiers: string;
+  coverage: number[];
+}
+
+const TIER_CHAR: Record<MasteryTier, string> = { HIGH: 'H', MID: 'M', LOW: 'L', EMPTY: 'E' };
+const CHAR_TIER: Record<string, MasteryTier> = { H: 'HIGH', M: 'MID', L: 'LOW', E: 'EMPTY' };
+
+export function encodePublicJuzMap(cells: JuzCell[]): PublicJuzMap {
+  return {
+    tiers: cells.map((c) => (c.tier ? TIER_CHAR[c.tier] : 'O')).join(''),
+    coverage: cells.map((c) => Math.round(c.coverage * 100)),
+  };
+}
+
+export function decodePublicJuzMap(pub: PublicJuzMap): JuzCell[] {
+  return pub.tiers.split('').map((ch, i) => ({
+    tier: CHAR_TIER[ch] ?? null,
+    coverage: (pub.coverage[i] ?? 0) / 100,
+  }));
+}
+
 export function computeJuzMap(
   parts: PartLike[],
   tierOf: (partIndex: number) => MasteryTier,

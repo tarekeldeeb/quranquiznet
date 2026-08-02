@@ -509,7 +509,15 @@
     "errorOccurred": "د لیږلو پرمهال یوه تېروتنه رامنځته شوه",
     "back": "شاته",
     "goToFriends": "ملګري وګورئ",
-    "challenge": "ننګونه"
+    "challenge": "ننګونه",
+    "friendMap": {
+      "close": "بندول",
+      "empty": "دې ملګري لا تر اوسه حفظ نه دی پیل کړی."
+    },
+    "removeFriend": "ملګری لرې کول",
+    "removeConfirmTitle": "{{name}} لرې کړئ؟",
+    "removeConfirmBody": "تاسو به نور د یو بل په ملګرو لست کې نه ښکاره کیږئ. تاسو کولی شئ وروسته د هغه په کوډ سره بیا ورزیات کړئ.",
+    "removeFailed": "ملګری لرې نه شو. بیا هڅه وکړئ."
   },
   "pvpInvite": {
     "lobbyTitle": "د ملګري ننګونه",

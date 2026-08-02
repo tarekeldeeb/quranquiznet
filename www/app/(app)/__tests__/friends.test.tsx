@@ -22,6 +22,7 @@ jest.mock('../../../src/services/firebase', () => ({
   acceptFriendRequest: jest.fn(() => Promise.resolve()),
   declineFriendRequest: jest.fn(() => Promise.resolve()),
   sendPvpInvite: jest.fn(() => Promise.resolve()),
+  removeFriend: jest.fn(() => Promise.resolve(true)),
 }));
 
 import React from 'react';

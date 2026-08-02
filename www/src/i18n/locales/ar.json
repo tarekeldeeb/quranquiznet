@@ -518,7 +518,15 @@
     "errorOccurred": "حدث خطأ أثناء الإرسال",
     "back": "رجوع",
     "goToFriends": "عرض الأصدقاء",
-    "challenge": "تحدٍ"
+    "challenge": "تحدٍ",
+    "friendMap": {
+      "close": "إغلاق",
+      "empty": "لم يبدأ هذا الصديق الحفظ بعد."
+    },
+    "removeFriend": "إزالة الصديق",
+    "removeConfirmTitle": "إزالة {{name}}؟",
+    "removeConfirmBody": "لن يظهر أحدكما في قائمة أصدقاء الآخر بعد الآن. يمكنك إضافته لاحقاً باستخدام رمزه.",
+    "removeFailed": "تعذّرت إزالة الصديق. حاول مرة أخرى."
   },
   "pvpInvite": {
     "lobbyTitle": "تحدي صديق",

@@ -81,7 +81,7 @@
 	    ".read": "auth != null && auth.uid === $uid",
 	    "$friendUid": {
 	      ".read": "auth != null && auth.uid === $uid",
-	      ".write": "auth != null && (auth.uid === $uid || (auth.uid === $friendUid && root.child('friendRequests').child($friendUid).child($uid).exists()))"
+	      ".write": "auth != null && (auth.uid === $uid || (auth.uid === $friendUid && (!newData.exists() || root.child('friendRequests').child($friendUid).child($uid).exists())))"
 	    }
 	  }
 	},

@@ -506,7 +506,15 @@
     "errorOccurred": "Ana kesalahan nalika ngirim",
     "back": "Bali",
     "goToFriends": "Deleng Kanca",
-    "challenge": "Tantang"
+    "challenge": "Tantang",
+    "friendMap": {
+      "close": "Tutup",
+      "empty": "Kanca iki durung miwiti apalan."
+    },
+    "removeFriend": "Busak Kanca",
+    "removeConfirmTitle": "Busak {{name}}?",
+    "removeConfirmBody": "Sampeyan wong loro bakal ora katon maneh ing dhaftar kanca. Sampeyan bisa nambahake maneh mengko nganggo kodhene.",
+    "removeFailed": "Ora bisa mbusak kanca. Coba maneh."
   },
   "pvpInvite": {
     "lobbyTitle": "Duel Kanca",

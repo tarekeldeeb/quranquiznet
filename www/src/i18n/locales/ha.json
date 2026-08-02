@@ -509,7 +509,15 @@
     "errorOccurred": "An sami kuskure yayin aikawa",
     "back": "Baya",
     "goToFriends": "Duba Abokai",
-    "challenge": "Ƙalubalanta"
+    "challenge": "Ƙalubalanta",
+    "friendMap": {
+      "close": "Rufe",
+      "empty": "Wannan abokin bai fara haddar Alqur'ani ba tukuna."
+    },
+    "removeFriend": "Cire Aboki",
+    "removeConfirmTitle": "Cire {{name}}?",
+    "removeConfirmBody": "Ba za ku ƙara ganin juna a jerin abokai ba. Za ku iya sake ƙara su daga baya ta amfani da lambarsu.",
+    "removeFailed": "An kasa cire aboki. Da fatan za a sake gwadawa."
   },
   "pvpInvite": {
     "lobbyTitle": "Faɗan Abokai",

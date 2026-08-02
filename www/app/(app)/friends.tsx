@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  View, Text, StyleSheet, ScrollView, TextInput, Share, ActivityIndicator,
+  View, Text, StyleSheet, ScrollView, TextInput, Share, ActivityIndicator, Modal, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
@@ -8,18 +8,29 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import {
   registerQuizCode, watchFriendRequests, watchFriends, acceptFriendRequest,
-  declineFriendRequest, sendPvpInvite, watchPresence, watchPublicStats,
+  declineFriendRequest, sendPvpInvite, watchPresence, watchPublicStats, removeFriend,
   type FriendRequestEntry, type FriendEntry, type PublicStats,
 } from '../../src/services/firebase';
 import { useProfileStore } from '../../src/stores/profileStore';
 import { trackEvent } from '../../src/services/analytics';
 import { DEFAULT_GUEST_NAME } from '../../src/models/constants';
+import { decodePublicJuzMap, type PublicJuzMap } from '../../src/models/juzMap';
 import { Avatar } from '../../src/components/Avatar';
+import JuzMap from '../../src/components/JuzMap';
 import { useTheme, radii } from '../../src/theme/tokens';
 import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
+import type { Language } from '../../src/i18n/languages';
 
 import { scopeFromParts } from '../../src/services/pvpService';
+
+function notify(title: string, msg: string) {
+  if (Platform.OS === 'web') {
+    if (typeof window !== 'undefined') window.alert(`${title}\n\n${msg}`);
+    return;
+  }
+  Alert.alert(title, msg);
+}
 
 interface LeaderboardItem {
   uid: string;
@@ -39,6 +50,7 @@ function LeaderboardRow({
   colors,
   t,
   onChallenge,
+  onSelect,
 }: {
   rank: number;
   item: LeaderboardItem;
@@ -46,6 +58,7 @@ function LeaderboardRow({
   colors: ReturnType<typeof useTheme>['colors'];
   t: (key: string) => string;
   onChallenge: (uid: string, friend: FriendEntry) => void;
+  onSelect: (item: LeaderboardItem) => void;
 }) {
   const [online, setOnline] = useState(false);
 
@@ -58,7 +71,9 @@ function LeaderboardRow({
   }, [item.uid, item.isSelf]);
 
   return (
-    <View
+    <PressScale
+      disabled={item.isSelf}
+      onPress={() => onSelect(item)}
       style={[
         s.rowCard,
         {
@@ -109,19 +124,112 @@ function LeaderboardRow({
         {!item.isSelf && item.friend && (
           <PressScale
             style={[s.actionBtn, { backgroundColor: colors.goldPale }]}
-            onPress={() => onChallenge(item.uid, item.friend!)}
+            onPress={(e) => {
+              // Nested inside the row's own PressScale — on web a click bubbles
+              // to the parent (unlike native's responder system, which never
+              // hands the gesture to both), so without this the tap would both
+              // send a challenge and open the map sheet.
+              e.stopPropagation();
+              onChallenge(item.uid, item.friend!);
+            }}
           >
             <Ionicons name="flash-outline" size={16} color={colors.goldDeep} />
             <Text style={[s.actionTxt, { color: colors.goldDeep }]}>{t('friends.challenge')}</Text>
           </PressScale>
         )}
       </View>
-    </View>
+    </PressScale>
+  );
+}
+
+/** Opened by tapping a friend row: a read-only view of their 30-juz
+ * progression map (JuzMap, same component as the me-screen mini map),
+ * plus the option to end the friendship. */
+function FriendMapSheet({
+  visible,
+  friend,
+  juzMap,
+  onClose,
+  onRemove,
+  removing,
+  isRTL,
+  lang,
+  colors,
+  t,
+}: {
+  visible: boolean;
+  friend: LeaderboardItem | null;
+  juzMap: PublicJuzMap | undefined;
+  onClose: () => void;
+  onRemove: () => void;
+  removing: boolean;
+  isRTL: boolean;
+  lang: Language;
+  colors: ReturnType<typeof useTheme>['colors'];
+  t: (key: string, opts?: Record<string, unknown>) => string;
+}) {
+  return (
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
+      <View style={s.sheetBg}>
+        <View style={[s.sheet, { backgroundColor: colors.card }]}>
+          {friend && (
+            <>
+              <View style={[s.sheetHeaderRow, { flexDirection: rowDir(isRTL) }]}>
+                <Avatar
+                  uri={friend.photoURL}
+                  fallback={require('../../assets/images/app-icon.png')}
+                  style={s.sheetAvatar}
+                />
+                <Text style={[s.sheetName, { color: colors.ink, textAlign: alignDir(isRTL) }]} numberOfLines={1}>
+                  {friend.name}
+                </Text>
+              </View>
+
+              <View style={[s.mapPanel, { backgroundColor: colors.navy }]}>
+                <View style={[s.mapPanelHead, { flexDirection: rowDir(isRTL) }]}>
+                  <Ionicons name="map-outline" size={18} color={colors.gold} />
+                  <Text style={s.mapPanelTitle}>{t('me.mapCard.title')}</Text>
+                </View>
+                {juzMap ? (
+                  <JuzMap cells={decodePublicJuzMap(juzMap)} language={lang} isRTL={isRTL} />
+                ) : (
+                  <View style={s.mapEmptyBox}>
+                    <Text style={[s.mapEmptyTxt, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>
+                      {t('friends.friendMap.empty')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+
+              <PressScale
+                style={[s.removeBtn, { backgroundColor: colors.wrongPale }]}
+                onPress={onRemove}
+                disabled={removing}
+              >
+                {removing ? (
+                  <ActivityIndicator size="small" color={colors.wrong} />
+                ) : (
+                  <>
+                    <Ionicons name="person-remove-outline" size={16} color={colors.wrong} />
+                    <Text style={[s.removeBtnTxt, { color: colors.wrong }]}>{t('friends.removeFriend')}</Text>
+                  </>
+                )}
+              </PressScale>
+            </>
+          )}
+
+          <PressScale style={s.sheetCloseBtn} onPress={onClose} disabled={removing}>
+            <Text style={[s.sheetCloseTxt, { color: colors.inkSoft }]}>{t('friends.friendMap.close')}</Text>
+          </PressScale>
+        </View>
+      </View>
+    </Modal>
   );
 }
 
 export default function FriendsScreen() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const lang = i18n.language as Language;
   const { isRTL } = useDirection();
   const { colors } = useTheme();
   const router = useRouter();
@@ -137,6 +245,8 @@ export default function FriendsScreen() {
   const [friends, setFriends] = useState<Record<string, FriendEntry>>({});
   const [loadingCode, setLoadingCode] = useState(true);
   const [publicStatsMap, setPublicStatsMap] = useState<Record<string, PublicStats>>({});
+  const [selectedFriend, setSelectedFriend] = useState<LeaderboardItem | null>(null);
+  const [removingFriend, setRemovingFriend] = useState(false);
 
   useEffect(() => {
     if (!social.uid) return;
@@ -234,6 +344,31 @@ export default function FriendsScreen() {
         opponentPhoto: friend.photoURL ?? '',
       },
     });
+  }
+
+  function handleRemoveFriend() {
+    if (!social.uid || !selectedFriend) return;
+    const targetUid = selectedFriend.uid;
+    const title = t('friends.removeConfirmTitle', { name: selectedFriend.name });
+    const msg = t('friends.removeConfirmBody');
+    const doRemove = async () => {
+      setRemovingFriend(true);
+      const ok = await removeFriend(social.uid!, targetUid);
+      setRemovingFriend(false);
+      if (ok) {
+        setSelectedFriend(null);
+      } else {
+        notify(t('friends.removeFriend'), t('friends.removeFailed'));
+      }
+    };
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm(`${title}\n\n${msg}`)) void doRemove();
+      return;
+    }
+    Alert.alert(title, msg, [
+      { text: t('settings.no'), style: 'cancel' },
+      { text: t('settings.yes'), style: 'destructive', onPress: () => void doRemove() },
+    ]);
   }
 
   const requestEntries = Object.entries(requests);
@@ -411,10 +546,24 @@ export default function FriendsScreen() {
             colors={colors}
             t={t}
             onChallenge={handleChallenge}
+            onSelect={setSelectedFriend}
           />
         ))}
 
       </ScrollView>
+
+      <FriendMapSheet
+        visible={!!selectedFriend}
+        friend={selectedFriend}
+        juzMap={selectedFriend ? publicStatsMap[selectedFriend.uid]?.juzMap : undefined}
+        onClose={() => setSelectedFriend(null)}
+        onRemove={handleRemoveFriend}
+        removing={removingFriend}
+        isRTL={isRTL}
+        lang={lang}
+        colors={colors}
+        t={t}
+      />
     </SafeAreaView>
   );
 }
@@ -604,4 +753,27 @@ const s = StyleSheet.create({
     fontSize: 12,
     fontFamily: 'PlexArabic-Bold',
   },
+
+  // Friend map sheet
+  sheetBg: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  sheet: {
+    borderTopLeftRadius: radii.lg + 4, borderTopRightRadius: radii.lg + 4,
+    padding: 20, paddingBottom: 32, gap: 14,
+    width: '100%', maxWidth: 512, alignSelf: 'center',
+  },
+  sheetHeaderRow: { alignItems: 'center', gap: 10 },
+  sheetAvatar: { width: 44, height: 44, borderRadius: 22 },
+  sheetName: { flex: 1, fontSize: 17, fontFamily: 'PlexArabic-Bold' },
+  mapPanel: { borderRadius: radii.lg, padding: 16, gap: 12 },
+  mapPanelHead: { alignItems: 'center', gap: 8 },
+  mapPanelTitle: { fontSize: 14, fontFamily: 'Amiri-Regular', fontWeight: '700', color: '#fff' },
+  mapEmptyBox: { paddingVertical: 18, alignItems: 'center' },
+  mapEmptyTxt: { fontSize: 13, lineHeight: 18 },
+  removeBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    gap: 8, paddingVertical: 12, borderRadius: radii.md,
+  },
+  removeBtnTxt: { fontSize: 14, fontFamily: 'PlexArabic-Bold' },
+  sheetCloseBtn: { alignItems: 'center', paddingVertical: 8 },
+  sheetCloseTxt: { fontSize: 14, fontFamily: 'PlexArabic-SemiBold' },
 });

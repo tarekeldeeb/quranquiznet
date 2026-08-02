@@ -506,7 +506,15 @@
     "errorOccurred": "发送时发生错误",
     "back": "返回",
     "goToFriends": "查看好友",
-    "challenge": "挑战"
+    "challenge": "挑战",
+    "friendMap": {
+      "close": "关闭",
+      "empty": "这位好友还没有开始背诵。"
+    },
+    "removeFriend": "移除好友",
+    "removeConfirmTitle": "移除{{name}}?",
+    "removeConfirmBody": "你们将不再出现在彼此的好友列表中。之后可以使用对方的代码重新添加。",
+    "removeFailed": "无法移除好友,请重试。"
   },
   "pvpInvite": {
     "lobbyTitle": "好友对战",

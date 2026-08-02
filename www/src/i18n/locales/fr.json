@@ -512,7 +512,15 @@
     "errorOccurred": "Une erreur s'est produite lors de l'envoi",
     "back": "Retour",
     "goToFriends": "Voir les amis",
-    "challenge": "Défier"
+    "challenge": "Défier",
+    "friendMap": {
+      "close": "Fermer",
+      "empty": "Cet ami n'a pas encore commencé à mémoriser."
+    },
+    "removeFriend": "Retirer l'ami",
+    "removeConfirmTitle": "Retirer {{name}} ?",
+    "removeConfirmBody": "Vous ne serez plus amis et ne vous verrez plus dans vos listes. Tu pourras l'ajouter de nouveau plus tard avec son code.",
+    "removeFailed": "Impossible de retirer cet ami. Réessaie."
   },
   "pvpInvite": {
     "lobbyTitle": "Duel entre amis",

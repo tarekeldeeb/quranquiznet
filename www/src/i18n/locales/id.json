@@ -506,7 +506,15 @@
     "errorOccurred": "Terjadi kesalahan saat mengirim",
     "back": "Kembali",
     "goToFriends": "Lihat Teman",
-    "challenge": "Tantang"
+    "challenge": "Tantang",
+    "friendMap": {
+      "close": "Tutup",
+      "empty": "Teman ini belum mulai menghafal."
+    },
+    "removeFriend": "Hapus Teman",
+    "removeConfirmTitle": "Hapus {{name}}?",
+    "removeConfirmBody": "Anda berdua tidak akan lagi muncul di daftar teman masing-masing. Anda bisa menambahkannya lagi nanti menggunakan kode mereka.",
+    "removeFailed": "Gagal menghapus teman. Silakan coba lagi."
   },
   "pvpInvite": {
     "lobbyTitle": "Duel Teman",

@@ -509,7 +509,15 @@
     "errorOccurred": "Hitilafu imetokea wakati wa kutuma",
     "back": "Rudi",
     "goToFriends": "Angalia Marafiki",
-    "challenge": "Changamoto"
+    "challenge": "Changamoto",
+    "friendMap": {
+      "close": "Funga",
+      "empty": "Rafiki huyu bado hajaanza kuhifadhi."
+    },
+    "removeFriend": "Ondoa Rafiki",
+    "removeConfirmTitle": "Ondoa {{name}}?",
+    "removeConfirmBody": "Hamtaonekana tena kwenye orodha za marafiki wa kila mmoja. Unaweza kumwongeza tena baadaye kwa kutumia msimbo wake.",
+    "removeFailed": "Imeshindwa kuondoa rafiki. Tafadhali jaribu tena."
   },
   "pvpInvite": {
     "lobbyTitle": "Mashindano na Rafiki",

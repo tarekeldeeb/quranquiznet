@@ -118,6 +118,8 @@ describe('pushCurrentProfile()', () => {
       score: 0,
       streak: 5,
       level: 2,
+      // Empty parts list here → every juz cell is outside the study plan.
+      juzMap: { tiers: 'O'.repeat(30), coverage: new Array(30).fill(0) },
     });
   });
 });

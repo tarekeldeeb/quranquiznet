@@ -506,7 +506,15 @@
     "errorOccurred": "Ralat berlaku semasa menghantar",
     "back": "Kembali",
     "goToFriends": "Lihat Rakan",
-    "challenge": "Cabar"
+    "challenge": "Cabar",
+    "friendMap": {
+      "close": "Tutup",
+      "empty": "Rakan ini belum mula menghafal."
+    },
+    "removeFriend": "Alih Keluar Rakan",
+    "removeConfirmTitle": "Alih keluar {{name}}?",
+    "removeConfirmBody": "Anda berdua tidak akan lagi kelihatan dalam senarai rakan masing-masing. Anda boleh menambahnya semula kelak menggunakan kod mereka.",
+    "removeFailed": "Gagal mengalih keluar rakan. Sila cuba lagi."
   },
   "pvpInvite": {
     "lobbyTitle": "Duel Rakan",

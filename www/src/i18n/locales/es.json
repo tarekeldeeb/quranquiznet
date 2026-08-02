@@ -512,7 +512,15 @@
     "errorOccurred": "Ocurrió un error al enviar",
     "back": "Atrás",
     "goToFriends": "Ver amigos",
-    "challenge": "Retar"
+    "challenge": "Retar",
+    "friendMap": {
+      "close": "Cerrar",
+      "empty": "Este amigo aún no ha empezado a memorizar."
+    },
+    "removeFriend": "Eliminar amigo",
+    "removeConfirmTitle": "¿Eliminar a {{name}}?",
+    "removeConfirmBody": "Ya no aparecerán en la lista de amigos del otro. Podrás agregarlo de nuevo más tarde con su código.",
+    "removeFailed": "No se pudo eliminar al amigo. Inténtalo de nuevo."
   },
   "pvpInvite": {
     "lobbyTitle": "Duelo entre amigos",

@@ -518,7 +518,15 @@
     "errorOccurred": "An error occurred while sending",
     "back": "Back",
     "goToFriends": "View Friends",
-    "challenge": "Challenge"
+    "challenge": "Challenge",
+    "friendMap": {
+      "close": "Close",
+      "empty": "This friend hasn't started studying yet."
+    },
+    "removeFriend": "Remove Friend",
+    "removeConfirmTitle": "Remove {{name}}?",
+    "removeConfirmBody": "You won't see each other on the friends list anymore. You can add them again later with their code.",
+    "removeFailed": "Couldn't remove friend. Please try again."
   },
   "pvpInvite": {
     "lobbyTitle": "Friend Duel",

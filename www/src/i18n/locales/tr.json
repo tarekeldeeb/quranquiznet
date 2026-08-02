@@ -509,7 +509,15 @@
     "errorOccurred": "Gönderim sırasında bir hata oluştu",
     "back": "Geri",
     "goToFriends": "Arkadaşları Görüntüle",
-    "challenge": "Meydan Oku"
+    "challenge": "Meydan Oku",
+    "friendMap": {
+      "close": "Kapat",
+      "empty": "Bu arkadaş henüz ezber çalışmasına başlamadı."
+    },
+    "removeFriend": "Arkadaşı Kaldır",
+    "removeConfirmTitle": "{{name}} kaldırılsın mı?",
+    "removeConfirmBody": "Artık birbirinizin arkadaş listesinde görünmeyeceksiniz. Daha sonra kodlarını kullanarak tekrar ekleyebilirsiniz.",
+    "removeFailed": "Arkadaş kaldırılamadı. Lütfen tekrar deneyin."
   },
   "pvpInvite": {
     "lobbyTitle": "Arkadaş Düellosu",

@@ -509,7 +509,15 @@
     "errorOccurred": "خطایی هنگام ارسال رخ داد",
     "back": "بازگشت",
     "goToFriends": "مشاهده دوستان",
-    "challenge": "چالش"
+    "challenge": "چالش",
+    "friendMap": {
+      "close": "بستن",
+      "empty": "این دوست هنوز حفظ را شروع نکرده است."
+    },
+    "removeFriend": "حذف دوست",
+    "removeConfirmTitle": "{{name}} حذف شود؟",
+    "removeConfirmBody": "دیگر در لیست دوستان یکدیگر نمایش داده نمی‌شوید. می‌توانید بعداً با کد او دوباره اضافه‌اش کنید.",
+    "removeFailed": "حذف دوست ممکن نشد. دوباره تلاش کنید."
   },
   "pvpInvite": {
     "lobbyTitle": "مبارزه با دوست",

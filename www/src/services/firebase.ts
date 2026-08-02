@@ -21,8 +21,9 @@ import {
 } from 'firebase/database';
 import type { SocialKind } from './nativeOAuth';
 import type { PvpQueueEntry, PvpMatchMeta, PvpPlayerState, PvpMatchResult, MatchScopePart } from './pvpService';
-import { useProfileStore } from '../stores/profileStore';
+import { useProfileStore, tierFromRatioRange } from '../stores/profileStore';
 import { quizCodeOf } from '../models/quizCode';
+import { computeJuzMap, encodePublicJuzMap, type PublicJuzMap } from '../models/juzMap';
 
 // Config comes from EXPO_PUBLIC_* env vars (see .env / .env.example), so the
 // values are not hard-coded in source. Note: EXPO_PUBLIC_* vars are still
@@ -388,23 +389,32 @@ export interface PublicStats {
   streak: number;
   level: number;
   country?: string;
+  // 30-juz coverage snapshot (see models/juzMap.ts) — lets a friend's row on
+  // the /friends screen open a read-only view of this user's progression
+  // map. Gated by the same friends-only .read rule as the rest of publicStats.
+  juzMap?: PublicJuzMap;
 }
 
 /**
- * Pushes public leaderboard stats ({ name, score, streak, level, country }) to
- * /publicStats/{uid}. No-op for anonymous guests and signed-out users.
+ * Pushes public leaderboard stats ({ name, score, streak, level, country,
+ * juzMap }) to /publicStats/{uid}. No-op for anonymous guests and signed-out
+ * users.
  */
 export async function pushPublicStats(): Promise<void> {
   try {
     const user = getFirebaseAuth().currentUser;
     if (!user || user.isAnonymous) return;
     const s = useProfileStore.getState();
+    const juzMap = encodePublicJuzMap(
+      computeJuzMap(s.parts, (i) => tierFromRatioRange(s.getCorrectRatioRange(i))),
+    );
     const raw: Record<string, unknown> = {
       name: s.social.displayName || undefined,
       score: s.getScore(),
       streak: s.streak,
       level: s.level,
       country: s.country ? s.country : undefined,
+      juzMap,
     };
     for (const key of Object.keys(raw)) {
       if (raw[key] === undefined) delete raw[key];
@@ -920,6 +930,25 @@ export async function declineFriendRequest(fromUid: string, myUid: string): Prom
     return true;
   } catch (e) {
     console.error('declineFriendRequest error:', e);
+    return false;
+  }
+}
+
+/**
+ * Removes a mutual friendship: deletes both `/friends/{myUid}/{otherUid}` and
+ * `/friends/{otherUid}/{myUid}`. Unlike acceptFriendRequest, write order
+ * doesn't matter here — the RTDB rule lets each side delete its own mirror
+ * entry unconditionally, so a partial failure (e.g. offline mid-call) just
+ * leaves the other side to clean up next time either of them opens the list.
+ */
+export async function removeFriend(myUid: string, otherUid: string): Promise<boolean> {
+  try {
+    const dbInstance = getFirebaseDb();
+    await remove(ref(dbInstance, `/friends/${myUid}/${otherUid}`));
+    await remove(ref(dbInstance, `/friends/${otherUid}/${myUid}`));
+    return true;
+  } catch (e) {
+    console.error('removeFriend error:', e);
     return false;
   }
 }
