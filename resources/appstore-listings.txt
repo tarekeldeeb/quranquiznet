@@ -1,0 +1,412 @@
+App Store Connect listings — the 11 app languages the App Store supports
+(select by display name in the version page's top-right language menu).
+Not supported by Apple: Persian, Swahili, Hausa, Javanese, Pashto — those
+users see the primary (English (U.S.)) page.
+
+Limits: App name 30 · Subtitle 30 · Promotional text 170 (editable anytime
+without review) · Keywords 100 total (comma-separated, no spaces needed) ·
+Description 4000 · What's New 4000. Screenshots per language are optional —
+the primary set is shown where none are uploaded.
+
+Notes:
+- Punjabi is written in Shahmukhi per the in-app decision (2026-07-31);
+  Apple's Punjabi audience is largely Gurmukhi-readers in India.
+- Keywords avoid repeating words already indexed from the name/subtitle.
+- App name & subtitle are entered under App Information (own language
+  dropdown); the rest on the 2.4.0 version page.
+
+============================================================
+English (U.S.) — en-US   [primary]
+============================================================
+App name:
+Quran Quiz — Test Your Hifz
+
+Subtitle:
+Test your Quran memorization
+
+Promotional text:
+Now in 16 languages! Race a friend — or the honest bot «الحافظ» — in live 1v1 hifz matches, and climb the new cumulative monthly leaderboard.
+
+Keywords:
+hifz,hifdh,memorize,islam,muslim,koran,coran,hafiz,juz,surah,ayah,daily,game,learn,revision
+
+Description:
+Quran Quiz (اختبار القرآن) is a free multiple-choice quiz game that tests real Quran memorization (hifz).
+
+Every question is generated from the actual text of the Quran (Uthmani script, ~77,900 words). Wrong answers are not random: they are drawn from genuinely similar, easily-confused verses (mutashabihat), so the quiz tests true recall — not guessing by familiarity.
+
+FEATURES
+• Personal study profile — the Quran is divided into 50 study parts. Mark the parts you have memorized, and questions are drawn only from them. Scores, per-part accuracy, and your daily streak are tracked.
+• Rank ladder — climb from Beginner (مبتدئ) to Mujtahid (مجتهد), Hafiz (حافظ) and Mutqin (متقن) as your score grows, with milestone celebrations along the way.
+• Daily quiz — one shared quiz for everyone, rotating every 24 hours, with a daily top list and a cumulative monthly leaderboard.
+• Live 1v1 matches — challenge another player, or the honest bot "الحافظ", to a real-time race over the parts you both have memorized.
+• Start instantly — play anonymously as a guest; sign in with Google or Facebook later to back up your progress and join the leaderboard by name.
+• 16 languages — Arabic, English, Malay, Bengali, Turkish, Urdu, Punjabi, Persian, Hausa, Javanese, Pashto, French, Spanish, Indonesian, Chinese, and Swahili, with a right-to-left–first design and Quran text in the Madina Mushaf script.
+
+Quran Quiz is free and also works in your browser at app.quranquiz.net.
+
+What's New:
+• The app is now available in 16 languages — pick yours in Settings.
+• The monthly leaderboard now adds up all your points across the month.
+• Tapping a notification takes you straight to the right screen.
+• Bug fixes and improvements.
+
+============================================================
+Arabic — ar
+============================================================
+App name:
+اختبار القرآن — Quran Quiz
+
+Subtitle:
+اختبر حفظك بالآيات المتشابهة
+
+Promotional text:
+التطبيق الآن بـ16 لغة! تحدَّ صديقًا أو «الحافظ» في منافسات مباشرة، وتصدّر لوحة الشهر التراكمية الجديدة.
+
+Keywords:
+حفظ,مراجعة,القران,قران,اسلام,مسلم,حافظ,تحفيظ,جزء,سورة,اية,مسابقة,لعبة,يومي
+
+Description:
+«اختبار القرآن» لعبة أسئلة اختيار من متعدد مجانية تختبر حفظك الحقيقي للقرآن الكريم.
+
+كل سؤال يُبنى من نص القرآن نفسه (بالرسم العثماني، نحو ٧٧٩٠٠ كلمة)، والإجابات الخاطئة ليست عشوائية بل تُختار من الآيات المتشابهة التي يسهل الخلط بينها، فيختبر التطبيق الحفظ الحقيقي لا التخمين.
+
+المميزات
+• ملف حفظ شخصي — القرآن مقسم إلى ٥٠ جزءًا دراسيًا؛ حدد الأجزاء التي تحفظها فتأتي الأسئلة منها وحدها، مع تتبع النقاط ودقة كل جزء وسلسلة أيامك المتتالية.
+• سلم الرتب — ارتقِ من مبتدئ إلى مجتهد فحافظ فمتقن، مع احتفالات عند كل إنجاز.
+• المسابقة اليومية — اختبار واحد مشترك يتجدد كل ٢٤ ساعة، مع قائمة صدارة يومية وأخرى شهرية تراكمية.
+• منافسات مباشرة ١ ضد ١ — تحدَّ لاعبًا آخر أو «الحافظ» (روبوت أمين) في سباق مباشر على الأجزاء المشتركة بينكما.
+• ابدأ فورًا — العب كضيف دون تسجيل، وسجّل الدخول لاحقًا بجوجل أو فيسبوك لحفظ تقدمك والظهور باسمك في قائمة الصدارة.
+• ١٦ لغة — العربية والإنجليزية والملايو والبنغالية والتركية والأردية والبنجابية والفارسية والهوسا والجاوية والبشتو والفرنسية والإسبانية والإندونيسية والصينية والسواحلية، بتصميم يدعم الاتجاه من اليمين إلى اليسار ونص قرآني بخط مصحف المدينة.
+
+التطبيق مجاني ويعمل أيضًا في المتصفح: app.quranquiz.net
+
+What's New:
+• أصبح التطبيق متوفرًا الآن بـ16 لغة — اختر لغتك من الإعدادات.
+• لوحة الصدارة الشهرية أصبحت تجمع كل نقاطك على مدار الشهر.
+• عند الضغط على الإشعار تنتقل الآن مباشرة إلى الشاشة الصحيحة.
+• إصلاحات وتحسينات.
+
+============================================================
+Malay — ms
+============================================================
+App name:
+Quran Quiz — Uji Hafazan
+
+Subtitle:
+Uji hafazan al-Quran anda
+
+Promotional text:
+Kini dalam 16 bahasa! Cabar rakan — atau bot jujur «الحافظ» — dalam perlawanan hafazan 1 lawan 1, dan daki papan pendahulu bulanan terkumpul yang baharu.
+
+Keywords:
+hafazan,quran,islam,muslim,hafiz,tahfiz,juz,surah,ayat,ulangkaji,kuiz,permainan,harian
+
+Description:
+Quran Quiz (اختبار القرآن) ialah permainan kuiz aneka pilihan percuma yang menguji hafazan al-Quran anda yang sebenar.
+
+Setiap soalan dibina daripada teks al-Quran itu sendiri (rasm Uthmani, kira-kira 77,900 patah perkataan). Jawapan yang salah bukan rawak — ia diambil daripada ayat-ayat mutasyabihat yang mudah dikelirukan, jadi kuiz ini menguji ingatan sebenar, bukan tekaan.
+
+CIRI-CIRI
+• Profil hafazan peribadi — al-Quran dibahagikan kepada 50 bahagian; tandakan bahagian yang telah anda hafaz dan soalan hanya diambil daripadanya. Mata, ketepatan setiap bahagian dan streak harian anda direkodkan.
+• Tangga pangkat — naik daripada Mubtadi kepada Mujtahid, Hafiz dan Mutqin, dengan raian pada setiap pencapaian.
+• Kuiz harian — satu kuiz yang dikongsi semua, bertukar setiap 24 jam, dengan papan pendahulu harian dan bulanan terkumpul.
+• Perlawanan langsung 1 lawan 1 — cabar pemain lain atau bot jujur «الحافظ» dalam perlumbaan masa nyata merangkumi bahagian yang kamu berdua hafaz.
+• Mula serta-merta — main sebagai tetamu tanpa akaun; log masuk dengan Google atau Facebook kemudian untuk menyandarkan kemajuan dan muncul di papan pendahulu dengan nama anda.
+• 16 bahasa — Arab, Inggeris, Melayu, Benggali, Turki, Urdu, Punjabi, Parsi, Hausa, Jawa, Pashto, Perancis, Sepanyol, Indonesia, Cina dan Swahili, dengan reka bentuk mesra tulisan kanan-ke-kiri dan teks al-Quran dalam khat Mushaf Madinah.
+
+Quran Quiz percuma dan boleh dimainkan juga dalam pelayar di app.quranquiz.net.
+
+What's New:
+• Apl kini tersedia dalam 16 bahasa — pilih bahasa anda dalam Tetapan.
+• Papan pendahulu bulanan kini mengumpulkan semua mata anda sepanjang bulan.
+• Mengetik pemberitahuan kini membawa anda terus ke skrin yang betul.
+• Pembetulan pepijat dan penambahbaikan.
+
+============================================================
+Bangla — bn
+============================================================
+App name:
+Quran Quiz — হিফয পরীক্ষা
+
+Subtitle:
+আপনার কুরআন হিফয যাচাই করুন
+
+Promotional text:
+এখন ১৬টি ভাষায়! বন্ধুকে — বা সৎ বট «الحافظ»-কে — লাইভ ১ বনাম ১ হিফয ম্যাচে চ্যালেঞ্জ করুন, আর নতুন মাসিক ক্রমপুঞ্জিত লিডারবোর্ডে উঠুন।
+
+Keywords:
+হিফয,কুরআন,ইসলাম,মুসলিম,হাফেজ,মুখস্থ,জুয,সূরা,আয়াত,কুইজ,গেম,দৈনিক
+
+Description:
+Quran Quiz (اختبار القرآن) একটি বিনামূল্যের বহুনির্বাচনী কুইজ গেম, যা আপনার প্রকৃত কুরআন হিফয যাচাই করে।
+
+প্রতিটি প্রশ্ন কুরআনের মূল পাঠ থেকেই তৈরি হয় (উসমানি রসম, প্রায় ৭৭,৯০০ শব্দ)। ভুল উত্তরগুলো এলোমেলো নয় — সেগুলো নেওয়া হয় সহজে গুলিয়ে ফেলার মতো মুতাশাবিহ আয়াত থেকে, তাই কুইজটি সত্যিকারের মুখস্থ যাচাই করে, অনুমান নয়।
+
+বৈশিষ্ট্য
+• ব্যক্তিগত হিফয প্রোফাইল — কুরআন ৫০টি অংশে ভাগ করা; আপনি যে অংশগুলো মুখস্থ করেছেন সেগুলো চিহ্নিত করুন, প্রশ্ন কেবল সেখান থেকেই আসবে। পয়েন্ট, প্রতিটি অংশের নির্ভুলতা ও দৈনিক স্ট্রিক ট্র্যাক হয়।
+• র‍্যাংক সিঁড়ি — মুবতাদি থেকে মুজতাহিদ, হাফেজ ও মুতকিন পর্যন্ত উঠুন, প্রতিটি মাইলফলকে উদযাপনসহ।
+• দৈনিক কুইজ — সবার জন্য একটি অভিন্ন কুইজ, প্রতি ২৪ ঘণ্টায় বদলায়; দৈনিক তালিকা ও মাসিক ক্রমপুঞ্জিত লিডারবোর্ড।
+• লাইভ ১ বনাম ১ — অন্য খেলোয়াড় বা সৎ বট «الحافظ»-এর সঙ্গে আপনাদের দুজনের মুখস্থ অংশের ওপর রিয়েল-টাইম প্রতিযোগিতা করুন।
+• সাথে সাথে শুরু করুন — অ্যাকাউন্ট ছাড়া অতিথি হিসেবে খেলুন; পরে Google বা Facebook দিয়ে সাইন ইন করে অগ্রগতি সংরক্ষণ করুন ও নিজের নামে লিডারবোর্ডে আসুন।
+• ১৬টি ভাষা — আরবি, ইংরেজি, মালয়, বাংলা, তুর্কি, উর্দু, পাঞ্জাবি, ফারসি, হাউসা, জাভানিজ, পশতু, ফরাসি, স্প্যানিশ, ইন্দোনেশিয়ান, চীনা ও সোয়াহিলি; ডান-থেকে-বাম লিপি-বান্ধব ডিজাইন এবং মদিনা মুসহাফ হরফে কুরআনের পাঠ।
+
+Quran Quiz বিনামূল্যে, ব্রাউজারেও চলে: app.quranquiz.net
+
+What's New:
+• অ্যাপটি এখন ১৬টি ভাষায় উপলব্ধ — সেটিংস থেকে আপনার ভাষা বেছে নিন।
+• মাসিক লিডারবোর্ড এখন সারা মাসের সব পয়েন্ট যোগ করে।
+• নোটিফিকেশনে ট্যাপ করলে এখন সরাসরি সঠিক স্ক্রিনে পৌঁছে যাবেন।
+• বাগ সংশোধন ও উন্নতি।
+
+============================================================
+Turkish — tr
+============================================================
+App name:
+Quran Quiz — Hafızlık Testi
+
+Subtitle:
+Kur'an hafızlığınızı ölçün
+
+Promotional text:
+Artık 16 dilde! Bir arkadaşınıza — ya da dürüst bot «الحافظ»a — canlı 1'e 1 hafızlık maçında meydan okuyun ve yeni kümülatif aylık liderlik tablosunda yükselin.
+
+Keywords:
+hafızlık,kuran,kur'an,islam,müslüman,hafız,ezber,cüz,sure,ayet,tekrar,oyun,günlük
+
+Description:
+Quran Quiz (اختبار القرآن), gerçek Kur'an hafızlığını (hıfz) ölçen ücretsiz bir çoktan seçmeli bilgi yarışması oyunudur.
+
+Her soru doğrudan Kur'an metninden üretilir (Osmani hat, yaklaşık 77.900 kelime). Yanlış şıklar rastgele değildir; birbirine karıştırılması kolay müteşabih ayetlerden seçilir. Böylece test, aşinalıkla tahmini değil gerçek ezberi ölçer.
+
+ÖZELLİKLER
+• Kişisel hafızlık profili — Kur'an 50 çalışma bölümüne ayrılmıştır; ezberlediğiniz bölümleri işaretleyin, sorular yalnızca onlardan gelsin. Puanlar, bölüm bazında doğruluk ve günlük seri takip edilir.
+• Rütbe merdiveni — Mübtedi'den Müctehid'e, Hafız'a ve Mütkin'e yükselin; her kilometre taşında kutlama sizi bekler.
+• Günlük yarışma — herkes için ortak tek bir test, her 24 saatte yenilenir; günlük liste ve aylık kümülatif liderlik tablosu.
+• Canlı 1'e 1 maçlar — başka bir oyuncuya ya da dürüst bot «الحافظ»a, ikinizin de ezberlediği bölümler üzerinden gerçek zamanlı bir yarışta meydan okuyun.
+• Hemen başlayın — hesap açmadan misafir olarak oynayın; ilerlemenizi yedeklemek ve liderlik tablosunda adınızla görünmek için sonra Google veya Facebook ile giriş yapın.
+• 16 dil — Arapça, İngilizce, Malayca, Bengalce, Türkçe, Urduca, Pencapça, Farsça, Hausa, Cava dili, Peştuca, Fransızca, İspanyolca, Endonezce, Çince ve Svahili; sağdan sola öncelikli tasarım ve Medine Mushafı hattıyla Kur'an metni.
+
+Quran Quiz ücretsizdir; tarayıcıda da çalışır: app.quranquiz.net
+
+What's New:
+• Uygulama artık 16 dilde — dilinizi Ayarlar'dan seçin.
+• Aylık liderlik tablosu artık ay boyunca kazandığınız tüm puanları topluyor.
+• Bildirime dokunduğunuzda artık doğrudan ilgili ekrana gidersiniz.
+• Hata düzeltmeleri ve iyileştirmeler.
+
+============================================================
+Urdu — ur
+============================================================
+App name:
+Quran Quiz — حفظ کا امتحان
+
+Subtitle:
+اپنا حفظِ قرآن آزمائیں
+
+Promotional text:
+اب 16 زبانوں میں! کسی دوست یا دیانت دار بوٹ «الحافظ» کو لائیو 1 بمقابلہ 1 حفظ مقابلے میں چیلنج کریں اور نئے ماہانہ مجموعی لیڈر بورڈ پر آگے بڑھیں۔
+
+Keywords:
+حفظ,قرآن,اسلام,مسلمان,حافظ,تحفیظ,پارہ,سورہ,آیت,دہرائی,کوئز,گیم,روزانہ
+
+Description:
+Quran Quiz (اختبار القرآن) ایک مفت کثیر انتخابی کوئز گیم ہے جو آپ کے حقیقی حفظِ قرآن کو آزماتی ہے۔
+
+ہر سوال قرآن کے اصل متن ہی سے بنایا جاتا ہے (رسمِ عثمانی، تقریباً 77,900 الفاظ)۔ غلط جوابات بے ترتیب نہیں ہوتے بلکہ ایسی متشابہ آیات سے لیے جاتے ہیں جن میں التباس آسان ہے، اس لیے یہ کوئز اندازے کے بجائے حقیقی یادداشت کو جانچتا ہے۔
+
+خصوصیات
+• ذاتی حفظ پروفائل — قرآن 50 حصوں میں تقسیم ہے؛ جو حصے آپ نے حفظ کیے ہیں انہیں نشان زد کریں، سوالات صرف انہی سے آئیں گے۔ پوائنٹس، ہر حصے کی درستگی اور روزانہ کی اسٹریک محفوظ رہتی ہے۔
+• درجات کی سیڑھی — مبتدی سے مجتہد، پھر حافظ اور متقن تک ترقی کریں؛ ہر سنگِ میل پر جشن۔
+• روزانہ کوئز — سب کے لیے ایک مشترکہ کوئز جو ہر 24 گھنٹے بعد بدلتا ہے؛ روزانہ فہرست اور ماہانہ مجموعی لیڈر بورڈ۔
+• براہِ راست 1 بمقابلہ 1 — کسی دوسرے کھلاڑی یا دیانت دار بوٹ «الحافظ» کو اُن حصوں پر حقیقی وقت کی دوڑ میں چیلنج کریں جو آپ دونوں نے حفظ کیے ہیں۔
+• فوراً شروع کریں — بغیر اکاؤنٹ مہمان کے طور پر کھیلیں؛ بعد میں Google یا Facebook سے سائن اِن کر کے اپنی پیش رفت محفوظ کریں اور لیڈر بورڈ پر اپنے نام سے آئیں۔
+• 16 زبانیں — عربی، انگریزی، ملے، بنگالی، ترکی، اردو، پنجابی، فارسی، ہاؤسا، جاوی، پشتو، فرانسیسی، ہسپانوی، انڈونیشیائی، چینی اور سواحلی؛ دائیں سے بائیں لکھائی کے مطابق ڈیزائن اور مصحفِ مدینہ کے خط میں قرآنی متن۔
+
+Quran Quiz مفت ہے اور براؤزر میں بھی چلتا ہے: app.quranquiz.net
+
+What's New:
+• ایپ اب 16 زبانوں میں دستیاب ہے — ترتیبات سے اپنی زبان منتخب کریں۔
+• ماہانہ لیڈر بورڈ اب پورے مہینے کے تمام پوائنٹس جمع کرتا ہے۔
+• اطلاع پر ٹیپ کرنے سے اب آپ سیدھے درست اسکرین پر پہنچتے ہیں۔
+• خرابیوں کی اصلاح اور بہتریاں۔
+
+============================================================
+Punjabi — pa   (Shahmukhi — see note in header)
+============================================================
+App name:
+Quran Quiz — حفظ دا امتحان
+
+Subtitle:
+اپنا حفظِ قرآن پرکھو
+
+Promotional text:
+ہن 16 زباناں وچ! کسے دوست یا ایمان دار بوٹ «الحافظ» نوں لائیو 1 بمقابلہ 1 حفظ مقابلے وچ چیلنج کرو تے نویں مہینے وار مجموعی لیڈر بورڈ اُتے چڑھو۔
+
+Keywords:
+حفظ,قرآن,اسلام,مسلمان,حافظ,پارہ,سورت,آیت,دہرائی,کوئز,کھیڈ,روزانہ
+
+Description:
+Quran Quiz (اختبار القرآن) اک مفت کثیر انتخابی کوئز گیم اے جہڑی تہاڈے اصلی حفظِ قرآن نوں پرکھدی اے۔
+
+ہر سوال قرآن دے اصل متن توں ای بندا اے (رسمِ عثمانی، تقریباً 77,900 لفظ)۔ غلط جواب بے ترتیبے نہیں ہوندے سگوں اوہناں متشابہ آیتاں توں لئے جاندے نیں جنہاں وچ رلا سوکھا اے، ایس لئی ایہ کوئز اندازے دی تھاں اصلی یاد نوں جانچدا اے۔
+
+خصوصیتاں
+• ذاتی حفظ پروفائل — قرآن 50 حصیاں وچ ونڈیا ہویا اے؛ جہڑے حصے تسی حفظ کیتے نیں اوہناں تے نشان لاؤ، سوال صرف اوہناں وچوں آؤن گے۔ پوائنٹ، ہر حصے دی درستی تے روزانہ سٹریک ریکارڈ ہوندی اے۔
+• درجیاں دی پوڑی — مبتدی توں مجتہد، فیر حافظ تے متقن تیک چڑھو؛ ہر سنگِ میل اُتے جشن۔
+• روزانہ کوئز — سبھناں لئی اک سانجھا کوئز جہڑا ہر 24 گھنٹیاں بعد بدلدا اے؛ روزانہ فہرست تے مہینے دا مجموعی لیڈر بورڈ۔
+• لائیو 1 بمقابلہ 1 — کسے دوجے کھڈاری یا ایمان دار بوٹ «الحافظ» نوں اوہناں حصیاں اُتے چیلنج کرو جہڑے تسی دوویں حفظ کیتے نیں۔
+• فوراً شروع کرو — بنا اکاؤنٹ مہمان بن کے کھیڈو؛ بعد وچ Google یا Facebook نال سائن اِن کر کے اپنی ترقی محفوظ کرو تے لیڈر بورڈ اُتے اپنے ناں نال آؤ۔
+• 16 زباناں — عربی، انگریزی، ملے، بنگالی، ترکی، اردو، پنجابی، فارسی، ہاؤسا، جاوی، پشتو، فرانسیسی، ہسپانوی، انڈونیشیائی، چینی تے سواحلی؛ سجے توں کھبے لکھائی موافق ڈیزائن تے مصحفِ مدینہ دے خط وچ قرآنی متن۔
+
+Quran Quiz مفت اے تے براؤزر وچ وی چلدا اے: app.quranquiz.net
+
+What's New:
+• ایپ ہن 16 زباناں وچ دستیاب اے — سیٹنگز وچوں اپنی زبان چنو۔
+• مہینے دا لیڈر بورڈ ہن پورے مہینے دے سارے پوائنٹ جوڑدا اے۔
+• نوٹیفکیشن اُتے ٹیپ کرن نال ہن تسی سدھے ٹھیک سکرین اُتے پہنچدے او۔
+• خرابیاں دی درستی تے بہتریاں۔
+
+============================================================
+French — fr
+============================================================
+App name:
+Quran Quiz — Test de hifz
+
+Subtitle:
+Testez votre hifz du Coran
+
+Promotional text:
+Désormais en 16 langues ! Défiez un ami — ou le bot honnête « الحافظ » — en duel de hifz en direct, et grimpez au nouveau classement mensuel cumulé.
+
+Keywords:
+coran,hifz,mémorisation,islam,musulman,hafiz,juz,sourate,verset,révision,quiz,jeu,quotidien
+
+Description:
+Quran Quiz (اختبار القرآن) est un jeu-questionnaire gratuit à choix multiples qui évalue votre véritable mémorisation du Coran (hifz).
+
+Chaque question est générée à partir du texte même du Coran (graphie othmanienne, environ 77 900 mots). Les mauvaises réponses ne sont pas aléatoires : elles proviennent de versets réellement similaires et faciles à confondre (moutachabihât). Le quiz teste donc la mémoire réelle, pas la simple familiarité.
+
+FONCTIONNALITÉS
+• Profil de mémorisation personnel — le Coran est divisé en 50 parties ; cochez celles que vous avez mémorisées et les questions n'en sortiront pas. Points, précision par partie et série quotidienne sont suivis.
+• Échelle de rangs — progressez de Débutant (مبتدئ) à Moujtahid, Hafiz puis Moutqin, avec des célébrations à chaque étape.
+• Quiz quotidien — un même quiz pour tous, renouvelé toutes les 24 heures, avec classement du jour et classement mensuel cumulé.
+• Duels en direct (1 contre 1) — défiez un autre joueur, ou le bot honnête « الحافظ », dans une course en temps réel sur les parties que vous connaissez tous les deux.
+• Commencez immédiatement — jouez en invité sans compte ; connectez-vous plus tard avec Google ou Facebook pour sauvegarder votre progression et apparaître au classement sous votre nom.
+• 16 langues — arabe, anglais, malais, bengali, turc, ourdou, pendjabi, persan, haoussa, javanais, pachto, français, espagnol, indonésien, chinois et swahili, avec une interface pensée pour l'écriture de droite à gauche et le texte coranique en style Mushaf de Médine.
+
+Quran Quiz est gratuit et fonctionne aussi dans le navigateur : app.quranquiz.net
+
+What's New:
+• L'application est désormais disponible en 16 langues — choisissez la vôtre dans les Réglages.
+• Le classement mensuel cumule maintenant tous vos points du mois.
+• Appuyer sur une notification ouvre désormais directement le bon écran.
+• Corrections de bugs et améliorations.
+
+============================================================
+Spanish (Spain) — es-ES
+============================================================
+App name:
+Quran Quiz — Memoriza el Corán
+
+Subtitle:
+Pon a prueba tu hifz
+
+Promotional text:
+¡Ahora en 16 idiomas! Reta a un amigo — o al bot honesto «الحافظ» — en duelos de hifz en vivo y escala la nueva clasificación mensual acumulada.
+
+Keywords:
+coran,hifz,memorizacion,islam,musulman,hafiz,juz,sura,aleya,repaso,quiz,juego,diario
+
+Description:
+Quran Quiz (اختبار القرآن) es un juego gratuito de preguntas de opción múltiple que pone a prueba tu verdadera memorización del Corán (hifz).
+
+Cada pregunta se genera a partir del propio texto del Corán (grafía uzmaní, unas 77 900 palabras). Las respuestas incorrectas no son aleatorias: proceden de aleyas realmente parecidas y fáciles de confundir (mutashabihat), de modo que el quiz evalúa la memoria real, no la familiaridad.
+
+CARACTERÍSTICAS
+• Perfil de memorización personal — el Corán está dividido en 50 partes; marca las que ya has memorizado y las preguntas saldrán solo de ellas. Se registran los puntos, la precisión por parte y tu racha diaria.
+• Escalera de rangos — asciende de Principiante (مبتدئ) a Muytahid, Hafiz y Mutqin, con celebraciones en cada hito.
+• Quiz diario — un mismo quiz para todos que se renueva cada 24 horas, con clasificación del día y clasificación mensual acumulada.
+• Duelos en vivo 1 contra 1 — reta a otro jugador, o al bot honesto «الحافظ», en una carrera en tiempo real sobre las partes que ambos habéis memorizado.
+• Empieza al instante — juega como invitado sin cuenta; inicia sesión después con Google o Facebook para respaldar tu progreso y aparecer con tu nombre en la clasificación.
+• 16 idiomas — árabe, inglés, malayo, bengalí, turco, urdu, panyabí, persa, hausa, javanés, pastún, francés, español, indonesio, chino y suajili, con diseño pensado para la escritura de derecha a izquierda y texto coránico en estilo Múshaf de Medina.
+
+Quran Quiz es gratuito y también funciona en el navegador: app.quranquiz.net
+
+What's New:
+• La aplicación ya está disponible en 16 idiomas: elige el tuyo en Ajustes.
+• La clasificación mensual ahora suma todos tus puntos del mes.
+• Al tocar una notificación ahora vas directo a la pantalla correcta.
+• Corrección de errores y mejoras.
+
+============================================================
+Indonesian — id
+============================================================
+App name:
+Quran Quiz — Uji Hafalan
+
+Subtitle:
+Uji hafalan Al-Qur'an-mu
+
+Promotional text:
+Kini dalam 16 bahasa! Tantang teman — atau bot jujur «الحافظ» — dalam duel hafalan 1 lawan 1 secara langsung, dan naiki papan peringkat bulanan kumulatif yang baru.
+
+Keywords:
+hafalan,quran,islam,muslim,hafiz,tahfidz,juz,surah,ayat,murajaah,kuis,game,harian
+
+Description:
+Quran Quiz (اختبار القرآن) adalah gim kuis pilihan ganda gratis yang menguji hafalan Al-Qur'an-mu yang sesungguhnya.
+
+Setiap soal dibuat dari teks Al-Qur'an itu sendiri (rasm Utsmani, sekitar 77.900 kata). Jawaban yang salah tidak acak — diambil dari ayat-ayat mutasyabihat yang mudah tertukar, sehingga kuis ini menguji ingatan yang sebenarnya, bukan tebakan.
+
+FITUR
+• Profil hafalan pribadi — Al-Qur'an dibagi menjadi 50 bagian; tandai bagian yang sudah kamu hafal dan soal hanya diambil dari sana. Poin, akurasi tiap bagian, dan streak harianmu tercatat.
+• Tangga peringkat — naik dari Mubtadi ke Mujtahid, Hafiz, lalu Mutqin, dengan perayaan di tiap pencapaian.
+• Kuis harian — satu kuis yang sama untuk semua orang, berganti tiap 24 jam, dengan papan peringkat harian dan bulanan kumulatif.
+• Duel langsung 1 lawan 1 — tantang pemain lain, atau bot jujur «الحافظ», dalam balapan real-time pada bagian yang kalian berdua hafal.
+• Langsung mulai — main sebagai tamu tanpa akun; masuk dengan Google atau Facebook nanti untuk mencadangkan progres dan tampil di papan peringkat dengan namamu.
+• 16 bahasa — Arab, Inggris, Melayu, Bengali, Turki, Urdu, Punjabi, Persia, Hausa, Jawa, Pashto, Prancis, Spanyol, Indonesia, Mandarin, dan Swahili, dengan desain ramah tulisan kanan-ke-kiri dan teks Al-Qur'an bergaya Mushaf Madinah.
+
+Quran Quiz gratis dan bisa juga dimainkan di browser: app.quranquiz.net
+
+What's New:
+• Aplikasi kini tersedia dalam 16 bahasa — pilih bahasamu di Pengaturan.
+• Papan peringkat bulanan kini menjumlahkan semua poinmu sepanjang bulan.
+• Mengetuk notifikasi kini langsung membuka layar yang tepat.
+• Perbaikan bug dan peningkatan.
+
+============================================================
+Chinese (Simplified) — zh-Hans
+============================================================
+App name:
+Quran Quiz 古兰经背诵测验
+
+Subtitle:
+检验你的古兰经背诵
+
+Promotional text:
+现已支持 16 种语言！与好友——或诚实的机器人「الحافظ」——实时 1 对 1 比拼背诵，并登上全新的月度累计排行榜。
+
+Keywords:
+古兰经,背诵,记忆,伊斯兰,穆斯林,哈菲兹,每日,测验,游戏,学习,复习,经文
+
+Description:
+Quran Quiz（اختبار القرآن）是一款免费的多项选择问答游戏，检验你对古兰经的真实背诵（希夫兹）。
+
+每道题都直接取自古兰经原文（奥斯曼体，约 77,900 个词）。错误选项并非随机生成，而是选自极易混淆的相似经文（穆塔沙比哈特），因此测验考查的是真正的记忆，而不是凭熟悉感猜测。
+
+功能特色
+• 个人背诵档案 — 古兰经划分为 50 个学习部分；标记你已背诵的部分，题目只从中出。积分、每部分的正确率和每日连胜都会被记录。
+• 段位阶梯 — 从初学者（مبتدئ）晋升到勤奋者、哈菲兹，直至精熟者（متقن），每个里程碑都有庆祝动画。
+• 每日测验 — 全球共享同一份测验，每 24 小时更换，设有当日榜单和按月累计的排行榜。
+• 实时 1 对 1 对战 — 挑战其他玩家或诚实的机器人「الحافظ」，在你们双方都背过的部分上进行实时比拼。
+• 即刻开始 — 无需账号即可以访客身份游玩；之后用 Google 或 Facebook 登录即可备份进度，并以自己的名字登上排行榜。
+• 16 种语言 — 阿拉伯语、英语、马来语、孟加拉语、土耳其语、乌尔都语、旁遮普语、波斯语、豪萨语、爪哇语、普什图语、法语、西班牙语、印尼语、中文和斯瓦希里语；界面为从右到左的文字优化，古兰经文以麦地那穆斯哈夫字体呈现。
+
+Quran Quiz 完全免费，也可在浏览器中使用：app.quranquiz.net
+
+What's New:
+• 应用现已支持 16 种语言——请在“设置”中选择您的语言。
+• 月度排行榜现在会累计您整月的全部积分。
+• 点按通知现在会直接打开对应页面。
+• 修复问题并提升体验。

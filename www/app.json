@@ -10,11 +10,15 @@
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "net.quranquiz",
-      "buildNumber": "13",
+      "buildNumber": "14",
       "appleTeamId": "FNSP52WBLF",
       "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "CFBundleLocalizations": [
+          "ar", "en", "ms", "bn", "tr", "ur", "pa", "fa",
+          "ha", "jv", "ps", "fr", "es", "id", "zh-Hans", "sw"
+        ]
       },
       "associatedDomains": [
         "applinks:quranquiz.net"
