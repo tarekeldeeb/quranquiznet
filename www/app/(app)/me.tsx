@@ -13,7 +13,7 @@ import { useTranslation } from 'react-i18next';
 import {
   signInGoogle, signInFacebook, signInApple, getDailyHead, getTodayStandings, pushCurrentProfile, type DailyHead,
 } from '../../src/services/firebase';
-import { useProfileStore } from '../../src/stores/profileStore';
+import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileStore';
 import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME, translatePartName } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
@@ -28,6 +28,8 @@ import { useDirection, rowDir, alignDir, mirror } from '../../src/theme/directio
 import type { Language } from '../../src/i18n/languages';
 import PressScale from '../../src/components/PressScale';
 import Ring from '../../src/components/Ring';
+import JuzMap from '../../src/components/JuzMap';
+import { computeJuzMap } from '../../src/models/juzMap';
 
 const DAILY_PERIOD_MS = 24 * 60 * 60 * 1000;
 // Matches notifications.ts's STREAK_REMINDER_HOUR — "tonight" starts at the
@@ -722,16 +724,25 @@ export default function MeScreen() {
           <ProgressChart scores={profile.scores} colors={colors} />
         </View>
 
-        {/* ── The progression map — replaces the parts-editor summary card ── */}
-        <PressScale style={[s.bentoFull, s.mapCard, { backgroundColor: colors.navy, flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/map')}>
-          <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={18} color={colors.navySoft} />
-          <View style={[s.mapBody, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
-            <Text style={[s.mapTitle, { textAlign: alignDir(isRTL) }]}>{t('me.mapCard.title')}</Text>
-            <Text style={[s.mapSub, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>
-              {t('me.activeParts', { count: activeParts })} — {t('me.mapCard.tapForDetails')}
-            </Text>
+        {/* ── The progression map — replaces the parts-editor summary card.
+            The 5×6 grid inside is the 30 ajzāʾ (components/JuzMap); tapping
+            anywhere still opens the full خريطة الحفظ editor. ── */}
+        <PressScale style={[s.bentoFull, s.mapCard, { backgroundColor: colors.navy }]} onPress={() => router.push('/(app)/map')}>
+          <View style={[s.mapHead, { flexDirection: rowDir(isRTL) }]}>
+            <Ionicons name={mirror(isRTL, 'chevron-forward', 'chevron-back')} size={18} color={colors.navySoft} />
+            <View style={[s.mapBody, { alignItems: isRTL ? 'flex-end' : 'flex-start' }]}>
+              <Text style={[s.mapTitle, { textAlign: alignDir(isRTL) }]}>{t('me.mapCard.title')}</Text>
+              <Text style={[s.mapSub, { color: colors.navySoft, textAlign: alignDir(isRTL) }]}>
+                {t('me.activeParts', { count: activeParts })} — {t('me.mapCard.tapForDetails')}
+              </Text>
+            </View>
+            <Ionicons name="map-outline" size={26} color={colors.gold} />
           </View>
-          <Ionicons name="map-outline" size={26} color={colors.gold} />
+          <JuzMap
+            cells={computeJuzMap(profile.parts, (i) => tierFromRatioRange(profile.getCorrectRatioRange(i)))}
+            language={lang}
+            isRTL={isRTL}
+          />
         </PressScale>
 
         {/* ── Sign-in nag — demoted to a one-line banner, modern brand colors ── */}
@@ -959,7 +970,8 @@ const s = StyleSheet.create({
   sparkEmpty: { fontSize: 18, fontFamily: 'PlexArabic-Bold' },
 
   // Map card
-  mapCard: { alignItems: 'center', padding: 16, gap: 10 },
+  mapCard: { padding: 16, gap: 12 },
+  mapHead: { alignItems: 'center', gap: 10 },
   mapBody: { flex: 1 },
   mapTitle: { fontSize: 15, fontFamily: 'Amiri-Regular', fontWeight: '700', color: '#fff' },
   mapSub: { fontSize: 11, marginTop: 2 },
