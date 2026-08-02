@@ -325,6 +325,14 @@ export default function MeScreen() {
   const [nicknameInput, setNicknameInput] = useState('');
   const [streakSheetOpen, setStreakSheetOpen] = useState(false);
   const [rankSheetOpen, setRankSheetOpen] = useState(false);
+  // pvpSection has no fixed height (unlike pvp-journey.tsx's fixed-height
+  // rows) — its height comes from its text/button content, resolved after
+  // the photo-fade Svg's first layout pass. A percentage-sized Svg
+  // ("100%"/"100%") doesn't reliably track that later-resolved height on
+  // native, so the gradient overlay can end up shorter than the card,
+  // leaving its bottom uncovered. Measuring the card and passing pixel
+  // dimensions keeps the Svg in sync via a normal re-render instead.
+  const [pvpCardSize, setPvpCardSize] = useState({ width: 0, height: 0 });
 
   useEffect(() => {
     getDailyHead()
@@ -613,23 +621,28 @@ export default function MeScreen() {
             pvpCardFadeStops) — clipped in its own inner view so overflow:
             hidden never eats the outer view's shadow. ── */}
         <View style={s.bentoFull}>
-          <View style={[s.progressSection, s.pvpSection, { backgroundColor: colors.card }]}>
+          <View
+            style={[s.progressSection, s.pvpSection, { backgroundColor: colors.card }]}
+            onLayout={(e) => setPvpCardSize({ width: e.nativeEvent.layout.width, height: e.nativeEvent.layout.height })}
+          >
             <View style={[StyleSheet.absoluteFill, s.pvpPhotoClip]}>
               <Image
                 source={CITY_IMAGES[pvpTier.city.id]}
                 style={{ width: '100%', aspectRatio: CITY_IMAGE_ASPECT[pvpTier.city.id] }}
               />
             </View>
-            <Svg style={StyleSheet.absoluteFill} width="100%" height="100%" viewBox="0 0 100 100" preserveAspectRatio="none">
-              <Defs>
-                <LinearGradient id="pvpCardFade" x1="0" y1="0" x2="1" y2="0">
-                  {pvpFadeStops.map((stop) => (
-                    <Stop key={stop.offset} offset={stop.offset} stopColor={colors.card} stopOpacity={stop.opacity} />
-                  ))}
-                </LinearGradient>
-              </Defs>
-              <Rect x="0" y="0" width="100" height="100" fill="url(#pvpCardFade)" />
-            </Svg>
+            {pvpCardSize.height > 0 && (
+              <Svg style={StyleSheet.absoluteFill} width={pvpCardSize.width} height={pvpCardSize.height} viewBox="0 0 100 100" preserveAspectRatio="none">
+                <Defs>
+                  <LinearGradient id="pvpCardFade" x1="0" y1="0" x2="1" y2="0">
+                    {pvpFadeStops.map((stop) => (
+                      <Stop key={stop.offset} offset={stop.offset} stopColor={colors.card} stopOpacity={stop.opacity} />
+                    ))}
+                  </LinearGradient>
+                </Defs>
+                <Rect x="0" y="0" width="100" height="100" fill="url(#pvpCardFade)" />
+              </Svg>
+            )}
 
             <Text style={[s.sectionLabel, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>{t('pvpJourney.title')}</Text>
             <PressScale style={[s.rankHeaderRow, { flexDirection: rowDir(isRTL) }]} onPress={() => router.push('/(app)/pvp-journey')}>
