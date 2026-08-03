@@ -6,10 +6,11 @@
 [![Platforms](https://img.shields.io/badge/platform-web%20%7C%20iOS%20%7C%20Android-blue)](#)
 [![License](https://img.shields.io/badge/license-GPLv3%20%2F%20Commercial-informational)](#license)
 
-An Arabic multiple-choice quiz that tests real Quran memorization (ḥifẓ) —
-not familiarity. Questions are generated only from the parts *you've*
-memorized, with deliberately confusable ("mutashābiha") wrong answers, so
-guessing doesn't work.
+A multiple-choice quiz that tests real Quran memorization (ḥifẓ) — not
+familiarity. Questions are generated only from the parts *you've* memorized,
+with deliberately confusable ("mutashābiha") wrong answers, so guessing
+doesn't work. The UI runs in 16 languages, from Arabic and English to
+Bengali, Urdu, Hausa, and Javanese.
 
 ![Quiz](https://raw.githubusercontent.com/tarekeldeeb/quranquiznet/master/resources/feature.png)
 
@@ -33,6 +34,9 @@ are in progress. Still in beta and evolving fast.
   bot ("الحافظ") — seed-based, so no question data is ever transmitted.
 - **Anonymous by default** — jump in as a guest instantly; sign in with
   Google/Facebook later to back up progress and rank on the leaderboard.
+- **16 languages, RTL-first** — a full UI translation set covering Arabic,
+  English, Malay, Bengali, Turkish, Urdu, Punjabi (Shahmukhi), Farsi, Hausa,
+  Javanese, Pashto, French, Spanish, Indonesian, Chinese, and Swahili.
 - **One codebase, three platforms** — Expo Router, running unmodified on
   web, iOS, and Android.
 

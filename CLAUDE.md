@@ -5,7 +5,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Quran Quiz Net — an Arabic multiple-choice quiz game testing Quran memorization. The
+Quran Quiz Net — a multiple-choice quiz game testing Quran memorization, with a UI
+available in 16 languages (see `www/src/i18n/languages.ts`). The
 app in `www/` is a React Native rewrite built with **Expo SDK 53 + Expo Router v5**,
 running on web, iOS, and Android from a single codebase. The live web app is at
 https://app.quranquiz.net (Firebase Hosting). Firebase project: `quranquiznet-3a54c`.
