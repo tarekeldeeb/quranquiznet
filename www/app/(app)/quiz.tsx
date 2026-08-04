@@ -2,7 +2,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   View, FlatList, ActivityIndicator, StyleSheet, Text,
-  Modal, TextInput, ScrollView, Share, Animated, Platform,
+  Modal, TextInput, ScrollView, Share, Animated, Platform, AppState,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useFocusEffect, useRouter, useNavigation } from 'expo-router';
@@ -31,7 +31,7 @@ import { ayaNumberOf, wordOffsetInAya } from '../../src/db/idb';
 import { QuestionObject } from '../../src/models/questionnaire';
 import {
   decideFocusFromContext, isAnswerable, shouldSuspendNormalRun,
-  shouldShowSummary, shouldRestoreNormalRunAfterDaily,
+  shouldShowSummary, shouldRestoreNormalRunAfterDaily, decideSessionComplete,
 } from '../../src/models/quizFlow';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { detectMilestones } from '../../src/models/milestones';
@@ -125,6 +125,8 @@ interface NormalSnapshot {
   seed: number;         // questionnaire seed at suspension (= active question idx)
   sessionMode: QuizMode;
   sessionStartScore: number;
+  flushedAnswered: number;
+  flushedCorrect: number;
 }
 const sessionCache: SessionCache = {
   active: false, dailyMode: false, dailyEnded: false,
@@ -234,21 +236,46 @@ export default function QuizScreen() {
 
   const sessionModeRef = useRef<QuizMode>('random');
   const sessionStartScoreRef = useRef<number>(0);
+  // How much of sessionAnswered/sessionCorrect a prior beacon (see the
+  // background/tab-hide flush below) already reported, so a later flush sends
+  // only the delta instead of double-counting.
+  const flushedAnsweredRef = useRef(0);
+  const flushedCorrectRef = useRef(0);
 
-  function emitSessionComplete(dailyScoreOverride?: number) {
-    if (!sessionActiveRef.current) return;
-    sessionActiveRef.current = false;
+  // `final=false` is a best-effort beacon fired when the app is backgrounded or
+  // the web tab is hidden — the only reliable signal that a session that never
+  // hits an in-app "exit" action (closing the tab, killing the app, locking the
+  // phone) is ending. It reports progress without tearing the session down, so
+  // a user who returns and keeps playing is still tracked as one run once they
+  // do eventually exit for real.
+  function emitSessionComplete(dailyScoreOverride?: number, final: boolean = true) {
     const isDaily = sessionModeRef.current === 'daily';
+    const decision = decideSessionComplete({
+      sessionActive: sessionActiveRef.current,
+      isDaily,
+      final,
+      answered: sessionAnsweredRef.current,
+      correct: sessionCorrectRef.current,
+      flushedAnswered: flushedAnsweredRef.current,
+      flushedCorrect: flushedCorrectRef.current,
+    });
+    if (decision.endSession) sessionActiveRef.current = false;
+    if (!decision.fire) return;
+
     const earnedScore = isDaily
       ? (dailyScoreOverride ?? dailyScoreRef.current)
       : Math.max(0, profile.getScore() - sessionStartScoreRef.current);
 
     trackEvent('quiz_session_complete', {
       mode: sessionModeRef.current,
-      correct: sessionCorrectRef.current,
-      answered: sessionAnsweredRef.current,
+      correct: decision.correctDelta,
+      answered: decision.answeredDelta,
       score: earnedScore,
     });
+
+    flushedAnsweredRef.current = sessionAnsweredRef.current;
+    flushedCorrectRef.current = sessionCorrectRef.current;
+    sessionStartScoreRef.current = profile.getScore();
   }
 
   // Guard against a stray setState after the screen unmounts mid-fade.
@@ -259,6 +286,26 @@ export default function QuizScreen() {
         emitSessionComplete();
       }
     };
+  }, []);
+
+  // A React unmount only happens on in-app navigation (and only on web, where
+  // expo-router unmounts inactive tabs — see the SessionCache comment above);
+  // it never fires when someone just closes the tab, backgrounds the app, or
+  // locks the phone mid-quiz, which is how most casual sessions actually end.
+  // Without this, `quiz_session_complete` only fires via an explicit in-app
+  // exit action, undercounting real completions.
+  useEffect(() => {
+    function flushIfLeaving() {
+      if (sessionModeRef.current === 'daily') return; // daily has its own end-of-quiz flow
+      emitSessionComplete(undefined, false);
+    }
+    if (Platform.OS === 'web') {
+      const onVisibility = () => { if (document.visibilityState === 'hidden') flushIfLeaving(); };
+      document.addEventListener('visibilitychange', onVisibility);
+      return () => document.removeEventListener('visibilitychange', onVisibility);
+    }
+    const sub = AppState.addEventListener('change', (next) => { if (next === 'background') flushIfLeaving(); });
+    return () => sub.remove();
   }, []);
 
   // Reclaim the header: show the live score while a run is in progress instead
@@ -304,6 +351,8 @@ export default function QuizScreen() {
           seed: profile.lastSeed,
           sessionMode: sessionModeRef.current,
           sessionStartScore: sessionStartScoreRef.current,
+          flushedAnswered: flushedAnsweredRef.current,
+          flushedCorrect: flushedCorrectRef.current,
         };
       }
     } else {
@@ -343,6 +392,8 @@ export default function QuizScreen() {
     cardCounterRef.current = 0;
     sessionCorrectRef.current = 0;
     sessionAnsweredRef.current = 0;
+    flushedAnsweredRef.current = 0;
+    flushedCorrectRef.current = 0;
     setCombo(0);
     dailyScoreRef.current = 0;
     dailyTimeRef.current = 0;
@@ -445,6 +496,8 @@ export default function QuizScreen() {
     cardCounterRef.current = snap.cardCounter;
     sessionCorrectRef.current = snap.sessionCorrect;
     sessionAnsweredRef.current = snap.sessionAnswered;
+    flushedAnsweredRef.current = snap.flushedAnswered;
+    flushedCorrectRef.current = snap.flushedCorrect;
     dailyScoreRef.current = 0;
     dailyTimeRef.current = 0;
 

@@ -2,6 +2,7 @@ import {
   decideFocusAction, isAnswerable, shouldSuspendNormalRun, FocusInput,
   buildFocusInput, decideFocusFromContext, FocusContext,
   shouldRestoreNormalRunAfterDaily, shouldShowSummary, SUMMARY_EVERY,
+  decideSessionComplete, SessionCompleteInput,
 } from '../quizFlow';
 import { makeEmptyQO, QuestionObject } from '../questionnaire';
 
@@ -198,6 +199,76 @@ describe('shouldSuspendNormalRun', () => {
   });
   it('does not suspend when there is no live run', () => {
     expect(shouldSuspendNormalRun(false, false)).toBe(false);
+  });
+});
+
+// Regression: `quiz_session_complete` used to fire only on an explicit in-app
+// exit, so a user who just closed the tab/app mid-quiz was never counted as
+// having completed a session at all — the GA4 funnel read as near-total
+// abandonment. A non-final ("beacon") call on backgrounding/tab-hide fixes
+// this without double-counting a session interrupted by one or more of them.
+describe('decideSessionComplete', () => {
+  const base: SessionCompleteInput = {
+    sessionActive: true,
+    isDaily: false,
+    final: true,
+    answered: 0,
+    correct: 0,
+    flushedAnswered: 0,
+    flushedCorrect: 0,
+  };
+
+  it('does nothing when there is no active session', () => {
+    expect(decideSessionComplete({ ...base, sessionActive: false, answered: 5, correct: 3 }))
+      .toEqual({ fire: false, endSession: false, answeredDelta: 0, correctDelta: 0 });
+  });
+
+  it('a final exit with progress fires and ends the session', () => {
+    expect(decideSessionComplete({ ...base, final: true, answered: 5, correct: 3 }))
+      .toEqual({ fire: true, endSession: true, answeredDelta: 5, correctDelta: 3 });
+  });
+
+  it('a final exit with nothing answered ends the session but does not fire', () => {
+    expect(decideSessionComplete({ ...base, final: true, answered: 0, correct: 0 }))
+      .toEqual({ fire: false, endSession: true, answeredDelta: 0, correctDelta: 0 });
+  });
+
+  it('a background/tab-hide beacon (non-final) fires without ending the session', () => {
+    expect(decideSessionComplete({ ...base, final: false, answered: 2, correct: 1 }))
+      .toEqual({ fire: true, endSession: false, answeredDelta: 2, correctDelta: 1 });
+  });
+
+  it('a beacon with nothing new since the last one is a silent no-op', () => {
+    expect(decideSessionComplete({ ...base, final: false, answered: 0, correct: 0 }))
+      .toEqual({ fire: false, endSession: false, answeredDelta: 0, correctDelta: 0 });
+  });
+
+  it('a later beacon/exit reports only the delta since the last beacon, not the running total', () => {
+    // e.g. answered 5 total, a prior beacon already reported the first 3
+    expect(decideSessionComplete({
+      ...base, final: false, answered: 5, correct: 4, flushedAnswered: 3, flushedCorrect: 2,
+    })).toEqual({ fire: true, endSession: false, answeredDelta: 2, correctDelta: 2 });
+
+    expect(decideSessionComplete({
+      ...base, final: true, answered: 5, correct: 4, flushedAnswered: 3, flushedCorrect: 2,
+    })).toEqual({ fire: true, endSession: true, answeredDelta: 2, correctDelta: 2 });
+  });
+
+  it('a final exit right after a beacon flushed everything ends the session without an empty re-fire', () => {
+    expect(decideSessionComplete({
+      ...base, final: true, answered: 5, correct: 4, flushedAnswered: 5, flushedCorrect: 4,
+    })).toEqual({ fire: false, endSession: true, answeredDelta: 0, correctDelta: 0 });
+  });
+
+  it('daily mode always fires on a final exit, even with nothing newly answered (absolute score, not a delta)', () => {
+    expect(decideSessionComplete({ ...base, isDaily: true, final: true, answered: 0, correct: 0 }))
+      .toEqual({ fire: true, endSession: true, answeredDelta: 0, correctDelta: 0 });
+  });
+
+  it('daily mode ignores the flushed baseline (a background beacon never fires for daily by construction, but the pure function stays consistent if called)', () => {
+    expect(decideSessionComplete({
+      ...base, isDaily: true, final: true, answered: 10, correct: 8, flushedAnswered: 10, flushedCorrect: 8,
+    })).toEqual({ fire: true, endSession: true, answeredDelta: 0, correctDelta: 0 });
   });
 });
 

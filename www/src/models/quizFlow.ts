@@ -102,3 +102,46 @@ export function shouldShowSummary(sessionAnswered: number, inDailyMode: boolean)
 export function isAnswerable(qo: QuestionObject): boolean {
   return Array.isArray(qo?.txt?.op?.[0]) && qo.txt.op[0].length > 0;
 }
+
+// Decides whether a `quiz_session_complete` beacon should fire, and how much
+// of the running answered/correct tallies it should report.
+//
+// A "final" call (explicit exit: the chooser, a new session replacing this
+// one, the summary sheet's Home button, or a component unmount) always ends
+// the session. A non-final call is a best-effort beacon fired when the app
+// backgrounds or the web tab is hidden — the only signal available when a
+// session ends by the user just closing the tab/app rather than navigating
+// within it — and leaves the session resumable so a user who comes back and
+// keeps playing is still tracked as one run whenever they do exit for real.
+//
+// Reports a delta since the last beacon (not the running total) so a session
+// interrupted by one or more backgroundings doesn't get double-counted across
+// beacons. Daily mode carries its own absolute score (not a per-question
+// delta) and always reports, even with nothing new answered, since its final
+// call is the one place that score is recorded.
+export interface SessionCompleteInput {
+  sessionActive: boolean;
+  isDaily: boolean;
+  final: boolean;
+  answered: number;        // sessionAnsweredRef.current
+  correct: number;         // sessionCorrectRef.current
+  flushedAnswered: number;  // already reported by a prior beacon this session
+  flushedCorrect: number;
+}
+export interface SessionCompleteResult {
+  fire: boolean;         // send the trackEvent call
+  endSession: boolean;   // mark the session no longer active/resumable
+  answeredDelta: number;
+  correctDelta: number;
+}
+export function decideSessionComplete(input: SessionCompleteInput): SessionCompleteResult {
+  if (!input.sessionActive) {
+    return { fire: false, endSession: false, answeredDelta: 0, correctDelta: 0 };
+  }
+  const endSession = input.final;
+  const answeredDelta = input.answered - input.flushedAnswered;
+  if (!input.isDaily && answeredDelta <= 0) {
+    return { fire: false, endSession, answeredDelta: 0, correctDelta: 0 };
+  }
+  return { fire: true, endSession, answeredDelta, correctDelta: input.correct - input.flushedCorrect };
+}
