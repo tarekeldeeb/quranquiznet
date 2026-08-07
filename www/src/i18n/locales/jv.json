@@ -484,6 +484,7 @@
   "friends": {
     "title": "Kanca",
     "myCodeTitle": "Kode Kuis Sampeyan",
+    "myCodeSubtitle": "Bagekake pranala pribadimu marang kanca-kanca kanggo sesambungan!",
     "shareBtn": "Bagekake Kode",
     "shareMessage": "Tambahna aku ing Quran Quiz Net! Ketuk pranala kanggo nambahake aku sanalika:\n{{link}}",
     "addFriendTitle": "Tambah Kanca nganggo Kode Kuis",

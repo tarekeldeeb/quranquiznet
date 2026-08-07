@@ -484,6 +484,7 @@
   "friends": {
     "title": "好友",
     "myCodeTitle": "你的问答码",
+    "myCodeSubtitle": "与好友分享你的专属链接,一起互动吧!",
     "shareBtn": "分享代码",
     "shareMessage": "在古兰经问答网上加我为好友!点击链接即可立即添加我:\n{{link}}",
     "addFriendTitle": "通过问答码添加好友",

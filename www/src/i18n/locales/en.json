@@ -496,6 +496,7 @@
   "friends": {
     "title": "Friends",
     "myCodeTitle": "Your Quiz Code",
+    "myCodeSubtitle": "Share your personal link with your friends to get connected!",
     "shareBtn": "Share Code",
     "shareMessage": "Add me on Quran Quiz Net! Tap the link to add me instantly:\n{{link}}",
     "addFriendTitle": "Add Friend by Quiz Code",

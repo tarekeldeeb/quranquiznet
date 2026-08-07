@@ -487,6 +487,7 @@
   "friends": {
     "title": "Arkadaşlar",
     "myCodeTitle": "Test Kodunuz",
+    "myCodeSubtitle": "Bağlantı kurmak için kişisel bağlantını arkadaşlarınla paylaş!",
     "shareBtn": "Kodu Paylaş",
     "shareMessage": "Beni Kur'an Test Ağı'nda ekle! Beni hemen eklemek için bağlantıya dokun:\n{{link}}",
     "addFriendTitle": "Test Koduyla Arkadaş Ekle",

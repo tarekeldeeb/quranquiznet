@@ -484,6 +484,7 @@
   "friends": {
     "title": "Rakan",
     "myCodeTitle": "Kod Kuiz Anda",
+    "myCodeSubtitle": "Kongsi pautan peribadi anda dengan rakan-rakan untuk berhubung!",
     "shareBtn": "Kongsi Kod",
     "shareMessage": "Tambah saya di Quran Quiz Net! Ketik pautan untuk menambah saya serta-merta:\n{{link}}",
     "addFriendTitle": "Tambah Rakan Melalui Kod Kuiz",

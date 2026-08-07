@@ -487,6 +487,7 @@
   "friends": {
     "title": "Marafiki",
     "myCodeTitle": "Msimbo Wako wa Maswali",
+    "myCodeSubtitle": "Shiriki kiungo chako binafsi na marafiki zako ili kuungana!",
     "shareBtn": "Shiriki Msimbo",
     "shareMessage": "Niongeze kwenye Quran Quiz Net! Gusa kiungo ili kuniongeza mara moja:\n{{link}}",
     "addFriendTitle": "Ongeza Rafiki kwa Msimbo wa Maswali",

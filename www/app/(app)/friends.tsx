@@ -429,6 +429,9 @@ export default function FriendsScreen() {
               {t('friends.myCodeTitle')}
             </Text>
           </View>
+          <Text style={[s.cardSubtitle, { color: colors.inkSoft, textAlign: alignDir(isRTL) }]}>
+            {t('friends.myCodeSubtitle')}
+          </Text>
           <View style={[s.codeBox, { backgroundColor: colors.goldPale, borderColor: colors.gold }]}>
             {loadingCode ? (
               <ActivityIndicator size="small" color={colors.goldDeep} />
@@ -601,6 +604,11 @@ const s = StyleSheet.create({
   cardTitle: {
     fontSize: 15,
     fontFamily: 'PlexArabic-Bold',
+  },
+  cardSubtitle: {
+    fontSize: 13,
+    lineHeight: 18,
+    marginTop: -4,
   },
   codeBox: {
     paddingVertical: 12,

@@ -490,6 +490,7 @@
   "friends": {
     "title": "Amigos",
     "myCodeTitle": "Tu código de cuestionario",
+    "myCodeSubtitle": "¡Comparte tu enlace personal con tus amigos para conectaros!",
     "shareBtn": "Compartir código",
     "shareMessage": "¡Agrégame en Quran Quiz Net! Toca el enlace para agregarme al instante:\n{{link}}",
     "addFriendTitle": "Agregar amigo por código de cuestionario",
