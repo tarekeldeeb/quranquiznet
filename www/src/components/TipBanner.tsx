@@ -62,7 +62,7 @@ export function TipBanner(): React.ReactElement | null {
           { backgroundColor: colors.goldPale, borderColor: colors.gold, flexDirection: rowDir(isRTL) },
         ]}
       >
-        <Ionicons name="bulb-outline" size={20} color={colors.goldDeep} />
+        <Ionicons name="bulb" size={32} color={colors.goldDeep} />
         <Text style={[s.text, { color: colors.ink, textAlign: alignDir(isRTL) }]}>
           {t(profile.pendingTipKey)}
         </Text>
