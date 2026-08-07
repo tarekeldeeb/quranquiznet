@@ -8,6 +8,7 @@ import {
   watchIncomingPvpInvites, acceptPvpInvite, declinePvpInvite, createPvpMatch, type PvpInviteEntry,
 } from '../../src/services/firebase';
 import { setPendingDeepLink } from '../../src/services/pendingDeepLink';
+import { hasPermission, registerPushToken } from '../../src/services/notifications';
 
 import { syncUserAnalytics } from '../../src/services/analytics';
 import {
@@ -118,6 +119,18 @@ export default function AppLayout() {
       }
 
       armPresence(user.uid);
+
+      // Re-arm the Expo push token on every auth resolution (cold start, sign-in,
+      // reinstall) whenever OS permission is already granted. This is what
+      // actually keeps challenge/friend-request pushes reaching a closed app:
+      // the one-shot ask in quiz.tsx only registers a token the moment
+      // permission is first granted, so anyone who granted permission before
+      // that registration call existed (or reinstalled, or got a rotated FCM
+      // token) was stuck with no token in /pushTokens ever again. This does not
+      // prompt — it only re-saves the token when permission already holds.
+      hasPermission().then((granted) => {
+        if (granted) registerPushToken(user.uid);
+      }).catch(() => {});
 
       // Sync auth identity + remote profile immediately, regardless of active tab
       if (!user.isAnonymous) {
