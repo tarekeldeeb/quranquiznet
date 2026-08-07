@@ -560,5 +560,10 @@
     "streakFreeze": "保持7天连续记录即可获得一张保护卡——它会自动帮你补救错过的一天。",
     "dailyQuiz": "别错过每日挑战——每24小时更新一次,还有专属排行榜。",
     "languageSwitch": "古兰经问答网支持16种语言,随时可在设置中切换。"
+  },
+  "update": {
+    "available": "有新版本 ({{version}}) 可用。",
+    "updateNow": "更新",
+    "dismiss": "关闭"
   }
 }

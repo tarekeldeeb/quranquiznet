@@ -560,5 +560,10 @@
     "streakFreeze": "Kekalkan rentetan 7 hari untuk mendapat token beku — ia menyelamatkan satu hari terlepas secara automatik.",
     "dailyQuiz": "Jangan terlepas Cabaran Harian — kuiz baharu setiap 24 jam dengan carta pendahulu tersendiri.",
     "languageSwitch": "Quran Quiz Net bertutur dalam 16 bahasa. Tukar bahasa anda bila-bila masa dalam Tetapan."
+  },
+  "update": {
+    "available": "Versi baharu ({{version}}) kini tersedia.",
+    "updateNow": "Kemas Kini",
+    "dismiss": "Tutup"
   }
 }

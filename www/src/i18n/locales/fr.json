@@ -566,5 +566,10 @@
     "streakFreeze": "Maintiens une série de 7 jours pour gagner un jeton de gel — il sauve automatiquement un jour manqué.",
     "dailyQuiz": "Ne rate pas le Défi quotidien — un nouveau quiz toutes les 24 heures, avec son propre classement.",
     "languageSwitch": "Quran Quiz Net parle 16 langues. Change la tienne à tout moment dans les Paramètres."
+  },
+  "update": {
+    "available": "Une nouvelle version ({{version}}) est disponible.",
+    "updateNow": "Mettre à jour",
+    "dismiss": "Fermer"
   }
 }

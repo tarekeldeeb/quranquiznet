@@ -45,6 +45,11 @@ jest.mock('../../../src/services/notifications', () => ({
   scheduleDailyReminder: jest.fn(() => Promise.resolve()),
 }));
 
+// Otherwise this fires a real fetch() to quranquiz.net/version.json on every render.
+jest.mock('../../../src/services/updateCheck', () => ({
+  useUpdateAvailable: () => ({ update: null, dismiss: jest.fn() }),
+}));
+
 import React from 'react';
 import { Alert, Share } from 'react-native';
 import { render, fireEvent, waitFor } from '@testing-library/react-native';

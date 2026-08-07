@@ -560,5 +560,10 @@
     "streakFreeze": "Terusake runtutan 7 dina kanggo entuk token pembeku — kanthi otomatis nylametake sedina sing kliwatan.",
     "dailyQuiz": "Aja nganti kliwatan Tantangan Saben Dina — kuis anyar saben 24 jam, duwe papan peringkat dhewe.",
     "languageSwitch": "Quran Quiz Net nganggo 16 basa. Ganti basamu kapan wae ing Setelan."
+  },
+  "update": {
+    "available": "Versi anyar ({{version}}) wis kasedhiya.",
+    "updateNow": "Nganyarake",
+    "dismiss": "Tutup"
   }
 }

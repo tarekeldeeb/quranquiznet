@@ -1,0 +1,5 @@
+{
+  "_comment": "Latest marketing version live on each store. Bump this AFTER a store release is actually approved and live — not at the same time as www/app.json's version bump — since App Store review lag means the two stores often go live days apart. Served as-is by Firebase Hosting (static files win over the SPA catch-all rewrite in firebase.json), fetched by src/services/updateCheck.ts.",
+  "ios": "2.4.1",
+  "android": "2.4.1"
+}

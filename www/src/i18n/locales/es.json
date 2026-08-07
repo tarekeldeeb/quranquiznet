@@ -566,5 +566,10 @@
     "streakFreeze": "Mantén una racha de 7 días para ganar un token de congelación — salva automáticamente un día perdido.",
     "dailyQuiz": "No te pierdas el Desafío diario — un quiz nuevo cada 24 horas con su propia clasificación.",
     "languageSwitch": "Quran Quiz Net habla 16 idiomas. Cambia el tuyo cuando quieras en Ajustes."
+  },
+  "update": {
+    "available": "Hay una nueva versión ({{version}}) disponible.",
+    "updateNow": "Actualizar",
+    "dismiss": "Cerrar"
   }
 }

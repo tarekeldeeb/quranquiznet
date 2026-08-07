@@ -563,5 +563,10 @@
     "streakFreeze": "7 günlük seriyi sürdürerek bir dondurma jetonu kazan — bu, kaçırdığın bir günü otomatik olarak kurtarır.",
     "dailyQuiz": "Günlük Meydan Okuma'yı kaçırma — her 24 saatte bir, kendi liderlik tablosuyla yeni bir sınav.",
     "languageSwitch": "Quran Quiz Net 16 dil konuşur. Dilini istediğin zaman Ayarlar'dan değiştir."
+  },
+  "update": {
+    "available": "Yeni bir sürüm ({{version}}) mevcut.",
+    "updateNow": "Güncelle",
+    "dismiss": "Kapat"
   }
 }

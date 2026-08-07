@@ -563,5 +563,10 @@
     "streakFreeze": "Endelea na mfululizo wa siku 7 ili kupata kadi ya kuganda — huokoa siku moja uliyokosa kiotomatiki.",
     "dailyQuiz": "Usikose Changamoto ya Kila Siku — jaribio jipya kila baada ya saa 24, likiwa na ubao wake wa viongozi.",
     "languageSwitch": "Quran Quiz Net huzungumza lugha 16. Badilisha yako wakati wowote katika Mipangilio."
+  },
+  "update": {
+    "available": "Toleo jipya ({{version}}) linapatikana.",
+    "updateNow": "Sasisha",
+    "dismiss": "Funga"
   }
 }

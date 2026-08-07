@@ -18,8 +18,10 @@ import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME, translatePartName } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
 import { TipBanner } from '../../src/components/TipBanner';
+import { UpdateBanner } from '../../src/components/UpdateBanner';
 import { trackEvent } from '../../src/services/analytics';
 import { scheduleDailyReminder } from '../../src/services/notifications';
+import { useUpdateAvailable } from '../../src/services/updateCheck';
 import { describeLiveRank } from '../../src/models/dailyRank';
 import { getRankInfo, getRankLadder } from '../../src/models/rank';
 import { getPvpTierInfo, PVP_TIER_COLOR } from '../../src/models/pvpTiers';
@@ -316,6 +318,7 @@ export default function MeScreen() {
   const lang = i18n.language as Language;
   const profile = useProfileStore();
   const social = profile.social;
+  const { update: pendingUpdate, dismiss: dismissUpdate } = useUpdateAvailable();
 
   const [dailyHead, setDailyHead] = useState<DailyHead | null | 'loading'>('loading');
   const [now, setNow] = useState(() => Date.now());
@@ -521,7 +524,8 @@ export default function MeScreen() {
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
-      <TipBanner />
+      <UpdateBanner update={pendingUpdate} onDismiss={dismissUpdate} />
+      {!pendingUpdate && <TipBanner />}
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Identity strip: avatar + points + streak (greeting lives in the header) ── */}

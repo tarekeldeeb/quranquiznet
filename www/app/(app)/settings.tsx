@@ -17,6 +17,7 @@ import { useDirection, rowDir, alignDir } from '../../src/theme/direction';
 import PressScale from '../../src/components/PressScale';
 import ThemeToggle from '../../src/components/ThemeToggle';
 import LanguagePicker from '../../src/components/LanguagePicker';
+import { APP_STORE_URL, PLAY_STORE_URL } from '../../src/models/storeLinks';
 
 const APP_VERSION = Constants.expoConfig?.version ?? '';
 
@@ -28,14 +29,14 @@ const STORE_LINKS = [
     icon: 'logo-apple' as const,
     name: 'App Store',
     hintKey: 'settings.storeLinks.iosHint',
-    url: 'https://apps.apple.com/app/id6790435986',
+    url: APP_STORE_URL,
   },
   {
     key: 'android',
     icon: 'logo-google-playstore' as const,
     name: 'Google Play',
     hintKey: 'settings.storeLinks.androidHint',
-    url: 'https://play.google.com/store/apps/details?id=net.quranquiz',
+    url: PLAY_STORE_URL,
   },
 ];
 
@@ -138,9 +139,7 @@ export default function SettingsScreen() {
 
   function handleRateApp() {
     if (!RATE_APP_URL) return;
-    const fallback = Platform.OS === 'android'
-      ? 'https://play.google.com/store/apps/details?id=net.quranquiz'
-      : 'https://apps.apple.com/app/id6790435986';
+    const fallback = Platform.OS === 'android' ? PLAY_STORE_URL : APP_STORE_URL;
     Linking.openURL(RATE_APP_URL).catch(() => Linking.openURL(fallback));
   }
 

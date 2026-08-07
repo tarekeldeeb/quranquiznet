@@ -127,4 +127,17 @@ total word count (the DB's last `_id`) and the wrap-around boundary; `SURA_IDX` 
   before any read.
 - **Auth**: anonymous + Google/Facebook social login. For local web testing, `localhost`
   must be in the Firebase Auth authorized domains.
+
+### In-app update nudge
+
+- `www/public/version.json` is a static file (copied verbatim into `dist/` by
+  `expo export`, and served as-is by Firebase Hosting — static files win over the
+  `**` → `/index.html` catch-all rewrite) listing the latest marketing version per
+  platform. `src/services/updateCheck.ts` fetches it on native (web is a no-op) and
+  compares against `Constants.expoConfig.version`; `me.tsx` shows `UpdateBanner` when
+  a newer version exists, linking to `src/models/storeLinks.ts`'s store URLs.
+- Bump `version.json` **after** a store release is actually approved and live, not at
+  the same time as `app.json`'s version bump — iOS review lag means the two stores
+  routinely go live days apart, so `ios`/`android` are tracked independently. Requires
+  its own `firebase deploy --only hosting` to take effect.
 ```

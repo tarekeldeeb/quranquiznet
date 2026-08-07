@@ -572,5 +572,10 @@
     "streakFreeze": "Keep a 7-day streak going to earn a Streak Freeze — it automatically saves one missed day.",
     "dailyQuiz": "Don't miss the Daily Quiz — a fresh quiz every 24 hours with its own leaderboard.",
     "languageSwitch": "Quran Quiz Net speaks 16 languages. Switch yours anytime in Settings."
+  },
+  "update": {
+    "available": "A new version ({{version}}) is available.",
+    "updateNow": "Update",
+    "dismiss": "Dismiss"
   }
 }

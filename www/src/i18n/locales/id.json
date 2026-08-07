@@ -560,5 +560,10 @@
     "streakFreeze": "Pertahankan rentetan 7 hari untuk mendapatkan token pembeku — otomatis menyelamatkan satu hari yang terlewat.",
     "dailyQuiz": "Jangan lewatkan Tantangan Harian — kuis baru setiap 24 jam dengan papan peringkatnya sendiri.",
     "languageSwitch": "Quran Quiz Net mendukung 16 bahasa. Ganti bahasa Anda kapan saja di Pengaturan."
+  },
+  "update": {
+    "available": "Versi baru ({{version}}) tersedia.",
+    "updateNow": "Perbarui",
+    "dismiss": "Tutup"
   }
 }

@@ -563,5 +563,10 @@
     "streakFreeze": "Ci gaba da jerin nasara na kwana 7 domin samun alamar daskarewa — take ceton kwana ɗaya da ka rasa kai tsaye.",
     "dailyQuiz": "Kada ka rasa Ƙalubalen Yau da Kullum — sabuwar tambaya kowace awa 24, tare da nata jerin manyan 'yan wasa.",
     "languageSwitch": "Quran Quiz Net na magana da harsuna 16. Canza naka a kowane lokaci a cikin Saituna."
+  },
+  "update": {
+    "available": "Sabuwar sigar ({{version}}) tana samuwa.",
+    "updateNow": "Sabunta",
+    "dismiss": "Rufe"
   }
 }
