@@ -557,5 +557,14 @@
       "title": "🏆 ¡Un amigo superó tu puntuación!",
       "body": "¡{{name}} obtuvo un puntaje mayor en el examen de hoy! Juega de nuevo para recuperar el liderazgo."
     }
+  },
+  "tips": {
+    "suraQuiz": "¿Quieres un quiz enfocado? Abre el Mapa de memorización y toca cualquier sura para examinarte específicamente en ella.",
+    "dismiss": "Cerrar",
+    "pvpGhostRace": "¡Prueba el modo 1 contra 1! Compite contra un amigo o el bot Hafiz en un duelo de preguntas en vivo.",
+    "friendMap": "Toca a un amigo en la pantalla de Amigos para ver su mapa de progreso de los 30 Juz'.",
+    "streakFreeze": "Mantén una racha de 7 días para ganar un token de congelación — salva automáticamente un día perdido.",
+    "dailyQuiz": "No te pierdas el Desafío diario — un quiz nuevo cada 24 horas con su propia clasificación.",
+    "languageSwitch": "Quran Quiz Net habla 16 idiomas. Cambia el tuyo cuando quieras en Ajustes."
   }
 }

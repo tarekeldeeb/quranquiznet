@@ -554,5 +554,14 @@
       "title": "🏆 Arkadaşın Skorunu Geçti!",
       "body": "{{name}} bugünün testinde senden daha yüksek bir skor yaptı! Liderliği geri almak için tekrar oyna."
     }
+  },
+  "tips": {
+    "suraQuiz": "Tek bir Sureye odaklı bir sınav mı istiyorsun? Ezber Haritası'nı aç ve herhangi bir Sureye dokunarak kendini o Surede sına.",
+    "dismiss": "Kapat",
+    "pvpGhostRace": "1v1 modunu dene! Bir arkadaşınla ya da Hafız botuyla canlı bir yarışmada yarış.",
+    "friendMap": "30 Cüz'lük ilerleme haritasını görmek için Arkadaşlar ekranında bir arkadaşına dokun.",
+    "streakFreeze": "7 günlük seriyi sürdürerek bir dondurma jetonu kazan — bu, kaçırdığın bir günü otomatik olarak kurtarır.",
+    "dailyQuiz": "Günlük Meydan Okuma'yı kaçırma — her 24 saatte bir, kendi liderlik tablosuyla yeni bir sınav.",
+    "languageSwitch": "Quran Quiz Net 16 dil konuşur. Dilini istediğin zaman Ayarlar'dan değiştir."
   }
 }

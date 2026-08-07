@@ -551,5 +551,14 @@
       "title": "🏆 Kanca Ngluwih Skor Sampeyan!",
       "body": "{{name}} entuk skor luwih dhuwur ing kuis dina iki! Main maneh kanggo ngrebut posisi teratas."
     }
+  },
+  "tips": {
+    "suraQuiz": "Pengin kuis sing fokus? Bukak Peta Apalan lan tekan Surah apa wae kanggo nguji awakmu dhewe khusus ing Surah kasebut.",
+    "dismiss": "Tutup",
+    "pvpGhostRace": "Coba mode 1v1! Balapan karo kanca utawa bot Hafiz ing duel kuis langsung.",
+    "friendMap": "Tekan kanca ing layar Kanca kanggo ndeleng peta kemajuan 30 Juz-e.",
+    "streakFreeze": "Terusake runtutan 7 dina kanggo entuk token pembeku — kanthi otomatis nylametake sedina sing kliwatan.",
+    "dailyQuiz": "Aja nganti kliwatan Tantangan Saben Dina — kuis anyar saben 24 jam, duwe papan peringkat dhewe.",
+    "languageSwitch": "Quran Quiz Net nganggo 16 basa. Ganti basamu kapan wae ing Setelan."
   }
 }

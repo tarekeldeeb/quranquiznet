@@ -15,11 +15,12 @@ interface Props {
   innerColor?: string;
   size?: number;
   label?: string;   // overrides the default "N%" text
+  children?: React.ReactNode; // replaces the label text entirely when given
 }
 
-export default function Ring({ pct, color, trackColor = '#e8edf2', innerColor = '#fff', size = 76, label }: Props) {
+export default function Ring({ pct, color, trackColor = '#e8edf2', innerColor = '#fff', size = 76, label, children }: Props) {
   const clamped = Math.max(0, Math.min(100, pct));
-  const strokeWidth = size * 0.24;
+  const strokeWidth = size * 0.12;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
   const innerSize = size - strokeWidth * 2;
@@ -48,7 +49,9 @@ export default function Ring({ pct, color, trackColor = '#e8edf2', innerColor = 
         />
       </Svg>
       <View style={[s.inner, { width: innerSize, height: innerSize, borderRadius: innerSize / 2, backgroundColor: innerColor }]}>
-        <Text style={[s.txt, { color, fontSize: size * 0.21 }]}>{label ?? `${Math.round(clamped)}%`}</Text>
+        {children ?? (
+          <Text style={[s.txt, { color, fontSize: size * 0.21 }]}>{label ?? `${Math.round(clamped)}%`}</Text>
+        )}
       </View>
     </View>
   );

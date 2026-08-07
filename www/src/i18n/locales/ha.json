@@ -554,5 +554,14 @@
       "title": "🏆 Aboki ya fi ka maki!",
       "body": "{{name}} ya samu maki mafi girma a kwizin yau! Sake yin kwiz don dawo da jagoranci."
     }
+  },
+  "tips": {
+    "suraQuiz": "Kana son jarrabawa akan Sura guda? Buɗe Taswirar Hadda ka danna kowace Sura don yin jarrabawa akanta kai tsaye.",
+    "dismiss": "Rufe",
+    "pvpGhostRace": "Gwada yanayin 1-da-1! Yi tsere da aboki ko bot Hafiz cikin gasar tambayoyi kai tsaye.",
+    "friendMap": "Danna wani aboki a shafin Abokai domin ganin taswirar ci gabansa na Juzu'i 30.",
+    "streakFreeze": "Ci gaba da jerin nasara na kwana 7 domin samun alamar daskarewa — take ceton kwana ɗaya da ka rasa kai tsaye.",
+    "dailyQuiz": "Kada ka rasa Ƙalubalen Yau da Kullum — sabuwar tambaya kowace awa 24, tare da nata jerin manyan 'yan wasa.",
+    "languageSwitch": "Quran Quiz Net na magana da harsuna 16. Canza naka a kowane lokaci a cikin Saituna."
   }
 }

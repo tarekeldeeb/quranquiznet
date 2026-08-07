@@ -68,6 +68,7 @@ export interface UserAnalyticsProfile {
   isAnonymous?: boolean;
   social?: { isAnonymous?: boolean };
   streak: number;
+  tipIndex: number;
 }
 
 /** Sync user ID and user properties based on profile state. */
@@ -81,6 +82,7 @@ export function syncUserAnalytics(profile: UserAnalyticsProfile): void {
     user_lang: profile.language,
     user_type: isAnon ? 'guest' : 'registered',
     user_streak_bucket: getStreakBucket(profile.streak),
+    user_tip_index: String(profile.tipIndex),
   });
 }
 

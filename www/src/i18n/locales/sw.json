@@ -554,5 +554,14 @@
       "title": "🏆 Alama Zimepitwa!",
       "body": "{{name}} amepita alama zako za leo! Cheza tena ili kurudisha uongozi."
     }
+  },
+  "tips": {
+    "suraQuiz": "Unataka jaribio linalolenga Sura moja? Fungua Ramani ya Uhifadhi na ugonge Sura yoyote ili kujijaribu kwenye Sura hiyo mahususi.",
+    "dismiss": "Funga",
+    "pvpGhostRace": "Jaribu hali ya 1v1! Shindana na rafiki au boti Hafidh katika mchezo wa moja kwa moja.",
+    "friendMap": "Gusa rafiki kwenye skrini ya Marafiki kuona ramani yake ya maendeleo ya Juzuu 30.",
+    "streakFreeze": "Endelea na mfululizo wa siku 7 ili kupata kadi ya kuganda — huokoa siku moja uliyokosa kiotomatiki.",
+    "dailyQuiz": "Usikose Changamoto ya Kila Siku — jaribio jipya kila baada ya saa 24, likiwa na ubao wake wa viongozi.",
+    "languageSwitch": "Quran Quiz Net huzungumza lugha 16. Badilisha yako wakati wowote katika Mipangilio."
   }
 }

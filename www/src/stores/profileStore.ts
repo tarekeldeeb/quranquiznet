@@ -14,6 +14,7 @@ import {
 import * as Localization from 'expo-localization';
 import { MasteryTier } from '../models/milestones';
 import { pointsForWin, STREAK_FREEZE_EVERY_N_WINS } from '../models/pvpTiers';
+import { TIPS, TIP_SHOW_CHANCE } from '../models/tips';
 import type { ThemeMode } from '../theme/tokens';
 import { changeLanguage } from '../i18n';
 import { type Language, isSupportedLanguage, resolveDeviceLanguage } from '../i18n/languages';
@@ -191,6 +192,13 @@ export interface ProfileState {
   pendingDailySubmit: DailySubmitPayload | null; // completed today, not yet confirmed written
   country: string;                  // 2-letter ISO country code detected from IP (not persisted)
   pvp: PvpRecord;                   // 1v1 win/loss/draw record (trophies)
+  tipIndex: number;                 // position in models/tips.ts's TIPS array
+  lastTipRollDate: string;          // 'YYYY-MM-DD' of the last daily tip roll
+  // The tip currently up for display (i18n key), or null. Never persisted —
+  // driven live by rollForTip()/dismissTip() so TipBanner can render off it
+  // directly instead of a one-shot local effect; this also makes it
+  // console-debuggable (see the __DEV__ exposure below rollForTip()).
+  pendingTipKey: string | null;
   // Device/UI preference, not user data — stored under its own key (see
   // THEME_KEY) so it survives sign-out/delete instead of resetting with the
   // rest of the profile. Defaults to dark (وضع الليل is the app's default look).
@@ -217,6 +225,14 @@ export interface ProfileState {
   setPendingDailySubmit(payload: DailySubmitPayload | null): void;
   setCountry(code: string): void;
   addPvpResult(outcome: 'win' | 'loss' | 'draw'): void;
+  // Once-per-calendar-day roll for whether a feature-discovery tip should
+  // show. Returns the next tip's i18n key on a hit, null otherwise (already
+  // rolled today, missed the roll, or the TIPS pool is exhausted). On a hit,
+  // also sets pendingTipKey so TipBanner picks it up.
+  // `force`: debug-only — skips both the daily gate and the probability
+  // roll, e.g. from a console: useProfileStore.getState().rollForTip(true).
+  rollForTip(force?: boolean): string | null;
+  dismissTip(): void;
   setThemeMode(mode: ThemeMode): void;
   setLanguage(lang: Language): void;
 
@@ -259,6 +275,8 @@ const KEYS = {
   pvp: 'prf_pvp',
   lastDailyScore: 'prf_lastDailyScore',
   pendingDailySubmit: 'prf_pendingDailySubmit',
+  tipIndex: 'prf_tipIndex',
+  lastTipRollDate: 'prf_lastTipRollDate',
 };
 
 // Deliberately outside KEYS: delete() wipes every KEYS entry on sign-out, but
@@ -309,6 +327,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
   pendingDailySubmit: null,
   country: '',
   pvp: EMPTY_PVP,
+  tipIndex: 0,
+  lastTipRollDate: '',
+  pendingTipKey: null,
   themeMode: 'dark',
   language: 'ar',
 
@@ -354,7 +375,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       await get().saveAll();
       return false;
     }
-    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, bestStreak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit] =
+    const [lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social, streak, bestStreak, lastPlayDate, lastDailyCompletedDate, pvp, lastDailyScore, pendingDailySubmit, tipIndex, lastTipRollDate] =
       await Promise.all([
         loadKey<number>(KEYS.lastUpdate, 0),
         loadKey<number>(KEYS.lastSync, 0),
@@ -372,6 +393,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
         loadKey<PvpRecord>(KEYS.pvp, EMPTY_PVP),
         loadKey<number>(KEYS.lastDailyScore, 0),
         loadKey<DailySubmitPayload | null>(KEYS.pendingDailySubmit, null),
+        loadKey<number>(KEYS.tipIndex, 0),
+        loadKey<string>(KEYS.lastTipRollDate, ''),
       ]);
     set({
       uid, lastUpdate, lastSync, lastSeed, level, specialEnabled, scores, parts, version, social,
@@ -380,7 +403,7 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       // points/winStreak/streakFreezeTokens fields, so a raw load would leave
       // them undefined.
       pvp: { ...EMPTY_PVP, ...pvp },
-      lastDailyScore, pendingDailySubmit, loaded: true, themeMode, language,
+      lastDailyScore, pendingDailySubmit, tipIndex, lastTipRollDate, loaded: true, themeMode, language,
     });
     return true;
   },
@@ -405,6 +428,8 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       [KEYS.pvp,                       JSON.stringify(s.pvp)],
       [KEYS.lastDailyScore,            JSON.stringify(s.lastDailyScore)],
       [KEYS.pendingDailySubmit,        JSON.stringify(s.pendingDailySubmit)],
+      [KEYS.tipIndex,                  JSON.stringify(s.tipIndex)],
+      [KEYS.lastTipRollDate,           JSON.stringify(s.lastTipRollDate)],
     ]);
   },
 
@@ -440,6 +465,9 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
       pvp: EMPTY_PVP,
       lastDailyScore: 0,
       pendingDailySubmit: null,
+      tipIndex: 0,
+      lastTipRollDate: '',
+      pendingTipKey: null,
       loaded: false,
     });
   },
@@ -555,6 +583,29 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     set({ pvp, lastUpdate: now });
     saveKey(KEYS.pvp, pvp);
     saveKey(KEYS.lastUpdate, now);
+  },
+
+  rollForTip(force = false): string | null {
+    const today = new Date().toISOString().split('T')[0];
+    const { lastTipRollDate, tipIndex } = get();
+    if (!force && lastTipRollDate === today) return null; // already rolled today
+    // Stamp today's roll regardless of outcome, so this only ever fires once
+    // a day even on a miss.
+    set({ lastTipRollDate: today });
+    saveKey(KEYS.lastTipRollDate, today);
+    if (!force && Math.random() >= TIP_SHOW_CHANCE) return null;
+    let i = tipIndex;
+    while (i < TIPS.length && !TIPS[i].i18nKey) i++; // skip retired placeholders
+    if (i >= TIPS.length) return null; // pool exhausted
+    const nextIndex = i + 1;
+    const key = TIPS[i].i18nKey;
+    set({ tipIndex: nextIndex, pendingTipKey: key });
+    saveKey(KEYS.tipIndex, nextIndex);
+    return key;
+  },
+
+  dismissTip() {
+    set({ pendingTipKey: null });
   },
 
   async addCorrect(qo: QORef) {
@@ -852,3 +903,11 @@ export const useProfileStore = create<ProfileState>((set, get) => ({
     }
   },
 }));
+
+// Debug convenience: exposes the store on the JS console (browser devtools on
+// web, or the Hermes/remote debugger console on native) so state can be
+// inspected/forced without rebuilding. e.g. to preview a tip on demand:
+//   useProfileStore.getState().rollForTip(true)
+if (__DEV__) {
+  (globalThis as unknown as { useProfileStore: typeof useProfileStore }).useProfileStore = useProfileStore;
+}

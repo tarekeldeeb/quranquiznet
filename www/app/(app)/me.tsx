@@ -17,6 +17,7 @@ import { useProfileStore, tierFromRatioRange } from '../../src/stores/profileSto
 import * as QS from '../../src/services/questionnaireService';
 import { DEFAULT_GUEST_NAME, translatePartName } from '../../src/models/constants';
 import { Avatar } from '../../src/components/Avatar';
+import { TipBanner } from '../../src/components/TipBanner';
 import { trackEvent } from '../../src/services/analytics';
 import { scheduleDailyReminder } from '../../src/services/notifications';
 import { describeLiveRank } from '../../src/models/dailyRank';
@@ -520,6 +521,7 @@ export default function MeScreen() {
 
   return (
     <SafeAreaView style={[s.container, { backgroundColor: colors.paper }]} edges={['bottom']}>
+      <TipBanner />
       <ScrollView contentContainerStyle={s.scroll} showsVerticalScrollIndicator={false}>
 
         {/* ── Identity strip: avatar + points + streak (greeting lives in the header) ── */}

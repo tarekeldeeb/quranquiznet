@@ -557,5 +557,14 @@
       "title": "🏆 Score dépassé !",
       "body": "{{name}} a obtenu un meilleur score que vous aujourd'hui ! Rejouez pour reprendre la tête."
     }
+  },
+  "tips": {
+    "suraQuiz": "Tu veux un quiz ciblé ? Ouvre la Carte de mémorisation et touche n'importe quelle sourate pour t'évaluer spécifiquement dessus.",
+    "dismiss": "Fermer",
+    "pvpGhostRace": "Essaie le mode 1 contre 1 ! Affronte un ami ou le bot Hafiz dans un duel de quiz en direct.",
+    "friendMap": "Touche un ami sur l'écran Amis pour voir sa carte de progression sur les 30 Juz'.",
+    "streakFreeze": "Maintiens une série de 7 jours pour gagner un jeton de gel — il sauve automatiquement un jour manqué.",
+    "dailyQuiz": "Ne rate pas le Défi quotidien — un nouveau quiz toutes les 24 heures, avec son propre classement.",
+    "languageSwitch": "Quran Quiz Net parle 16 langues. Change la tienne à tout moment dans les Paramètres."
   }
 }

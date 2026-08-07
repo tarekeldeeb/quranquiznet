@@ -183,6 +183,9 @@ const FIELD_STATUS = {
   pendingDailySubmit: { kind: 'local-only', reason: "this device's own unconfirmed-write retry queue, not an account fact" },
   country: { kind: 'local-only', reason: 'redetected from IP on every launch, never persisted' },
   levels: { kind: 'local-only', reason: 'static levels catalog, never mutated' },
+  tipIndex: { kind: 'local-only', reason: 'feature-discovery nudge cadence tied to this device\'s sessions, not an account fact — a reinstall/second device should not skip or replay tips' },
+  lastTipRollDate: { kind: 'local-only', reason: 'same as tipIndex — the once-a-day roll gate is local session state' },
+  pendingTipKey: { kind: 'local-only', reason: 'never persisted at all — ephemeral "currently displayed" pointer for TipBanner, meaningless outside this session' },
 } satisfies Record<ProfileDataKey, FieldStatus>;
 
 type SyncedKey = { [K in ProfileDataKey]: (typeof FIELD_STATUS)[K]['kind'] extends 'synced' ? K : never }[ProfileDataKey];

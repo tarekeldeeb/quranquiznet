@@ -100,9 +100,10 @@ export default function AppLayout() {
         language: profile.language,
         isAnonymous: !!profile.social.isAnonymous,
         streak: profile.streak,
+        tipIndex: profile.tipIndex,
       });
     }
-  }, [userUid, profile.level, profile.language, profile.social.isAnonymous, profile.streak]);
+  }, [userUid, profile.level, profile.language, profile.social.isAnonymous, profile.streak, profile.tipIndex]);
 
   useEffect(() => {
     detectCountry(profile.setCountry);

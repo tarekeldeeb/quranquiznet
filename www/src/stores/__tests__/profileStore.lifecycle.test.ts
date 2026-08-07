@@ -5,6 +5,7 @@ jest.mock('@react-native-async-storage/async-storage', () =>
   require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
 import { useProfileStore, StudyPart, CORRECT_RATIO_RANGE } from '../profileStore';
+import { TIPS } from '../../models/tips';
 
 const store = () => useProfileStore.getState();
 const today = () => new Date().toISOString().split('T')[0];
@@ -197,5 +198,66 @@ describe('streak freeze tokens', () => {
     expect(store().pvp.streakFreezeTokens).toBe(0);
     expect(store().lastPlayDate).toBe('2026-01-01');
     expect(store().streak).toBe(5);
+  });
+});
+
+describe('rollForTip(): feature-discovery tip nudge', () => {
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
+  it('rolls at most once per calendar day', () => {
+    useProfileStore.setState({ lastTipRollDate: '', tipIndex: 0 });
+    jest.spyOn(Math, 'random').mockReturnValue(0); // guaranteed hit if it does roll
+    expect(store().rollForTip()).not.toBeNull();
+    expect(store().rollForTip()).toBeNull(); // already rolled today
+  });
+
+  it('on a hit, returns tips in order, advances tipIndex, and sets pendingTipKey', () => {
+    useProfileStore.setState({ lastTipRollDate: '', tipIndex: 0, pendingTipKey: null });
+    jest.spyOn(Math, 'random').mockReturnValue(0);
+    expect(store().rollForTip()).toBe(TIPS[0].i18nKey);
+    expect(store().tipIndex).toBe(1);
+    expect(store().pendingTipKey).toBe(TIPS[0].i18nKey);
+  });
+
+  it('dismissTip() clears pendingTipKey', () => {
+    useProfileStore.setState({ pendingTipKey: TIPS[0].i18nKey });
+    store().dismissTip();
+    expect(store().pendingTipKey).toBeNull();
+  });
+
+  it('force=true bypasses both the daily gate and the probability roll', () => {
+    const todayStr = today();
+    useProfileStore.setState({ lastTipRollDate: todayStr, tipIndex: 0 });
+    jest.spyOn(Math, 'random').mockReturnValue(0.999); // would normally miss
+    expect(store().rollForTip(true)).toBe(TIPS[0].i18nKey);
+    expect(store().tipIndex).toBe(1);
+  });
+
+  it('on a miss, stamps lastTipRollDate but leaves tipIndex unchanged', () => {
+    useProfileStore.setState({ lastTipRollDate: '', tipIndex: 2 });
+    jest.spyOn(Math, 'random').mockReturnValue(0.999); // above TIP_SHOW_CHANCE
+    expect(store().rollForTip()).toBeNull();
+    expect(store().tipIndex).toBe(2);
+    expect(store().lastTipRollDate).toBe(today());
+  });
+
+  it('returns null forever once the tip pool is exhausted', () => {
+    useProfileStore.setState({ lastTipRollDate: '', tipIndex: TIPS.length });
+    jest.spyOn(Math, 'random').mockReturnValue(0);
+    expect(store().rollForTip()).toBeNull();
+    expect(store().tipIndex).toBe(TIPS.length);
+  });
+
+  it('round-trips tipIndex/lastTipRollDate through saveAll() and load()', async () => {
+    useProfileStore.setState({ uid: 'u1', tipIndex: 3, lastTipRollDate: '2026-01-01' });
+    await store().saveAll();
+
+    useProfileStore.setState({ tipIndex: 0, lastTipRollDate: '' });
+    await store().load();
+
+    expect(store().tipIndex).toBe(3);
+    expect(store().lastTipRollDate).toBe('2026-01-01');
   });
 });

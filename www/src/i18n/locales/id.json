@@ -551,5 +551,14 @@
       "title": "🏆 Teman Melampaui Skormu!",
       "body": "{{name}} meraih skor lebih tinggi di kuis hari ini! Main lagi untuk merebut kembali posisi puncak."
     }
+  },
+  "tips": {
+    "suraQuiz": "Ingin kuis yang fokus? Buka Peta Hafalan dan ketuk Surah mana pun untuk menguji diri Anda khusus pada Surah itu.",
+    "dismiss": "Tutup",
+    "pvpGhostRace": "Coba mode 1v1! Berlomba dengan teman atau bot Hafiz dalam duel kuis langsung.",
+    "friendMap": "Ketuk teman di layar Teman untuk melihat peta kemajuan 30 Juz mereka.",
+    "streakFreeze": "Pertahankan rentetan 7 hari untuk mendapatkan token pembeku — otomatis menyelamatkan satu hari yang terlewat.",
+    "dailyQuiz": "Jangan lewatkan Tantangan Harian — kuis baru setiap 24 jam dengan papan peringkatnya sendiri.",
+    "languageSwitch": "Quran Quiz Net mendukung 16 bahasa. Ganti bahasa Anda kapan saja di Pengaturan."
   }
 }

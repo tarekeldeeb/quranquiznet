@@ -563,5 +563,14 @@
       "title": "🏆 Score Beaten!",
       "body": "{{name}} beat your daily score today! Play again to reclaim the lead."
     }
+  },
+  "tips": {
+    "suraQuiz": "Want a focused quiz? Open the Memorization Map and tap any Surah to quiz yourself on it specifically.",
+    "dismiss": "Dismiss",
+    "pvpGhostRace": "Try 1v1 mode! Race a friend or the bot Hafiz in a live quiz duel.",
+    "friendMap": "Tap a friend on the Friends screen to see their 30-juz progress map.",
+    "streakFreeze": "Keep a 7-day streak going to earn a Streak Freeze — it automatically saves one missed day.",
+    "dailyQuiz": "Don't miss the Daily Quiz — a fresh quiz every 24 hours with its own leaderboard.",
+    "languageSwitch": "Quran Quiz Net speaks 16 languages. Switch yours anytime in Settings."
   }
 }
